@@ -22,7 +22,10 @@
 #include "HdmvClipInfo.h"
 #include "DSUtil.h"
 #include "ISOLang.h"
+#include "tinyxml2/library/tinyxml2.h"
+#include <regex>
 
+using namespace tinyxml2;
 
 CHdmvClipInfo::CHdmvClipInfo()
     : SequenceInfo_start_address(0)
@@ -467,4 +470,75 @@ HRESULT CHdmvClipInfo::FindMainMovie(LPCTSTR strFolder, CString& strPlaylistFile
     }
 
     return hr;
+}
+
+bool CHdmvClipInfo::ReadMeta(LPCTSTR strFolder, CAtlList<BDMVMeta>& meta)
+{
+    bool re = false;
+    CString strPath(strFolder);
+    CString strFilter;
+
+    meta.RemoveAll();
+
+    strPath.Replace(_T("\\PLAYLIST\\"), _T("\\"));
+    strPath.Replace(_T("\\STREAM\\"), _T("\\"));
+    strPath += _T("\\BDMV\\");
+    strPath.Replace(_T("\\\\"), _T("\\"));
+    strPath.Replace(_T("\\\\"), _T("\\"));
+    strFilter.Format(_T("%sMETA\\DL\\bdmt_*.xml"), strPath.GetString());
+
+    WIN32_FIND_DATA fd;
+    ZeroMemory(&fd, sizeof(WIN32_FIND_DATA));
+
+    HANDLE hFind = FindFirstFile(strFilter, &fd);
+    if (hFind != INVALID_HANDLE_VALUE) {
+        do {
+            std::wstring TempFileName(fd.cFileName);
+            std::match_results<std::wstring::const_iterator> mr;
+            CHdmvClipInfo::BDMVMeta Item;
+            tinyxml2::XMLDocument doc;
+            CStringW FileName(fd.cFileName);
+            CStringW FilePath;
+
+            bool matched = std::regex_search(TempFileName, mr, std::wregex(L"^bdmt_(\\w+).xml$"));
+
+            if (matched) {
+                Item.langcode = mr[1].str().c_str();
+            }
+            else {
+                Item.langcode = L"";
+            }
+
+            FilePath.Format(L"%sMETA\\DL\\", strPath.GetString());
+            FilePath += FileName;
+            FILE* f;
+            if (!_wfopen_s(&f, FilePath.GetString(), L"rb")) {
+                doc.LoadFile(f);
+                fclose(f);
+
+                XMLElement* rootNote(doc.RootElement());
+                if (!strcmp(rootNote->Name(), "disclib")) {
+                    XMLElement* discinfo = rootNote->FirstChildElement("di:discinfo");
+                    if (discinfo != NULL) {
+                        XMLElement* title = discinfo->FirstChildElement("di:title");
+                        if (title != NULL) {
+                            XMLElement* name = title->FirstChildElement("di:name");
+                            if (name != NULL) {
+                                Item.title = UTF8ToStringW(name->GetText());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!Item.title.IsEmpty()) {
+                meta.AddTail(Item);
+                re = true;
+            }
+        } while (FindNextFile(hFind, &fd));
+
+        FindClose(hFind);
+    }
+
+    return re;
 }

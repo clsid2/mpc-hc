@@ -1276,6 +1276,10 @@ msgctxt "IDS_INFOBAR_DOMAIN"
 msgid "Domain"
 msgstr "위치"
 
+msgctxt "IDS_INFOBAR_DISCTITLE"
+msgid "Disc title"
+msgstr ""
+
 msgctxt "IDS_AG_CLOSE"
 msgid "Close"
 msgstr "닫기"

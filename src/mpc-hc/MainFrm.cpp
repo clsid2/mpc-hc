@@ -819,6 +819,7 @@ CMainFrame::CMainFrame()
     , m_dLastVideoScaleFactor(0)
     , m_bExtOnTop(false)
     , m_bIsBDPlay(false)
+    , m_bHasBDMeta(false)
     , watchingFileDialog(false)
     , fileDialogHookHelper(nullptr)
     , delayingFullScreen(false)
@@ -829,6 +830,7 @@ CMainFrame::CMainFrame()
     , abRepeatPositionB(0)
     , mediaTypesErrorDlg(nullptr)
     , m_iStreamPosPollerInterval(100)
+    , m_BDMeta()
     , currentAudioLang(_T(""))
     , currentSubLang(_T(""))
     , m_bToggleShader(false)
@@ -12013,6 +12015,15 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
             break;
         }
         lastOpenFile = fn; //this is only used for skipping to other files, so it may not have been "open"
+        CString ext = fn.Mid(fn.ReverseFind('.'));
+        if (ext == ".mpls") {
+            CString fnn = PathUtils::StripPathOrUrl(fn);
+            CString tempath(fn);
+            tempath.Replace(fnn, _T(""));
+            tempath.Replace(_T("BDMV\\PLAYLIST\\"), _T(""));
+            CHdmvClipInfo clipinfo;
+            m_bHasBDMeta = clipinfo.ReadMeta(tempath, m_BDMeta);
+        }
         HRESULT hr = m_pGB->RenderFile(CStringW(fn), nullptr);
 
         if (FAILED(hr)) {
@@ -13049,6 +13060,14 @@ void CMainFrame::OpenSetupInfoBar(bool bClear /*= true*/)
         }
 
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_TITLE), title);
+        CString fn(GetFileName());
+        CString ext(fn.Mid(fn.ReverseFind('.')));
+        if (ext == ".mpls" && m_bHasBDMeta) {
+            CHdmvClipInfo::BDMVMeta meta(GetBDMVMeta());
+            CString disctitle(meta.title);
+            if (!meta.langcode.IsEmpty()) disctitle += (_T(" (") + meta.langcode + _T(")"));
+            bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_DISCTITLE), disctitle);
+        }
         UpdateChapterInInfoBar();
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_AUTHOR), author);
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_COPYRIGHT), copyright);
@@ -13216,6 +13235,17 @@ void CMainFrame::OpenSetupWindowTitle(bool reset /*= false*/)
                             title.Trim();
                             has_title = !title.IsEmpty();
                         }
+                    }
+                }
+
+                if (!has_title) {
+                    CString ext = GetFileName().Mid(GetFileName().ReverseFind('.'));
+                    if (ext == ".mpls" && m_bHasBDMeta) {
+                        title = GetBDMVMeta().title;
+                        has_title = true;
+                    } else if (ext != ".mpls") {
+                        m_bHasBDMeta = false;
+                        m_BDMeta.RemoveAll();
                     }
                 }
 
@@ -18776,6 +18806,8 @@ bool CMainFrame::OpenBD(CString Path)
         if (SUCCEEDED(ClipInfo.FindMainMovie(Path, strPlaylistFile, MainPlaylist, m_MPLSPlaylist))) {
             m_bIsBDPlay = true;
 
+            m_bHasBDMeta = ClipInfo.ReadMeta(Path, m_BDMeta);
+
             if (!InternalMpegSplitter && !ext.IsEmpty() && ext == _T(".bdmv")) {
                 return false;
             } else {
@@ -19527,20 +19559,34 @@ void CMainFrame::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt) {
     __super::OnMouseHWheel(nFlags, zDelta, pt);
 }
 
-void CMainFrame::updateRecentFileListSub() {
-    if (m_pCurrentSubInput.pSubStream) {
-        CString subpath = m_pCurrentSubInput.pSubStream->GetPath();
-        if (!subpath.IsEmpty()) {
-            bool found = m_current_rfe.subs.Find(subpath);
-            if (!found) {
-                RecentFileEntry r = m_current_rfe;
-                r.subs.AddTail(subpath);
-                auto& MRU = AfxGetAppSettings().MRU;
-                MRU.ReadList();
-
-                MRU.Add(r);
-                MRU.WriteList();
-            }            
-        }
+CHdmvClipInfo::BDMVMeta CMainFrame::GetBDMVMeta()
+{
+    if (m_BDMeta.GetCount() == 1) return m_BDMeta.GetHead();
+    else {
+        CAppSettings& s = AfxGetAppSettings();
+        LCID langid = s.language;
+        if (langid == 0) langid = ISOLang::ISO6392ToLcid("eng");
+        POSITION p = m_BDMeta.GetHeadPosition();
+        CHdmvClipInfo::BDMVMeta meta;
+        bool b = true;
+        do {
+            if (p == m_BDMeta.GetTailPosition()) b = false;
+            meta = m_BDMeta.GetNext(p);
+            CW2A temlang(meta.langcode.GetString());
+            LCID lang = ISOLang::ISO6392ToLcid(temlang);
+            if (lang == langid) return meta;
+        } while (b);
+        return m_BDMeta.GetHead();
     }
+}
+
+void CMainFrame::updateRecentFileListSub(CString fn) {
+    auto& MRU = AfxGetAppSettings().MRU;
+    MRU.ReadList();
+    RecentFileEntry r = m_current_rfe;
+    bool found(r.subs.Find(fn));
+    if (!found && !fn.IsEmpty()) r.subs.AddTail(fn);
+    MRU.Add(r);
+    MRU.WriteList();
+    m_current_rfe = RecentFileEntry(); // Clear
 }

@@ -118,6 +118,11 @@ public:
         REFERENCE_TIME   m_rtDuration;
     };
 
+    struct BDMVMeta {
+        CString         langcode;
+        CString         title;
+    };
+
     CHdmvClipInfo();
     ~CHdmvClipInfo();
 
@@ -130,6 +135,7 @@ public:
     HRESULT FindMainMovie(LPCTSTR strFolder, CString& strPlaylistFile, CAtlList<PlaylistItem>& MainPlaylist, CAtlList<PlaylistItem>& MPLSPlaylists);
     HRESULT ReadPlaylist(CString strPlaylistFile, REFERENCE_TIME& rtDuration, CAtlList<PlaylistItem>& Playlist);
     HRESULT ReadChapters(CString strPlaylistFile, CAtlList<CHdmvClipInfo::PlaylistItem>& PlaylistItems, CAtlList<PlaylistChapter>& Chapters);
+    bool ReadMeta(LPCTSTR strFolder, CAtlList<BDMVMeta>& meta);
 
 private:
     DWORD SequenceInfo_start_address;
