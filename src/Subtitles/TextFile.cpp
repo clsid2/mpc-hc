@@ -25,10 +25,11 @@
 #include <algorithm>
 #include "TextFile.h"
 #include "Utf8.h"
+#include "libiconv/libiconv-for-Windows/include/iconv.h"
 
 #define TEXTFILE_BUFFER_SIZE (64 * 1024)
 
-CTextFile::CTextFile(enc e)
+CTextFile::CTextFile(enc e, bool use_chardetlib)
     : m_encoding(e)
     , m_defaultencoding(e)
     , m_fallbackencoding(DEFAULT_ENCODING)
@@ -36,9 +37,14 @@ CTextFile::CTextFile(enc e)
     , m_posInFile(0)
     , m_posInBuffer(0)
     , m_nInBuffer(0)
+    , bUseChardetlib(use_chardetlib)
 {
     m_buffer.Allocate(TEXTFILE_BUFFER_SIZE);
     m_wbuffer.Allocate(TEXTFILE_BUFFER_SIZE);
+}
+
+CTextFile::~CTextFile() {
+    if (m_detectResult) free(m_detectResult);
 }
 
 bool CTextFile::Open(LPCTSTR lpszFileName)
@@ -50,9 +56,19 @@ bool CTextFile::Open(LPCTSTR lpszFileName)
     m_encoding = m_defaultencoding;
     m_offset = 0;
     m_nInBuffer = m_posInBuffer = 0;
+    if (m_detectResult) free(m_detectResult);
+    m_detectResult = NULL;
 
     try {
-        if (__super::GetLength() >= 2) {
+        if (bUseChardetlib) {
+            char buffer[4097];
+            UINT le = Read(buffer, 4096);
+            if (le <= 0) return Close(), false;
+            buffer[le] = '\0';
+            m_detectResult = charDet::charDetect(buffer, le);
+        }
+        if (__super::GetLength() >= 2 && m_detectResult == NULL) {
+            if (bUseChardetlib) Seek(0, begin);
             WORD w;
             if (sizeof(w) != Read(&w, sizeof(w))) {
                 return Close(), false;
@@ -76,8 +92,32 @@ bool CTextFile::Open(LPCTSTR lpszFileName)
                 }
             }
         }
-
-        if (m_encoding == DEFAULT_ENCODING) {
+        if (m_detectResult) {
+            if (m_detectResult->bom) {
+                if (!strcmp(m_detectResult->encoding, "UTF-16LE") || !strcmp(m_detectResult->encoding, "UTF-16BE")) m_offset = 2;
+                if (!strcmp(m_detectResult->encoding, "UTF-8") || !strcmp(m_detectResult->encoding, "UTF-7") || !strcmp(m_detectResult->encoding, "UTF-1")) m_offset = 3;
+                if (!strcmp(m_detectResult->encoding, "UTF-32LE") || !strcmp(m_detectResult->encoding, "UTF-32BE")) m_offset = 4;
+            }
+            Seek(0, begin);
+            // No need use iconv to convert.
+            if (!strcmp(m_detectResult->encoding, "ASCII")) {
+                free(m_detectResult);
+                m_detectResult = NULL;
+                m_encoding = ANSI;
+            } else if (!strcmp(m_detectResult->encoding, "UTF-8")) {
+                free(m_detectResult);
+                m_detectResult = NULL;
+                m_encoding = UTF8;
+            } else if (!strcmp(m_detectResult->encoding, "UTF-16LE")) {
+                free(m_detectResult);
+                m_detectResult = NULL;
+                m_encoding = LE16;
+            } else if (!strcmp(m_detectResult->encoding, "UTF-16BE")) {
+                free(m_detectResult);
+                m_detectResult = NULL;
+                m_encoding = BE16;
+            }
+        } else if (m_encoding == DEFAULT_ENCODING) {
             if (!ReopenAsText()) {
                 return false;
             }
@@ -141,7 +181,7 @@ CTextFile::enc CTextFile::GetEncoding()
 
 bool CTextFile::IsUnicode()
 {
-    return m_encoding == UTF8 || m_encoding == LE16 || m_encoding == BE16;
+    return m_encoding == UTF8 || m_encoding == LE16 || m_encoding == BE16 || (m_detectResult && m_detectResult->encoding && (!strcmp(m_detectResult->encoding, "UTF-7") || !strcmp(m_detectResult->encoding, "UTF-1") || !strcmp(m_detectResult->encoding, "UTF-32LE") || !strcmp(m_detectResult->encoding, "UTF-32BE")));
 }
 
 // CFile
@@ -162,6 +202,50 @@ ULONGLONG CTextFile::GetPosition() const
 ULONGLONG CTextFile::GetLength() const
 {
     return (__super::GetLength() - m_offset);
+}
+
+size_t CTextFile::GetLengthInOriginEncoding(CStringW in) {
+    if (!m_detectResult || !m_detectResult->encoding) return -1;
+    wchar_t* p = const_cast<wchar_t*> (in.GetString());
+    char* p2 = (char*)p;
+    size_t inlen = in.GetLength() * sizeof(wchar_t);
+    iconv_t cd;
+    cd = iconv_open(m_detectResult->encoding, "WCHAR_T");
+    if (cd == (iconv_t)-1) return -1;
+    char buf[TEXTFILE_BUFFER_SIZE];
+    char* buf2 = NULL;
+    size_t avail, re(0);
+    do {
+        avail = TEXTFILE_BUFFER_SIZE;
+        buf2 = buf;
+        iconv(cd, &p2, &inlen, &buf2, &avail);
+        re += (TEXTFILE_BUFFER_SIZE - avail);
+    } while (!avail);
+    iconv_close(cd);
+    return re;
+}
+
+CStringW CTextFile::GetBufferContent() {
+    if (!m_detectResult || !m_detectResult->encoding) return L"";
+    FillBuffer();
+    if (!m_nInBuffer) return L"";
+    iconv_t cd;
+    cd = iconv_open("WCHAR_T", m_detectResult->encoding);
+    if (cd == (iconv_t)-1) return L"";
+    CStringW re;
+    wchar_t buffer[TEXTFILE_BUFFER_SIZE];
+    char* in = m_buffer.m_p;
+    char* out = (char*)buffer;
+    size_t inlen(m_nInBuffer), outlen;
+    do {
+        outlen = (TEXTFILE_BUFFER_SIZE - 1) * sizeof(wchar_t);
+        out = (char*)buffer;
+        iconv(cd, &in, &inlen, &out, &outlen);
+        *((wchar_t *)out) = L'\0';
+        re.Append(CStringW(buffer));
+    } while (!outlen);
+    iconv_close(cd);
+    return re;
 }
 
 ULONGLONG CTextFile::Seek(LONGLONG lOff, UINT nFrom)
@@ -297,8 +381,13 @@ BOOL CTextFile::ReadString(CStringA& str)
     bool fEOF = true;
 
     str.Truncate(0);
-
-    if (m_encoding == DEFAULT_ENCODING) {
+    if (m_detectResult) {
+        CStringW temp;
+        BOOL re = ReadString(temp);
+        str.Append(CW2A(temp));
+        return re;
+    }
+    else if (m_encoding == DEFAULT_ENCODING) {
         CString s;
         fEOF = !__super::ReadString(s);
         str = TToA(s);
@@ -515,7 +604,26 @@ BOOL CTextFile::ReadString(CStringW& str)
 
     str.Truncate(0);
 
-    if (m_encoding == DEFAULT_ENCODING) {
+    if (m_detectResult) {
+        bool bLineEndFound = false;
+        fEOF = false;
+
+        do {
+            CStringW buf = GetBufferContent();
+            if (!buf.GetLength()) return FALSE;
+            CStringW temp;
+            int pos = buf.Find(L"\n");
+            if (pos > -1) {
+                temp = buf.Left(pos + 1);
+                bLineEndFound = true;
+            } else temp = buf;
+            m_posInBuffer += GetLengthInOriginEncoding(temp);
+            temp.Trim(L"\n");
+            temp.Trim(L"\r");
+            str.Append(temp);
+            if (!str.GetLength() && bLineEndFound) bLineEndFound = false;  // Ignore empty line
+        } while (!bLineEndFound);
+    } else if (m_encoding == DEFAULT_ENCODING) {
         CString s;
         fEOF = !__super::ReadString(s);
         str = TToW(s);

@@ -47,6 +47,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioTools.cpp" />
+    <ClCompile Include="chardet.cpp" />
     <ClCompile Include="deinterlace.cpp" />
     <ClCompile Include="DSMPropertyBag.cpp" />
     <ClCompile Include="DSUtil.cpp" />
@@ -73,6 +74,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayUtils.h" />
     <ClInclude Include="AudioTools.h" />
+    <ClInclude Include="chardet.h" />
     <ClInclude Include="DSMPropertyBag.h" />
     <ClInclude Include="DSUtil.h" />
     <ClInclude Include="FileVersionInfo.h" />

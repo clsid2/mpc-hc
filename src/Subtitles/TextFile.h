@@ -22,6 +22,7 @@
 #pragma once
 
 #include "StdioFile64.h"
+#include "../DSUtil/chardet.h"
 
 class CTextFile : protected CStdioFile64
 {
@@ -41,11 +42,14 @@ private:
     CAutoVectorPtr<char> m_buffer;
     CAutoVectorPtr<WCHAR> m_wbuffer;
     LONGLONG m_posInBuffer, m_nInBuffer;
+    charDet::DetectObj* m_detectResult = NULL;
+    bool bUseChardetlib;
 
 public:
     using CFile::Flush;
     using CFile::Close;
-    CTextFile(enc e = DEFAULT_ENCODING);
+    CTextFile(enc e = DEFAULT_ENCODING, bool use_chardetlib = true);
+    ~CTextFile();
 
     virtual bool Open(LPCTSTR lpszFileName);
     virtual bool Save(LPCTSTR lpszFileName, enc e /*= DEFAULT_ENCODING*/);
@@ -74,6 +78,8 @@ protected:
     virtual bool ReopenAsText();
     bool FillBuffer();
     ULONGLONG GetPositionFastBuffered() const;
+    size_t GetLengthInOriginEncoding(CStringW in);
+    CStringW GetBufferContent();
 };
 
 class CWebTextFile : public CTextFile
