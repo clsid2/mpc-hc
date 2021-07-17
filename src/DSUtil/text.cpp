@@ -23,6 +23,8 @@
 #include <atlutil.h>
 #include "text.h"
 #include <memory>
+#include <regex>
+#include <array>
 
 DWORD CharSetToCodePage(DWORD dwCharSet)
 {
@@ -354,5 +356,15 @@ int LastIndexOfCString(const CString& text, const CString& pattern) {
 
 bool IsNameSimilar(const CString& title, const CString& fileName) {
     if (fileName.Find(title.Left(25)) > -1) return true;
+    CT2CW t(title);
+    std::wstring tit(t);
+    const std::wregex reg(LR"([^[:print:]]|[/\\:\*\?"<>\|])", std::regex_constants::ECMAScript);
+    if (!std::regex_search(tit, reg)) return false;
+    const std::array<std::wstring, 3> arr = { L"_", L"-", L"." };
+    for (auto& r : arr) {
+        std::wstring temp = std::regex_replace(tit, reg, r);
+        CStringW newtitle(temp.c_str());
+        if (fileName.Find(newtitle.Left(25)) > -1) return true;
+    }
     return false;
 }
