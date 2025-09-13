@@ -3314,7 +3314,7 @@ msgstr "Faixa de Áudio: %s"
 
 msgctxt "IDS_AG_REOPEN"
 msgid "Reopen File"
-msgstr "Re-abrir Arquivo"
+msgstr "Reabrir Arquivo"
 
 msgctxt "IDS_MFMT_AVI"
 msgid "AVI"
