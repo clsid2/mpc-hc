@@ -1990,7 +1990,7 @@ msgstr "Velocidade: %.2lfx"
 
 msgctxt "IDS_OSD_THUMBS_SAVED"
 msgid "Thumbnails saved successfully"
-msgstr "Thumbnails salvos com sucesso"
+msgstr "Miniaturas salvas com sucesso"
 
 msgctxt "IDS_MENU_VIDEO_STREAM"
 msgid "Vide&o Track"
