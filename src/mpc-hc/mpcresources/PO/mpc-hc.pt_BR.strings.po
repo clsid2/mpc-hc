@@ -556,7 +556,7 @@ msgstr "Atraso das Legendas +"
 
 msgctxt "IDS_FILE_SAVE_THUMBNAILS"
 msgid "Save thumbnails"
-msgstr "Salvar thumbnails"
+msgstr "Salvar miniaturas"
 
 msgctxt "IDS_SUB_POS_DOWN"
 msgid "Move subtitle down"
