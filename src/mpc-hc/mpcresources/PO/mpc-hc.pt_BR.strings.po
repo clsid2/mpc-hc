@@ -2760,7 +2760,7 @@ msgstr "Sem memória, vá comprar mais algumas!"
 
 msgctxt "IDS_THUMBNAILS_INVALID_FORMAT"
 msgid "Invalid image format, cannot create thumbnails out of %d bpp dibs."
-msgstr "Formato de imagem inválido, não pôde criar thumbnails de %d bpp dibs."
+msgstr "Formato de imagem inválido, não pôde criar miniaturas de %d bpp dibs."
 
 msgctxt "IDS_THUMBNAILS_INFO_FILESIZE"
 msgid "File Size: %s (%s bytes)\\N"
