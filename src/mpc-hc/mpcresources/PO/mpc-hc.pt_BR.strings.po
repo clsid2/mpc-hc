@@ -2748,7 +2748,7 @@ msgstr "Não pôde criar o arquivo"
 
 msgctxt "IDS_THUMBNAILS_NO_DURATION"
 msgid "Cannot create thumbnails for files with no duration"
-msgstr "Não pôde criar thumbnails para arquivos com nenhuma duração"
+msgstr "Não pôde criar miniaturas para arquivos sem duração"
 
 msgctxt "IDS_THUMBNAILS_NO_FRAME_SIZE"
 msgid "Failed to get video frame size"
