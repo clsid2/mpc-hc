@@ -1505,7 +1505,7 @@ msgstr "下へ"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK3"
 msgid "Apply default monitor mode on fullscreen exit"
-msgstr "全画面表示解除時に既定のモニター モードを適用する"
+msgstr "全画面表示の解除時に既定のモニター モードを適用する"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_RESTORERESCHECK"
 msgid "Restore resolution on program exit"
