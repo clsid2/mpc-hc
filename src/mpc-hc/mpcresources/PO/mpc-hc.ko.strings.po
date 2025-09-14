@@ -1283,7 +1283,7 @@ msgstr "캡처 모드에서 인터레이스 제거 필터(블렌드) 삽입"
 
 msgctxt "IDS_PLAYLIST_TOGGLE_SHUFFLE"
 msgid "Toggle Playlist Shuffle"
-msgstr "재생 목록 무작위 전환"
+msgstr "재생 목록 섞기 전환"
 
 msgctxt "IDS_AUDIOSHIFT_ONOFF"
 msgid "Toggle Audio Delay"
