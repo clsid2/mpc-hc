@@ -4914,7 +4914,7 @@ msgstr "재생 목록 숨기기"
 
 msgctxt "IDS_AG_ENABLE_SHUFFLE"
 msgid "Enable Shuffle"
-msgstr "셔플(랜덤) 활성화"
+msgstr "섞기 활성화"
 
 msgctxt "IDS_AG_DISABLE_SHUFFLE"
 msgid "Disable Shuffle"
