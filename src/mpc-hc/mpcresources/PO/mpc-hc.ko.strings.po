@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hack茶ん, 2025\n"
 "Language-Team: Korean (https://app.transifex.com/mpchc/teams/106126/ko/)\n"
@@ -4651,7 +4651,7 @@ msgstr "상태 표시줄의 새로 고침 간격(밀리초)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr ""
+msgstr "볼륨 슬라이더에 백분율 값 표시(모던 테마에서)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4930,8 +4930,8 @@ msgstr "반복 재생 비활성화"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "섞기 : 켬"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "섞기 : 끔"
