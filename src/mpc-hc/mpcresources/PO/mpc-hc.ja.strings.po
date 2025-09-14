@@ -133,7 +133,7 @@ msgstr "同期オフセット"
 
 msgctxt "IDS_STATSBAR_SYNC_OFFSET_FORMAT"
 msgid "avg: %d ms, dev: %d ms"
-msgstr "平均: %d ms, 偏差: %d ms"
+msgstr "平均: %d ms, 標準偏差: %d ms"
 
 msgctxt "IDS_STATSBAR_JITTER"
 msgid "Jitter"
