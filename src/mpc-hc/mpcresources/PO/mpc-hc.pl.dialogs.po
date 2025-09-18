@@ -1815,7 +1815,7 @@ msgstr "Zamknij MPC-HC"
 
 msgctxt "IDD_PPAGEDPICALC_IDC_STATIC1"
 msgid "Groupbox"
-msgstr "Groupbox"
+msgstr "Grupa"
 
 msgctxt "IDD_PPAGEDPICALC_IDC_STATIC2"
 msgid "Autoplay"
