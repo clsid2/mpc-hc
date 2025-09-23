@@ -2324,7 +2324,7 @@ msgstr "Snížit hlasitost"
 
 msgctxt "IDS_AG_VOLUME_MUTE"
 msgid "Volume Mute"
-msgstr "Ztlumit"
+msgstr "Ztlumit hlasitost"
 
 msgctxt "IDS_MPLAYERC_63"
 msgid "DVD Title Menu"
