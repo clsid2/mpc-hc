@@ -685,7 +685,7 @@ msgstr "&Video stopa"
 
 msgctxt "POPUP"
 msgid "&Volume"
-msgstr "H&lasitost"
+msgstr "&Hlasitost"
 
 msgctxt "ID_VOLUME_UP"
 msgid "&Up"
