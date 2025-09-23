@@ -4740,7 +4740,8 @@ msgstr "Interval obnovení času stavového řádku (v milisekundách)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr "(v moderním motivu)"
+msgstr ""
+"Zobrazit procentuální hodnotu na posuvníku hlasitosti (v moderním motivu)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
