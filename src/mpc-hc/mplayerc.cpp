@@ -1696,12 +1696,11 @@ int WINAPI Mine_ScrollWindowEx(HWND hWnd, int dx, int dy, CONST RECT* prcScroll,
             if (pHeader) {
                 pList = dynamic_cast<CMPCThemePlayerListCtrl*>(pWnd->GetParent());
                 if (pList && !pList->PaintHooksActive()) {
-                    prcClip = &expandedClip; //empty--do not scroll header window itself
+                    return NULLREGION;
                 }
             }
         }
     }
-
     return Real_ScrollWindowEx(hWnd, dx, dy, prcScroll, prcClip, hrgnUpdate, prcUpdate, flags);
 }
 
