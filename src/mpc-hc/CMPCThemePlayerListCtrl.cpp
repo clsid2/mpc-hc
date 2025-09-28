@@ -211,6 +211,7 @@ void CMPCThemePlayerListCtrl::OnPaint() {
                 CPoint headerOffset = DetectHeaderOffset(this, &themedHdrCtrl);
                 headerOffset += headerRect.TopLeft(); // Add position offset
                 themedHdrCtrl.DrawAllItems(&m_listBuffer.memDC, headerOffset, headerDrawRect);
+                MapWindowPoints(&themedHdrCtrl, headerDrawRect);
                 themedHdrCtrl.ValidateRect(headerDrawRect);
             }
         }
