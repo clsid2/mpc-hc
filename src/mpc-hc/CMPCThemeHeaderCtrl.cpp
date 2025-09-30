@@ -16,6 +16,8 @@ CMPCThemeHeaderCtrl::CMPCThemeHeaderCtrl()
 CMPCThemeHeaderCtrl::~CMPCThemeHeaderCtrl()
 {
 }
+
+IMPLEMENT_DYNAMIC(CMPCThemeHeaderCtrl, CHeaderCtrl)
 BEGIN_MESSAGE_MAP(CMPCThemeHeaderCtrl, CHeaderCtrl)
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMPCThemeHeaderCtrl::OnNMCustomdraw)
     ON_NOTIFY(HDN_TRACKA, 0, &CMPCThemeHeaderCtrl::OnHdnTrack)
@@ -24,10 +26,10 @@ BEGIN_MESSAGE_MAP(CMPCThemeHeaderCtrl, CHeaderCtrl)
     ON_WM_MOUSELEAVE()
     ON_WM_ERASEBKGND()
     ON_WM_PAINT()
-    ON_NOTIFY(HDN_BEGINTRACKA, 0, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
-    ON_NOTIFY(HDN_BEGINTRACKW, 0, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
-    ON_NOTIFY(HDN_ENDTRACKA, 0, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
-    ON_NOTIFY(HDN_ENDTRACKW, 0, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
+    ON_NOTIFY_REFLECT_EX(HDN_BEGINTRACKA, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
+    ON_NOTIFY_REFLECT_EX(HDN_BEGINTRACKW, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
+    ON_NOTIFY_REFLECT_EX(HDN_ENDTRACKA, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
+    ON_NOTIFY_REFLECT_EX(HDN_ENDTRACKW, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
     ON_WM_WINDOWPOSCHANGING()
 END_MESSAGE_MAP()
 
@@ -150,7 +152,7 @@ void CMPCThemeHeaderCtrl::drawItem(int nItem, CRect rText, CDC* pDC)
         pDC->SetTextColor(textColor);
         pDC->SetBkColor(bgColor);
 
-        CMPCThemeUtil::DrawBufferedText(pDC, text, rText, textFormat);
+        pDC->DrawTextW(text, rText, textFormat);
         if (hditem.fmt & HDF_SORTUP) {
             drawSortArrow(pDC, CMPCTheme::HeaderCtrlSortArrowColor, rText, true);
         } else if (hditem.fmt & HDF_SORTDOWN) {
@@ -319,17 +321,19 @@ void CMPCThemeHeaderCtrl::DrawAllItems(CDC* pDC, CPoint offset, const CRect& cli
     pDC->SelectObject(pOldFont);
 }
 
-void CMPCThemeHeaderCtrl::OnHdnBegintrack(NMHDR* pNMHDR, LRESULT* pResult) {
+BOOL CMPCThemeHeaderCtrl::OnHdnBegintrack(NMHDR* pNMHDR, LRESULT* pResult) {
     LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
     colDrag = true;
     *pResult = 0;
+    return FALSE;
 }
 
 
-void CMPCThemeHeaderCtrl::OnHdnEndtrack(NMHDR* pNMHDR, LRESULT* pResult) {
+BOOL CMPCThemeHeaderCtrl::OnHdnEndtrack(NMHDR* pNMHDR, LRESULT* pResult) {
     LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
     colDrag = false;
     *pResult = 0;
+    return FALSE;
 }
 
 

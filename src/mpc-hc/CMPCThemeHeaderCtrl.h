@@ -6,6 +6,7 @@ class CMPCThemePlayerListCtrl;
 class CMPCThemeHeaderCtrl :
     public CHeaderCtrl
 {
+    DECLARE_DYNAMIC(CMPCThemeHeaderCtrl)
 protected:
     int hotItem;
     bool colDrag = false;
@@ -26,8 +27,8 @@ public:
     afx_msg void OnMouseLeave();
     afx_msg void OnPaint();
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnHdnBegintrack(NMHDR* pNMHDR, LRESULT* pResult);
-    afx_msg void OnHdnEndtrack(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg BOOL OnHdnBegintrack(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg BOOL OnHdnEndtrack(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnWindowPosChanging(WINDOWPOS* lpwndpos);
 };
 

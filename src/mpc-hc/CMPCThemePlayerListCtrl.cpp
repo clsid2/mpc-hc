@@ -5,6 +5,8 @@
 #include "mplayerc.h"
 #undef SubclassWindow
 
+CMPCThemePlayerListCtrl::ColumnCache CMPCThemePlayerListCtrl::s_columnCache;
+
 CMPCThemePlayerListCtrl::CMPCThemePlayerListCtrl() : CListCtrl()
 {
     themeGridLines = false;
@@ -158,6 +160,14 @@ void CMPCThemePlayerListCtrl::RedrawHeader(CRect headerRect) {
     if (themedHdrCtrl) {
         ScreenToClient(&headerRect);
         RedrawWindow(headerRect, 0, RDW_INVALIDATE);
+    }
+}
+
+inline CHeaderCtrl* CMPCThemePlayerListCtrl::GetHeaderFast() {
+    if (themedHdrCtrl) {
+        return &themedHdrCtrl;
+    } else {
+        return GetHeaderCtrl();
     }
 }
 
@@ -388,19 +398,15 @@ LRESULT CMPCThemePlayerListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM 
         }
     }
 
+    LRESULT result = __super::WindowProc(message, wParam, lParam);
+
     if (message == WM_NOTIFY) {
         LPNMHDR pNMHDR = (LPNMHDR)lParam;
 
-        // Check if it's a message from our header control
-        CHeaderCtrl* pHeader = GetHeaderCtrl();
+        CHeaderCtrl* pHeader = GetHeaderFast();
         if (pHeader && pNMHDR->hwndFrom == pHeader->GetSafeHwnd()) {
-            // Handle header notifications that might cause repainting
             switch (pNMHDR->code) {
-            case HDN_BEGINTRACK:
-            case HDN_ENDTRACK:
-                pHeader->SendMessageW(WM_NOTIFY, pNMHDR->code, (LPARAM)pNMHDR);
-                break;
-            case HDN_ITEMCHANGING:
+            case HDN_ITEMCHANGED:
                 if (nullptr != themedSBHelper) {
                     themedSBHelper->updateScrollInfo(SCROLL_REDRAW);
                 }
@@ -409,7 +415,7 @@ LRESULT CMPCThemePlayerListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM 
         }
     }
 
-    return __super::WindowProc(message, wParam, lParam);
+    return result;
 }
 
 void CMPCThemePlayerListCtrl::updateToolTip(CPoint point)
@@ -467,197 +473,187 @@ void CMPCThemePlayerListCtrl::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARA
     }
 }
 
-void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem)
+void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect rRow, DWORD dwStyle, DWORD extendedStyle, UINT itemState, bool isChecked, CImageList* smallImageList, UINT cbResID)
 {
-    if (IsItemVisible(nItem)) {
+    CRect rect, rIcon, rText, rTextBG, rectDC, rClient;
+    GetClientRect(rClient);
+    //GetItemRect(nItem, rRow, LVIR_BOUNDS);
+    GetSubItemRectFast(nItem, nSubItem, LVIR_LABEL, rText, rRow);
+    GetSubItemRectFast(nItem, nSubItem, LVIR_ICON, rIcon, rRow);
+    GetSubItemRectFast(nItem, nSubItem, LVIR_BOUNDS, rect, rRow);
 
-        CRect rect, rRow, rIcon, rText, rTextBG, rectDC, rClient;
-        GetClientRect(rClient);
-        GetItemRect(nItem, rRow, LVIR_BOUNDS);
-        GetSubItemRect(nItem, nSubItem, LVIR_LABEL, rText);
-        GetSubItemRect(nItem, nSubItem, LVIR_ICON, rIcon);
-        GetSubItemRect(nItem, nSubItem, LVIR_BOUNDS, rect);
-        DWORD dwStyle = GetStyle() & LVS_TYPEMASK;
+    if (0 == nSubItem) { //getsubitemrect gives whole row for 0/LVIR_BOUNDS.  but LVIR_LABEL is limited to text bounds.  MSDN undocumented behavior
+        rect.right = rText.right;
+    }
 
-        if (0 == nSubItem) { //getsubitemrect gives whole row for 0/LVIR_BOUNDS.  but LVIR_LABEL is limited to text bounds.  MSDN undocumented behavior
-            rect.right = rText.right;
+    CFont* curFont = nullptr;
+
+    //issubitemvisible
+    if (rClient.left <= rect.right && rClient.right >= rect.left && rClient.top <= rect.bottom && rClient.bottom >= rect.top) {
+        COLORREF textColor = CMPCTheme::TextFGColor;
+        COLORREF bgColor = CMPCTheme::ContentBGColor;
+        COLORREF selectedBGColor = CMPCTheme::ContentSelectedColor;
+
+        COLORREF oldTextColor = pDC->GetTextColor();
+        COLORREF oldBkColor = pDC->GetBkColor();
+
+        CString text = GetCachedText(nItem, nSubItem);
+        if (nullptr != customThemeInterface) { //subclasses can override colors here
+            bool overrideSelectedBG = false;
+            customThemeInterface->GetCustomTextColors(nItem, nSubItem, textColor, bgColor, overrideSelectedBG);
+            if (overrideSelectedBG) {
+                selectedBGColor = bgColor;
+            }
         }
 
-        CFont* curFont = pDC->GetCurrentFont();
+        pDC->SetTextColor(textColor);
+        pDC->SetBkColor(bgColor);
 
-        //issubitemvisible
-        if (rClient.left <= rect.right && rClient.right >= rect.left && rClient.top <= rect.bottom && rClient.bottom >= rect.top) {
-            COLORREF textColor = CMPCTheme::TextFGColor;
-            COLORREF bgColor = CMPCTheme::ContentBGColor;
-            COLORREF selectedBGColor = CMPCTheme::ContentSelectedColor;
+        rectDC = rRow;
 
-            COLORREF oldTextColor = pDC->GetTextColor();
-            COLORREF oldBkColor = pDC->GetBkColor();
+        if (!IsWindowEnabled() && 0 == nSubItem) { //no gridlines, bg for full row
+            pDC->FillSolidRect(rRow, CMPCTheme::ListCtrlDisabledBGColor);
+        } else {
+            pDC->FillSolidRect(rect, CMPCTheme::ContentBGColor); //no flicker because we have a memory dc
+        }
 
-            CString text = GetItemText(nItem, nSubItem);
-            if (nullptr != customThemeInterface) { //subclasses can override colors here
-                bool overrideSelectedBG = false;
-                customThemeInterface->GetCustomTextColors(nItem, nSubItem, textColor, bgColor, overrideSelectedBG);
-                if (overrideSelectedBG) {
-                    selectedBGColor = bgColor;
-                }
-            }
+        rTextBG = rText;
+        int align = DT_LEFT;
+        if (nSubItem < s_columnCache.columns.size()) {
+            align = s_columnCache.columns[nSubItem].align;
+        }
 
-            pDC->SetTextColor(textColor);
-            pDC->SetBkColor(bgColor);
-
-            rectDC = rRow;
-
-            if (!IsWindowEnabled() && 0 == nSubItem) { //no gridlines, bg for full row
-                pDC->FillSolidRect(rRow, CMPCTheme::ListCtrlDisabledBGColor);
+        UINT textFormat = DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+        if (align == HDF_CENTER) {
+            textFormat |= DT_CENTER;
+        } else if (align == HDF_LEFT) {
+            textFormat |= DT_LEFT;
+            if (nSubItem == 0) {//less indent for first column
+                rText.left += 2;
             } else {
-                pDC->FillSolidRect(rect, CMPCTheme::ContentBGColor); //no flicker because we have a memory dc
+                rText.left += 6;
             }
+        } else {
+            textFormat |= DT_RIGHT;
+            rText.right -= 6;
+        }
 
-            rTextBG = rText;
-            CHeaderCtrl* hdrCtrl = GetHeaderCtrl();
-            int align = DT_LEFT;
-            if (nullptr != hdrCtrl) {
-                HDITEM hditem = { 0 };
-                hditem.mask = HDI_FORMAT;
-                hdrCtrl->GetItem(nSubItem, &hditem);
-                align = hditem.fmt & HDF_JUSTIFYMASK;
-            }
-            UINT textFormat = DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
-            if (align == HDF_CENTER) {
-                textFormat |= DT_CENTER;
-            } else if (align == HDF_LEFT) {
-                textFormat |= DT_LEFT;
-                if (nSubItem == 0) {//less indent for first column
-                    rText.left += 2;
+        int contentLeft = rText.left;
+        if (rIcon.Width() > 0) {
+            if (nSubItem == 0) {
+                int imageIndex = GetCachedImageIndex(nItem);
+
+                contentLeft = rIcon.left;
+                if (hasCBImages) { //draw manually to match theme
+                    rIcon.DeflateRect(0, 0, 1, 0);
+                    if (rIcon.Height() > rIcon.Width()) {
+                        rIcon.DeflateRect(0, (rIcon.Height() - rIcon.Width()) / 2); //as tall as wide
+                    }
+
+                    CMPCThemeUtil::drawCheckBox(GetParent(), imageIndex, false, false, rIcon, pDC);
                 } else {
-                    rText.left += 6;
+                    if (dwStyle == LVS_ICON) {
+                    } else if (smallImageList) {
+                        int cx, cy;
+                        ImageList_GetIconSize(smallImageList->m_hImageList, &cx, &cy);
+                        rIcon.top += (rIcon.Height() - cy) / 2;
+                        smallImageList->Draw(pDC, imageIndex, rIcon.TopLeft(), ILD_TRANSPARENT);
+                    }
                 }
-            } else {
-                textFormat |= DT_RIGHT;
-                rText.right -= 6;
-            }
-
-            bool isChecked = false;
-            int contentLeft = rText.left;
-            if (rIcon.Width() > 0) {
-                LVITEM lvi = { 0 };
-                lvi.iItem = nItem;
-                lvi.iSubItem = 0;
-                lvi.mask = LVIF_IMAGE;
-                GetItem(&lvi);
-
-                if (nSubItem == 0) {
-                    contentLeft = rIcon.left;
-                    if (hasCBImages) { //draw manually to match theme
-                        rIcon.DeflateRect(0, 0, 1, 0);
-                        if (rIcon.Height() > rIcon.Width()) {
-                            rIcon.DeflateRect(0, (rIcon.Height() - rIcon.Width()) / 2); //as tall as wide
-                        }
-
-                        CMPCThemeUtil::drawCheckBox(GetParent(), lvi.iImage, false, false, rIcon, pDC);
-                    } else {
-                        if (dwStyle == LVS_ICON) {
-                        } else if (dwStyle == LVS_SMALLICON || dwStyle == LVS_LIST || dwStyle == LVS_REPORT) {
-                            CImageList* ilist = GetImageList(LVSIL_SMALL);
-                            int cx, cy;
-                            ImageList_GetIconSize(ilist->m_hImageList, &cx, &cy);
-                            rIcon.top += (rIcon.Height() - cy) / 2;
-                            ilist->Draw(pDC, lvi.iImage, rIcon.TopLeft(), ILD_TRANSPARENT);
-                        }
-                    }
-                    if (align == HDF_LEFT) {
-                        rText.left += 2;    //more ident after image
-                    }
+                if (align == HDF_LEFT) {
+                    rText.left += 2;    //more ident after image
                 }
             }
-            if (0 != (GetExtendedStyle() & LVS_EX_CHECKBOXES) && INDEXTOSTATEIMAGEMASK(0) != GetItemState(nItem, LVIS_STATEIMAGEMASK)) {
-                isChecked = (TRUE == GetCheck(nItem));
-                if (nSubItem == 0) {
-                    int cbSize = GetSystemMetrics(SM_CXMENUCHECK);
-                    int cbYMargin = (rect.Height() - cbSize - 1) / 2;
-                    int cbXMargin = (contentLeft - rect.left - cbSize) / 2;
-                    CRect rcb = { rect.left + cbXMargin, rect.top + cbYMargin, rect.left + cbXMargin + cbSize, rect.top + cbYMargin + cbSize };
-                    CMPCThemeUtil::drawCheckBox(GetParent(), isChecked, false, true, rcb, pDC);
+        }
+
+        if ((extendedStyle & LVS_EX_CHECKBOXES) && INDEXTOSTATEIMAGEMASK(0) != (itemState & LVIS_STATEIMAGEMASK)) {
+            if (nSubItem == 0) {
+                int cbSize = GetSystemMetrics(SM_CXMENUCHECK);
+                int cbYMargin = (rect.Height() - cbSize - 1) / 2;
+                int cbXMargin = (contentLeft - rect.left - cbSize) / 2;
+                CRect rcb = { rect.left + cbXMargin, rect.top + cbYMargin, rect.left + cbXMargin + cbSize, rect.top + cbYMargin + cbSize };
+                CMPCThemeUtil::drawCheckBox(GetParent(), isChecked, false, true, rcb, pDC, false, cbResID);
+            }
+        }
+
+        if (IsWindowEnabled()) {
+            bool selected = false;
+            if ((itemState & LVIS_SELECTED) == LVIS_SELECTED && (nSubItem == 0 || fullRowSelect) && (GetStyle() & LVS_SHOWSELALWAYS || GetFocus() == this)) {
+                bgColor = selectedBGColor;
+                if (LVS_REPORT != dwStyle) { //in list mode we don't fill the "whole" column
+                    CRect tmp = rText;
+                    pDC->DrawTextW(text, tmp, textFormat | DT_CALCRECT); //end of string
+                    rTextBG.right = tmp.right + (rText.left - rTextBG.left); //end of string plus same indent from the left side
+                }
+                selected = true;
+            } else if (hasCheckedColors) {
+                if (isChecked && checkedBGClr != -1) {
+                    bgColor = checkedBGClr;
+                }
+                if (isChecked && checkedTextClr != -1) {
+                    pDC->SetTextColor(checkedTextClr);
+                }
+                if (!isChecked && uncheckedTextClr != -1) {
+                    pDC->SetTextColor(uncheckedTextClr);
                 }
             }
+            pDC->FillSolidRect(rTextBG, bgColor);
 
-            if (IsWindowEnabled()) {
-                bool selected = false;
-                if (GetItemState(nItem, LVIS_SELECTED) == LVIS_SELECTED && (nSubItem == 0 || fullRowSelect) && (GetStyle() & LVS_SHOWSELALWAYS || GetFocus() == this)) {
-                    bgColor = selectedBGColor;
-                    if (LVS_REPORT != dwStyle) { //in list mode we don't fill the "whole" column
-                        CRect tmp = rText;
-                        pDC->DrawTextW(text, tmp, textFormat | DT_CALCRECT); //end of string
-                        rTextBG.right = tmp.right + (rText.left - rTextBG.left); //end of string plus same indent from the left side
-                    }
-                    selected = true;
-                } else if (hasCheckedColors) {
-                    if (isChecked && checkedBGClr != -1) {
-                        bgColor = checkedBGClr;
-                    }
-                    if (isChecked && checkedTextClr != -1) {
-                        pDC->SetTextColor(checkedTextClr);
-                    }
-                    if (!isChecked && uncheckedTextClr != -1) {
-                        pDC->SetTextColor(uncheckedTextClr);
-                    }
+            if (themeGridLines || (nullptr != customThemeInterface && customThemeInterface->UseCustomGrid())) {
+                CRect rGrid = rect;
+                rGrid.bottom -= 1;
+                CPen gridPenV, gridPenH, *oldPen;
+                if (nullptr != customThemeInterface && customThemeInterface->UseCustomGrid()) {
+                    COLORREF horzGridColor, vertGridColor;
+                    customThemeInterface->GetCustomGridColors(nItem, horzGridColor, vertGridColor);
+                    gridPenV.CreatePen(PS_SOLID, 1, vertGridColor);
+                    gridPenH.CreatePen(PS_SOLID, 1, horzGridColor);
+                } else {
+                    gridPenV.CreatePen(PS_SOLID, 1, CMPCTheme::ListCtrlGridColor);
+                    gridPenH.CreatePen(PS_SOLID, 1, CMPCTheme::ListCtrlGridColor);
                 }
-                pDC->FillSolidRect(rTextBG, bgColor);
 
-                if (themeGridLines || (nullptr != customThemeInterface && customThemeInterface->UseCustomGrid())) {
-                    CRect rGrid = rect;
-                    rGrid.bottom -= 1;
-                    CPen gridPenV, gridPenH, *oldPen;
-                    if (nullptr != customThemeInterface && customThemeInterface->UseCustomGrid()) {
-                        COLORREF horzGridColor, vertGridColor;
-                        customThemeInterface->GetCustomGridColors(nItem, horzGridColor, vertGridColor);
-                        gridPenV.CreatePen(PS_SOLID, 1, vertGridColor);
-                        gridPenH.CreatePen(PS_SOLID, 1, horzGridColor);
-                    } else {
-                        gridPenV.CreatePen(PS_SOLID, 1, CMPCTheme::ListCtrlGridColor);
-                        gridPenH.CreatePen(PS_SOLID, 1, CMPCTheme::ListCtrlGridColor);
-                    }
-
-                    oldPen = pDC->SelectObject(&gridPenV);
-                    if (nSubItem != 0) {
-                        pDC->MoveTo(rGrid.TopLeft());
-                        pDC->LineTo(rGrid.left, rGrid.bottom);
-                    } else {
-                        pDC->MoveTo(rGrid.left, rGrid.bottom);
-                    }
-
-                    pDC->SelectObject(&gridPenH);
-                    pDC->LineTo(rGrid.BottomRight());
-
-                    pDC->SelectObject(&gridPenV);
-                    pDC->LineTo(rGrid.right, rGrid.top);
-
-                    pDC->SelectObject(oldPen);
-                    gridPenV.DeleteObject();
-                    gridPenH.DeleteObject();
-                } else if (selected) {
-                    CBrush borderBG;
-                    borderBG.CreateSolidBrush(CMPCTheme::ListCtrlDisabledBGColor);
-                    pDC->FrameRect(rTextBG, &borderBG);
-                    borderBG.DeleteObject();
+                oldPen = pDC->SelectObject(&gridPenV);
+                if (nSubItem != 0) {
+                    pDC->MoveTo(rGrid.TopLeft());
+                    pDC->LineTo(rGrid.left, rGrid.bottom);
+                } else {
+                    pDC->MoveTo(rGrid.left, rGrid.bottom);
                 }
+
+                pDC->SelectObject(&gridPenH);
+                pDC->LineTo(rGrid.BottomRight());
+
+                pDC->SelectObject(&gridPenV);
+                pDC->LineTo(rGrid.right, rGrid.top);
+
+                pDC->SelectObject(oldPen);
+                gridPenV.DeleteObject();
+                gridPenH.DeleteObject();
+            } else if (selected) {
+                CBrush borderBG;
+                borderBG.CreateSolidBrush(CMPCTheme::ListCtrlDisabledBGColor);
+                pDC->FrameRect(rTextBG, &borderBG);
+                borderBG.DeleteObject();
+            }
+        }
+
+        if (getFlaggedItem(nItem)) { //could be a setting, but flagged items are bold for now
+            if (!listMPCThemeFontBold.m_hObject) {
+                listMPCThemeFont = GetFont();
+                LOGFONT lf;
+                listMPCThemeFont->GetLogFont(&lf);
+                lf.lfWeight = FW_BOLD;
+                listMPCThemeFontBold.CreateFontIndirect(&lf);
             }
 
-            if (getFlaggedItem(nItem)) { //could be a setting, but flagged items are bold for now
-                if (!listMPCThemeFontBold.m_hObject) {
-                    listMPCThemeFont = GetFont();
-                    LOGFONT lf;
-                    listMPCThemeFont->GetLogFont(&lf);
-                    lf.lfWeight = FW_BOLD;
-                    listMPCThemeFontBold.CreateFontIndirect(&lf);
-                }
-
-                pDC->SelectObject(listMPCThemeFontBold);
-            }
-            pDC->DrawTextW(text, rText, textFormat);
-            pDC->SetTextColor(oldTextColor);
-            pDC->SetBkColor(oldBkColor);
+            curFont = pDC->GetCurrentFont();
+            pDC->SelectObject(listMPCThemeFontBold);
+        }
+        pDC->DrawTextW(text, rText, textFormat);
+        pDC->SetTextColor(oldTextColor);
+        pDC->SetBkColor(oldBkColor);
+        if (curFont) {
             pDC->SelectObject(curFont);
         }
     }
@@ -891,34 +887,59 @@ void CMPCThemePlayerListCtrl::DrawAllItems(CDC* pDC, const CRect& drawRect) {
     if (itemCount == 0) return;
 
     DWORD style = GetStyle() & LVS_TYPEMASK;
+    DWORD extendedStyle = GetExtendedStyle();
+    UINT cbResID = getResourceByDPI(GetParent(), pDC, CMPCTheme::ThemeCheckBoxes);
+
+    CImageList* smallImageList = nullptr;
+    if (style == LVS_SMALLICON || style == LVS_LIST || style == LVS_REPORT && !smallImageList) {
+        smallImageList = GetImageList(LVSIL_SMALL);
+    }
 
     if (style == LVS_REPORT) {
+        UpdateColumnCache(style);
+
         int topIndex = GetTopIndex();
-        int itemCount = GetItemCount();
         int visibleCount = GetCountPerPage();
 
-        // Calculate item range to draw (with some buffer)
         int startItem = std::max(0, topIndex - 1);
         int endItem = std::min(itemCount - 1, topIndex + visibleCount + 1);
 
-        // Get header control to determine number of columns
-        CHeaderCtrl* pHeader = GetHeaderCtrl();
+        CHeaderCtrl* pHeader = GetHeaderFast();
         int colCount = pHeader ? pHeader->GetItemCount() : 1;
 
-        // Loop through all visible items
+        std::vector<int> visibleColumns;
+
+        if (pHeader && colCount > 0 && itemCount > 0) {
+            visibleColumns.reserve(colCount);
+
+            for (int i = 0; i < colCount; i++) {
+                CRect subItemRect;
+                GetSubItemRect(startItem, i, LVIR_BOUNDS, subItemRect);
+
+                if (subItemRect.right > drawRect.left && subItemRect.left < drawRect.right) {
+                    visibleColumns.push_back(i);
+                }
+            }
+        } else {
+            visibleColumns.push_back(0);
+        }
+
         for (int nItem = startItem; nItem <= endItem; nItem++) {
             CRect itemRect;
             GetItemRect(nItem, &itemRect, LVIR_BOUNDS);
 
-            // Check if this item intersects with the draw rectangle
             CRect intersectRect;
             if (!intersectRect.IntersectRect(&itemRect, &drawRect))
                 continue;
 
-            // Loop through all subitems (columns) for this item
-            for (int nSubItem = 0; nSubItem < colCount; nSubItem++) {
-                // Call the custom draw function for each item/subitem combination
-                drawItem(pDC, nItem, nSubItem);
+            UINT itemState = GetItemState(nItem, LVIS_SELECTED | LVIS_STATEIMAGEMASK);
+            bool isChecked = FALSE;
+            if ((extendedStyle & LVS_EX_CHECKBOXES) && INDEXTOSTATEIMAGEMASK(0) != (itemState & LVIS_STATEIMAGEMASK)) {
+                isChecked = (TRUE == GetCheck(nItem));
+            }
+
+            for (int nSubItem : visibleColumns) {
+                drawItem(pDC, nItem, nSubItem, itemRect, style, extendedStyle, itemState, isChecked, smallImageList, cbResID);
             }
         }
     } else {
@@ -926,12 +947,135 @@ void CMPCThemePlayerListCtrl::DrawAllItems(CDC* pDC, const CRect& drawRect) {
             CRect itemRect;
             GetItemRect(nItem, &itemRect, LVIR_BOUNDS);
 
-            // Check if this item intersects with the draw rectangle
             CRect intersectRect;
             if (intersectRect.IntersectRect(&itemRect, &drawRect)) {
-                // Non-report views only have one "column" (no subitems)
-                drawItem(pDC, nItem, 0);
+                UINT itemState = GetItemState(nItem, LVIS_SELECTED | LVIS_STATEIMAGEMASK);
+                bool isChecked = FALSE;
+                if ((extendedStyle & LVS_EX_CHECKBOXES) && INDEXTOSTATEIMAGEMASK(0) != (itemState & LVIS_STATEIMAGEMASK)) {
+                    isChecked = (TRUE == GetCheck(nItem));
+                }
+
+                drawItem(pDC, nItem, 0, itemRect, style, extendedStyle, itemState, isChecked, smallImageList, cbResID);
             }
         }
     }
+}
+
+void CMPCThemePlayerListCtrl::UpdateColumnCache(DWORD style)
+{
+    s_columnCache.columns.clear();
+    s_columnCache.hasIcons = false;
+    
+    ASSERT(style == LVS_REPORT);
+    
+    CHeaderCtrl* pHeader = GetHeaderFast();
+    if (!pHeader) return;
+    
+    int colCount = pHeader->GetItemCount();
+    if (colCount == 0) return;
+    
+    int itemCount = GetItemCount();
+    if (itemCount == 0) return;
+    
+    CImageList* pImageList = GetImageList(LVSIL_SMALL);
+    s_columnCache.hasIcons = (pImageList != nullptr && pImageList->GetImageCount() > 0);
+    
+    s_columnCache.columns.reserve(colCount);
+    
+    int topIndex = GetTopIndex();
+    for (int i = 0; i < colCount; i++) {
+        CRect boundsRect, labelRect, iconRect;
+        GetSubItemRect(topIndex, i, LVIR_BOUNDS, boundsRect);
+        GetSubItemRect(topIndex, i, LVIR_LABEL, labelRect);
+        GetSubItemRect(topIndex, i, LVIR_ICON, iconRect);
+        
+        HDITEM hditem = {0};
+        hditem.mask = HDI_FORMAT;
+        pHeader->GetItem(i, &hditem);
+        int align = hditem.fmt & HDF_JUSTIFYMASK;
+        
+        ColumnCache::ColumnInfo info;
+        info.left = boundsRect.left;
+        info.width = boundsRect.Width();
+        info.labelLeft = labelRect.left;
+        info.labelRight = labelRect.right;
+        info.iconLeft = iconRect.left;
+        info.iconRight = iconRect.right;
+        info.align = align;
+        s_columnCache.columns.push_back(info);
+    }
+}
+
+bool CMPCThemePlayerListCtrl::GetSubItemRectFast(int nItem, int nSubItem, int nArea, CRect& rect, const CRect& rRow) {
+    DWORD dwStyle = GetStyle() & LVS_TYPEMASK;
+
+    if (dwStyle == LVS_REPORT && !s_columnCache.columns.empty() && nSubItem < (int)s_columnCache.columns.size()) {
+
+        const auto& col = s_columnCache.columns[nSubItem];
+
+        if (nSubItem == 0 && nArea == LVIR_BOUNDS) {
+            rect = rRow;
+        } else if (nArea == LVIR_LABEL) {
+            rect.left = col.labelLeft;
+            rect.right = col.labelRight;
+            rect.top = rRow.top;
+            rect.bottom = rRow.bottom;
+        } else if (nArea == LVIR_ICON) {
+            rect.left = col.iconLeft;
+            rect.right = col.iconRight;
+            rect.top = rRow.top;
+            rect.bottom = rRow.bottom;
+        } else {
+            rect.left = col.left;
+            rect.right = col.left + col.width;
+            rect.top = rRow.top;
+            rect.bottom = rRow.bottom;
+        }
+
+        return TRUE;
+    }
+
+    return GetSubItemRect(nItem, nSubItem, nArea, rect);
+}
+
+const CString& CMPCThemePlayerListCtrl::GetCachedText(int nItem, int nSubItem) {
+    DWORD currentTime = GetTickCount();
+
+    if (currentTime - m_cacheTimestamp >= CACHE_TIMEOUT_MS) {
+        m_textCache.clear();
+        m_cacheTimestamp = currentTime;
+    }
+
+    auto it = m_textCache.find(nItem);
+    if (it != m_textCache.end() && nSubItem < (int)it->second.columns.size()) {
+        return it->second.columns[nSubItem];
+    }
+
+    int colCount = GetHeaderCtrl() ? GetHeaderCtrl()->GetItemCount() : 1;
+    TextCacheEntry& entry = m_textCache[nItem];
+    entry.columns.resize(colCount);
+
+    LVITEM lvi = { 0 };
+    lvi.iItem = nItem;
+    lvi.iSubItem = 0;
+    lvi.mask = LVIF_IMAGE;
+    GetItem(&lvi);
+    entry.imageIndex = lvi.iImage;
+
+    for (int i = 0; i < colCount; i++) {
+        entry.columns[i] = GetItemText(nItem, i);
+    }
+
+    return entry.columns[nSubItem];
+}
+
+int CMPCThemePlayerListCtrl::GetCachedImageIndex(int nItem) {
+    auto it = m_textCache.find(nItem);
+    if (it != m_textCache.end()) {
+        return it->second.imageIndex;
+    }
+
+    // Force cache population by getting any text column
+    GetCachedText(nItem, 0);
+    return m_textCache[nItem].imageIndex;
 }
