@@ -2406,7 +2406,7 @@ msgstr "DVD: Opuść menu"
 
 msgctxt "IDS_AG_BOSS_KEY"
 msgid "Boss key"
-msgstr "Przycisk prezesa (ukrywa odtwarzacz)"
+msgstr "Przycisk prezesa - ukrywa odtwarzacz"
 
 msgctxt "IDS_MPLAYERC_77"
 msgid "Player Menu"
