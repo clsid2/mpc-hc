@@ -52,7 +52,7 @@ Menu > Play > After Playback (for current file only)
 * A-B repeat<br/>
 You can loop a segment of a video. Press \[ and \] to set start and stop markers.
 * You can rotate/flip/mirror/stretch/zoom the video<br/>
-Menu > View > Pan&Scan<br/>
+Menu > View > PnS Frame Adjust<br/>
 This is also easily done with hotkeys (see below).
 * There are lots of keyboard hotkeys and mouse actions to control the player. They can be customized as well.<br/>
 Options > Player > Keys<br/>
