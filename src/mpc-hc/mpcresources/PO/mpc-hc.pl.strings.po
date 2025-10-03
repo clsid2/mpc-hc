@@ -1824,7 +1824,7 @@ msgid ""
 "\n"
 "Do you really want to enable this option?"
 msgstr ""
-"Ta opcja może zostać użyta to zdalnego podglądu plików multimedialnych. Używaj jej tylko w prywatnej oraz zabezpieczonej sieci.\n"
+"Ta opcja może zostać użyta do zdalnego podglądu plików multimedialnych. Używaj jej tylko w prywatnej oraz zabezpieczonej sieci.\n"
 "\n"
 "Czy na pewno chcesz włączyć tę opcję?"
 
