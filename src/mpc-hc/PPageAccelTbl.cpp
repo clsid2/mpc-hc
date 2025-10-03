@@ -929,11 +929,12 @@ BOOL CPPageAccelTbl::OnInitDialog()
 
     m_list.CreateEx(
         WS_EX_CLIENTEDGE,
-        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP | LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS,
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |  WS_TABSTOP | LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS,
         r, this, IDC_LIST1);
 
     //m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES );
     m_list.setAdditionalStyles(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
     m_list.setColorInterface(this);
 
     //this list was created dynamically but lives in a dialog.  if we don't inherit the parent font,
@@ -1127,17 +1128,20 @@ void CPPageAccelTbl::GetCustomGridColors(int nItem, COLORREF& horzGridColor, COL
 }
 
 void CPPageAccelTbl::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult) {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+    //this custom draw is used only in classic mode
     *pResult = CDRF_DODEFAULT;
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYSUBITEMDRAW;
-    } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        bool ignore;
-        GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
-        *pResult = CDRF_DODEFAULT;
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYSUBITEMDRAW;
+        } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            bool ignore;
+            GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
+            *pResult = CDRF_DODEFAULT;
+        }
     }
 }
 

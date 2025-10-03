@@ -1197,6 +1197,9 @@
     <ClInclude Include="PPageToolBarLayout.h">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryDCBuffer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ani.avi">

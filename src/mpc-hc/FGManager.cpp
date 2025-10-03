@@ -1789,9 +1789,11 @@ void CFGManagerCustom::InsertLAVSplitterSource(bool IsPreview)
         pFGLAVSplitterSource->m_extensions.AddTail(_T(".h265"));
         pFGLAVSplitterSource->m_extensions.AddTail(_T(".av1"));
         pFGLAVSplitterSource->m_extensions.AddTail(_T(".m4v"));
+        pFGLAVSplitterSource->m_extensions.AddTail(_T(".apv"));
         pFGLAVSplitterSource->AddEnabledFormat("av1");
         pFGLAVSplitterSource->AddEnabledFormat("m4v");
         pFGLAVSplitterSource->AddEnabledFormat("rawvideo");
+        pFGLAVSplitterSource->AddEnabledFormat("apv");
         // audio
         pFGLAVSplitterSource->m_extensions.AddTail(_T(".amr"));
         pFGLAVSplitterSource->m_extensions.AddTail(_T(".mpc"));
@@ -2287,6 +2289,7 @@ void CFGManagerCustom::InsertLAVVideo(bool IsPreview)
 #if INTERNAL_DECODER_OTHERVIDEO
     pFGF = IsPreview || tra[TRA_OTHERVIDEO] ? pFGLAVVideo : pFGLAVVideoLM;
     pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_CFHD);
+    pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_APV1);
 #endif
 
     // Add LAV Video if needed

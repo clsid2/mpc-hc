@@ -1,6 +1,6 @@
 #pragma once
 
-class CMPCThemeButton : public CMFCButton
+class CMPCThemeButton : public CButton
 {
 protected:
     void drawButton(HDC hdc, CRect rect, UINT state);
@@ -9,8 +9,6 @@ protected:
 public:
     CMPCThemeButton();
     virtual ~CMPCThemeButton();
-    void PreSubclassWindow();
-    BOOL PreCreateWindow(CREATESTRUCT& cs);
     LRESULT setShieldIcon(WPARAM wParam, LPARAM lParam);
     static void drawButtonBase(CDC* pDC, CRect rect, CString strText, bool selected, bool highLighted, bool focused, bool disabled, bool thin, bool shield, HWND accelWindow=nullptr);
     DECLARE_DYNAMIC(CMPCThemeButton)
@@ -19,4 +17,3 @@ public:
     afx_msg void OnSetFont(CFont* pFont, BOOL bRedraw);
     afx_msg HFONT OnGetFont();
 };
-

@@ -71,6 +71,8 @@ public:
     CFileAssoc& operator=(const CFileAssoc&) = delete;
     ~CFileAssoc();
 
+    void LoadAAR();
+
     std::shared_ptr<const IconLib> GetIconLib() const;
 
     void SetNoRecentDocs(bool bNoRecentDocs, bool bUpdateAssocs = false);
@@ -92,7 +94,7 @@ public:
     bool IsAutoPlayRegistered(autoplay_t ap) const;
 
     bool GetAssociatedExtensions(const CMediaFormats& mf, CAtlList<CString>& exts) const;
-    bool GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts) const;
+    bool GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts);
 
     bool ReAssocIcons(const CAtlList<CString>& exts);
 

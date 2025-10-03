@@ -666,7 +666,7 @@ public:
     FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     bool ResetDevice();
     bool DisplayChange();
-    void CloseMediaBeforeOpen();
+    bool CloseMediaBeforeOpen();
     void CloseMedia(bool bNextIsQueued = false, bool bPendingFileDelete = false);
     void StartTunerScan(CAutoPtr<TunerScanData> pTSD);
     void StopTunerScan();
@@ -910,6 +910,7 @@ public:
     afx_msg void OnEndSession(BOOL bEnding);
 
     BOOL OnMenu(CMenu* pMenu);
+    CMPCThemeMenu* GetShortMenu();
     afx_msg void OnMenuPlayerShort();
     afx_msg void OnMenuPlayerLong();
     afx_msg void OnMenuFilters();
@@ -922,7 +923,8 @@ public:
 
     afx_msg void OnBossKey();
 
-    afx_msg void OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult);
+    void ToolbarContextMenu(int iItem, int nIndex, CRect buttonRect);
+
     afx_msg void OnUpdateAudiosButton(CCmdUI* pCmdUI);
     afx_msg void OnUpdateSubtitlesButton(CCmdUI* pCmdUI);
 

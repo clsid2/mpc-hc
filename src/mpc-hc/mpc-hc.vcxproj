@@ -405,6 +405,7 @@
     <ClInclude Include="FullscreenWnd.h" />
     <ClInclude Include="GoToDlg.h" />
     <ClInclude Include="GraphThread.h" />
+    <ClInclude Include="MemoryDCBuffer.h" />
     <ClInclude Include="MediaTransControls.h" />
     <ClInclude Include="Ifo.h" />
     <ClInclude Include="IGraphBuilder2.h" />

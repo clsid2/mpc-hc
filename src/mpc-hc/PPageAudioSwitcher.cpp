@@ -25,7 +25,6 @@
 #include "MainFrm.h"
 #include "PPageAudioSwitcher.h"
 #include "CMPCTheme.h"
-#include "CMPCThemeHeaderCtrl.h"
 
 
 // CPPageAudioSwitcher dialog

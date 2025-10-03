@@ -303,6 +303,7 @@ BOOL CPPageFullscreen::OnInitDialog()
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() /*| LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
                             | LVS_EX_GRIDLINES */ | LVS_EX_BORDERSELECT | LVS_EX_ONECLICKACTIVATE | LVS_EX_CHECKBOXES | LVS_EX_FLATSB);
     m_list.setAdditionalStyles(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
     m_list.InsertColumn(COL_N, ResStr(IDS_PPAGE_FS_CLN_ON_OFF), LVCFMT_LEFT, 60);
     m_list.InsertColumn(COL_FRAMERATE_START, ResStr(IDS_PPAGE_FS_CLN_FROM_FPS), LVCFMT_RIGHT, 60);
     m_list.InsertColumn(COL_FRAMERATE_STOP, ResStr(IDS_PPAGE_FS_CLN_TO_FPS), LVCFMT_RIGHT, 60);
@@ -709,22 +710,26 @@ void CPPageFullscreen::OnListEndEdit(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPPageFullscreen::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
     *pResult = CDRF_DODEFAULT;
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYSUBITEMDRAW;
-    } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        COLORREF crText;
-        if (m_list.GetCheck((int)pLVCD->nmcd.dwItemSpec)) {
-            crText = RGB(0, 0, 0);
-        } else {
-            crText = RGB(128, 128, 128);
+    //this custom draw is used only in classic mode
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYSUBITEMDRAW;
+        } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            COLORREF crText;
+            if (m_list.GetCheck((int)pLVCD->nmcd.dwItemSpec)) {
+                crText = RGB(0, 0, 0);
+            } else {
+                crText = RGB(128, 128, 128);
+            }
+            pLVCD->clrText = crText;
+            *pResult = CDRF_DODEFAULT;
         }
-        pLVCD->clrText = crText;
-        *pResult = CDRF_DODEFAULT;
     }
 }
 

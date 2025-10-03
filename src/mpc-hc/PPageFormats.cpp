@@ -135,7 +135,9 @@ void CPPageFormats::LoadSettings()
 
     bool hasEnqueueContext = false;
 
-    const auto& s = AfxGetAppSettings();
+    auto& s = AfxGetAppSettings();
+    s.fileAssoc.LoadAAR();
+
     m_mf = s.m_Formats;
     m_list.DeleteAllItems();
 

@@ -182,9 +182,6 @@ private:
     enum { IDD = IDD_PPAGEADVANCED };
 
     enum ADVANCED_SETTINGS {
-        HIDE_WINDOWED,
-        MODERNSEEKBAR_HEIGHT,
-        USE_LEGACY_TOOLBAR,
         RECENT_FILES_NB,
         FILE_POS_LONGER,
         FILE_POS_AUDIO,

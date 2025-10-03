@@ -129,7 +129,7 @@ msgstr "字幕調整(&B)"
 
 msgctxt "ID_VIEW_PLAYLIST"
 msgid "Pla&ylist"
-msgstr "再生リスト(&Y)"
+msgstr "プレイリスト(&Y)"
 
 msgctxt "ID_VIEW_CAPTURE"
 msgid "Captu&re"
@@ -185,7 +185,7 @@ msgstr "自動調整(&F)"
 
 msgctxt "POPUP"
 msgid "R&enderer Settings"
-msgstr "レンダラー設定(&E)"
+msgstr "レンダラーの設定(&E)"
 
 msgctxt "ID_VIEW_TEARING_TEST"
 msgid "&Tearing Test"
@@ -549,11 +549,11 @@ msgstr "コマ送り(&M)"
 
 msgctxt "POPUP"
 msgid "&Repeat"
-msgstr "繰り返し(&R)"
+msgstr "リピート(&R)"
 
 msgctxt "ID_PLAY_REPEAT_FOREVER"
 msgid "F&orever"
-msgstr "継続(&O)"
+msgstr "常時(&O)"
 
 msgctxt "ID_PLAY_REPEAT_ONEFILE"
 msgid "&File"
@@ -561,7 +561,7 @@ msgstr "ファイル(&F)"
 
 msgctxt "ID_PLAY_REPEAT_WHOLEPLAYLIST"
 msgid "&Playlist"
-msgstr "再生リスト(&P)"
+msgstr "プレイリスト(&P)"
 
 msgctxt "ID_PLAY_REPEAT_AB"
 msgid "A-B (&Reset)"

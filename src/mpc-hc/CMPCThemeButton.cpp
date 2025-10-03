@@ -6,9 +6,6 @@
 
 CMPCThemeButton::CMPCThemeButton()
 {
-    if (AppIsThemeLoaded()) {
-        m_nFlatStyle = CMFCButton::BUTTONSTYLE_FLAT; //just setting this to get hovering working
-    }
     drawShield = false;
 }
 
@@ -16,30 +13,8 @@ CMPCThemeButton::~CMPCThemeButton()
 {
 }
 
-void CMPCThemeButton::PreSubclassWindow()   //bypass CMFCButton impl since it will enable ownerdraw. also clear CS_DBLCLKS class style, due to mfcbutton requirements
-{
-    InitStyle(GetStyle());
-    CButton::PreSubclassWindow();
-    DWORD classStyle = ::GetClassLongPtr(m_hWnd, GCL_STYLE);
-    classStyle &= ~(CS_DBLCLKS);
-    ::SetClassLongPtr(m_hWnd, GCL_STYLE, classStyle);
-}
-
-BOOL CMPCThemeButton::PreCreateWindow(CREATESTRUCT& cs)  //bypass CMFCButton impl since it will enable ownerdraw. also clear CS_DBLCLKS class style, due to mfcbutton requirements
-{
-    InitStyle(cs.style);
-    if (!CButton::PreCreateWindow(cs)) {
-        return FALSE;
-    }
-    DWORD classStyle = ::GetClassLongPtr(m_hWnd, GCL_STYLE);
-    classStyle &= ~(CS_DBLCLKS);
-    ::SetClassLongPtr(m_hWnd, GCL_STYLE, classStyle);
-    return TRUE;
-}
-
-
-IMPLEMENT_DYNAMIC(CMPCThemeButton, CMFCButton)
-BEGIN_MESSAGE_MAP(CMPCThemeButton, CMFCButton)
+IMPLEMENT_DYNAMIC(CMPCThemeButton, CButton)
+BEGIN_MESSAGE_MAP(CMPCThemeButton, CButton)
     ON_WM_SETFONT()
     ON_WM_GETFONT()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMPCThemeButton::OnNMCustomdraw)
@@ -138,9 +113,10 @@ void CMPCThemeButton::drawButton(HDC hdc, CRect rect, UINT state)
 
     CString strText;
     GetWindowText(strText);
-    bool selected = ODS_SELECTED == (state & ODS_SELECTED);
-    bool focused = ODS_FOCUS == (state & ODS_FOCUS);
-    bool disabled = ODS_DISABLED == (state & ODS_DISABLED);
+    bool selected = CDIS_SELECTED == (state & CDIS_SELECTED);
+    bool focused = CDIS_FOCUS == (state & CDIS_FOCUS);
+    bool disabled = CDIS_DISABLED == (state & CDIS_DISABLED);
+    bool hot = CDIS_HOT == (state & CDIS_HOT);
 
     BUTTON_IMAGELIST imgList;
     GetImageList(&imgList);
@@ -149,7 +125,7 @@ void CMPCThemeButton::drawButton(HDC hdc, CRect rect, UINT state)
     bool thin = true;
 
 
-    drawButtonBase(pDC, rect, strText, selected, IsHighlighted(), focused, disabled, thin, drawShield, m_hWnd);
+    drawButtonBase(pDC, rect, strText, selected, hot, focused, disabled, thin, drawShield, m_hWnd);
 
     int imageIndex = 0; //Normal
     if (disabled) {

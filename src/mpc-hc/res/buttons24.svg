@@ -47,7 +47,7 @@
 	M606,60l12-10.5v21L606,60z"/>
 <rect id="rect4264" x="606" y="55.5" style="fill:#C8C8C8;" width="6" height="9"/>
 <path style="fill:#C8C8C8;" d="M606,84l12-10.5v21L606,84z M606,79.5h6v9h-6V79.5z"/>
-<path id="path4276" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;" d="M603,51l18,18"/>
+<path id="path4276" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;stroke-width:1.5;" d="M603,51l18,18"/>
 <path id="path4159_1_" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="-1.833329" inkscape:transform-center-y="-6.7848101e-005" sodipodi:arg1="2.0943951" sodipodi:arg2="3.1415927" sodipodi:cx="3" sodipodi:cy="1039.3621" sodipodi:r1="4.472136" sodipodi:r2="2.236068" sodipodi:sides="3" sodipodi:type="star" style="fill:#646464;" d="
 	M4.5,91.5V75L21,83.2L4.5,91.5z"/>
 <rect id="rect4161_1_" x="30" y="76.5" style="fill:#646464;" width="4.5" height="13.5"/>
@@ -97,7 +97,7 @@
 <path d="M606,12l12-10.5v21L606,12z"/>
 <rect x="606" y="7.5" width="6" height="9"/>
 <path d="M606,36l12-10.5v21L606,36z M612,40.5h-6v-9h6V40.5z"/>
-<path style="fill:none;stroke:#FF0000;" d="M603,3l18,18"/>
+<path style="fill:none;stroke:#FF0000;stroke-width:1.5;" d="M603,3l18,18"/>
 <polygon style="fill:#7F7F7F;" points="4.5,43.5 4.5,27 21,35.2 "/>
 <rect x="30" y="28.5" style="fill:#7F7F7F;" width="4.5" height="13.5"/>
 <rect x="37.5" y="28.5" style="fill:#7F7F7F;" width="4.5" height="13.5"/>
@@ -161,7 +161,6 @@
 	<polyline style="fill:none;stroke:#000000;stroke-width:1.5;stroke-miterlimit:10;" points="337.5,8.2 342.1,8.2 349.3,17.2 
 		354,17.2 	"/>
 </g>
-<path id="path4276_2_" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;" d="M365.2,29.2l13.5,13.5"/>
 <rect id="rect4165_103_" x="316.5" y="78" style="fill:#C8C8C8;" width="15" height="1.5"/>
 <rect id="rect4165_102_" x="316.5" y="82.5" style="fill:#C8C8C8;" width="15" height="1.5"/>
 <rect id="rect4165_97_" x="316.5" y="87" style="fill:#C8C8C8;" width="7.5" height="1.5"/>
@@ -304,7 +303,6 @@
 <polygon points="373.5,34.5 373.5,27 378,30.7 "/>
 <polygon points="370.5,37.5 370.5,45 366,41.2 "/>
 <rect id="rect4165_115_" x="363" y="31.5" width="1.5" height="9"/>
-<path id="path4276_1_" inkscape:connector-curvature="0" style="fill:none;stroke:#C8C8C8;" d="M365.2,77.2l13.5,13.5"/>
 <rect id="rect4165_124_" x="370.5" y="88.5" style="fill:#C8C8C8;" width="10.5" height="1.5"/>
 <rect id="rect4165_123_" x="379.5" y="79.5" style="fill:#C8C8C8;" width="1.5" height="9"/>
 <rect id="rect4165_121_" x="363" y="88.5" style="fill:#C8C8C8;" width="3" height="1.5"/>
@@ -499,4 +497,8 @@
 <path d="M547.5,19.5V3h1.5v16.5H547.5z M531,19.5V3h1.5v16.5H531z M532.5,4.5V3h15v1.5H532.5z M531,21v-1.5h18V21H531z M532.5,13.5
 	V12h15v1.5H532.5z M532.5,12v-1.5h15V12H532.5z M538.5,4.5h1.5v15h-1.5V4.5z M540,4.5h1.5v15H540V4.5z M532.5,6V4.5h15V6H532.5z
 	 M532.5,19.5V18h15v1.5H532.5z M546,4.5h1.5v15H546V4.5z M532.5,4.5h1.5v15h-1.5V4.5z M534,18v-4.5h4.5V18H534z"/>
+<path id="path4276_2_" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;stroke-width:1.5;" d="M365.2,29.2
+	l13.5,13.5"/>
+<path id="path4276_1_" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;stroke-width:1.5;" d="M365.2,77.2
+	l13.5,13.5"/>
 </svg>

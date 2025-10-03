@@ -579,7 +579,7 @@ msgstr "A-B (Marcar &B)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
-msgstr "&Taxa do Playback"
+msgstr "&Taxa de Reprodução"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_025"
 msgid "0.25 x"
@@ -703,7 +703,7 @@ msgstr "&Mudo"
 
 msgctxt "POPUP"
 msgid "Af&ter Playback"
-msgstr "Ap&ós o Playback"
+msgstr "Ap&ós a Reprodução"
 
 msgctxt "ID_AFTERPLAYBACK_DONOTHING"
 msgid "Do no&thing"
@@ -731,7 +731,7 @@ msgstr "&Hibernar"
 
 msgctxt "ID_AFTERPLAYBACK_SHUTDOWN"
 msgid "Shut&down"
-msgstr "Desl&igamento"
+msgstr "Desl&igar"
 
 msgctxt "ID_AFTERPLAYBACK_LOGOFF"
 msgid "Log &Off"
@@ -755,7 +755,7 @@ msgstr "&Próximo"
 
 msgctxt "ID_NAVIGATE_GOTO"
 msgid "&Go To..."
-msgstr "&Ir Pra..."
+msgstr "&Ir Para..."
 
 msgctxt "ID_NAVIGATE_TITLEMENU"
 msgid "&Title Menu"

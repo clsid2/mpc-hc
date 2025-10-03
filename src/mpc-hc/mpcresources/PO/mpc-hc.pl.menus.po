@@ -7,7 +7,7 @@
 # Rudolph RD, 2020
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Mirosław Żylewicz, 2021
-# Krzysztof Marcinek, 2024
+# Krzysztof, 2024
 # Łukasz Janik, 2025
 # 
 msgid ""
@@ -329,7 +329,7 @@ msgstr "&Synchronizacja pionowa"
 
 msgctxt "ID_VIEW_VSYNCACCURATE"
 msgid "&Accurate VSync"
-msgstr "&Dokładna"
+msgstr "&Dokładna synchronizacja pionowa"
 
 msgctxt "ID_VIEW_ALTERNATIVEVSYNC"
 msgid "A&lternative VSync"
@@ -441,7 +441,7 @@ msgstr "Załóż &kwadratowe piksele (SAR)"
 
 msgctxt "ID_VIEW_VF_COMPMONDESKARDIFF"
 msgid "&Correct Monitor/Desktop AR Diff"
-msgstr "Poprawianie różnicy proporcji &ekranu i pulpitu"
+msgstr "Koryguj różnicę proporcji &ekranu i pulpitu"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
@@ -581,7 +581,7 @@ msgstr "A-B (znacznik &B)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
-msgstr "&Tempo"
+msgstr "&Prędkość odtwarzania"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_025"
 msgid "0.25 x"
@@ -657,15 +657,15 @@ msgstr "59.94 fps"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
-msgstr "&Zmniejsz tempo"
+msgstr "&Zmniejsz prędkość"
 
 msgctxt "ID_PLAY_INCRATE"
 msgid "&Increase Rate"
-msgstr "&Zwiększ tempo"
+msgstr "&Zwiększ prędkość"
 
 msgctxt "ID_PLAY_RESETRATE"
 msgid "R&eset Rate"
-msgstr "Przy&wróć pierwotne tempo"
+msgstr "Zres&etuj prędkość"
 
 msgctxt "ID_FILTERS"
 msgid "&Filters"
@@ -801,15 +801,15 @@ msgstr "Sprawdź &aktualizacje"
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"
-msgstr "&Parametry wiersza poleceń..."
+msgstr "&Przełączniki wiersza poleceń..."
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Ściągnij &obrazy paska sterowania"
+msgstr "Pobierz ikony paska &narzędzi"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"
-msgstr "&Wspomóż"
+msgstr "&Wesprzyj"
 
 msgctxt "ID_HELP_ABOUT"
 msgid "&About..."

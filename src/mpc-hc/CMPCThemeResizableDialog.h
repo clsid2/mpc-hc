@@ -27,5 +27,6 @@ public:
     afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 
 /* code ported from CmdUI.h to support official CResizableDialog /\ */
+    afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 

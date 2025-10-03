@@ -525,15 +525,6 @@ BOOL CPlayerStatusBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
         return TRUE;
     }
 
-    if (!pFrame->m_fFullScreen && wp.showCmd != SW_SHOWMAXIMIZED) {
-        CRect r;
-        GetClientRect(r);
-        if (p.x >= r.Width() - r.Height() && !pFrame->IsCaptionHidden()) {
-            SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
-            return TRUE;
-        }
-    }
-
     return CDialogBar::OnSetCursor(pWnd, nHitTest, message);
 }
 

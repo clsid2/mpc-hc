@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # Симеон Цветков <sicvetkov@uni-sofia.bg>, 2020
-# Андрей Станков <astankov84@gmail.com>, 2024
+# Андрей Станков <astankov84@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-12-16 13:01:31+0000\n"
+"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Андрей Станков <astankov84@gmail.com>, 2024\n"
+"Last-Translator: Андрей Станков <astankov84@gmail.com>, 2025\n"
 "Language-Team: Bulgarian (https://app.transifex.com/mpchc/teams/106126/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -610,19 +610,19 @@ msgstr "Възпроизвеждане::Шейдъри"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::ToolBar"
-msgstr ""
+msgstr "Плейър::Лента с инструменти"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::ToolBar Layout"
-msgstr ""
+msgstr "Плейър::Стил на лента с инструменти"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
-msgstr ""
+msgstr "Налични бутони"
 
 msgctxt "IDS_PPAGE_TOOLBAR_CUR_BUTTONS"
 msgid "Current Buttons"
-msgstr ""
+msgstr "Текущи бутони"
 
 msgctxt "IDD_FILEPROPRES"
 msgid "Resources"
@@ -1395,7 +1395,7 @@ msgstr "Завъртане на кадър Z+"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_P2"
 msgid "Video Frame Rotate Z+ (2 degrees)"
-msgstr ""
+msgstr "Завъртане на кадър Z+ (2 градуса)"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_M"
 msgid "Video Frame Rotate Z-"
@@ -1511,7 +1511,7 @@ msgstr "Команда на приложение"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
 msgid "Built-in ToolBar"
-msgstr ""
+msgstr "Вградена лента с инструменти"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
@@ -1774,6 +1774,8 @@ msgid ""
 "This only logs a few very specific things, such as DVB scanning, subtitle search, and yt-dlp data parsing.\n"
 "Do not enable this during normal use!"
 msgstr ""
+"Включва лог към файл (изисква рестарт).\n"
+"Записва само няколко специфични неща като DVB сканиране, търсене на субтитри, и yt-dlp анализ на данни. Не включвайте това при нормална употреба!"
 
 msgctxt "IDS_TIMER_REMAINING_TIME"
 msgid "Remaining time"
@@ -4192,14 +4194,6 @@ msgctxt "IDS_PPAGE_FS_CLN_AUDIO_DELAY"
 msgid "Audio Delay (ms)"
 msgstr "Автоматично забавяне (мсек)"
 
-msgctxt "IDS_PPAGEADVANCED_DEFAULTTOOLBARSIZE"
-msgid "Size in pixels of the default toolbar."
-msgstr "Размер в пиксели на лентата с инструменти по подразбиране."
-
-msgctxt "IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR"
-msgid "Use legacy toolbar instead of new vectorized one."
-msgstr "Използвайте старата лента с инструменти вместо новата векторна лента."
-
 msgctxt "IDS_SUBMENU_COPYURL"
 msgid "Copy URL"
 msgstr "URL за копиране"
@@ -4452,10 +4446,12 @@ msgid ""
 "Youtube-DL failed to launch. Make sure yt-dlp.exe or youtube-dl.exe is "
 "located in MPC-HC folder or in PATH."
 msgstr ""
+"Youtube-DL не може да стартира. Уверете се че yt-dlp.exe или youtube-dl.exe "
+"са в папката на MPC-HC или са в ,,PATH\"."
 
 msgctxt "IDS_CONTROLS_YOUTUBEDL"
 msgid "Calling yt-dlp/youtube-dl..."
-msgstr ""
+msgstr "Свързвам се с yt-dlp/youtube-dl..."
 
 msgctxt "IDS_VERTICAL_ALIGN_VIDEO_TOP"
 msgid "Align Top"
@@ -4524,6 +4520,11 @@ msgid ""
 "-f bestvideo+bestaudio\n"
 "-o \"C:\\downloads\\%(title)s.%(ext)s"
 msgstr ""
+"Параметри за команден ред за изтегляне (,,запис на копие\") с yt-dlp.exe (или youtube-dl.exe)\n"
+"Примери:\n"
+"-f best[height<=1080]\n"
+"-f bestvideo+bestaudio\n"
+"-o \"C:\\downloads\\%(title)s.%(ext)s"
 
 msgctxt "IDS_PPAGEADVANCED_SAVEIMAGE_POSITION"
 msgid "Include video position in filename"
@@ -4699,19 +4700,6 @@ msgid "Loop back to first file in folder after playing the last file."
 msgstr ""
 "Върнете се към първия файл в папката след възпроизвеждане на последния."
 
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBAR"
-msgid ""
-"Requires Dark Theme. When enabled, the time seekbar and volume indicator "
-"don't show a dragger at current position, but instead are filled from left "
-"to right."
-msgstr ""
-"Изисква тъмна тема. Когато е включено лентата за превъртане и индикатора за "
-"сила на звука не показват позицията си а са запълнени от ляво на дясно."
-
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBARHEIGHT"
-msgid "Modern seekbar height (at 96dpi, otherwise scaled)"
-msgstr "Модерна лента за превъртане (на 96dpi, иначе мащабирана)"
-
 msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
 msgstr ""
@@ -4756,6 +4744,10 @@ msgstr "Разреши шейдъри след оразмеряване"
 msgctxt "IDS_PPAGEADVANCED_TIME_REFRESH_INTERVAL"
 msgid "Refresh interval (in milliseconds) of time in status bar"
 msgstr "Интервал на обновяване на статус лентата (в милисекунди)"
+
+msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
+msgid "Show percentage value on volume slider (in modern theme)"
+msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4834,6 +4826,9 @@ msgid ""
 "Just the filename is enough in case it is located in same folder as MPC-HC.\n"
 "Leave empty to use default filename: yt-dlp.exe"
 msgstr ""
+"Пълен път до изпълнимия файл на yt-dlp (или youtube-dl).\n"
+"Само името на файла е достатъчно в случай че се намира в папката на MPC-HC.\n"
+"Оставете празно за да ползвате името по подразбиране: yt-dlp.exe"
 
 msgctxt "IDS_PPAGEADVANCED_YDL_SUBS_PREFERENCE"
 msgid ""
@@ -4999,52 +4994,60 @@ msgstr "/thumbnails\tСъздаване на миниатюри"
 
 msgctxt "IDS_CUSTOM_ACTION1"
 msgid "Custom Action 1"
-msgstr ""
+msgstr "Действие по избор 1"
 
 msgctxt "IDS_CUSTOM_ACTION2"
 msgid "Custom Action 2"
-msgstr ""
+msgstr "Действие по избор 2"
 
 msgctxt "IDS_CUSTOM_ACTION3"
 msgid "Custom Action 3"
-msgstr ""
+msgstr "Действие по избор 3"
 
 msgctxt "IDS_CUSTOM_ACTION4"
 msgid "Custom Action 4"
-msgstr ""
+msgstr "Действие по избор 4"
 
 msgctxt "IDS_AUDIOS"
 msgid "Audio Track"
-msgstr ""
+msgstr "Аудио пътечка"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
-msgstr ""
+msgstr "Пътечка със субтитри"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"
-msgstr ""
+msgstr "Изход от цял екран"
 
 msgctxt "IDS_AG_SHOW_PLAYLIST"
 msgid "Show Playlist"
-msgstr ""
+msgstr "Покажи плейлиста"
 
 msgctxt "IDS_AG_HIDE_PLAYLIST"
 msgid "Hide Playlist"
-msgstr ""
+msgstr "Скрий плейлиста"
 
 msgctxt "IDS_AG_ENABLE_SHUFFLE"
 msgid "Enable Shuffle"
-msgstr ""
+msgstr "Включване разбъркано"
 
 msgctxt "IDS_AG_DISABLE_SHUFFLE"
 msgid "Disable Shuffle"
-msgstr ""
+msgstr "Изключване разбъркано"
 
 msgctxt "IDS_AG_ENABLE_REPEAT"
 msgid "Enable Repeat"
-msgstr ""
+msgstr "Включване повторение"
 
 msgctxt "IDS_AG_DISABLE_REPEAT"
 msgid "Disable Repeat"
+msgstr "Изключване повторение"
+
+msgctxt "IDS_SHUFFLE_ON"
+msgid "Shuffle: On"
+msgstr ""
+
+msgctxt "IDS_SHUFFLE_OFF"
+msgid "Shuffle: Off"
 msgstr ""

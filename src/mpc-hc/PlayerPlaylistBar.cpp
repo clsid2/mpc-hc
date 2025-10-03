@@ -487,6 +487,9 @@ void CPlayerPlaylistBar::ParsePlayList(CAtlList<CString>& fns, CAtlList<CString>
         }
 #endif
     }
+    if (ydl_src.IsEmpty() && ct == _T("ytdl")) {
+        ydl_src = fns.GetHead();
+    }
 
     AddItem(fns, subs, label, ydl_src, ydl_ua, cue, ydl_subs);
 }

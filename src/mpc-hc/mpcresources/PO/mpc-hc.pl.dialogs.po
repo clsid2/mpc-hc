@@ -5,7 +5,7 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Mirosław Żylewicz, 2021
-# Krzysztof Marcinek, 2024
+# Krzysztof, 2024
 # Łukasz Janik, 2025
 # 
 msgid ""
@@ -209,7 +209,8 @@ msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
 "This program is freeware and released under the GNU General Public License."
 msgstr ""
-"Ten program jest darmowy i wydawany na zasadach GNU General Public License."
+"Ten program jest darmowy i został wydany na licencji GNU General Public "
+"License."
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "English translation made by MPC-HC Team"
@@ -1661,16 +1662,12 @@ msgid ""
 "MPC-VR does not support pre-resize shaders. It will run them after resize, "
 "before the post-resize shaders."
 msgstr ""
-"MPC-VR nie obsługuje shaderów o wstępnej zmianie rozmiaru. Uruchomi je po "
-"zmianie rozmiaru, przed modułami shaderów."
+"MPC-VR nie obsługuje shaderów przed skalowaniem. Zostaną one uruchomione po "
+"skalowaniu, przed shaderami po skalowaniu."
 
 msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
 msgstr "Debuguj shadery"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
-msgid "Debug Information"
-msgstr "Informacje debugowania"
 
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
 msgid "PS 2.0"
@@ -1687,6 +1684,10 @@ msgstr "PS 2.0a"
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
 msgid "PS 3.0"
 msgstr "PS 3.0"
+
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
+msgid "Debug Information"
+msgstr "Informacje debugowania"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
@@ -1986,7 +1987,7 @@ msgstr "Aktywny styl:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr "Przycisk użytkownika 1"
+msgstr "Niestandardowy przycisk 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
@@ -1998,15 +1999,15 @@ msgstr "Prawy klik"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr "Przycisk użytkownika 2"
+msgstr "Niestandardowy przycisk 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr "Przycisk użytkownika 3"
+msgstr "Niestandardowy przycisk 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr "Przycisk użytkownika 4"
+msgstr "Niestandardowy przycisk 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"

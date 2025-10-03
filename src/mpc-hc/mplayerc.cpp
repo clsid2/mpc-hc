@@ -350,6 +350,9 @@ CString GetContentType(CString fn, CAtlList<CString>* redir)
         }
         if (_tcsicmp(url.GetSchemeName(), _T("http")) == 0 || _tcsicmp(url.GetSchemeName(), _T("https")) == 0) {
             ishttp = true;
+            if (AfxGetMainFrame()->CanSendToYoutubeDL(fn)) {
+                return "ytdl";
+            }
         } else {
             return "";
         }
@@ -1680,6 +1683,31 @@ static BOOL CreateFakeVideoTS(LPCWSTR strIFOPath, LPWSTR strFakeFile, size_t nFa
     return bRet;
 }
 
+int(WINAPI* Real_ScrollWindowEx)(HWND, int, int, CONST RECT*, CONST RECT*, HRGN, LPRECT, UINT) = ScrollWindowEx;
+int WINAPI Mine_ScrollWindowEx(HWND hWnd, int dx, int dy, CONST RECT* prcScroll, CONST RECT* prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags)
+{
+    RECT expandedClip = { 0 };
+    CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
+    if (pWnd && prcClip && dx && AppNeedsThemedControls()) {
+        CMPCThemePlayerListCtrl* pList = dynamic_cast<CMPCThemePlayerListCtrl*>(pWnd);
+        if (pList && !pList->PaintHooksActive()) {
+            expandedClip = *prcClip;
+            expandedClip.top = 0; //horizontal scroll will need to include header
+            prcClip = &expandedClip;
+        } else {
+            CMPCThemeHeaderCtrl* pHeader = dynamic_cast<CMPCThemeHeaderCtrl*>(pWnd);
+            if (pHeader) {
+                pList = dynamic_cast<CMPCThemePlayerListCtrl*>(pWnd->GetParent());
+                if (pList && !pList->PaintHooksActive()) {
+                    return NULLREGION;
+                }
+            }
+        }
+    }
+    return Real_ScrollWindowEx(hWnd, dx, dy, prcScroll, prcClip, hrgnUpdate, prcUpdate, flags);
+}
+
+
 // This hook forces files to open even if they are currently being written and hijacks
 // IFO file opening so that a modified IFO with no forbidden operations is opened instead.
 HANDLE(WINAPI* Real_CreateFileW)(LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE) = CreateFileW;
@@ -1827,6 +1855,7 @@ BOOL CMPlayerCApp::InitInstance()
 
     bHookingSuccessful &= !!Mhook_SetHookEx(&Real_CreateFileW, Mine_CreateFileW);
     bHookingSuccessful &= !!Mhook_SetHookEx(&Real_DeviceIoControl, Mine_DeviceIoControl);
+    bHookingSuccessful &= !!Mhook_SetHookEx(&Real_ScrollWindowEx, Mine_ScrollWindowEx);
 
     bHookingSuccessful &= MH_EnableHook(MH_ALL_HOOKS) == MH_OK;
 
@@ -2121,7 +2150,7 @@ BOOL CMPlayerCApp::InitInstance()
     m_AudioRendererDisplayName_CL = _T("");
 
     if (!__super::InitInstance()) {
-        AfxMessageBox(_T("InitInstance failed!"));
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
         return FALSE;
     }
 
@@ -2131,14 +2160,20 @@ BOOL CMPlayerCApp::InitInstance()
     try {
         pFrame = DEBUG_NEW CMainFrame;
         if (!pFrame || !pFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, nullptr, nullptr)) {
-            MessageBox(nullptr, ResStr(IDS_FRAME_INIT_FAILED), m_pszAppName, MB_ICONERROR | MB_OK);
+            MessageBox(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
             return FALSE;
         }
     } catch (...) {
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
         return FALSE;
     }
 
     m_pMainWnd = pFrame;
+    if (!m_pMainWnd) {
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
+        return FALSE;
+    }
+
     pFrame->m_controls.LoadState();
     CPoint borderAdjustDirection;
     pFrame->SetDefaultWindowRect((m_s->nCLSwitches & CLSW_MONITOR) ? m_s->iMonitor : 0);

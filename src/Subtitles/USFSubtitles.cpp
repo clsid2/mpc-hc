@@ -302,7 +302,7 @@ bool CUSFSubtitles::ConvertToSTS(CSimpleTextSubtitle& sts)
     sts.m_name = metadata.language.text;
     sts.m_encoding = CTextFile::UTF8;
     sts.m_playRes = CSize(640, 480);
-    sts.m_scaledBAS = 0;
+    sts.m_scaledBAS = sts.m_scaledBAS2 = 0;
     sts.m_defaultWrapStyle = 1;
 
     // TODO: map metadata.language.code to charset num (windows doesn't have such a function...)

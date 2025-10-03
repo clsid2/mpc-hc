@@ -2027,7 +2027,7 @@ bool OpenSubStationAlpha(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
             if (nBuffLength) {
                 buff = GetStrW(pszBuff, nBuffLength);
                 buff.MakeLower();
-                ret.m_scaledBAS = (buff.Find(L"yes") >= 0) ? 1 : 0;
+                ret.m_scaledBAS = ret.m_scaledBAS2 = (buff.Find(L"yes") >= 0) ? 1 : 0;
             }
         } else if (entry == L"[v4 styles]") {
             fRet = true;
@@ -2384,6 +2384,7 @@ CSimpleTextSubtitle::CSimpleTextSubtitle()
     , m_defaultWrapStyle(0)
     , m_collisions(0)
     , m_scaledBAS(-1)
+    , m_scaledBAS2(-1)
     , m_bStyleOverrideActive(false)
     , m_bUsingPlayerDefaultStyle(false)
     , m_ePARCompensationType(EPCTDisabled)
@@ -2429,6 +2430,7 @@ void CSimpleTextSubtitle::Copy(CSimpleTextSubtitle& sts)
         m_defaultWrapStyle = sts.m_defaultWrapStyle;
         m_collisions = sts.m_collisions;
         m_scaledBAS = sts.m_scaledBAS;
+        m_scaledBAS2 = sts.m_scaledBAS2;
         m_encoding = sts.m_encoding;
         m_bUsingPlayerDefaultStyle = sts.m_bUsingPlayerDefaultStyle;
         m_provider = sts.m_provider;

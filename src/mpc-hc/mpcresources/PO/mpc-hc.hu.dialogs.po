@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Nagy Imre <nagyimre1980@gmail.com>, 2020
 # Speeder, 2022
-# P, 2024
+# Péter Patkós, 2024
 # Evin, 2024
 # Hevesi J. <hevesi2010@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-05 10:29:28+0000\n"
+"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2025\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -1677,10 +1677,6 @@ msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
 msgstr "&Árnyékoló hibakeresés"
 
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
-msgid "Debug Information"
-msgstr "Hibakeresési információ"
-
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
 msgid "PS 2.0"
 msgstr "PS 2.0"
@@ -1696,6 +1692,10 @@ msgstr "PS 2.0a"
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
 msgid "PS 3.0"
 msgstr "PS 3.0"
+
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
+msgid "Debug Information"
+msgstr "Hibakeresési információ"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
@@ -1982,56 +1982,56 @@ msgstr "Mégsem"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "ToolBar Style"
-msgstr ""
+msgstr "Eszköztár stílus"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "ToolBar Scale:"
-msgstr ""
+msgstr "Eszköztár arány:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr ""
+msgstr "Aktív stílus:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr ""
+msgstr "Egyéni gomb 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
-msgstr ""
+msgstr "Kattintás"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Right click"
-msgstr ""
+msgstr "Jobb gomb kattintás"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr ""
+msgstr "Egyéni gomb 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr ""
+msgstr "Egyéni gomb 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr ""
+msgstr "Egyéni gomb 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"
-msgstr ""
+msgstr "Alapértelmezett"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
 msgid "<<"
-msgstr ""
+msgstr "<<"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
 msgid ">>"
-msgstr ""
+msgstr ">>"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
 msgid "^"
-msgstr ""
+msgstr "^"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
-msgstr ""
+msgstr "v"

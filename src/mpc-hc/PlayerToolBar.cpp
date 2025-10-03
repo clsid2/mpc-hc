@@ -79,8 +79,8 @@ std::map<WORD, CPlayerToolBar::svgButtonInfo> CPlayerToolBar::supportedSvgButton
     {ID_PLAY_STOP, {TBBS_CHECKGROUP, 2, 0, LOCK_LEFT}},
     {ID_NAVIGATE_SKIPBACK, {TBBS_BUTTON, 3}},
     {ID_NAVIGATE_SKIPFORWARD, {TBBS_BUTTON, 4}},
-    {ID_AUDIOS, {TBBS_BUTTON | TBBS_DROPDOWN, 5, IDS_AUDIOS}},
-    {ID_SUBTITLES, {TBBS_BUTTON | TBBS_DROPDOWN, 6, IDS_SUBTITLES}},
+    {ID_AUDIOS, {TBBS_BUTTON, 5, IDS_AUDIOS}},
+    {ID_SUBTITLES, {TBBS_BUTTON, 6, IDS_SUBTITLES}},
     {ID_PLAY_DECRATE, {TBBS_BUTTON, 7}},
     {ID_PLAY_INCRATE, {TBBS_BUTTON, 8}},
     {ID_PLAY_FRAMESTEP, {TBBS_BUTTON, 9}},
@@ -109,8 +109,6 @@ CPlayerToolBar::CPlayerToolBar(CMainFrame* pMainFrame)
     : m_pMainFrame(pMainFrame)
     , m_nButtonHeight(16)
     , m_volumeCtrlSize(60)
-    , mouseDownL(false)
-    , mouseDownR(false)
     , volumeButtonIndex(12)
     , dummySeparatorIndex(11)
     , flexibleSpaceIndex(10)
@@ -121,6 +119,8 @@ CPlayerToolBar::CPlayerToolBar(CMainFrame* pMainFrame)
         MpcEvent::DPI_CHANGED,
         MpcEvent::DEFAULT_TOOLBAR_SIZE_CHANGED,
         MpcEvent::TOOLBAR_THEME_CHANGED,
+        MpcEvent::CHANGING_UI_LANGUAGE,
+
 }, std::bind(&CPlayerToolBar::EventCallback, this, std::placeholders::_1));
 }
 
@@ -347,21 +347,10 @@ TBBUTTON CPlayerToolBar::GetStandardButton(int cmdid) {
     return button;
 }
 
-BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
-{
-    VERIFY(__super::CreateEx(pParentWnd,
-                             TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_AUTOSIZE | TBSTYLE_CUSTOMERASE | CCS_ADJUSTABLE,
-                             WS_CHILD | WS_VISIBLE | CBRS_BOTTOM /*| CBRS_TOOLTIPS*/,
-                             CRect(2, 2, 0, 1)));
-
+void CPlayerToolBar::LoadButtonStrings() {
     auto& s = AfxGetAppSettings();
 
-    CToolBarCtrl& tb = GetToolBarCtrl();
-
-    dummySeparatorIndex = -1;
-    volumeButtonIndex = -1;
-    flexibleSpaceIndex = -1;
-
+    supportedSvgButtonsSeq.clear();
     for (auto& it : supportedSvgButtons) {
         if (it.second.svgIndex != -1) {
             DWORD dwname;
@@ -374,13 +363,27 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
             supportedSvgButtonsSeq.push_back(it.first);
         }
     }
+}
+
+BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
+{
+    VERIFY(__super::CreateEx(pParentWnd,
+                             TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_AUTOSIZE | TBSTYLE_CUSTOMERASE | CCS_ADJUSTABLE,
+                             WS_CHILD | WS_VISIBLE | CBRS_BOTTOM /*| CBRS_TOOLTIPS*/,
+                             CRect(2, 2, 0, 1)));
+
+    CToolBarCtrl& tb = GetToolBarCtrl();
+
+    dummySeparatorIndex = -1;
+    volumeButtonIndex = -1;
+    flexibleSpaceIndex = -1;
+
+    LoadButtonStrings();
 
     PlaceButtons(true);
 
     // Should never be RTLed
     ModifyStyleEx(WS_EX_LAYOUTRTL, WS_EX_NOINHERITLAYOUT);
-
-    SetMute(AfxGetAppSettings().fMute);
 
     m_volctrl.Create(this);
     m_volctrl.SetRange(0, 100);
@@ -388,6 +391,7 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     m_nButtonHeight = 16; // reset m_nButtonHeight
 
     LoadToolbarImage();
+    SetMute(AfxGetAppSettings().fMute);
 
     if (AppIsThemeLoaded()) {
         themedToolTip.enableFlickerHelper(); //avoid flicker on button hover
@@ -447,16 +451,23 @@ void CPlayerToolBar::ArrangeControls() {
 
     CRect r;
     GetClientRect(&r);
-
     CRect br = GetBorders();
-
     CRect vr;
-    float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
-    int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
-
-    m_volumeCtrlSize = targetsize * 2.5f;
-    vr = CRect(r.right + br.right - m_volumeCtrlSize, r.top + targetsize / 4, r.right + br.right, r.bottom - targetsize / 4);
-
+    if (AppIsThemeLoaded()) {
+        float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
+        int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
+        m_volumeCtrlSize = targetsize * 2.5f;
+        vr = CRect(r.right + br.right - m_volumeCtrlSize, r.top + targetsize / 4, r.right + br.right, r.bottom - targetsize / 4);
+    } else {
+        vr = CRect(r.right + br.right - 58, r.top - 2, r.right + br.right + 6, r.bottom);
+        m_volctrl.MoveWindow(vr);
+        CRect thumbRect;
+        m_volctrl.GetThumbRect(thumbRect);
+        m_volctrl.MapWindowPoints(this, thumbRect);
+        vr.top += std::max((r.bottom - thumbRect.bottom - 4) / 2, 0l);
+        vr.left -= MulDiv(thumbRect.Height(), 50, 19) - 50;
+        m_volumeCtrlSize = vr.Width();
+    }
     m_volctrl.MoveWindow(vr);
 
     volumeButtonIndex = GetToolBarCtrl().GetButtonCount() - 1;
@@ -513,11 +524,6 @@ void CPlayerToolBar::SetRepeat(bool isEnabled) {
 
 bool CPlayerToolBar::IsMuted() const
 {
-    CToolBarCtrl& tb = GetToolBarCtrl();
-    TBBUTTONINFO bi = { sizeof(bi) };
-    bi.dwMask = TBIF_IMAGE;
-    tb.GetButtonInfo(ID_VOLUME_MUTE, &bi);
-    return (bi.iImage == VOLUMEBUTTON_SVG_INDEX + 1);
     return AfxGetAppSettings().fMute;
 }
 
@@ -556,6 +562,9 @@ void CPlayerToolBar::EventCallback(MpcEvent ev)
         case MpcEvent::TOOLBAR_THEME_CHANGED:
             LoadToolbarImage(true);
             break;
+        case MpcEvent::CHANGING_UI_LANGUAGE:
+            LoadButtonStrings();
+            break;
         default:
             UNREACHABLE_CODE();
     }
@@ -573,6 +582,8 @@ BEGIN_MESSAGE_MAP(CPlayerToolBar, CToolBar)
     ON_UPDATE_COMMAND_UI(ID_BUTTON_REPEAT, OnUpdateRepeat)
     ON_UPDATE_COMMAND_UI_RANGE(ID_CUSTOM_ACTION1, ID_CUSTOM_ACTION4, OnUpdateCustomAction)
     ON_COMMAND_EX_RANGE(ID_CUSTOM_ACTION1, ID_CUSTOM_ACTION4, OnCustomAction)
+    ON_COMMAND_EX(ID_AUDIOS, OnMenuButton)
+    ON_COMMAND_EX(ID_SUBTITLES, OnMenuButton)
     ON_COMMAND_EX(ID_VOLUME_UP, OnVolumeUp)
     ON_COMMAND_EX(ID_VOLUME_DOWN, OnVolumeDown)
     ON_COMMAND_EX(ID_BUTTON_FULLSCREEN, OnFullscreenButton)
@@ -650,8 +661,10 @@ void CPlayerToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
                     
                     if (pTBCD->nmcd.uItemState & CDIS_CHECKED) {
                         drawButtonBG(pTBCD->nmcd, CMPCTheme::PlayerButtonCheckedColor);
+                    } else if (pTBCD->nmcd.uItemState & CDIS_SELECTED) { //pressed
+                        drawButtonBG(pTBCD->nmcd, CMPCTheme::PlayerButtonClickedColor);
                     } else if (pTBCD->nmcd.uItemState & CDIS_HOT) {
-                        drawButtonBG(pTBCD->nmcd, mouseDownL ? CMPCTheme::PlayerButtonClickedColor : CMPCTheme::PlayerButtonHotColor);
+                        drawButtonBG(pTBCD->nmcd, CMPCTheme::PlayerButtonHotColor);
                     }
                 }
             }
@@ -733,24 +746,44 @@ void CPlayerToolBar::OnUpdateCustomAction(CCmdUI* pCmdUI) {
     }
 }
 
-BOOL CPlayerToolBar::OnCustomAction(UINT nID) {
+bool CPlayerToolBar::CmdIsMenu(int cmd) {
+    return cmd == ID_MENU_FILTERS
+        || cmd == ID_MENU_PLAYER_LONG
+        || cmd == ID_MENU_PLAYER_SHORT
+        ;
+}
+
+UINT CPlayerToolBar::CustomToCMD(UINT nID, int mouseButtonSource) {
+    bool left = (mouseButtonSource == VK_LBUTTON);
     const auto& s = AfxGetAppSettings();
     UINT cmd = 0;
     switch (nID) {
-        case ID_CUSTOM_ACTION1:
-            cmd = s.nToolbarAction1;
-            break;
-        case ID_CUSTOM_ACTION2:
-            cmd = s.nToolbarAction2;
-            break;
-        case ID_CUSTOM_ACTION3:
-            cmd = s.nToolbarAction3;
-            break;
-        case ID_CUSTOM_ACTION4:
-            cmd = s.nToolbarAction4;
-            break;
+    case ID_CUSTOM_ACTION1:
+        cmd = left ? s.nToolbarAction1 : s.nToolbarRightAction1;
+        break;
+    case ID_CUSTOM_ACTION2:
+        cmd = left ? s.nToolbarAction2 : s.nToolbarRightAction2;
+        break;
+    case ID_CUSTOM_ACTION3:
+        cmd = left ? s.nToolbarAction3 : s.nToolbarRightAction3;
+        break;
+    case ID_CUSTOM_ACTION4:
+        cmd = left ? s.nToolbarAction4 : s.nToolbarRightAction4;
+        break;
     }
-    if (cmd) {
+    return cmd;
+}
+
+BOOL CPlayerToolBar::OnMenuButton(UINT nID) {
+    DoCustomContextMenu(nID, nID, leftButtonIndex, VK_LBUTTON);
+    return TRUE;
+}
+
+BOOL CPlayerToolBar::OnCustomAction(UINT nID) {
+    UINT cmd = CustomToCMD(nID, VK_LBUTTON);
+    if (CmdIsMenu(cmd)) {
+        DoCustomContextMenu(nID, cmd, leftButtonIndex, VK_LBUTTON);
+    } else {
         m_pMainFrame->PostMessage(WM_COMMAND, cmd);
     }
 
@@ -833,7 +866,6 @@ BOOL CPlayerToolBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 void CPlayerToolBar::OnLButtonDown(UINT nFlags, CPoint point)
 {
     int i = getHitButtonIdx(point);
-    mouseDownL = true;
 
     bool isShift = (MK_SHIFT & nFlags);
 
@@ -854,7 +886,6 @@ void CPlayerToolBar::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CPlayerToolBar::OnRButtonDown(UINT nFlags, CPoint point) {
     int i = getHitButtonIdx(point);
-    mouseDownR = true;
 
     if (!m_pMainFrame->m_fFullScreen && (i < 0 || (GetButtonStyle(i) & (TBBS_SEPARATOR | TBBS_DISABLED)))) {
         ClientToScreen(&point);
@@ -937,8 +968,6 @@ BOOL CPlayerToolBar::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPlayerToolBar::OnLButtonUp(UINT nFlags, CPoint point)
 {
-    mouseDownL = false;
-
     //rare crash restoring focus after close
     int buttonId = getHitButtonIdx(point);
     bool doRestoreFocus = (buttonId < 0 || buttonId != leftButtonIndex || GetItemID(buttonId) != ID_FILE_EXIT);
@@ -950,11 +979,37 @@ void CPlayerToolBar::OnLButtonUp(UINT nFlags, CPoint point)
     }
 }
 
+void CPlayerToolBar::DoCustomContextMenu(int itemId, int cmd, int buttonId, int mouseButtonSource) {
+    CToolBarCtrl& tb = GetToolBarCtrl();
+    CRect r;
+    GetItemRect(buttonId, r);
+    ClientToScreen(r);
+
+    tb.PressButton(itemId, TRUE);
+    m_pMainFrame->ToolbarContextMenu(cmd, buttonId, r);
+    tb.PressButton(itemId, FALSE);
+
+    CPoint p;
+    ::GetCursorPos(&p);
+
+    //they clicked a mouse button to open the menu, so we want to swallow clicks on the same button
+    if (PtInRect(&r, p)) {
+        MSG msg;
+        if (mouseButtonSource == VK_LBUTTON) {
+            leftButtonIndex = -1;
+            while (PeekMessageW(&msg, m_hWnd, WM_LBUTTONDOWN, WM_LBUTTONDOWN, PM_REMOVE) ||
+                PeekMessageW(&msg, m_hWnd, WM_LBUTTONDBLCLK, WM_LBUTTONDBLCLK, PM_REMOVE));
+        } else {
+            rightButtonIndex = -1;
+            while (PeekMessageW(&msg, m_hWnd, WM_RBUTTONDOWN, WM_RBUTTONDBLCLK, PM_REMOVE));
+        }
+    }
+}
+
 void CPlayerToolBar::OnRButtonUp(UINT nFlags, CPoint point) {
     CToolBar::OnRButtonUp(nFlags, point);
 
     const auto& s = AfxGetAppSettings();
-    mouseDownR = false;
 
     int buttonId = getHitButtonIdx(point);
     if (buttonId >= 0 && rightButtonIndex == buttonId) {
@@ -982,21 +1037,19 @@ void CPlayerToolBar::OnRButtonUp(UINT nFlags, CPoint point) {
                 messageId = ID_STREAM_AUDIO_NEXT;
                 break;
             case ID_CUSTOM_ACTION1:
-                messageId = s.nToolbarRightAction1;
-                break;
             case ID_CUSTOM_ACTION2:
-                messageId = s.nToolbarRightAction2;
-                break;
             case ID_CUSTOM_ACTION3:
-                messageId = s.nToolbarRightAction3;
-                break;
             case ID_CUSTOM_ACTION4:
-                messageId = s.nToolbarRightAction4;
+                messageId = CustomToCMD(itemId, VK_RBUTTON);
                 break;
         }
 
         if (messageId > 0) {
-            m_pMainFrame->PostMessage(WM_COMMAND, messageId);
+            if (CmdIsMenu(messageId)) {
+                DoCustomContextMenu(itemId, messageId, buttonId, VK_RBUTTON);
+            } else {
+                m_pMainFrame->PostMessage(WM_COMMAND, messageId);
+            }
         }
     }
 }

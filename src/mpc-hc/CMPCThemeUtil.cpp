@@ -956,9 +956,18 @@ void CMPCThemeUtil::drawGripper(CWnd* window, CWnd* dpiRefWnd, CRect rectGripper
     flushMemDC(pDC, dcMem, rectGripper);
 }
 
+inline void FastFrameRect(CDC* pDC, const CRect& rect, COLORREF color) {
+    // Top
+    pDC->FillSolidRect(rect.left, rect.top, rect.Width(), 1, color);
+    // Bottom
+    pDC->FillSolidRect(rect.left, rect.bottom - 1, rect.Width(), 1, color);
+    // Left
+    pDC->FillSolidRect(rect.left, rect.top, 1, rect.Height(), color);
+    // Right
+    pDC->FillSolidRect(rect.right - 1, rect.top, 1, rect.Height(), color);
+}
 
-void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio)
-{
+void CMPCThemeUtil::drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size) {
     COLORREF borderClr, bgClr;
     COLORREF oldBkClr = pDC->GetBkColor(), oldTextClr = pDC->GetTextColor();
     if (isHover) {
@@ -968,17 +977,7 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
         borderClr = CMPCTheme::CheckboxBorderColor;
         bgClr = CMPCTheme::CheckboxBGColor;
     }
-
     if (useSystemSize) {
-        CPngImage image;
-        image.Load(getResourceByDPI(window, pDC, isRadio ? CMPCTheme::ThemeRadios : CMPCTheme::ThemeCheckBoxes), AfxGetInstanceHandle());
-        BITMAP bm;
-        image.GetBitmap(&bm);
-        int size = bm.bmHeight;
-
-        CDC mDC;
-        mDC.CreateCompatibleDC(pDC);
-        mDC.SelectObject(image);
         int index;
         if (isRadio) {
             index = RadioRegular;
@@ -995,12 +994,9 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
             }
         }
         CRect drawRect(0, 0, size, size);
-        //drawRect.OffsetRect(rectCheck.left + (rectCheck.Width() - size) / 2, rectCheck.top + (rectCheck.Height() - size) / 2);
         drawRect.OffsetRect(rectCheck.left, rectCheck.top + (rectCheck.Height() - size) / 2);
-
-        if (!isRadio && checkState != BST_CHECKED) { //we can draw this w/o BMPs
-            CBrush brush(borderClr);
-            pDC->FrameRect(drawRect, &brush);
+        if (!isRadio && checkState != BST_CHECKED) {
+            FastFrameRect(pDC, drawRect, borderClr);
             drawRect.DeflateRect(1, 1);
             pDC->FillSolidRect(drawRect, bgClr);
             if (checkState == BST_INDETERMINATE) {
@@ -1008,12 +1004,15 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
                 pDC->FillSolidRect(drawRect, CMPCTheme::CheckColor);
             }
         } else {
+            CDC mDC;
+            mDC.CreateCompatibleDC(pDC);
+            mDC.SelectObject(image);
+
             int left = index * size;
             pDC->BitBlt(drawRect.left, drawRect.top, drawRect.Width(), drawRect.Height(), &mDC, left, 0, SRCCOPY);
         }
     } else {
-        CBrush brush(borderClr);
-        pDC->FrameRect(rectCheck, &brush);
+        FastFrameRect(pDC, rectCheck, borderClr);
         rectCheck.DeflateRect(1, 1);
         pDC->FillSolidRect(rectCheck, bgClr);
         if (BST_CHECKED == checkState) {
@@ -1039,6 +1038,28 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
     }
     pDC->SetBkColor(oldBkClr);
     pDC->SetTextColor(oldTextClr);
+}
+
+void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio /*= false*/, UINT resourceID /*= 0*/) {
+    struct ImageCache {
+        CPngImage image;
+        int size;
+    };
+    static std::map<UINT, ImageCache> cache;
+
+    if (!resourceID) {
+        resourceID = getResourceByDPI(window, pDC, isRadio ? CMPCTheme::ThemeRadios : CMPCTheme::ThemeCheckBoxes);
+    }
+
+    if (!cache.count(resourceID)) {
+        ImageCache& newCache = cache[resourceID];
+        newCache.image.Load(resourceID, AfxGetInstanceHandle());
+        BITMAP bm;
+        newCache.image.GetBitmap(&bm);
+        newCache.size = bm.bmHeight;
+    }
+
+    drawCheckBoxInternal(checkState, isHover, useSystemSize, rectCheck, pDC, isRadio, &cache[resourceID].image, cache[resourceID].size);
 }
 
 bool CMPCThemeUtil::canUseWin10DarkTheme()

@@ -4088,14 +4088,6 @@ msgctxt "IDS_PPAGE_FS_CLN_AUDIO_DELAY"
 msgid "Audio Delay (ms)"
 msgstr "音訊延遲（毫秒）"
 
-msgctxt "IDS_PPAGEADVANCED_DEFAULTTOOLBARSIZE"
-msgid "Size in pixels of the default toolbar."
-msgstr "預設工具列字體大小 (像素)"
-
-msgctxt "IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR"
-msgid "Use legacy toolbar instead of new vectorized one."
-msgstr "使用舊版工具列取代新的向量版工具列。"
-
 msgctxt "IDS_SUBMENU_COPYURL"
 msgid "Copy URL"
 msgstr "複製網址"
@@ -4573,17 +4565,6 @@ msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
 msgstr "播放完資料夾中的最後一個檔案後，從第一個檔案繼續播放。"
 
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBAR"
-msgid ""
-"Requires Dark Theme. When enabled, the time seekbar and volume indicator "
-"don't show a dragger at current position, but instead are filled from left "
-"to right."
-msgstr "需要暗色佈景主題。開啟後，搜尋列與音量指示器將不會於目前位置顯示拖曳工具，而是從左至右填滿。"
-
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBARHEIGHT"
-msgid "Modern seekbar height (at 96dpi, otherwise scaled)"
-msgstr "現代搜尋列高度（96dpi 時，其他解析度時自動縮放）"
-
 msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
 msgstr "延後顯示全螢幕視訊，以避免畫面不正常"
@@ -4624,6 +4605,10 @@ msgstr "開啟 Post-Resize Pixel Shader"
 msgctxt "IDS_PPAGEADVANCED_TIME_REFRESH_INTERVAL"
 msgid "Refresh interval (in milliseconds) of time in status bar"
 msgstr "於狀態列重新整理顯示時間的間隔（單位為毫秒）"
+
+msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
+msgid "Show percentage value on volume slider (in modern theme)"
+msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4891,4 +4876,12 @@ msgstr ""
 
 msgctxt "IDS_AG_DISABLE_REPEAT"
 msgid "Disable Repeat"
+msgstr ""
+
+msgctxt "IDS_SHUFFLE_ON"
+msgid "Shuffle: On"
+msgstr ""
+
+msgctxt "IDS_SHUFFLE_OFF"
+msgid "Shuffle: Off"
 msgstr ""

@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Felipefpl, 2023
+# Felipefpl, 2021
+# Fúlvio Alves <fga.fulvio@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Felipefpl, 2023\n"
+"Last-Translator: Fúlvio Alves <fga.fulvio@gmail.com>, 2025\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/mpchc/teams/106126/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,7 +31,7 @@ msgstr ""
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
-msgstr "O [name] requer o Windows Vista ou mais novo pra funcionar."
+msgstr "O [name] requer o Windows Vista ou mais novo para funcionar."
 
 msgctxt "CustomMessages_comp_mpciconlib"
 msgid "Icon Library"
@@ -63,11 +64,11 @@ msgstr ""
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"
 msgstr ""
-"Visite nossa página do Wiki pra baixar imagens da barra de ferramentas"
+"Visite nossa página do Wiki para baixar imagens da barra de ferramentas"
 
 msgctxt "CustomMessages_tsk_AllUsers"
 msgid "For all users"
-msgstr "Pra todos os usuários"
+msgstr "Para todos os usuários"
 
 msgctxt "CustomMessages_tsk_CurrentUser"
 msgid "For the current user only"

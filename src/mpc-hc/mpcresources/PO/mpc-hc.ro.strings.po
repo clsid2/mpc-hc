@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
 # Mac Balls, 2022
-# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2025
+# Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-05-21 22:58:36+0000\n"
+"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2025\n"
+"Last-Translator: Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -601,7 +601,7 @@ msgstr "Reglaje fine"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER"
 msgid "Internal Filters::Audio Switcher"
-msgstr "Filtre interne::Comutator audio"
+msgstr "Filtre interne::Comutatorul audio"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS"
 msgid "External Filters"
@@ -613,19 +613,19 @@ msgstr "Redare::Nuanțatoare (Shadere)"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::ToolBar"
-msgstr ""
+msgstr "Player::Bara de unelte"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::ToolBar Layout"
-msgstr ""
+msgstr "Player::Aspectul barei de unelte"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
-msgstr ""
+msgstr "Butoanele disponibile"
 
 msgctxt "IDS_PPAGE_TOOLBAR_CUR_BUTTONS"
 msgid "Current Buttons"
-msgstr ""
+msgstr "Butoanele actuale"
 
 msgctxt "IDD_FILEPROPRES"
 msgid "Resources"
@@ -820,7 +820,8 @@ msgstr ""
 "YUV sunt permise, dar ele sunt prezentate direct fără nicio conversie de "
 "culoare către RGB. Aceasta este cea mai rapidă metodă de randare dintre "
 "toate și singura în care puteți fi sigur(ă) de oglindirea/recopierea "
-"videoului în ecran complet la activarea ieșirii tv (tv-out)."
+"videclipului în modul ecran complet (pe tot ecranul) la activarea ieșirii tv"
+" (tv-out)."
 
 msgctxt "IDC_DSVMR9WIN"
 msgid ""
@@ -1408,7 +1409,7 @@ msgstr "Rotește cadrul video Z+"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_P2"
 msgid "Video Frame Rotate Z+ (2 degrees)"
-msgstr ""
+msgstr "Rotește cadrul video Z+ (cu 2 grade)"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_M"
 msgid "Video Frame Rotate Z-"
@@ -1432,7 +1433,7 @@ msgstr "Scalează pentru ecran ultra-lat,%.3f,%.3f,%.3f,%.3f"
 
 msgctxt "IDS_PLAYLIST_HIDEFS"
 msgid "&Hide on Fullscreen"
-msgstr "Ascunde în modul ecran complet"
+msgstr "Ascunde în modul ecran complet (pe tot ecranul)"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -1524,7 +1525,7 @@ msgstr "Comanda aplicației"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
 msgid "Built-in ToolBar"
-msgstr ""
+msgstr "Bara de unelte încorporată"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
@@ -1593,11 +1594,11 @@ msgstr "Prestabilește nuanțatorul (shaderul): %s"
 
 msgctxt "IDS_AG_SHADERS_PRESET_NEXT"
 msgid "Next Shader Preset"
-msgstr "Următoarea prestabilire a nuanțatoarelor (shaderelor)"
+msgstr "Prestabilirea următoare a nuanțatoarelor (a shaderelor)"
 
 msgctxt "IDS_AG_SHADERS_PRESET_PREV"
 msgid "Prev Shader Preset"
-msgstr "Precedenta prestabilire a nuanțatoarelor (shaderelor)"
+msgstr "Prestabilirea următoare a nuanțatoarelor (a shaderelor)"
 
 msgctxt "IDS_STRING_COLON"
 msgid "%s:"
@@ -2126,7 +2127,7 @@ msgstr "Fișierul precedent"
 
 msgctxt "IDS_MPLAYERC_99"
 msgid "Toggle Direct3D fullscreen"
-msgstr "Comută ecranul complet (tot ecranul) Direct3D"
+msgstr "Comută din ecranul complet (de pe tot ecranul) Direct3D"
 
 msgctxt "IDS_MPLAYERC_100"
 msgid "Goto Prev Subtitle"
@@ -2206,7 +2207,7 @@ msgstr "Vizualizare normală"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
-msgstr "Ecran complet"
+msgstr "Ecran complet (Pe tot ecranul)"
 
 msgctxt "IDS_MPLAYERC_39"
 msgid "Fullscreen (w/o res.change)"
@@ -2344,19 +2345,19 @@ msgstr "Cadrul video în jos"
 
 msgctxt "IDS_AG_PNS_UPLEFT"
 msgid "Video Frame Up/Left"
-msgstr "Cadrul video în sus/ în stânga"
+msgstr "Cadrul video în sus / în stânga"
 
 msgctxt "IDS_AG_PNS_UPRIGHT"
 msgid "Video Frame Up/Right"
-msgstr "Cadrul video în sus/ în dreapta"
+msgstr "Cadrul video în sus / în dreapta"
 
 msgctxt "IDS_AG_PNS_DOWNLEFT"
 msgid "Video Frame Down/Left"
-msgstr "Cadrul video în jos/ în stânga"
+msgstr "Cadrul video în jos / în stânga"
 
 msgctxt "IDS_MPLAYERC_59"
 msgid "Video Frame Down/Right"
-msgstr "Cadrul video în jos/ în dreapta"
+msgstr "Cadrul video în jos / în dreapta"
 
 msgctxt "IDS_AG_VOLUME_UP"
 msgid "Volume Up"
@@ -2368,7 +2369,7 @@ msgstr "Scade volumul"
 
 msgctxt "IDS_AG_VOLUME_MUTE"
 msgid "Volume Mute"
-msgstr "Volumul dat pe silențios/Mut"
+msgstr "Volumul dat pe silențios (pe mut)"
 
 msgctxt "IDS_MPLAYERC_63"
 msgid "DVD Title Menu"
@@ -2722,7 +2723,7 @@ msgstr ", Liberă: %I64d MB (MO)"
 
 msgctxt "IDS_MAINFRM_42"
 msgid ", Free V/A Buffers: %03d/%03d"
-msgstr ", Tampoane/Buffere V/A libere: %03d/%03d"
+msgstr ", Tampoane (Buffere) V/A libere: %03d/%03d"
 
 msgctxt "IDS_AG_ERROR"
 msgid "Error"
@@ -3200,15 +3201,15 @@ msgstr "Autor necunoscut. Dacă ai făcut acest logo, contactează-ne!"
 
 msgctxt "IDS_NO_MORE_MEDIA"
 msgid "No more media in the current folder."
-msgstr "Nu mai există fișiere media în dosarul (folderul) actual."
+msgstr "Nu mai există fișiere media în dosarul (în folderul) actual."
 
 msgctxt "IDS_FIRST_IN_FOLDER"
 msgid "The first file of the folder is already loaded."
-msgstr "Primul fișier din dosar (folder) este deja încărcat."
+msgstr "Primul fișier din dosar (din folder) este deja încărcat."
 
 msgctxt "IDS_LAST_IN_FOLDER"
 msgid "The last file of the folder is already loaded."
-msgstr "Ultimul fișier din dosar (folder) este deja încărcat."
+msgstr "Ultimul fișier din dosar (din folder) este deja încărcat."
 
 msgctxt "IDS_FRONT_LEFT"
 msgid "Front Left"
@@ -4233,14 +4234,6 @@ msgctxt "IDS_PPAGE_FS_CLN_AUDIO_DELAY"
 msgid "Audio Delay (ms)"
 msgstr "Întârziere audio (ms)"
 
-msgctxt "IDS_PPAGEADVANCED_DEFAULTTOOLBARSIZE"
-msgid "Size in pixels of the default toolbar."
-msgstr "Mărimea în pixeli a barei de instrumente implicite."
-
-msgctxt "IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR"
-msgid "Use legacy toolbar instead of new vectorized one."
-msgstr "Foloește bara de instrumente veche în loc de cea nouă vectorizată."
-
 msgctxt "IDS_SUBMENU_COPYURL"
 msgid "Copy URL"
 msgstr "Copiază URL-ul"
@@ -4596,7 +4589,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_FULLSCREEN"
 msgid "/fullscreen\tStart in fullscreen mode"
-msgstr "/fullscreen\tPornește în modul ecran complet"
+msgstr "/fullscreen\tPornește în modul ecran complet (pe tot ecranul)"
 
 msgctxt "IDS_CMD_MINIMIZED"
 msgid "/minimized\tStart in minimized mode"
@@ -4706,7 +4699,7 @@ msgstr "OK"
 
 msgctxt "IDS_MOUSE_CLICK_MIDDLE"
 msgid "Middle click"
-msgstr "Clic din mijloc"
+msgstr "Clic pe mijloc"
 
 msgctxt "IDS_MOUSE_CLICK_X1"
 msgid "X1 click"
@@ -4726,11 +4719,11 @@ msgstr "Rotița în jos"
 
 msgctxt "IDS_MOUSE_WHEEL_LEFT"
 msgid "Wheel Left"
-msgstr "Rotița în stânga"
+msgstr "Rotița din stânga"
 
 msgctxt "IDS_MOUSE_WHEEL_RIGHT"
 msgid "Wheel Right"
-msgstr "Rotița în dreapta"
+msgstr "Rotița din dreapta"
 
 msgctxt "IDS_MOUSE_ACTION"
 msgid "Action"
@@ -4756,20 +4749,6 @@ msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
 msgstr ""
 "Revino la primul fișier din dosar (folder) după redarea ultimului fișier."
-
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBAR"
-msgid ""
-"Requires Dark Theme. When enabled, the time seekbar and volume indicator "
-"don't show a dragger at current position, but instead are filled from left "
-"to right."
-msgstr ""
-"Necesită temă întunecată. Când este activată, bara de căutare a timpului și "
-"indicatorul de volum nu afișează un trăgător în poziția actuală, ci e "
-"umplută de la stânga la dreapta."
-
-msgctxt "IDS_PPAGEADVANCED_MODERNSEEKBARHEIGHT"
-msgid "Modern seekbar height (at 96dpi, otherwise scaled)"
-msgstr "Înălțimea barei de căutare modernă (la 96 dpi, altfel scalată)"
 
 msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
@@ -4816,6 +4795,10 @@ msgctxt "IDS_PPAGEADVANCED_TIME_REFRESH_INTERVAL"
 msgid "Refresh interval (in milliseconds) of time in status bar"
 msgstr ""
 "Intervalul de reîmprospătare (în milisecunde) de timp în bara de stare"
+
+msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
+msgid "Show percentage value on volume slider (in modern theme)"
+msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5067,52 +5050,60 @@ msgstr "/miniaturi\tCrează miniaturi"
 
 msgctxt "IDS_CUSTOM_ACTION1"
 msgid "Custom Action 1"
-msgstr ""
+msgstr "Acțiune personalizată 1"
 
 msgctxt "IDS_CUSTOM_ACTION2"
 msgid "Custom Action 2"
-msgstr ""
+msgstr "Acțiune personalizată 2"
 
 msgctxt "IDS_CUSTOM_ACTION3"
 msgid "Custom Action 3"
-msgstr ""
+msgstr "Acțiune personalizată 3"
 
 msgctxt "IDS_CUSTOM_ACTION4"
 msgid "Custom Action 4"
-msgstr ""
+msgstr "Acțiune personalizată 4"
 
 msgctxt "IDS_AUDIOS"
 msgid "Audio Track"
-msgstr ""
+msgstr "Pista audio"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
-msgstr ""
+msgstr "Pista de subtitrări"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"
-msgstr ""
+msgstr "Ieși din modul ecranul complet (Ieși de pe tot ecranul)"
 
 msgctxt "IDS_AG_SHOW_PLAYLIST"
 msgid "Show Playlist"
-msgstr ""
+msgstr "Afișează lista de redare (playlist-ul)"
 
 msgctxt "IDS_AG_HIDE_PLAYLIST"
 msgid "Hide Playlist"
-msgstr ""
+msgstr "Ascunde lista de redare (playlist-ul)"
 
 msgctxt "IDS_AG_ENABLE_SHUFFLE"
 msgid "Enable Shuffle"
-msgstr ""
+msgstr "Activează modul aleatoriu"
 
 msgctxt "IDS_AG_DISABLE_SHUFFLE"
 msgid "Disable Shuffle"
-msgstr ""
+msgstr "Dezactivează modul aleatoriu"
 
 msgctxt "IDS_AG_ENABLE_REPEAT"
 msgid "Enable Repeat"
-msgstr ""
+msgstr "Activează repetarea"
 
 msgctxt "IDS_AG_DISABLE_REPEAT"
 msgid "Disable Repeat"
+msgstr "Dezactivează repetarea"
+
+msgctxt "IDS_SHUFFLE_ON"
+msgid "Shuffle: On"
+msgstr ""
+
+msgctxt "IDS_SHUFFLE_OFF"
+msgid "Shuffle: Off"
 msgstr ""

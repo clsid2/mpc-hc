@@ -111,7 +111,7 @@ CAppSettings::CAppSettings()
     , fReportFailedPins(true)
     , fAutoloadAudio(true)
     , fBlockVSFilter(true)
-    , bBlockRDP(false)
+    , bBlockRDP(true)
     , nVolumeStep(5)
     , nSpeedStep(0)
     , nDefaultToolbarSize(24)
@@ -242,7 +242,6 @@ CAppSettings::CAppSettings()
     , bEnableCoverArt(true)
     , nCoverArtSizeLimit(600)
     , bEnableLogging(false)
-    , bUseLegacyToolbar(false)
     , iLAVGPUDevice(DWORD_MAX)
     , nCmdVolume(0)
     , eSubtitleRenderer(SubtitleRenderer::INTERNAL)
@@ -1290,7 +1289,6 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, nCoverArtSizeLimit);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, bEnableLogging);
-    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_USE_LEGACY_TOOLBAR, bUseLegacyToolbar);
 
     VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER,
                                  static_cast<int>(eSubtitleRenderer)));
@@ -1670,7 +1668,7 @@ void CAppSettings::LoadSettings()
     strSubtitlesLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESLANGORDER);
     strAudiosLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIOSLANGORDER);
     fBlockVSFilter = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKVSFILTER, TRUE);
-    bBlockRDP = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKRDP, FALSE);
+    bBlockRDP = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKRDP, TRUE);
     fEnableWorkerThreadForOpening = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLEWORKERTHREADFOROPENING, TRUE);
     fReportFailedPins = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPORTFAILEDPINS, TRUE);
     fAllowMultipleInst = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MULTIINST, FALSE);
@@ -2235,7 +2233,6 @@ void CAppSettings::LoadSettings()
     nCoverArtSizeLimit = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, 600);
 
     bEnableLogging = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, FALSE);
-    bUseLegacyToolbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_LEGACY_TOOLBAR, FALSE);
 
     eSubtitleRenderer = static_cast<SubtitleRenderer>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER, static_cast<int>(SubtitleRenderer::INTERNAL)));
     if (eSubtitleRenderer == SubtitleRenderer::RESERVED) {
@@ -2243,7 +2240,10 @@ void CAppSettings::LoadSettings()
         bRenderSSAUsingLibass = true;
     }
 
-    nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_DEFAULTTOOLBARSIZE, 24);
+    nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_DEFAULTTOOLBARSIZE, 0);
+    if (nDefaultToolbarSize < 16) {
+        nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTTOOLBARSIZE, 24); // old location
+    }
 
     nToolbarAction1 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION1, 0);
     nToolbarAction2 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION2, 0);
@@ -2282,7 +2282,7 @@ void CAppSettings::LoadSettings()
                                  pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_CROSSFEED_LEVEL,
                                                      SaneAudioRenderer::ISettings::CROSSFEED_LEVEL_CMOY));
 
-    sanear->SetIgnoreSystemChannelMixer(pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_IGNORE_SYSTEM_MIXER, TRUE));
+    sanear->SetIgnoreSystemChannelMixer(pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_IGNORE_SYSTEM_MIXER, FALSE));
 
     bUseYDL       = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_YDL, TRUE);
     iYDLMaxHeight = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_YDL_MAX_HEIGHT, 1440);
@@ -3602,7 +3602,9 @@ void CAppSettings::CRecentFileListWithMoreInfo::SetSize(size_t nSize) {
 }
 
 void CAppSettings::CRecentFileListWithMoreInfo::RemoveAll() {
+    size_t max = m_maxSize;
     SetSize(0);
+    m_maxSize = max;
 }
 
 bool CAppSettings::IsVSFilterInstalled()

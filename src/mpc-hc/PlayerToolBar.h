@@ -49,7 +49,6 @@ private:
     bool LoadExternalToolBar(CImage& image);
     void LoadToolbarImage(bool tbArtChanged = false);
     void PlaceButtons(bool loadSavedLayout);
-    bool mouseDownL, mouseDownR;
     int rightButtonIndex=-1, leftButtonIndex=-1;
     CMPCThemeToolTipCtrl themedToolTip;
 
@@ -96,6 +95,7 @@ public:
     __declspec(property(get = GetVolume, put = SetVolume)) int Volume;
 
     TBBUTTON GetStandardButton(int cmdid);
+    void LoadButtonStrings();
     void ArrangeControls();
     void ToolbarChange();
     void ToolBarReset();
@@ -127,10 +127,12 @@ public:
     virtual BOOL Create(CWnd* pParentWnd);
     //}}AFX_VIRTUAL
 
+    UINT CustomToCMD(UINT nID, int mouseButtonSource);
 
     // Generated message map functions
 protected:
     //{{AFX_MSG(CPlayerToolBar)
+    afx_msg BOOL OnMenuButton(UINT nID);
     afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnInitialUpdate();
@@ -141,6 +143,7 @@ protected:
     afx_msg void OnUpdateShuffle(CCmdUI* pCmdUI);
     afx_msg void OnUpdateRepeat(CCmdUI* pCmdUI);
     afx_msg void OnUpdateCustomAction(CCmdUI* pCmdUI);
+    bool CmdIsMenu(int cmd);
     afx_msg BOOL OnCustomAction(UINT nID);
     afx_msg BOOL OnVolumeUp(UINT nID);
     afx_msg BOOL OnVolumeDown(UINT nID);
@@ -157,6 +160,7 @@ protected:
     DECLARE_MESSAGE_MAP()
 public:
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+    void DoCustomContextMenu(int itemId, int cmd, int buttonId, int mouseButtonSource);
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnTbnQueryDelete(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnTbnQueryInsert(NMHDR* pNMHDR, LRESULT* pResult);

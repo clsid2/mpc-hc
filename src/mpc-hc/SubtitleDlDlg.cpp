@@ -786,6 +786,9 @@ afx_msg LRESULT CSubtitleDlDlg::OnFailedDownload(WPARAM wParam, LPARAM /*lParam*
 {
     CString status = StrRes(IDS_SUBDL_DLG_FAILED_DL);
     status.AppendFormat(L" (error %lu)", (DWORD)wParam);
+    if (wParam == 406) {
+        status.Append(L" (global daily download quota exceeded)");
+    }
     SetStatusText(status);
 
     return S_OK;

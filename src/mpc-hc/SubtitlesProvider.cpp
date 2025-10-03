@@ -541,7 +541,8 @@ SRESULT OpenSubtitles2::Download(SubtitlesInfo& pSubtitlesInfo)
                     result = DownloadInternal(downloadLink, "", pSubtitlesInfo.fileContents);
                 }
             }
-
+        } else {
+            m_dwLastStatusCode = response.code;
         }
         httpFile->Close();
         delete httpFile;

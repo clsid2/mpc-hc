@@ -72,7 +72,7 @@ SRESULT LogOut() override;
 SRESULT Hash(SubtitlesInfo& pFileInfo) override;
 
 struct Response {
-    DWORD code;
+    DWORD code = 0;
     std::string text;
 };
 

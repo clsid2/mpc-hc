@@ -110,20 +110,22 @@ public:
     }
 
     ~OneTimeTimerPool() {
-        if (m_pWnd->m_hWnd) {
+        if (m_pWnd) {
             for (const auto& kv : m_subscribers) {
                 const UINT_PTR nIDEvent = kv.second.first;
                 ASSERT(m_used[nIDEvent]);
                 VERIFY(m_pWnd->KillTimer(nIDEvent));
             }
+        } else {
+            ASSERT(FALSE);
         }
     }
 
     void Subscribe(T id, const TimerCallback& callback, UINT nElapse) {
-        Unsubscribe(id);
-        const UINT_PTR nIDEventTarget = FindFree();
-        ENSURE(nIDEventTarget != 0);
-        if (m_pWnd->m_hWnd) {
+        if (m_pWnd) {
+            Unsubscribe(id);
+            const UINT_PTR nIDEventTarget = FindFree();
+            ENSURE(nIDEventTarget != 0);
             const UINT_PTR nIDEvent = m_pWnd->SetTimer(nIDEventTarget, nElapse, m_lpTimerFunc);
             if (nIDEvent) {
                 if (nIDEvent == nIDEventTarget) {
@@ -144,35 +146,45 @@ public:
     }
 
     void Unsubscribe(T id) {
-        auto size = m_subscribers.size();
-        if (size > 0 && size != 0xFFFFFFFF) {
-            auto it = m_subscribers.find(id);
-            if (it != m_subscribers.end()) {
-                const UINT_PTR nIDEvent = it->second.first;
-                ASSERT(m_used[nIDEvent]);
-                if (m_pWnd->m_hWnd) {
+        if (m_pWnd) {
+            auto size = m_subscribers.size();
+            if (size > 0 && size < 256) {
+                auto it = m_subscribers.find(id);
+                if (it != m_subscribers.end()) {
+                    const UINT_PTR nIDEvent = it->second.first;
+                    ASSERT(m_used[nIDEvent]);
                     VERIFY(m_pWnd->KillTimer(nIDEvent));
+                    m_subscribers.erase(it);
+                    m_used[nIDEvent] = false;
                 }
-                m_subscribers.erase(it);
-                m_used[nIDEvent] = false;
+            } else {
+                ASSERT(size == 0);
             }
+        } else {
+            ASSERT(FALSE);
         }
     }
 
     void NotifySubscribers(UINT_PTR nIDEvent) {
-        auto size = m_subscribers.size();
-        if (size > 0 && size != 0xFFFFFFFF) {
-            for (auto it = m_subscribers.begin(); it != m_subscribers.end(); ++it) {
-                if (it->second.first == nIDEvent) {
-                    ASSERT(m_used[nIDEvent]);
-                    VERIFY(m_pWnd->KillTimer(nIDEvent));
-                    const TimerCallback cb = it->second.second;
-                    m_subscribers.erase(it);
-                    m_used[nIDEvent] = false;
-                    cb();
-                    break;
+        if (m_pWnd) {
+            auto size = m_subscribers.size();
+            if (size > 0 && size < 256) {
+                for (auto it = m_subscribers.begin(); it != m_subscribers.end(); ++it) {
+                    if (it->second.first == nIDEvent) {
+                        ASSERT(m_used[nIDEvent]);
+                        VERIFY(m_pWnd->KillTimer(nIDEvent));
+                        const TimerCallback cb = it->second.second;
+                        m_subscribers.erase(it);
+                        m_used[nIDEvent] = false;
+                        cb();
+                        break;
+                    }
                 }
+            } else {
+                ASSERT(size == 0);
             }
+        } else {
+            ASSERT(FALSE);
         }
     }
 

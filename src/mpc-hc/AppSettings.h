@@ -430,10 +430,11 @@ struct DVD_POSITION {
 };
 
 struct ABRepeat {
-    ABRepeat() : positionA(0), positionB(0), dvdTitle(-1) {}
+    ABRepeat() : positionA(0), positionB(0), dvdTitle(-1), tcLastRepeat(0ULL) {}
     operator bool() const { return positionA || positionB; };
     REFERENCE_TIME positionA, positionB;
     ULONG dvdTitle; //whatever title they saved last will be the only one we remember
+    ULONGLONG tcLastRepeat;
 };
 
 class RecentFileEntry {
@@ -937,7 +938,6 @@ public:
     int             nCoverArtSizeLimit;
 
     bool            bEnableLogging;
-    bool            bUseLegacyToolbar;
 
     bool            IsD3DFullscreen() const;
     CString         SelectedAudioRenderer() const;

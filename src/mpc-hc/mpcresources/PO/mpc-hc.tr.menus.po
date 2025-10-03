@@ -801,7 +801,7 @@ msgstr "&Komut satırı anahtarları"
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Araç çubuğu &resimlerini indir"
+msgstr "Kontrol çubuğu stilleri indir"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"

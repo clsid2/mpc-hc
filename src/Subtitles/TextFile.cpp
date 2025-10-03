@@ -25,6 +25,7 @@
 #include <algorithm>
 #include "TextFile.h"
 #include "Utf8.h"
+#include "../DSUtil/PathUtils.h"
 
 #define TEXTFILE_BUFFER_SIZE (64 * 1024)
 
@@ -761,7 +762,7 @@ bool CWebTextFile::Open(LPCTSTR lpszFileName, DWORD& dwError)
 
     CString fn(lpszFileName);
 
-    if (fn.Find(_T("://")) == -1) {
+    if (!PathUtils::IsURL(fn)) {
         return __super::Open(lpszFileName);
     }
 
@@ -806,6 +807,8 @@ bool CWebTextFile::Open(LPCTSTR lpszFileName, DWORD& dwError)
     } catch (CInternetException* ie) {
         dwError = ie->m_dwError;
         ie->Delete();
+        return false;
+    } catch (...) {
         return false;
     }
 

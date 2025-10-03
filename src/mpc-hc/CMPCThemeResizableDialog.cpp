@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CMPCThemeResizableDialog, CResizableDialog)
     ON_WM_CTLCOLOR()
     ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle) //code ported from CmdUI.h to support official CResizableDialog
     ON_WM_INITMENUPOPUP()                    //code ported from CmdUI.h to support official CResizableDialog
+    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -146,4 +147,10 @@ void CMPCThemeResizableDialog::OnInitMenuPopup(CMenu* pPopupMenu, UINT /*nIndex*
         }
         state.m_nIndexMax = nCount;
     }
+}
+
+
+void CMPCThemeResizableDialog::OnSize(UINT nType, int cx, int cy) {
+    __super::OnSize(nType, cx, cy);
+    Invalidate(); //adipose: investigate need for this
 }

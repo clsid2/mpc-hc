@@ -62,13 +62,14 @@ BOOL CPlayerSubresyncBar::Create(CWnd* pParentWnd, UINT defDockBarID, CCritSec* 
 
     m_list.CreateEx(
         WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE,
-        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP | LVS_REPORT | LVS_OWNERDATA /*|LVS_SHOWSELALWAYS*/ | LVS_AUTOARRANGE | LVS_NOSORTHEADER,
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | LVS_REPORT | LVS_OWNERDATA /*|LVS_SHOWSELALWAYS*/ | LVS_AUTOARRANGE | LVS_NOSORTHEADER,
         CRect(0, 0, 100, 100), this, IDC_SUBRESYNCLIST);
 
     ScaleFont();
 
     //m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
     m_list.setAdditionalStyles(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
     m_list.setColorInterface(this);
     m_strYes = m_strYesMenu = ResStr(IDS_SUBRESYNC_YES);
     m_strNo = m_strNoMenu = ResStr(IDS_SUBRESYNC_NO);
@@ -1367,70 +1368,72 @@ void CPlayerSubresyncBar::GetCustomGridColors(int nItem, COLORREF& horzGridColor
 
 void CPlayerSubresyncBar::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-
+    //this custom draw is used only in classic mode
     *pResult = CDRF_DODEFAULT;
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        DoCustomPrePaint();
-        *pResult = CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        pLVCD->nmcd.uItemState &= ~CDIS_FOCUS;
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            DoCustomPrePaint();
+            *pResult = CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            pLVCD->nmcd.uItemState &= ~CDIS_FOCUS;
 
-        *pResult = CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYSUBITEMDRAW;
-    } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        bool ignore;
-        GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
-        *pResult = CDRF_NOTIFYPOSTPAINT;
-    } else if ((CDDS_ITEMPOSTPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        //      *pResult = CDRF_DODEFAULT;
-    } else if (CDDS_ITEMPOSTPAINT == pLVCD->nmcd.dwDrawStage) {
-        int nItem = static_cast<int>(pLVCD->nmcd.dwItemSpec);
+            *pResult = CDRF_NOTIFYPOSTPAINT | CDRF_NOTIFYSUBITEMDRAW;
+        } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            bool ignore;
+            GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
+            *pResult = CDRF_NOTIFYPOSTPAINT;
+        } else if ((CDDS_ITEMPOSTPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            //      *pResult = CDRF_DODEFAULT;
+        } else if (CDDS_ITEMPOSTPAINT == pLVCD->nmcd.dwDrawStage) {
+            int nItem = static_cast<int>(pLVCD->nmcd.dwItemSpec);
 
-        LVITEM rItem;
-        ZeroMemory(&rItem, sizeof(LVITEM));
-        rItem.mask  = LVIF_IMAGE | LVIF_STATE;
-        rItem.iItem = nItem;
-        rItem.stateMask = LVIS_SELECTED;
-        m_list.GetItem(&rItem);
-
-        {
-            CDC* pDC = CDC::FromHandle(pLVCD->nmcd.hdc);
-            COLORREF horzGridColor, vertGridColor;
-            GetCustomGridColors(nItem, horzGridColor, vertGridColor);
-
-            CRect rcItem;
-            m_list.GetItemRect(nItem, &rcItem, LVIR_BOUNDS);
+            LVITEM rItem;
+            ZeroMemory(&rItem, sizeof(LVITEM));
+            rItem.mask = LVIF_IMAGE | LVIF_STATE;
+            rItem.iItem = nItem;
+            rItem.stateMask = LVIS_SELECTED;
+            m_list.GetItem(&rItem);
 
             {
-                CPen p(PS_INSIDEFRAME, 1, horzGridColor);
-                CPen* old = pDC->SelectObject(&p);
-                pDC->MoveTo(CPoint(rcItem.left, rcItem.bottom - 1));
-                pDC->LineTo(CPoint(rcItem.right, rcItem.bottom - 1));
-                pDC->SelectObject(old);
-            }
+                CDC* pDC = CDC::FromHandle(pLVCD->nmcd.hdc);
+                COLORREF horzGridColor, vertGridColor;
+                GetCustomGridColors(nItem, horzGridColor, vertGridColor);
 
-            {
-                CPen p(PS_INSIDEFRAME, 1, vertGridColor);
-                CPen* old = pDC->SelectObject(&p);
+                CRect rcItem;
+                m_list.GetItemRect(nItem, &rcItem, LVIR_BOUNDS);
 
-                CHeaderCtrl* pHeader = (CHeaderCtrl*)m_list.GetDlgItem(0);
-                int nColumnCount = pHeader->GetItemCount();
-
-                // Get the column offset
-                int offset = rcItem.left;
-                for (int i = 0; i < nColumnCount; i++) {
-                    offset += m_list.GetColumnWidth(i);
-                    pDC->MoveTo(CPoint(offset, rcItem.top));
-                    pDC->LineTo(CPoint(offset, rcItem.bottom));
+                {
+                    CPen p(PS_INSIDEFRAME, 1, horzGridColor);
+                    CPen* old = pDC->SelectObject(&p);
+                    pDC->MoveTo(CPoint(rcItem.left, rcItem.bottom - 1));
+                    pDC->LineTo(CPoint(rcItem.right, rcItem.bottom - 1));
+                    pDC->SelectObject(old);
                 }
 
-                pDC->SelectObject(old);
-            }
+                {
+                    CPen p(PS_INSIDEFRAME, 1, vertGridColor);
+                    CPen* old = pDC->SelectObject(&p);
 
-            *pResult = CDRF_SKIPDEFAULT;
+                    CHeaderCtrl* pHeader = (CHeaderCtrl*)m_list.GetDlgItem(0);
+                    int nColumnCount = pHeader->GetItemCount();
+
+                    // Get the column offset
+                    int offset = rcItem.left;
+                    for (int i = 0; i < nColumnCount; i++) {
+                        offset += m_list.GetColumnWidth(i);
+                        pDC->MoveTo(CPoint(offset, rcItem.top));
+                        pDC->LineTo(CPoint(offset, rcItem.bottom));
+                    }
+
+                    pDC->SelectObject(old);
+                }
+
+                *pResult = CDRF_SKIPDEFAULT;
+            }
+        } else if (CDDS_POSTPAINT == pLVCD->nmcd.dwDrawStage) {
         }
-    } else if (CDDS_POSTPAINT == pLVCD->nmcd.dwDrawStage) {
     }
 }
 

@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
 # Mac Balls, 2022
-# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2025
+# Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-05 10:29:28+0000\n"
+"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2025\n"
+"Last-Translator: Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -587,9 +587,9 @@ msgid ""
 "videocard's settings, subtitles aren't going to look any better but it will "
 "surely eat your CPU."
 msgstr ""
-"Dacă anulezi și activezi antialiasarea pe ecranul complet undeva la setările"
-" plăcii tale video, subtitrările nu vor arăta mai bine, dar cu siguranță îți"
-" vor consuma procesorul."
+"Dacă anulezi și activezi antialiasarea pe ecranul complet (pe tot ecranul) "
+"undeva la setările plăcii tale video, subtitrările nu vor arăta mai bine, "
+"dar cu siguranță îți vor consuma procesorul."
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC2"
 msgid "File extensions"
@@ -1498,7 +1498,7 @@ msgstr "Lansează fișierele în modul ecran complet (pe tot ecranul)"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
 msgid "Hide controls in fullscreen"
-msgstr "Ascunde controalele în ecran complet"
+msgstr "Ascunde controalele în modul ecran complet"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
 msgid "ms"
@@ -1691,10 +1691,6 @@ msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
 msgstr "Depanează nuanțatoarele (shaderele)"
 
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
-msgid "Debug Information"
-msgstr "Informații de depanare"
-
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
 msgid "PS 2.0"
 msgstr "PS 2.0"
@@ -1710,6 +1706,10 @@ msgstr "PS 2.0a"
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
 msgid "PS 3.0"
 msgstr "PS 3.0"
+
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
+msgid "Debug Information"
+msgstr "Informații de depanare"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
@@ -1998,56 +1998,56 @@ msgstr "Anulare"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "ToolBar Style"
-msgstr ""
+msgstr "Stilul barei de unelte"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "ToolBar Scale:"
-msgstr ""
+msgstr "Scala barie de unelte:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr ""
+msgstr "Stilul activ:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr ""
+msgstr "Butonul personalizat 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
-msgstr ""
+msgstr "Clic"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Right click"
-msgstr ""
+msgstr "Clic dreapta"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr ""
+msgstr "Butonul personalizat 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr ""
+msgstr "Butonul personalizat 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr ""
+msgstr "Butonul personalizat 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"
-msgstr ""
+msgstr "Implicit"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
 msgid "<<"
-msgstr ""
+msgstr "<<"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
 msgid ">>"
-msgstr ""
+msgstr ">>"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
 msgid "^"
-msgstr ""
+msgstr "^"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
-msgstr ""
+msgstr "v"

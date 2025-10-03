@@ -240,7 +240,8 @@ STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetSubPicProvider(ISubPicProv
     }
 
     if (m_pAllocator) {
-        m_pAllocator->SetCurSize(CSize(m_windowRect.Width(), m_windowRect.Height()));
+        m_pAllocator->SetMaxTextureSize(m_curSubtitleTextureSize);
+        m_pAllocator->SetCurSize(m_windowRect.Size());
         m_pAllocator->SetCurVidRect(m_videoRect);
     }
 
