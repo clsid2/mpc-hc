@@ -2260,7 +2260,7 @@ msgid ""
 "\n"
 "This feature can be disabled later from the Miscellaneous options page."
 msgstr ""
-"Chcesz, aby okresowo były sprawdzane aktualizacje MPC-HC?\n"
+"Czy chcesz, aby okresowo były sprawdzane aktualizacje MPC-HC?\n"
 "\n"
 "Ta opcja może zostać później wyłączona w ustawieniach w zakładce „Różne”."
 
