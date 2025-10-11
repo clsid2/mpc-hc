@@ -1998,7 +1998,7 @@ msgstr "Estilo de Barra de Herramientas"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "ToolBar Scale:"
-msgstr "Escala de Barra de Herramientas"
+msgstr "Escala de Barra de Herramientas:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
