@@ -2002,7 +2002,7 @@ msgstr "Escala de Barra de Herramientas:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr "Activar Estilo"
+msgstr "Activar Estilo:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
