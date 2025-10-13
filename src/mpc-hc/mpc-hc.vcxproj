@@ -144,6 +144,7 @@
     <ClCompile Include="CMPCThemePropPageButton.cpp" />
     <ClCompile Include="CMPCThemeResizablePropertyPage.cpp" />
     <ClCompile Include="CMPCThemeResizablePropertySheet.cpp" />
+    <ClCompile Include="CMPCThemeScrollBarRenderer.cpp" />
     <ClCompile Include="CMPCThemeTitleBarControlButton.cpp" />
     <ClCompile Include="CMPCThemeUtil.cpp" />
     <ClCompile Include="CMPCThemeComboBox.cpp" />
@@ -337,6 +338,7 @@
     <ClInclude Include="CMPCThemePropPageButton.h" />
     <ClInclude Include="CMPCThemeResizablePropertyPage.h" />
     <ClInclude Include="CMPCThemeResizablePropertySheet.h" />
+    <ClInclude Include="CMPCThemeScrollBarRenderer.h" />
     <ClInclude Include="CMPCThemeTitleBarControlButton.h" />
     <ClInclude Include="CMPCThemeUtil.h" />
     <ClInclude Include="CMPCThemeComboBox.h" />

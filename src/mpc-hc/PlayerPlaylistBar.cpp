@@ -1129,7 +1129,6 @@ void CPlayerPlaylistBar::Append(CAtlList<CString>& fns, bool fMulti, CAtlList<CS
         if (activateListItemIndex) { // Select the first added item only if some were already present
             m_list.SetItemState(activateListItemIndex, LVIS_SELECTED, LVIS_SELECTED);
         }
-        m_list.updateSB();
     }
 }
 
@@ -1772,7 +1771,6 @@ void CPlayerPlaylistBar::ResizeListColumn()
         m_list.SetRedraw(TRUE);
 
         Invalidate();
-        m_list.updateSB();
         m_list.RedrawWindow(nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
     }
 }

@@ -7,26 +7,20 @@
 
 CMPCThemePlayerListCtrl::ColumnCache CMPCThemePlayerListCtrl::s_columnCache;
 
-CMPCThemePlayerListCtrl::CMPCThemePlayerListCtrl() : CListCtrl()
+CMPCThemePlayerListCtrl::CMPCThemePlayerListCtrl() : CListCtrl(), CMPCThemeScrollBarRenderer()
 {
     themeGridLines = false;
     fullRowSelect = false;
-    themedSBHelper = nullptr;
     clipChildWindows = false;
     hasCheckedColors = false;
     hasCBImages = false;
     customThemeInterface = nullptr;
-    if (!CMPCThemeUtil::canUseWin10DarkTheme()) {
-        themedSBHelper = DEBUG_NEW CMPCThemeScrollBarHelper(this);
-    }
+
 }
 
 
 CMPCThemePlayerListCtrl::~CMPCThemePlayerListCtrl()
 {
-    if (nullptr != themedSBHelper) {
-        delete themedSBHelper;
-    }
 }
 
 
@@ -53,35 +47,12 @@ IMPLEMENT_DYNAMIC(CMPCThemePlayerListCtrl, CListCtrl)
 
 BEGIN_MESSAGE_MAP(CMPCThemePlayerListCtrl, CListCtrl)
     ON_WM_PAINT()
-    ON_WM_NCPAINT()
     ON_WM_CREATE()
-    ON_NOTIFY_REFLECT_EX(LVN_ENDSCROLL, OnLvnEndScroll)
     ON_WM_MOUSEMOVE()
     ON_WM_MOUSEWHEEL()
-    ON_WM_NCCALCSIZE()
-    ON_NOTIFY_REFLECT_EX(NM_CUSTOMDRAW, OnCustomDraw)
     ON_WM_ERASEBKGND()
     ON_WM_CTLCOLOR()
-    ON_NOTIFY_EX(HDN_ENDTRACKA, 0, &OnHdnEndtrack)
-    ON_NOTIFY_EX(HDN_ENDTRACKW, 0, &OnHdnEndtrack)
-    ON_NOTIFY_REFLECT_EX(LVN_ITEMCHANGED, &OnLvnItemchanged)
-    ON_MESSAGE(PLAYER_PLAYLIST_UPDATE_SCROLLBAR, OnDelayed_UpdateScrollbar)
-    ON_WM_WINDOWPOSCHANGED()
 END_MESSAGE_MAP()
-
-void CMPCThemePlayerListCtrl::OnWindowPosChanged(WINDOWPOS* lpwndpos) {
-    if (AppNeedsThemedControls()) {
-        if (themedSBHelper) {
-            if (0 != (GetStyle() & (WS_VSCROLL | WS_HSCROLL))) {
-                themedSBHelper->OnWindowPosChanged();
-            } else {
-                themedSBHelper->InvalidateScrollbarArea();
-            }
-        }
-    }
-    return __super::OnWindowPosChanged(lpwndpos);
-}
-
 
 void CMPCThemePlayerListCtrl::subclassHeader()
 {
@@ -337,20 +308,6 @@ void CMPCThemePlayerListCtrl::setCheckedColors(COLORREF checkedBG, COLORREF chec
     hasCheckedColors = true;
 }
 
-void CMPCThemePlayerListCtrl::OnNcPaint()
-{
-    if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->themedNcPaintWithSB();
-        } else {
-            CMPCThemeScrollBarHelper::themedNcPaint(this, this);
-        }
-    } else {
-        __super::OnNcPaint();
-    }
-}
-
-
 int CMPCThemePlayerListCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (__super::OnCreate(lpCreateStruct) == -1) {
@@ -365,56 +322,10 @@ int CMPCThemePlayerListCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return 0;
 }
 
-BOOL CMPCThemePlayerListCtrl::OnLvnEndScroll(NMHDR* pNMHDR, LRESULT* pResult)
-{
-    if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->updateScrollInfo();
-        }
-        *pResult = 0;
-    }
-    return FALSE;
-}
-
-void CMPCThemePlayerListCtrl::updateSB()
-{
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->hideNativeScrollBars();
-    }
-}
-
-void CMPCThemePlayerListCtrl::updateScrollInfo(bool invalidate /*=false*/)
-{
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo(invalidate ? SCROLL_INVALIDATE : SCROLL_NOPAINT);
-    }
-}
-
 LRESULT CMPCThemePlayerListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (AppNeedsThemedControls() && nullptr != themedSBHelper) {
-        if (themedSBHelper->WindowProc(this, message, wParam, lParam)) {
-            return 1;
-        }
-    }
-
+    CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
     LRESULT result = __super::WindowProc(message, wParam, lParam);
-
-    if (message == WM_NOTIFY) {
-        LPNMHDR pNMHDR = (LPNMHDR)lParam;
-
-        CHeaderCtrl* pHeader = GetHeaderFast();
-        if (pHeader && pNMHDR->hwndFrom == pHeader->GetSafeHwnd()) {
-            switch (pNMHDR->code) {
-            case HDN_ITEMCHANGED:
-                if (nullptr != themedSBHelper) {
-                    themedSBHelper->updateScrollInfo(SCROLL_REDRAW);
-                }
-                break;
-            }
-        }
-    }
-
     return result;
 }
 
@@ -459,18 +370,6 @@ BOOL CMPCThemePlayerListCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
     ScreenToClient(&pt);
     updateToolTip(pt);
     return ret;
-}
-
-
-void CMPCThemePlayerListCtrl::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
-{
-    __super::OnNcCalcSize(bCalcValidRects, lpncsp);
-    if (AppNeedsThemedControls()) {
-        if (GetStyle() & WS_HSCROLL && nullptr == themedSBHelper) {
-            themedSBHelper = DEBUG_NEW CMPCThemeScrollBarHelper(this);
-        }
-        ::PostMessage(m_hWnd, PLAYER_PLAYLIST_UPDATE_SCROLLBAR, (WPARAM)0, (LPARAM)TRUE);
-    }
 }
 
 void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect rRow, DWORD dwStyle, DWORD extendedStyle, UINT itemState, bool isChecked, CImageList* smallImageList, UINT cbResID)
@@ -847,39 +746,6 @@ HBRUSH CMPCThemePlayerListCtrl::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     } else {
         return __super::OnCtlColor(pDC, pWnd, nCtlColor);
     }
-}
-
-
-BOOL CMPCThemePlayerListCtrl::OnHdnEndtrack(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
-{
-    //    LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
-    if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->updateScrollInfo();
-        }
-    }
-    *pResult = 0;
-
-    //we don't want to prevent this event from being processed
-    //it's used when "show windows contents while dragging" is false,
-    //to draw the outline of the resized column
-    return FALSE; 
-}
-
-LRESULT CMPCThemePlayerListCtrl::OnDelayed_UpdateScrollbar(WPARAM, LPARAM invalidate)
-{
-    updateScrollInfo((bool)invalidate);
-    return 0;
-}
-
-BOOL CMPCThemePlayerListCtrl::OnLvnItemchanged(NMHDR* pNMHDR, LRESULT* pResult)
-{
-    //LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-    if (AppNeedsThemedControls()) {
-        ::PostMessage(m_hWnd, PLAYER_PLAYLIST_UPDATE_SCROLLBAR, (WPARAM)0, (LPARAM)0);
-    }
-    *pResult = 0;
-    return FALSE;
 }
 
 void CMPCThemePlayerListCtrl::DrawAllItems(CDC* pDC, const CRect& drawRect) {

@@ -4,6 +4,7 @@
 #include "CMPCThemeUtil.h"
 #include "CMPCThemeHeaderCtrl.h"
 #include "MemoryDCBuffer.h"
+#include "CMPCThemeScrollBarRenderer.h"
 
 //undocumented state changes for LVS_EX_CHECKBOXES
 #define LVIS_UNCHECKED  0x1000
@@ -18,7 +19,7 @@ public:
     virtual bool UseCustomGrid() { return true; };
 };
 
-class CMPCThemePlayerListCtrl : public CListCtrl, CMPCThemeUtil, CMPCThemeScrollable
+class CMPCThemePlayerListCtrl : public CListCtrl, CMPCThemeUtil, public CMPCThemeScrollBarRenderer
 {
 private:
     MemoryDCBuffer m_listBuffer;
@@ -31,8 +32,6 @@ public:
     virtual ~CMPCThemePlayerListCtrl();
     DECLARE_DYNAMIC(CMPCThemePlayerListCtrl)
 
-    void updateSB();
-    void updateScrollInfo(bool invalidate = false);
     LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     void updateToolTip(CPoint point);
     virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -53,13 +52,9 @@ public:
 
     DECLARE_MESSAGE_MAP()
     afx_msg void OnPaint();
-    afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
-    afx_msg void OnNcPaint();
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg BOOL OnLvnEndScroll(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-    afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp);
     afx_msg BOOL OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
@@ -80,11 +75,6 @@ protected:
     BOOL EraseBkgnd(CDC* pDC, CRect updateRect);
     void drawItem(CDC* pDC, int nItem, int nSubItem, CRect itemRect, DWORD dwStyle, DWORD extendedStyle, UINT itemState, bool isChecked, CImageList* smallImageList, UINT cbResID);
     virtual void PreSubclassWindow();
-public:
-    void doDefault() { Default(); };
-    afx_msg BOOL OnHdnEndtrack(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
-    afx_msg LRESULT OnDelayed_UpdateScrollbar(WPARAM, LPARAM);
-    afx_msg BOOL OnLvnItemchanged(NMHDR* pNMHDR, LRESULT* pResult);
 private:
     struct ColumnCache {
         struct ColumnInfo {
