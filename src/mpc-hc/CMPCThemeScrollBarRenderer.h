@@ -9,6 +9,7 @@ public:
 
     void ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     void DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll);
+    void HandleNcPaint(HWND hWnd);
     BOOL ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, HRGN& hOldClipRgn, bool bDrawThemedScrollbars = false);
     static void RestoreClipping(HDC hdc, HRGN hOldClipRgn);
     eXSB_AREA HitTestScrollBar(HWND hWnd, CPoint point, bool bVertical, const CRect& scrollRect);

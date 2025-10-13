@@ -687,3 +687,38 @@ void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd,
         }
     }
 }
+
+void CMPCThemeScrollBarRenderer::HandleNcPaint(HWND hWnd) {
+    CWindowDC dc(CWnd::FromHandle(hWnd));
+    int oldDC = dc.SaveDC();
+
+    CRect wr;
+    ::GetWindowRect(hWnd, wr);
+    wr.OffsetRect(-wr.left, -wr.top);
+
+    CRect clip = wr;
+    CPoint clientOffset = CMPCThemeUtil::GetClientRectOffset(CWnd::FromHandle(hWnd));
+    clip.DeflateRect(clientOffset.x, clientOffset.x);
+    dc.ExcludeClipRect(clip);
+
+    CRect vScrollRect, hScrollRect;
+    bool bHasVScroll, bHasHScroll;
+    if (GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
+        if (bHasVScroll) {
+            dc.ExcludeClipRect(vScrollRect);
+        }
+        if (bHasHScroll) {
+            dc.ExcludeClipRect(hScrollRect);
+        }
+    }
+
+    CBrush brush(CMPCTheme::WindowBorderColorLight);
+    dc.FillSolidRect(wr, CMPCTheme::ContentBGColor);
+    dc.FrameRect(wr, &brush);
+
+    dc.RestoreDC(oldDC);
+
+    if (bHasVScroll || bHasHScroll) {
+        DrawThemedScrollBars(&dc, hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll);
+    }
+}

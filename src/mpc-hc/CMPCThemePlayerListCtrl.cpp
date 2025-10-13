@@ -30,7 +30,7 @@ void CMPCThemePlayerListCtrl::PreSubclassWindow()
         EnableToolTips(TRUE);
     } else {
         if (CMPCThemeUtil::canUseWin10DarkTheme()) {
-            SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
+            //SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
         } else {
             SetWindowTheme(GetSafeHwnd(), L"", NULL);
         }
@@ -47,6 +47,7 @@ IMPLEMENT_DYNAMIC(CMPCThemePlayerListCtrl, CListCtrl)
 
 BEGIN_MESSAGE_MAP(CMPCThemePlayerListCtrl, CListCtrl)
     ON_WM_PAINT()
+    ON_WM_NCPAINT()
     ON_WM_CREATE()
     ON_WM_MOUSEMOVE()
     ON_WM_MOUSEWHEEL()
@@ -306,6 +307,14 @@ void CMPCThemePlayerListCtrl::setCheckedColors(COLORREF checkedBG, COLORREF chec
     checkedTextClr = checkedText;
     uncheckedTextClr = uncheckedText;
     hasCheckedColors = true;
+}
+
+void CMPCThemePlayerListCtrl::OnNcPaint() {
+    if (AppNeedsThemedControls()) {
+        HandleNcPaint(m_hWnd);
+    } else {
+        __super::OnNcPaint();
+    }
 }
 
 int CMPCThemePlayerListCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
