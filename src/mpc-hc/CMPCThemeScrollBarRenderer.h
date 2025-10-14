@@ -52,14 +52,16 @@ protected:
     void UninstallMouseHook();
     void HandleMouseEvent(WPARAM wParam, const POINT& pt);
 
+    bool GetScrollBarState(HWND hWnd, int nBar, SCROLLBARINFO& sbi);
+
     void OnNcMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam);
     void OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
     void OnNcLButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam);
     void OnNcMouseLeave(HWND hWnd);
 
     eXSB_AREA GetScrollBarArea(HWND hWnd, CPoint clientPoint, bool bVertical, const CRect& scrollRect);
-    void CalculateScrollBarRects(HWND hWnd, int nBar, const CRect& scrollRect, CRect& rectTLArrow, CRect& rectBRArrow, CRect& rectThumb, CRect& rectTLChannel, CRect& rectBRChannel);
+    void CalculateScrollBarRects(HWND hWnd, int nBar, const CRect& scrollRect, CRect& rectTLArrow, CRect& rectBRArrow, CRect& rectThumb, CRect& rectTLChannel, CRect& rectBRChannel, bool* pbEnabled = nullptr);
     BOOL GetScrollBarRect(HWND hWnd, BOOL bVertical, CRect& rect);
     static void drawSBArrow(CDC& dc, COLORREF arrowClr, CRect arrowRect, arrowOrientation orientation, int dpi);
-    void DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, const CRect& targetRect, bool bEnabled);
+    void DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, const CRect& targetRect);
 };

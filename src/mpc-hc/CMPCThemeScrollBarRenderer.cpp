@@ -94,18 +94,24 @@ void CMPCThemeScrollBarRenderer::HandleMouseEvent(WPARAM wParam, const POINT& pt
     }
 }
 
+bool CMPCThemeScrollBarRenderer::GetScrollBarState(HWND hWnd, int nBar, SCROLLBARINFO& sbi) {
+    sbi.cbSize = sizeof(SCROLLBARINFO);
+    int objId = (nBar == SB_VERT) ? OBJID_VSCROLL : OBJID_HSCROLL;
+    return GetScrollBarInfo(hWnd, objId, &sbi) != FALSE;
+}
+
 BOOL CMPCThemeScrollBarRenderer::GetScrollBarRect(HWND hWnd, BOOL bVertical, CRect& rect) {
     if (!hWnd) {
         return FALSE;
     }
 
     SCROLLBARINFO sbi = { 0 };
-    sbi.cbSize = sizeof(SCROLLBARINFO);
-    if (!GetScrollBarInfo(hWnd, bVertical ? OBJID_VSCROLL : OBJID_HSCROLL, &sbi)) {
+    int nBar = bVertical ? SB_VERT : SB_HORZ;
+    if (!GetScrollBarState(hWnd, nBar, sbi)) {
         return FALSE;
     }
 
-    if (sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE || sbi.rgstate[0] & STATE_SYSTEM_UNAVAILABLE) {
+    if (sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE) {
         return FALSE;
     }
 
@@ -328,7 +334,7 @@ void CMPCThemeScrollBarRenderer::drawSBArrow(CDC& dc, COLORREF arrowClr, CRect a
     }
 }
 
-void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, const CRect& targetRect, bool bEnabled) {
+void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, const CRect& targetRect) {
     DpiHelper dpiWindow;
     dpiWindow.Override(hWnd);
     int nDPI = dpiWindow.DPIX();
@@ -337,7 +343,8 @@ void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, co
     ScrollBarState& state = bHorizontal ? m_hScrollState : m_vScrollState;
 
     CRect rectTLArrow, rectBRArrow, rectThumb, rectTLChannel, rectBRChannel;
-    CalculateScrollBarRects(hWnd, nBar, targetRect, rectTLArrow, rectBRArrow, rectThumb, rectTLChannel, rectBRChannel);
+    bool bScrollBarEnabled = true;
+    CalculateScrollBarRects(hWnd, nBar, targetRect, rectTLArrow, rectBRArrow, rectThumb, rectTLChannel, rectBRChannel, &bScrollBarEnabled);
 
     int xOffset = targetRect.left;
     int yOffset = targetRect.top;
@@ -386,7 +393,7 @@ void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, co
         }
 
         XSB_EDRAWELEM eState;
-        if (!bEnabled) {
+        if (!bScrollBarEnabled) {
             eState = eDisabled;
         } else if (state.bDragging && stArea.IsThumb()) {
             eState = eDown;
@@ -502,9 +509,7 @@ eXSB_AREA CMPCThemeScrollBarRenderer::GetScrollBarArea(HWND hWnd, CPoint clientP
     return eNone;
 }
 
-void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, const CRect& scrollRect,
-    CRect& rectTLArrow, CRect& rectBRArrow, CRect& rectThumb,
-    CRect& rectTLChannel, CRect& rectBRChannel) {
+void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, const CRect& scrollRect, CRect& rectTLArrow, CRect& rectBRArrow, CRect& rectThumb, CRect& rectTLChannel, CRect& rectBRChannel, bool* pbEnabled) {
     // Get scroll info
     SCROLLINFO si = { 0 };
     si.cbSize = sizeof(SCROLLINFO);
@@ -515,11 +520,19 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
         rectThumb.SetRectEmpty();
         rectTLChannel.SetRectEmpty();
         rectBRChannel.SetRectEmpty();
+        if (pbEnabled) *pbEnabled = false;
         return;
     }
 
+    bool bEnabled = true;
+    if (pbEnabled) {
+        SCROLLBARINFO sbi = { 0 };
+        if (GetScrollBarState(hWnd, nBar, sbi)) {
+            bEnabled = !(sbi.rgstate[0] & STATE_SYSTEM_UNAVAILABLE);
+        }
+        *pbEnabled = bEnabled;
+    }
     bool bHorizontal = (nBar == SB_HORZ);
-    bool bEnabled = ::IsWindowEnabled(hWnd);
     UINT uArrowWH = bHorizontal ? scrollRect.Height() : scrollRect.Width();
     UINT uThumbMinHW = 8;
 
@@ -532,7 +545,7 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
 
         int cxChannel = cxClient - (2 * cxArrow);
         int nRange = si.nMax - si.nMin + 1;
-        if (nRange > 0 && cxChannel > (int)uThumbMinHW && bEnabled) {
+        if (nRange > 0 && cxChannel > (int)uThumbMinHW) {
             double dblPx_SU = (double)cxChannel / (double)nRange;
             int xThumb = (int)((si.nPos - si.nMin) * dblPx_SU);
             int cxThumb = std::max((int)uThumbMinHW, (int)(si.nPage * dblPx_SU));
@@ -563,7 +576,7 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
 
         int cyChannel = cyClient - (2 * cyArrow);
         int nRange = si.nMax - si.nMin + 1;
-        if (nRange > 0 && cyChannel > (int)uThumbMinHW && bEnabled) {
+        if (nRange > 0 && cyChannel > (int)uThumbMinHW) {
             double dblPx_SU = (double)cyChannel / (double)nRange;
             int yThumb = (int)((si.nPos - si.nMin) * dblPx_SU);
             int cyThumb = std::max((int)uThumbMinHW, (int)(si.nPage * dblPx_SU));
@@ -666,17 +679,14 @@ void CMPCThemeScrollBarRenderer::OnNcMouseLeave(HWND hWnd) {
     m_hScrollState.eMouseOverArea.eArea = eNone;
 }
 
-void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd,
-    const CRect& vScrollRect, const CRect& hScrollRect,
-    bool bHasVScroll, bool bHasHScroll) {
-    bool bEnabled = ::IsWindowEnabled(hWnd);
+void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll) {
 
     if (bHasVScroll && !vScrollRect.IsRectEmpty()) {
-        DrawScrollBar(pDC, hWnd, SB_VERT, vScrollRect, bEnabled);
+        DrawScrollBar(pDC, hWnd, SB_VERT, vScrollRect);
     }
 
     if (bHasHScroll && !hScrollRect.IsRectEmpty()) {
-        DrawScrollBar(pDC, hWnd, SB_HORZ, hScrollRect, bEnabled);
+        DrawScrollBar(pDC, hWnd, SB_HORZ, hScrollRect);
     }
 
     // Draw corner if both scrollbars present

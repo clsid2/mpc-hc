@@ -333,7 +333,9 @@ int CMPCThemePlayerListCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 LRESULT CMPCThemePlayerListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
+    if (AppNeedsThemedControls()) {
+        CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
+    }
     LRESULT result = __super::WindowProc(message, wParam, lParam);
     return result;
 }
