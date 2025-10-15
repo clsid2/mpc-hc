@@ -729,6 +729,13 @@ void CMPCThemeScrollBarRenderer::HandleNcPaint(HWND hWnd) {
     dc.RestoreDC(oldDC);
 
     if (bHasVScroll || bHasHScroll) {
+        //this code is called with fMask=0, which should do nothing, but it triggers themed code that sets SB state
+        //if we draw directly, we fail to reset the SB state which can cause the internal hover detection to fail
+        //use case: switch between property pages and the scrollbar hover stops working
+        SCROLLINFO si = { sizeof(SCROLLINFO) };
+        ::GetScrollInfo(hWnd, SB_HORZ, &si);
+        ::SetScrollInfo(hWnd, SB_HORZ, &si, false);
+
         DrawThemedScrollBars(&dc, hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll);
     }
 }
