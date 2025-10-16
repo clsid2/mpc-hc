@@ -162,11 +162,7 @@ bool CMPCThemeScrollBarRenderer::GetScrollBarCornerRect(HWND hWnd, CRect& corner
         return false;
     }
 
-    if (CMPCThemeUtil::IsRTL(pWnd)) {
-        cornerRect = CRect(wr.left + borderThickness, wr.bottom - sbThickness - borderThickness, wr.left + sbThickness + borderThickness, wr.bottom - borderThickness);
-    } else {
-        cornerRect = CRect(wr.right - sbThickness - borderThickness, wr.bottom - sbThickness - borderThickness, wr.right - borderThickness, wr.bottom - borderThickness);
-    }
+    cornerRect = CRect(wr.right - sbThickness - borderThickness, wr.bottom - sbThickness - borderThickness, wr.right - borderThickness, wr.bottom - borderThickness);
 
     return true;
 }
@@ -351,6 +347,11 @@ void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, co
 
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);
+    DWORD dwLayout = GetLayout(dcMem.m_hDC);
+    if (dwLayout != GDI_ERROR && (dwLayout & LAYOUT_RTL)) {
+        SetLayout(dcMem.m_hDC, dwLayout & ~LAYOUT_RTL);
+    }
+
     CBitmap bmMem;
     bmMem.CreateCompatibleBitmap(pDC, targetRect.Width(), targetRect.Height());
     CBitmap* pOldBm = dcMem.SelectObject(&bmMem);
