@@ -3151,7 +3151,7 @@ msgstr "Rozmiar okna - powiększ +"
 
 msgctxt "IDS_AG_ZOOM_SUB"
 msgid "Zoom Window -"
-msgstr "Rozmiar okna - zmiejsz -"
+msgstr "Rozmiar okna - zmniejsz -"
 
 msgctxt "IDS_SEEKBAR_HOVER_PREVIEW"
 msgid "Video Preview"
