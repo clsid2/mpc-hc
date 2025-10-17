@@ -4379,7 +4379,7 @@ msgstr "/dvd\t\tUruchom w trybie DVD; „ścieżka” oznacza folder DVD (opcjon
 
 msgctxt "IDS_CMD_DVDPOS_TC"
 msgid "/dvdpos T#C\tStart playback at title T, chapter C"
-msgstr "/dvdpos T#C\trozpocznij odtwarzanie od tytułu T, rozdziału C"
+msgstr "/dvdpos T#C\tRozpocznij odtwarzanie od tytułu T, rozdziału C"
 
 msgctxt "IDS_CMD_DVDPOS_TIME"
 msgid "/dvdpos T#P\tStart playback at title T, position P (hh:mm:ss)"
