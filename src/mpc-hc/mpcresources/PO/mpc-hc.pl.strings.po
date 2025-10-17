@@ -2306,7 +2306,7 @@ msgstr "Proszę wprowadzić liczbę z przedziału od 1 do 365."
 
 msgctxt "IDS_AG_PNS_CENTER"
 msgid "Video Frame Center"
-msgstr "Klatka wideo – wyśrodkuj"
+msgstr "Klatka wideo - wyśrodkuj"
 
 msgctxt "IDS_AG_PNS_LEFT"
 msgid "Video Frame Left"
