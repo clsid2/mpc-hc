@@ -4370,7 +4370,7 @@ msgid ""
 "/filter \"filtername\"\tLoad DirectShow filters from a dynamic link library "
 "(wildcards allowed)"
 msgstr ""
-"/filter „nazwa_filtra”\twczytaj filtry DirectShow z biblioteki DLL "
+"/filter „nazwa_filtra”\tWczytaj filtry DirectShow z biblioteki DLL "
 "(obsługiwane są symbole wieloznaczne)"
 
 msgctxt "IDS_CMD_DVD"
