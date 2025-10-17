@@ -2334,7 +2334,7 @@ msgstr "Klatka wideo - w górę / w prawo"
 
 msgctxt "IDS_AG_PNS_DOWNLEFT"
 msgid "Video Frame Down/Left"
-msgstr "Klatka wideo – w dół / w lewo"
+msgstr "Klatka wideo - w dół / w lewo"
 
 msgctxt "IDS_MPLAYERC_59"
 msgid "Video Frame Down/Right"
