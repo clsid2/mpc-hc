@@ -4347,7 +4347,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_DUB"
 msgid "/dub \"dubname\"\tLoad an additional audio file"
-msgstr "/dub „nazwa_dźwięku”\twczytaj dodatkowy plik audio"
+msgstr "/dub „nazwa_dźwięku”\tWczytaj dodatkowy plik audio"
 
 msgctxt "IDS_CMD_DUBDELAY"
 msgid ""
