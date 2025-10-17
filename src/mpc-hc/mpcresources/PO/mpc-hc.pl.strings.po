@@ -4363,7 +4363,7 @@ msgstr "/d3dfs\t\trenderuj w trybie pełnoekranowym D3D"
 
 msgctxt "IDS_CMD_SUB"
 msgid "/sub \"subname\"\tLoad an additional subtitle file"
-msgstr "/sub „nazwa_pliku”\twczytaj dodatkowy plik napisów"
+msgstr "/sub „nazwa_pliku”\tWczytaj dodatkowy plik napisów"
 
 msgctxt "IDS_CMD_FILTER"
 msgid ""
