@@ -29,11 +29,13 @@ protected:
         stXSB_AREA eMouseOverArea;
         stXSB_AREA eMouseDownArea;
         bool bDragging;
+        bool bIgnoreNextLeave;  // Add this member
 
         ScrollBarState() {
             eMouseOverArea.eArea = eNone;
             eMouseDownArea.eArea = eNone;
             bDragging = false;
+            bIgnoreNextLeave = false;  // Initialize to false
         }
     };
 

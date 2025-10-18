@@ -395,7 +395,6 @@ void CMPCThemeScrollBarRenderer::DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, co
             continue;
         }
 
-        XSB_EDRAWELEM eState;
         if (!bScrollBarEnabled) {
             eState = eDisabled;
         } else if (state.bDragging && stArea.IsThumb()) {
@@ -614,31 +613,32 @@ void CMPCThemeScrollBarRenderer::OnNcMouseMove(HWND hWnd, WPARAM wParam, LPARAM 
         return;
     }
 
-    if (bHasVScroll && vScrollRect.PtInRect(point)) {
-        eXSB_AREA area = GetScrollBarArea(hWnd, point, true, vScrollRect);
-        if (m_vScrollState.bDragging) {
-            m_vScrollState.eMouseOverArea.eArea = area;
-        } else if (m_vScrollState.eMouseDownArea.eArea != eNone) {
-            m_vScrollState.eMouseOverArea.eArea = (area == m_vScrollState.eMouseDownArea.eArea) ? area : eNone;
-        } else {
-            m_vScrollState.eMouseOverArea.eArea = area;
-        }
-    } else {
-        m_vScrollState.eMouseOverArea.eArea = eNone;
-    }
+    auto updateScrollBarState = [&](ScrollBarState& state, bool bHasScrollBar, const CRect& scrollRect, bool bVertical) {
+        if (bHasScrollBar && scrollRect.PtInRect(point)) {
+            eXSB_AREA area = GetScrollBarArea(hWnd, point, bVertical, scrollRect);
+            eXSB_AREA oldArea = state.eMouseOverArea.eArea;
 
-    if (bHasHScroll && hScrollRect.PtInRect(point)) {
-        eXSB_AREA area = GetScrollBarArea(hWnd, point, false, hScrollRect);
-        if (m_hScrollState.bDragging) {
-            m_hScrollState.eMouseOverArea.eArea = area;
-        } else if (m_hScrollState.eMouseDownArea.eArea != eNone) {
-            m_hScrollState.eMouseOverArea.eArea = (area == m_hScrollState.eMouseDownArea.eArea) ? area : eNone;
+            if (state.bDragging) {
+                state.eMouseOverArea.eArea = area;
+            } else if (state.eMouseDownArea.eArea != eNone) {
+                state.eMouseOverArea.eArea = (area == state.eMouseDownArea.eArea) ? area : eNone;
+            } else {
+                state.eMouseOverArea.eArea = area;
+            }
+
+            // Only clear ignore flag if mouse actually changed areas
+            if (oldArea != state.eMouseOverArea.eArea) {
+                state.bIgnoreNextLeave = false;
+            }
         } else {
-            m_hScrollState.eMouseOverArea.eArea = area;
+            state.eMouseOverArea.eArea = eNone;
+            // Mouse moved outside scrollbar - clear flag
+            state.bIgnoreNextLeave = false;
         }
-    } else {
-        m_hScrollState.eMouseOverArea.eArea = eNone;
-    }
+    };
+
+    updateScrollBarState(m_vScrollState, bHasVScroll, vScrollRect, true);
+    updateScrollBarState(m_hScrollState, bHasHScroll, hScrollRect, false);
 }
 
 void CMPCThemeScrollBarRenderer::OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam) {
@@ -656,6 +656,7 @@ void CMPCThemeScrollBarRenderer::OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARA
         if (m_vScrollState.eMouseDownArea.IsThumb()) {
             m_vScrollState.bDragging = true;
         }
+        m_vScrollState.bIgnoreNextLeave = true;
         InstallMouseHook(hWnd);
     }
 
@@ -664,6 +665,7 @@ void CMPCThemeScrollBarRenderer::OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARA
         if (m_hScrollState.eMouseDownArea.IsThumb()) {
             m_hScrollState.bDragging = true;
         }
+        m_hScrollState.bIgnoreNextLeave = true;
         InstallMouseHook(hWnd);
     }
 }
@@ -678,6 +680,20 @@ void CMPCThemeScrollBarRenderer::OnNcLButtonUp(HWND hWnd, WPARAM wParam, LPARAM 
 }
 
 void CMPCThemeScrollBarRenderer::OnNcMouseLeave(HWND hWnd) {
+    // CRITICAL FIX: Ignore first spurious leave after button down
+    // Windows sends WM_NCMOUSELEAVE immediately when auto-repeat starts (horizontal scrollbar)
+    // Clear flag after ignoring to handle subsequent real leave events
+    if (m_vScrollState.bIgnoreNextLeave) {
+        m_vScrollState.bIgnoreNextLeave = false;
+        return;
+    }
+
+    if (m_hScrollState.bIgnoreNextLeave) {
+        m_hScrollState.bIgnoreNextLeave = false;
+        return;
+    }
+
+    // Mouse really left - clear over state
     m_vScrollState.eMouseOverArea.eArea = eNone;
     m_hScrollState.eMouseOverArea.eArea = eNone;
 }
