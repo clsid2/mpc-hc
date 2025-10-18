@@ -26,6 +26,9 @@ void CMPCThemeScrollBarRenderer::ProcessMessage(HWND hWnd, UINT message, WPARAM 
     case WM_NCLBUTTONDOWN:
         OnNcLButtonDown(hWnd, wParam, lParam);
         break;
+    case WM_NCLBUTTONDBLCLK:
+        OnNcLButtonDown(hWnd, wParam, lParam);
+        break;
     case WM_NCLBUTTONUP:
         OnNcLButtonUp(hWnd, wParam, lParam);
         break;
@@ -86,7 +89,6 @@ void CMPCThemeScrollBarRenderer::HandleMouseEvent(WPARAM wParam, const POINT& pt
         ProcessMessage(m_hWndTracking, WM_NCMOUSEMOVE, 0, lParam);
         break;
     }
-
     case WM_LBUTTONUP: {
         ProcessMessage(m_hWndTracking, WM_NCLBUTTONUP, 0, lParam);
         break;
