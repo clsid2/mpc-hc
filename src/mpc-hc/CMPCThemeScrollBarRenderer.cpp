@@ -536,7 +536,7 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
     }
     bool bHorizontal = (nBar == SB_HORZ);
     UINT uArrowWH = bHorizontal ? scrollRect.Height() : scrollRect.Width();
-    UINT uThumbMinHW = 8;
+    UINT uThumbMinHW = GetSystemMetrics(SM_CXVSCROLL);
 
     if (bHorizontal) {
         int cxClient = scrollRect.Width();
