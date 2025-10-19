@@ -522,7 +522,9 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
         rectThumb.SetRectEmpty();
         rectTLChannel.SetRectEmpty();
         rectBRChannel.SetRectEmpty();
-        if (pbEnabled) *pbEnabled = false;
+        if (pbEnabled) {
+            *pbEnabled = false;
+        }
         return;
     }
 
@@ -534,8 +536,11 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
         }
         *pbEnabled = bEnabled;
     }
+
     bool bHorizontal = (nBar == SB_HORZ);
     UINT uArrowWH = bHorizontal ? scrollRect.Height() : scrollRect.Width();
+
+    // Use system scrollbar width as minimum thumb size (matches Windows 10)
     UINT uThumbMinHW = GetSystemMetrics(SM_CXVSCROLL);
 
     if (bHorizontal) {
@@ -547,16 +552,18 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
 
         int cxChannel = cxClient - (2 * cxArrow);
         int nRange = si.nMax - si.nMin + 1;
-        if (nRange > 0 && cxChannel > (int)uThumbMinHW) {
-            double dblPx_SU = (double)cxChannel / (double)nRange;
-            int xThumb = (int)((si.nPos - si.nMin) * dblPx_SU);
-            int cxThumb = std::max((int)uThumbMinHW, (int)(si.nPage * dblPx_SU));
 
-            if (cxThumb > cxChannel) {
-                cxThumb = cxChannel;
-            }
-            if (xThumb + cxThumb > cxChannel) {
-                xThumb = cxChannel - cxThumb;
+        if (nRange > 0 && cxChannel > (int)uThumbMinHW) {
+            // Calculate thumb size
+            int cxThumb = std::clamp(MulDiv(cxChannel, si.nPage, nRange), (int)uThumbMinHW, cxChannel);
+
+            // Calculate thumb position based on available movement range
+            int movementRange = cxChannel - cxThumb;
+            int scrollRange = nRange - si.nPage;
+
+            int xThumb = 0;
+            if (scrollRange > 0) {
+                xThumb = MulDiv(movementRange, si.nPos - si.nMin, scrollRange);
             }
 
             xThumb += rectTLArrow.right;
@@ -578,16 +585,18 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
 
         int cyChannel = cyClient - (2 * cyArrow);
         int nRange = si.nMax - si.nMin + 1;
-        if (nRange > 0 && cyChannel > (int)uThumbMinHW) {
-            double dblPx_SU = (double)cyChannel / (double)nRange;
-            int yThumb = (int)((si.nPos - si.nMin) * dblPx_SU);
-            int cyThumb = std::max((int)uThumbMinHW, (int)(si.nPage * dblPx_SU));
 
-            if (cyThumb > cyChannel) {
-                cyThumb = cyChannel;
-            }
-            if (yThumb + cyThumb > cyChannel) {
-                yThumb = cyChannel - cyThumb;
+        if (nRange > 0 && cyChannel > (int)uThumbMinHW) {
+            // Calculate thumb size
+            int cyThumb = std::clamp(MulDiv(cyChannel, si.nPage, nRange), (int)uThumbMinHW, cyChannel);
+
+            // Calculate thumb position based on available movement range
+            int movementRange = cyChannel - cyThumb;
+            int scrollRange = nRange - si.nPage;
+
+            int yThumb = 0;
+            if (scrollRange > 0) {
+                yThumb = MulDiv(movementRange, si.nPos - si.nMin, scrollRange);
             }
 
             yThumb += rectTLArrow.bottom;
