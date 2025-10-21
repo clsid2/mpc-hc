@@ -16,6 +16,7 @@ public:
     bool GetScrollBarRects(HWND hWnd, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll);
     bool GetScrollBarCornerRect(HWND hWnd, CRect& cornerRect);
     void DrawScrollBarCorner(CDC* pDC, HWND hWnd, const CRect& cornerRect);
+    inline bool GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll);
 
 protected:
     enum arrowOrientation {
