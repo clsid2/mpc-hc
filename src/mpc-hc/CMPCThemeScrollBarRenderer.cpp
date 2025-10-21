@@ -178,6 +178,24 @@ void CMPCThemeScrollBarRenderer::DrawScrollBarCorner(CDC* pDC, HWND hWnd, const 
     pDC->FillRect(cornerRect, &brushCorner);
 }
 
+inline bool CMPCThemeScrollBarRenderer::GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll) {
+    CRect clipBox, effectiveDrawRect, dummy;
+    if (!GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
+        return false;
+    }
+
+    GetClipBox(hdc, &clipBox);
+    if (!effectiveDrawRect.IntersectRect(&drawRect, &clipBox)) {
+        bHasVScroll = bHasHScroll = false;
+        return true;
+    }
+
+    bHasVScroll = bHasVScroll && dummy.IntersectRect(&effectiveDrawRect, &vScrollRect);
+    bHasHScroll = bHasHScroll && dummy.IntersectRect(&effectiveDrawRect, &hScrollRect);
+
+    return true;
+}
+
 BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, HRGN& hOldClipRgn, bool bDrawThemedScrollbars) {
     hOldClipRgn = NULL;
 
@@ -187,31 +205,17 @@ BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, cons
 
     CRect vScrollRect, hScrollRect;
     bool bHasVScroll, bHasHScroll;
-    if (!GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
-        return TRUE;
-    }
-
-    CRect vIntersect, hIntersect;
-    BOOL bIntersectsV = bHasVScroll && vIntersect.IntersectRect(&drawRect, &vScrollRect);
-    BOOL bIntersectsH = bHasHScroll && hIntersect.IntersectRect(&drawRect, &hScrollRect);
-    if (!bIntersectsV && !bIntersectsH) {
+    if (!GetClippedScrollBarRects(hWnd, hdc, drawRect, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
         return TRUE;
     }
 
     if (bDrawThemedScrollbars) {
         m_bDrawingScrollbar = true;
-
         CDC* pDC = CDC::FromHandle(hdc);
         if (pDC) {
             DrawThemedScrollBars(pDC, hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll);
         }
-
         m_bDrawingScrollbar = false;
-    }
-
-    CRect excludeRect = bIntersectsV ? vScrollRect : hScrollRect;
-    if (bIntersectsV && bIntersectsH) {
-        excludeRect.UnionRect(&vScrollRect, &hScrollRect);
     }
 
     hOldClipRgn = CreateRectRgn(0, 0, 0, 0);
@@ -220,34 +224,25 @@ BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, cons
         hOldClipRgn = NULL;
     }
 
-    HRGN hDrawRgn = CreateRectRgn(drawRect.left, drawRect.top, drawRect.right, drawRect.bottom);
-    HRGN hExcludeRgn = CreateRectRgn(excludeRect.left, excludeRect.top, excludeRect.right, excludeRect.bottom);
-    HRGN hFinalRgn = CreateRectRgn(0, 0, 0, 0);
-
-    auto cleanup = [&](BOOL deleteOldRgn) {
-        DeleteObject(hFinalRgn);
-        DeleteObject(hExcludeRgn);
-        DeleteObject(hDrawRgn);
-        if (deleteOldRgn && hOldClipRgn) {
-            DeleteObject(hOldClipRgn);
-            hOldClipRgn = NULL;
+    auto excludeScrollbar = [&](const CRect& rect) -> bool {
+        int result = ExcludeClipRect(hdc, rect.left, rect.top, rect.right, rect.bottom);
+        if (result == NULLREGION || result == ERROR) {
+            if (hOldClipRgn) {
+                DeleteObject(hOldClipRgn);
+                hOldClipRgn = NULL;
+            }
+            return false;
         }
+        return true;
     };
 
-    if (!hDrawRgn || !hExcludeRgn || !hFinalRgn) {
-        cleanup(TRUE);
-        return TRUE;
+    if (bHasVScroll && !excludeScrollbar(vScrollRect)) {
+        return FALSE;
     }
-
-    int result = CombineRgn(hFinalRgn, hDrawRgn, hExcludeRgn, RGN_DIFF);
-
-    if (result == NULLREGION || result == ERROR) {
-        cleanup(TRUE);
+    if (bHasHScroll && !excludeScrollbar(hScrollRect)) {
         return FALSE;
     }
 
-    SelectClipRgn(hdc, hFinalRgn);
-    cleanup(FALSE);
     return TRUE;
 }
 
