@@ -760,4 +760,3 @@ BOOL CPPageFullscreen::OnToolTipNotify(UINT id, NMHDR* pNMH, LRESULT* pResult)
 
     return bRet;
 }
-
