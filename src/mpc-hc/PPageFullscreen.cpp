@@ -136,7 +136,6 @@ void CPPageFullscreen::ModesUpdate()
         CString strItemPos;
         strItemPos.Format(_T("%02d"), nItem);
         VERIFY(m_list.InsertItem(nItem, strItemPos) == nItem);
-        VERIFY(m_list.InsertItem(nItem, strItemPos) == nItem);
 
         m_list.SetCheck(nItem, mode.bChecked);
 
@@ -761,3 +760,4 @@ BOOL CPPageFullscreen::OnToolTipNotify(UINT id, NMHDR* pNMH, LRESULT* pResult)
 
     return bRet;
 }
+
