@@ -580,7 +580,7 @@ msgstr "A-B (&B markieren)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
-msgstr "&Abspielgeschwindigkeit"
+msgstr "&Wiedergabegeschwindigkeit"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_025"
 msgid "0.25 x"
