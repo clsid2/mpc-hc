@@ -8,15 +8,14 @@ public:
     virtual ~CMPCThemeScrollBarRenderer();
 
     void ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    void DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll);
+    void DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll, bool bDrawCorner);
     void HandleNcPaint(HWND hWnd);
     BOOL ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, HRGN& hOldClipRgn, bool bDrawThemedScrollbars = false);
     static void RestoreClipping(HDC hdc, HRGN hOldClipRgn);
-    eXSB_AREA HitTestScrollBar(HWND hWnd, CPoint point, bool bVertical, const CRect& scrollRect);
     bool GetScrollBarRects(HWND hWnd, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll);
     bool GetScrollBarCornerRect(HWND hWnd, CRect& cornerRect);
     void DrawScrollBarCorner(CDC* pDC, HWND hWnd, const CRect& cornerRect);
-    inline bool GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll);
+    inline bool GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bNeedsVScroll, bool& bNeedsHScroll, bool& bNeedsCorner);
 
 protected:
     enum arrowOrientation {

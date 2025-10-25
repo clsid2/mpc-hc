@@ -178,20 +178,21 @@ void CMPCThemeScrollBarRenderer::DrawScrollBarCorner(CDC* pDC, HWND hWnd, const 
     pDC->FillRect(cornerRect, &brushCorner);
 }
 
-inline bool CMPCThemeScrollBarRenderer::GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll) {
+inline bool CMPCThemeScrollBarRenderer::GetClippedScrollBarRects(HWND hWnd, HDC hdc, const CRect& drawRect, CRect& vScrollRect, CRect& hScrollRect, bool& bNeedsVScroll, bool& bNeedsHScroll, bool& bNeedsCorner) {
     CRect clipBox, effectiveDrawRect, dummy;
-    if (!GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
+    if (!GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bNeedsVScroll, bNeedsHScroll)) {
         return false;
     }
 
+    bNeedsCorner = bNeedsVScroll && bNeedsHScroll; //this is based on the presence of two scrollbars, not whether they will be rendered
     GetClipBox(hdc, &clipBox);
     if (!effectiveDrawRect.IntersectRect(&drawRect, &clipBox)) {
-        bHasVScroll = bHasHScroll = false;
+        bNeedsVScroll = bNeedsHScroll = false;
         return true;
     }
 
-    bHasVScroll = bHasVScroll && dummy.IntersectRect(&effectiveDrawRect, &vScrollRect);
-    bHasHScroll = bHasHScroll && dummy.IntersectRect(&effectiveDrawRect, &hScrollRect);
+    bNeedsVScroll = bNeedsVScroll && dummy.IntersectRect(&effectiveDrawRect, &vScrollRect);
+    bNeedsHScroll = bNeedsHScroll && dummy.IntersectRect(&effectiveDrawRect, &hScrollRect);
 
     return true;
 }
@@ -204,8 +205,8 @@ BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, cons
     }
 
     CRect vScrollRect, hScrollRect;
-    bool bHasVScroll, bHasHScroll;
-    if (!GetClippedScrollBarRects(hWnd, hdc, drawRect, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
+    bool bHasVScroll, bHasHScroll, bNeedsCorner;
+    if (!GetClippedScrollBarRects(hWnd, hdc, drawRect, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll, bNeedsCorner)) {
         return TRUE;
     }
 
@@ -213,7 +214,7 @@ BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, cons
         m_bDrawingScrollbar = true;
         CDC* pDC = CDC::FromHandle(hdc);
         if (pDC) {
-            DrawThemedScrollBars(pDC, hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll);
+            DrawThemedScrollBars(pDC, hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll, bNeedsCorner);
         }
         m_bDrawingScrollbar = false;
     }
@@ -684,7 +685,7 @@ void CMPCThemeScrollBarRenderer::OnNcLButtonUp(HWND hWnd, WPARAM wParam, LPARAM 
 }
 
 void CMPCThemeScrollBarRenderer::OnNcMouseLeave(HWND hWnd) {
-    // CRITICAL FIX: Ignore first spurious leave after button down
+    // Ignore first spurious leave after button down
     // Windows sends WM_NCMOUSELEAVE immediately when auto-repeat starts (horizontal scrollbar)
     // Clear flag after ignoring to handle subsequent real leave events
     if (m_vScrollState.bIgnoreNextLeave) {
@@ -702,7 +703,7 @@ void CMPCThemeScrollBarRenderer::OnNcMouseLeave(HWND hWnd) {
     m_hScrollState.eMouseOverArea.eArea = eNone;
 }
 
-void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll) {
+void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll, bool bDrawCorner) {
 
     if (bHasVScroll && !vScrollRect.IsRectEmpty()) {
         DrawScrollBar(pDC, hWnd, SB_VERT, vScrollRect);
@@ -712,8 +713,7 @@ void CMPCThemeScrollBarRenderer::DrawThemedScrollBars(CDC* pDC, HWND hWnd, const
         DrawScrollBar(pDC, hWnd, SB_HORZ, hScrollRect);
     }
 
-    // Draw corner if both scrollbars present
-    if (bHasVScroll && bHasHScroll) {
+    if (bDrawCorner) {
         CRect cornerRect;
         if (GetScrollBarCornerRect(hWnd, cornerRect)) {
             DrawScrollBarCorner(pDC, hWnd, cornerRect);
@@ -755,10 +755,10 @@ void CMPCThemeScrollBarRenderer::HandleNcPaint(HWND hWnd) {
     //note, the fMask is zero -- it doesn't actually change any scroll info
     if (bHasVScroll) {
         SCROLLINFO si = { sizeof(SCROLLINFO), 0 };
-        ::SetScrollInfo(hWnd, SB_VERT, &si, false);
+        ::SetScrollInfo(hWnd, SB_VERT, &si, true);
     }
     if (bHasHScroll) {
         SCROLLINFO si = { sizeof(SCROLLINFO), 0 };
-        ::SetScrollInfo(hWnd, SB_HORZ, &si, false);
+        ::SetScrollInfo(hWnd, SB_HORZ, &si, true);
     }
 }
