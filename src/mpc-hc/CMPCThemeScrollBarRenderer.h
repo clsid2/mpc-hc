@@ -7,11 +7,21 @@ public:
     CMPCThemeScrollBarRenderer();
     virtual ~CMPCThemeScrollBarRenderer();
 
+    struct ClipRegionState {
+        HRGN hOldClipRgn;
+        bool bModifiedDC;
+        bool bFullyClipped;
+        
+        ClipRegionState() : hOldClipRgn(NULL), bModifiedDC(false), bFullyClipped(false) {}
+        
+        bool IsFullyClipped() const { return bFullyClipped; }
+    };
+
     void ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     void DrawThemedScrollBars(CDC* pDC, HWND hWnd, const CRect& vScrollRect, const CRect& hScrollRect, bool bHasVScroll, bool bHasHScroll, bool bDrawCorner);
     void HandleNcPaint(HWND hWnd);
-    BOOL ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, HRGN& hOldClipRgn, bool bDrawThemedScrollbars = false);
-    static void RestoreClipping(HDC hdc, HRGN hOldClipRgn);
+    ClipRegionState ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, bool bDrawThemedScrollbars = false);
+    static void RestoreClipping(HDC hdc, ClipRegionState& clipState);
     bool GetScrollBarRects(HWND hWnd, CRect& vScrollRect, CRect& hScrollRect, bool& bHasVScroll, bool& bHasHScroll);
     bool GetScrollBarCornerRect(HWND hWnd, CRect& cornerRect);
     void DrawScrollBarCorner(CDC* pDC, HWND hWnd, const CRect& cornerRect);
@@ -29,13 +39,13 @@ protected:
         stXSB_AREA eMouseOverArea;
         stXSB_AREA eMouseDownArea;
         bool bDragging;
-        bool bIgnoreNextLeave;  // Add this member
+        bool bIgnoreNextLeave;
 
         ScrollBarState() {
             eMouseOverArea.eArea = eNone;
             eMouseDownArea.eArea = eNone;
             bDragging = false;
-            bIgnoreNextLeave = false;  // Initialize to false
+            bIgnoreNextLeave = false;
         }
     };
 

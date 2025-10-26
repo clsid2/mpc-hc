@@ -197,17 +197,17 @@ inline bool CMPCThemeScrollBarRenderer::GetClippedScrollBarRects(HWND hWnd, HDC 
     return true;
 }
 
-BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, HRGN& hOldClipRgn, bool bDrawThemedScrollbars) {
-    hOldClipRgn = NULL;
+CMPCThemeScrollBarRenderer::ClipRegionState CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, const CRect& drawRect, bool bDrawThemedScrollbars) {
+    ClipRegionState clipState;
 
     if (m_bDrawingScrollbar) {
-        return TRUE;
+        return clipState;
     }
 
     CRect vScrollRect, hScrollRect;
     bool bHasVScroll, bHasHScroll, bNeedsCorner;
     if (!GetClippedScrollBarRects(hWnd, hdc, drawRect, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll, bNeedsCorner)) {
-        return TRUE;
+        return clipState;
     }
 
     if (bDrawThemedScrollbars) {
@@ -219,40 +219,52 @@ BOOL CMPCThemeScrollBarRenderer::ApplyScrollbarClipping(HDC hdc, HWND hWnd, cons
         m_bDrawingScrollbar = false;
     }
 
-    hOldClipRgn = CreateRectRgn(0, 0, 0, 0);
-    if (GetClipRgn(hdc, hOldClipRgn) <= 0) {
-        DeleteObject(hOldClipRgn);
-        hOldClipRgn = NULL;
+    clipState.bModifiedDC = true;
+
+    clipState.hOldClipRgn = CreateRectRgn(0, 0, 0, 0);
+    int getClipResult = GetClipRgn(hdc, clipState.hOldClipRgn);
+    if (getClipResult <= 0) {
+        DeleteObject(clipState.hOldClipRgn);
+        clipState.hOldClipRgn = NULL;
     }
 
     auto excludeScrollbar = [&](const CRect& rect) -> bool {
         int result = ExcludeClipRect(hdc, rect.left, rect.top, rect.right, rect.bottom);
         if (result == NULLREGION || result == ERROR) {
-            if (hOldClipRgn) {
-                DeleteObject(hOldClipRgn);
-                hOldClipRgn = NULL;
+            if (clipState.hOldClipRgn) {
+                DeleteObject(clipState.hOldClipRgn);
+                clipState.hOldClipRgn = NULL;
             }
+            clipState.bFullyClipped = true;
             return false;
         }
         return true;
     };
 
     if (bHasVScroll && !excludeScrollbar(vScrollRect)) {
-        return FALSE;
+        return clipState;
     }
     if (bHasHScroll && !excludeScrollbar(hScrollRect)) {
-        return FALSE;
+        return clipState;
     }
 
-    return TRUE;
+    return clipState;
 }
 
-void CMPCThemeScrollBarRenderer::RestoreClipping(HDC hdc, HRGN hOldClipRgn) {
-    SelectClipRgn(hdc, hOldClipRgn);
-    if (hOldClipRgn) {
-        DeleteObject(hOldClipRgn);
+void CMPCThemeScrollBarRenderer::RestoreClipping(HDC hdc, ClipRegionState& clipState) {
+    if (!clipState.bModifiedDC) {
+        return;
+    }
+    
+    if (clipState.hOldClipRgn == NULL) {
+        SelectClipRgn(hdc, NULL);
+    } else {
+        SelectClipRgn(hdc, clipState.hOldClipRgn);
+        DeleteObject(clipState.hOldClipRgn);
     }
 }
+
+
 
 void CMPCThemeScrollBarRenderer::drawSBArrow(CDC& dc, COLORREF arrowClr, CRect arrowRect, arrowOrientation orientation, int dpi) {
     Gdiplus::Graphics gfx(dc.m_hDC);

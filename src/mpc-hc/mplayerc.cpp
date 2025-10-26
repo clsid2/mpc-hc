@@ -1701,14 +1701,14 @@ BOOL WINAPI Mine_BitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x
     CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
     if (pRenderer) {
         CRect drawRect(x, y, x + cx, y + cy);
-        HRGN hOldClipRgn = NULL;
-        if (!pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, hOldClipRgn, true)) {
-            return TRUE;
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, true);
+        
+        BOOL result = TRUE;
+        if (!clipState.IsFullyClipped()) {
+            result = Real_BitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
         }
-        BOOL result = Real_BitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
-        if (hOldClipRgn) {
-            CMPCThemeScrollBarRenderer::RestoreClipping(hdc, hOldClipRgn);
-        }
+        
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdc, clipState);
         return result;
     }
     return Real_BitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
@@ -1720,14 +1720,14 @@ BOOL WINAPI Mine_GdiAlphaBlend(HDC hdcDest, int xoriginDest, int yoriginDest, in
     CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
     if (pRenderer) {
         CRect drawRect(xoriginDest, yoriginDest, xoriginDest + wDest, yoriginDest + hDest);
-        HRGN hOldClipRgn = NULL;
-        if (!pRenderer->ApplyScrollbarClipping(hdcDest, hWnd, drawRect, hOldClipRgn, true)) {
-            return TRUE;
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdcDest, hWnd, drawRect, true);
+        
+        BOOL result = TRUE;
+        if (!clipState.IsFullyClipped()) {
+            result = Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
         }
-        BOOL result = Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
-        if (hOldClipRgn) {
-            CMPCThemeScrollBarRenderer::RestoreClipping(hdcDest, hOldClipRgn);
-        }
+        
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdcDest, clipState);
         return result;
     }
     return Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
@@ -1739,14 +1739,14 @@ HRESULT WINAPI Mine_DrawThemeBackground(HTHEME hTheme, HDC hdc, int iPartId, int
     CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
     if (pRenderer) {
         CRect drawRect(pRect);
-        HRGN hOldClipRgn = NULL;
-        if (!pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, hOldClipRgn, false)) {
-            return S_OK;
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, false);
+        
+        HRESULT result = S_OK;
+        if (!clipState.IsFullyClipped()) {
+            result = Real_DrawThemeBackground(hTheme, hdc, iPartId, iStateId, pRect, pClipRect);
         }
-        HRESULT result = Real_DrawThemeBackground(hTheme, hdc, iPartId, iStateId, pRect, pClipRect);
-        if (hOldClipRgn) {
-            CMPCThemeScrollBarRenderer::RestoreClipping(hdc, hOldClipRgn);
-        }
+        
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdc, clipState);
         return result;
     }
     return Real_DrawThemeBackground(hTheme, hdc, iPartId, iStateId, pRect, pClipRect);
