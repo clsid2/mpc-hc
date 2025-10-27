@@ -1718,18 +1718,17 @@ static BOOL(WINAPI* Real_GdiAlphaBlend)(HDC, int, int, int, int, HDC, int, int, 
 BOOL WINAPI Mine_GdiAlphaBlend(HDC hdcDest, int xoriginDest, int yoriginDest, int wDest, int hDest, HDC hdcSrc, int xoriginSrc, int yoriginSrc, int wSrc, int hSrc, BLENDFUNCTION ftn) {
     HWND hWnd = WindowFromDC(hdcDest);
     CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
+
     if (pRenderer) {
         CRect drawRect(xoriginDest, yoriginDest, xoriginDest + wDest, yoriginDest + hDest);
-        auto clipState = pRenderer->ApplyScrollbarClipping(hdcDest, hWnd, drawRect, true);
         
-        BOOL result = TRUE;
-        if (!clipState.IsFullyClipped()) {
-            result = Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
-        }
-        
-        CMPCThemeScrollBarRenderer::RestoreClipping(hdcDest, clipState);
-        return result;
+        // We draw to the src of the blend function -- note, this relies on an assumption
+        // that win32 uses a src hdc with the same origin as the window (double buffer hdc?)
+        // Real_GdiAlphaBlend will then function normally with our src data
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdcSrc, hWnd, drawRect, true);
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdcSrc, clipState);
     }
+    
     return Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
 }
 
