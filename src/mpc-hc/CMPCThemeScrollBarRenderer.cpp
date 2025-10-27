@@ -694,6 +694,9 @@ void CMPCThemeScrollBarRenderer::OnNcLButtonUp(HWND hWnd, WPARAM wParam, LPARAM 
     m_hScrollState.bDragging = false;
 
     UninstallMouseHook();
+
+    //in case we have caused the thumb to be in hover state by clicking the channel, we recheck the mouse position
+    OnNcMouseMove(hWnd, wParam, lParam);
 }
 
 void CMPCThemeScrollBarRenderer::OnNcMouseLeave(HWND hWnd) {
