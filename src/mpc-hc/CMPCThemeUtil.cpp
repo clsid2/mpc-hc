@@ -128,6 +128,9 @@ void CMPCThemeUtil::fulfillThemeReqs(CWnd* wnd, SpecialThemeCases specialCase /*
                 } else if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
                     CMPCThemeComboBox* pObject = DEBUG_NEW CMPCThemeComboBox();
                     makeThemed(pObject, tChild);
+                } else if (0 == _tcsicmp(windowClass, WC_LISTVIEW)) {
+                    CMPCThemePlayerListCtrl* pObject = DEBUG_NEW CMPCThemePlayerListCtrl();
+                    makeThemed(pObject, tChild);
                 } else if (0 == _tcsicmp(windowClass, WC_LISTBOX)) {
                     CMPCThemeListBox* pObject = DEBUG_NEW CMPCThemeListBox();
                     makeThemed(pObject, tChild);
