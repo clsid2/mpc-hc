@@ -1287,7 +1287,9 @@ void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int ri
             if ((lType == WidgetPairText || lType == WidgetPairCheckBox) && (rType == WidgetPairCombo || rType == WidgetPairEdit)) {
                 l.top = r.top;
                 l.bottom += r.Height() - l.Height();
-                leftW->ModifyStyle(0, SS_CENTERIMAGE);
+                if (lType == WidgetPairText) {
+                    leftW->ModifyStyle(0, SS_CENTERIMAGE);
+                }
             }
 
             if (l != cl) {
