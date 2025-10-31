@@ -18,6 +18,14 @@ CMPCThemeScrollBarRenderer::~CMPCThemeScrollBarRenderer() {
     UninstallMouseHook();
 }
 
+static bool ScreenToNcClient(HWND hWnd, CPoint& point) {
+    if (!::ScreenToClient(hWnd, &point)) {
+        return false;
+    }
+    point += CMPCThemeUtil::GetClientRectOffset(CWnd::FromHandlePermanent(hWnd));
+    return true;
+}
+
 void CMPCThemeScrollBarRenderer::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_NCMOUSEMOVE:
@@ -622,7 +630,7 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
 
 void CMPCThemeScrollBarRenderer::OnNcMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam) {
     CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-    ::ScreenToClient(hWnd, &point);
+    ScreenToNcClient(hWnd, point);
 
     CRect vScrollRect, hScrollRect;
     bool bHasVScroll, bHasHScroll;
@@ -660,7 +668,7 @@ void CMPCThemeScrollBarRenderer::OnNcMouseMove(HWND hWnd, WPARAM wParam, LPARAM 
 
 void CMPCThemeScrollBarRenderer::OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam) {
     CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-    ::ScreenToClient(hWnd, &point);
+    ScreenToNcClient(hWnd, point);
 
     CRect vScrollRect, hScrollRect;
     bool bHasVScroll, bHasHScroll;
