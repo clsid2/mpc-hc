@@ -15,7 +15,7 @@ CMPCThemePlayerListCtrl::CMPCThemePlayerListCtrl() : CListCtrl(), CMPCThemeScrol
     hasCheckedColors = false;
     hasCBImages = false;
     customThemeInterface = nullptr;
-
+    m_bReflectionRan = false;
 }
 
 
@@ -53,6 +53,7 @@ BEGIN_MESSAGE_MAP(CMPCThemePlayerListCtrl, CListCtrl)
     ON_WM_MOUSEWHEEL()
     ON_WM_ERASEBKGND()
     ON_WM_CTLCOLOR()
+    ON_NOTIFY_REFLECT_EX(NM_CUSTOMDRAW, OnCustomDraw) //note, this is used for themed listctrls to report font measurements only
 END_MESSAGE_MAP()
 
 void CMPCThemePlayerListCtrl::subclassHeader()
@@ -119,7 +120,13 @@ bool CMPCThemePlayerListCtrl::IsCustomDrawActive() {
     nmcd.nmcd.hdr.code = NM_CUSTOMDRAW;
     nmcd.nmcd.dwDrawStage = CDDS_PREPAINT;
 
-    LRESULT lResult = pParent->SendMessage(WM_NOTIFY,  nmcd.nmcd.hdr.idFrom,  (LPARAM)&nmcd);
+    m_bReflectionRan = FALSE;
+    LRESULT lResult = pParent->SendMessage(WM_NOTIFY, nmcd.nmcd.hdr.idFrom, (LPARAM)&nmcd);
+
+    // If our reflection ran, parent/derived isn't doing custom draw
+    if (m_bReflectionRan) {
+        return false;
+    }
 
     return (lResult != CDRF_DODEFAULT);
 }
@@ -141,6 +148,63 @@ inline CHeaderCtrl* CMPCThemePlayerListCtrl::GetHeaderFast() {
     } else {
         return GetHeaderCtrl();
     }
+}
+
+HFONT CMPCThemePlayerListCtrl::GetFlaggedFont(int iItem) {
+    if (!getFlaggedItem(iItem)) {
+        return nullptr;
+    }
+
+    // could be a setting, but flagged items are bold for now
+    if (!listMPCThemeFontBold.m_hObject) {
+        listMPCThemeFont = GetFont();
+        LOGFONT lf;
+        listMPCThemeFont->GetLogFont(&lf);
+        lf.lfWeight = FW_BOLD;
+        listMPCThemeFontBold.CreateFontIndirect(&lf);
+    }
+
+    return listMPCThemeFontBold;
+}
+
+//this routine normally isn't called due to override of OnPaint()
+//however, during auto-size, a "fake" customdraw is called by win32
+//to detect any font changes that would alter the measurement
+//IsCustomDrawActive() uses m_bReflectionRan to avoid treating this use as a customdraw
+BOOL CMPCThemePlayerListCtrl::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult) {
+    if (!AppNeedsThemedControls()) {
+        return FALSE;
+    }
+
+    NMLVCUSTOMDRAW* pLVCD = (NMLVCUSTOMDRAW*)pNMHDR;
+    
+    m_bReflectionRan = TRUE;
+    
+    // Provide font for measurement
+    switch(pLVCD->nmcd.dwDrawStage)
+    {
+        case CDDS_PREPAINT:
+            *pResult = CDRF_NOTIFYITEMDRAW;
+            break;
+        case CDDS_ITEMPREPAINT:
+        {
+            int iItem = (int)pLVCD->nmcd.dwItemSpec;
+            HFONT hFont = GetFlaggedFont(iItem);
+            
+            if (hFont) {
+                SelectObject(pLVCD->nmcd.hdc, hFont);
+                *pResult = CDRF_NEWFONT;
+            } else {
+                *pResult = CDRF_DODEFAULT;
+            }
+            break;
+        }
+        default:
+            *pResult = CDRF_DODEFAULT;
+            break;
+    }
+
+    return TRUE;
 }
 
 void CMPCThemePlayerListCtrl::OnPaint() {
@@ -548,17 +612,10 @@ void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect 
             }
         }
 
-        if (getFlaggedItem(nItem)) { //could be a setting, but flagged items are bold for now
-            if (!listMPCThemeFontBold.m_hObject) {
-                listMPCThemeFont = GetFont();
-                LOGFONT lf;
-                listMPCThemeFont->GetLogFont(&lf);
-                lf.lfWeight = FW_BOLD;
-                listMPCThemeFontBold.CreateFontIndirect(&lf);
-            }
-
+        HFONT hFont = GetFlaggedFont(nItem);
+        if (hFont) {
             curFont = pDC->GetCurrentFont();
-            pDC->SelectObject(listMPCThemeFontBold);
+            pDC->SelectObject(hFont);
         }
         pDC->DrawTextW(text, rText, textFormat);
         pDC->SetTextColor(oldTextColor);
@@ -568,49 +625,6 @@ void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect 
         }
     }
 }
-
-BOOL CMPCThemePlayerListCtrl::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
-{
-#if 0
-    if (AppNeedsThemedControls()) {
-        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-
-        *pResult = CDRF_DODEFAULT;
-        if (pLVCD->nmcd.dwDrawStage == CDDS_PREPAINT) {
-            if (nullptr != customThemeInterface) {
-                customThemeInterface->DoCustomPrePaint();
-            }
-            *pResult = CDRF_NOTIFYITEMDRAW;
-        } else if (pLVCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT) {
-            DWORD dwStyle = GetStyle() & LVS_TYPEMASK;
-            if (LVS_REPORT == dwStyle) {
-                *pResult = CDRF_NOTIFYSUBITEMDRAW;
-            } else {
-                int nItem = static_cast<int>(pLVCD->nmcd.dwItemSpec);
-                CDC* pDC = CDC::FromHandle(pLVCD->nmcd.hdc);
-                drawItem(pDC, nItem, 0);
-                *pResult = CDRF_SKIPDEFAULT;
-            }
-        } else if (pLVCD->nmcd.dwDrawStage == (CDDS_ITEMPREPAINT | CDDS_SUBITEM)) {
-            if (GetStyle() & LVS_OWNERDRAWFIXED) {
-                //found that for ownerdraw routines, we can end up here and draw both ways on hover/tooltip. this should prevent it
-                *pResult = CDRF_DODEFAULT;
-            } else {
-                int nItem = static_cast<int>(pLVCD->nmcd.dwItemSpec);
-                if (IsItemVisible(nItem)) {
-                    int nSubItem = pLVCD->iSubItem;
-                    CDC* pDC = CDC::FromHandle(pLVCD->nmcd.hdc);
-                    drawItem(pDC, nItem, nSubItem);
-                }
-                *pResult = CDRF_SKIPDEFAULT;
-            }
-        }
-        return TRUE;
-    }
-#endif
-    return FALSE;
-}
-
 
 BOOL CMPCThemePlayerListCtrl::OnEraseBkgnd(CDC* pDC) {
     if (AppNeedsThemedControls() && !PaintHooksActive()) {

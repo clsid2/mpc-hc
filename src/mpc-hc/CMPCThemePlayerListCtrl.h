@@ -73,9 +73,11 @@ protected:
     CMPCThemeHeaderCtrl themedHdrCtrl;
     CFont* listMPCThemeFont, listMPCThemeFontBold;
     CMPCThemeListCtrlCustomInterface* customThemeInterface;
+    bool m_bReflectionRan;
     BOOL EraseBkgnd(CDC* pDC, CRect updateRect);
     void drawItem(CDC* pDC, int nItem, int nSubItem, CRect itemRect, DWORD dwStyle, DWORD extendedStyle, UINT itemState, bool isChecked, CImageList* smallImageList, UINT cbResID);
     virtual void PreSubclassWindow();
+    HFONT GetFlaggedFont(int iItem);
 private:
     struct ColumnCache {
         struct ColumnInfo {
@@ -111,4 +113,3 @@ private:
     const CString& GetCachedText(int nItem, int nSubItem);
     int GetCachedImageIndex(int nItem);
 };
-
