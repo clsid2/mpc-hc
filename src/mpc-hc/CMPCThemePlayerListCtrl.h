@@ -110,5 +110,6 @@ private:
 
     const CString& GetCachedText(int nItem, int nSubItem);
     int GetCachedImageIndex(int nItem);
+    void InvalidateCacheIfNeeded(UINT message);
 };
 

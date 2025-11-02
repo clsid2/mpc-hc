@@ -336,6 +336,9 @@ LRESULT CMPCThemePlayerListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM 
     if (AppNeedsThemedControls()) {
         CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
     }
+    
+    InvalidateCacheIfNeeded(message);
+    
     LRESULT result = __super::WindowProc(message, wParam, lParam);
     return result;
 }
@@ -913,6 +916,28 @@ bool CMPCThemePlayerListCtrl::GetSubItemRectFast(int nItem, int nSubItem, int nA
     }
 
     return GetSubItemRect(nItem, nSubItem, nArea, rect);
+}
+
+void CMPCThemePlayerListCtrl::InvalidateCacheIfNeeded(UINT message)
+{
+    // Invalidate entire cache for any message that might change list item data
+    switch (message) {
+        // Text changes
+        case LVM_SETITEMTEXTA:
+        case LVM_SETITEMTEXTW:
+        case LVM_SETITEMA:
+        case LVM_SETITEMW:
+        // Item modifications
+        case LVM_INSERTITEMA:
+        case LVM_INSERTITEMW:
+        case LVM_DELETEITEM:
+        case LVM_DELETEALLITEMS:
+        // Sorting/reordering
+        case LVM_SORTITEMS:
+        case LVM_SORTITEMSEX:
+            m_textCache.clear();
+            break;
+    }
 }
 
 const CString& CMPCThemePlayerListCtrl::GetCachedText(int nItem, int nSubItem) {
