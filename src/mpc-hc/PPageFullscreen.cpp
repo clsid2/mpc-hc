@@ -308,7 +308,7 @@ BOOL CPPageFullscreen::OnInitDialog()
     m_list.InsertColumn(COL_FRAMERATE_START, ResStr(IDS_PPAGE_FS_CLN_FROM_FPS), LVCFMT_RIGHT, 60);
     m_list.InsertColumn(COL_FRAMERATE_STOP, ResStr(IDS_PPAGE_FS_CLN_TO_FPS), LVCFMT_RIGHT, 60);
     m_list.InsertColumn(COL_DISPLAY_MODE, ResStr(IDS_PPAGE_FS_CLN_DISPLAY_MODE), LVCFMT_LEFT, 135);
-    m_list.InsertColumn(COL_AUDIO_DELAY, ResStr(IDS_PPAGE_FS_CLN_AUDIO_DELAY), LVCFMT_LEFT, 110);
+    m_list.InsertColumn(COL_AUDIO_DELAY, ResStr(IDS_PPAGE_FS_CLN_AUDIO_DELAY), LVCFMT_RIGHT, 110);
     m_list.setCheckedColors((COLORREF) - 1, (COLORREF) - 1, CMPCTheme::ContentTextDisabledFGColorFade); //for mpc theme highlighting since nmcustdraw will be ignored on CMPCThemelistctrl
 
     m_bHideFullscreenControls = s.bHideFullscreenControls;
