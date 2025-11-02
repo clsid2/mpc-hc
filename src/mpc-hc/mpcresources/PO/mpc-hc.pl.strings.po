@@ -9,15 +9,15 @@
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Krzysztof, 2024
 # MPC-HC Developer, 2025
-# Łukasz Janik, 2025
 # Mirosław Żylewicz, 2025
+# Łukasz Janik, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Mirosław Żylewicz, 2025\n"
+"Last-Translator: Łukasz Janik, 2025\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3027,7 +3027,7 @@ msgstr "Maksymalne wzmocnienie"
 
 msgctxt "IDS_USAGE"
 msgid "Usage: mpc-hc.exe \"pathname\" [switches]"
-msgstr "Użycie: mpc-hc.exe „ścieżka” [parametry]"
+msgstr "Użycie: mpc-hc.exe \"ścieżka\" [przełączniki]"
 
 msgctxt "IDS_UNKNOWN_SWITCH"
 msgid ""
