@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2025\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
@@ -4773,7 +4773,7 @@ msgstr "Durum çubuğunun yenilenme sıklığı (milisaniye cinsinden)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr ""
+msgstr "Yüzde değerini ses seviyesi kaydırıcısında göster (modern tema için)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5072,8 +5072,8 @@ msgstr "Tekrarlamayı kapat"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "Karıştırma: Açık"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "Karıştırma: Kapalı"
