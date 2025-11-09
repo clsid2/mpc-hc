@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Alex Covarrubias, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/mpchc/teams/106126/es/)\n"
@@ -621,11 +621,11 @@ msgid "Playback::Shaders"
 msgstr "Reproducción::Sombreadores"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::Toolbar"
+msgid "Player::ToolBar"
 msgstr "Reproductor::Barra de Herramientas"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::ToolBar Layout"
 msgstr "Reproductor::Disposición de la Barra de Herramientas"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1541,7 +1541,7 @@ msgid "App Command"
 msgstr "Comando de la aplicación"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in Toolbar"
+msgid "Built-in ToolBar"
 msgstr "Barra de Herramientas Interna"
 
 msgctxt "IDS_AG_MEDIAFILES"
