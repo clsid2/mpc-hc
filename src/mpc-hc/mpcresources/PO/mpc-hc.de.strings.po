@@ -618,7 +618,7 @@ msgid "Player::Toolbar"
 msgstr "Programm::Symbolleiste"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Programm::Symbolleistenlayout"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

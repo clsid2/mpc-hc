@@ -606,7 +606,7 @@ msgid "Player::Toolbar"
 msgstr "プレーヤー::ツールバー"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "プレーヤー::ツールバーの構成"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

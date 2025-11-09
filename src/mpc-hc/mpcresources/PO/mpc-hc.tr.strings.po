@@ -616,7 +616,7 @@ msgid "Player::Toolbar"
 msgstr "Oynatıcı::Kontrol Çubuğu"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Oynatıcı::Kontrol Çubuğu Düzeni"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

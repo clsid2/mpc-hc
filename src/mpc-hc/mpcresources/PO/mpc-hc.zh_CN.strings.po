@@ -608,7 +608,7 @@ msgid "Player::Toolbar"
 msgstr "播放器::工具栏"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "播放器::工具栏布局"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

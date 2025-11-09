@@ -606,7 +606,7 @@ msgid "Player::Toolbar"
 msgstr "플레이어::도구 모음"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "플레이어::도구 모음 레이아웃"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

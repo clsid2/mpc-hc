@@ -611,7 +611,7 @@ msgid "Player::Toolbar"
 msgstr ""
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr ""
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"

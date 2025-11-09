@@ -613,7 +613,7 @@ msgid "Player::Toolbar"
 msgstr "Плейър::Лента с инструменти"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Плейър::Стил на лента с инструменти"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
