@@ -49,6 +49,7 @@ private:
     bool LoadExternalToolBar(CImage& image);
     void LoadToolbarImage(bool tbArtChanged = false);
     void PlaceButtons(bool loadSavedLayout);
+    void SetSeparatorWidth(int buttonIndex, int width);
     int rightButtonIndex=-1, leftButtonIndex=-1;
     CMPCThemeToolTipCtrl themedToolTip;
     int leftSeparatorIndex;
