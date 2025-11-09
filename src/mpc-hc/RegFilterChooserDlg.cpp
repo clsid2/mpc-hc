@@ -110,7 +110,9 @@ BOOL CRegFilterChooserDlg::OnInitDialog()
     AddAnchor(IDOK, BOTTOM_RIGHT);
     AddAnchor(IDCANCEL, BOTTOM_RIGHT);
 
-    SetMinTrackSize(CSize(300, 100));
+    CRect wr;
+    GetWindowRect(wr);
+    SetMinTrackSize(wr.Size());
 
     m_list.setAdditionalStyles(LVS_EX_DOUBLEBUFFER);
     fulfillThemeReqs();

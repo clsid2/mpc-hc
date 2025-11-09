@@ -115,8 +115,12 @@ BOOL CSaveDlg::OnInitDialog()
             pReader.Release();
         } else {
             CPath pout(m_out);
-            pout.RenameExtension(_T(".ifo"));
-            CopyFile(m_in, pout, FALSE);
+            if (pout.RenameExtension(_T(".ifo"))) {
+                CopyFile(m_in, pout, FALSE);
+            } else {
+                m_report.SetWindowText(_T("Path is too long"));
+                return FALSE;
+            }
         }
     }
 #endif

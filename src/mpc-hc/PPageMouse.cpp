@@ -176,6 +176,7 @@ BOOL CPPageMouse::OnInitDialog()
 
     //m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
     m_list.setAdditionalStyles(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
 
 
     m_list.InsertColumn(COL_ACTION, ResStr(IDS_MOUSE_ACTION));

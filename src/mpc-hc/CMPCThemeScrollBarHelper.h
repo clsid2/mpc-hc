@@ -26,6 +26,12 @@ public:
     bool needsSBCorner;
 };
 
+enum UpdateScrollInfoAction {
+    SCROLL_NOPAINT,
+    SCROLL_INVALIDATE,
+    SCROLL_REDRAW,
+};
+
 class CMPCThemeScrollBarHelper
 {
 protected:
@@ -43,7 +49,7 @@ public:
     void OnWindowPosChanged();
     void setWindowRegionExclusive(HRGN h);
     void hideNativeScrollBars();
-    void updateScrollInfo(bool invalidate = false);
+    void updateScrollInfo(UpdateScrollInfoAction action = UpdateScrollInfoAction::SCROLL_NOPAINT);
     bool WindowProc(CListCtrl* list, UINT message, WPARAM wParam, LPARAM lParam);
     bool WindowProc(CTreeCtrl* tree, UINT message, WPARAM wParam, LPARAM lParam);
     void themedNcPaintWithSB();

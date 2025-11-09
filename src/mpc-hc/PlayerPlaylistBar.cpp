@@ -487,6 +487,9 @@ void CPlayerPlaylistBar::ParsePlayList(CAtlList<CString>& fns, CAtlList<CString>
         }
 #endif
     }
+    if (ydl_src.IsEmpty() && ct == _T("ytdl")) {
+        ydl_src = fns.GetHead();
+    }
 
     AddItem(fns, subs, label, ydl_src, ydl_ua, cue, ydl_subs);
 }
@@ -1019,11 +1022,11 @@ bool CPlayerPlaylistBar::SaveMPCPlayList(CString fn, CTextFile::enc e)
             if (pli.m_ydl_subs.GetCount() > 0) {
                 POSITION pos3 = pli.m_ydl_subs.GetHeadPosition();
                 while (pos3) {
-                    CYoutubeDLInstance::YDLSubInfo s = pli.m_ydl_subs.GetNext(pos3);
-                    if (!s.data.IsEmpty()) continue;
+                    CYoutubeDLInstance::YDLSubInfo subinfo = pli.m_ydl_subs.GetNext(pos3);
+                    if (!subinfo.data.IsEmpty()) continue;
                     CString t;
-                    CString t2 = s.isAutomaticCaptions ? _T("ydl_auto_sub") : _T("ydl_sub");
-                    t.Format(_T("%d,%s,%s,%s,%s\n"), i, static_cast<LPCWSTR>(t2), static_cast<LPCWSTR>(s.lang), static_cast<LPCWSTR>(s.ext), static_cast<LPCWSTR>(s.url));
+                    CString t2 = subinfo.isAutomaticCaptions ? _T("ydl_auto_sub") : _T("ydl_sub");
+                    t.Format(_T("%d,%s,%s,%s,%s\n"), i, static_cast<LPCWSTR>(t2), static_cast<LPCWSTR>(subinfo.lang), static_cast<LPCWSTR>(subinfo.ext), static_cast<LPCWSTR>(subinfo.url));
                     f.WriteString(t);
                 }
             }
@@ -1126,7 +1129,6 @@ void CPlayerPlaylistBar::Append(CAtlList<CString>& fns, bool fMulti, CAtlList<CS
         if (activateListItemIndex) { // Select the first added item only if some were already present
             m_list.SetItemState(activateListItemIndex, LVIS_SELECTED, LVIS_SELECTED);
         }
-        m_list.updateSB();
     }
 }
 
@@ -1769,7 +1771,6 @@ void CPlayerPlaylistBar::ResizeListColumn()
         m_list.SetRedraw(TRUE);
 
         Invalidate();
-        m_list.updateSB();
         m_list.RedrawWindow(nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
     }
 }
@@ -1804,7 +1805,6 @@ void CPlayerPlaylistBar::OnLvnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
     if (pLVKeyDown->wVKey == VK_DELETE) {
         if (m_pl.GetCount() > 1) {
             POSITION remplpos = FindPos(selected);
-            CPlaylistItem pli = m_pl.GetAt(remplpos);
             POSITION curplpos = m_pl.GetPos();
             if (!remplpos) {
                 ASSERT(FALSE);

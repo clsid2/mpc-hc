@@ -462,17 +462,19 @@ void CPPageToolBarLayout::GetCustomTextColors(INT_PTR nItem, int iSubItem, COLOR
 }
 
 void CPPageToolBarLayout::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult) {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-
+    //this custom draw is used only in classic mode
     *pResult = CDRF_DODEFAULT;
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        bool overrideSelectedBG = false;
-        GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, overrideSelectedBG);
-        if (overrideSelectedBG) {
-            pLVCD->nmcd.uItemState &= ~CDIS_SELECTED;
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            bool overrideSelectedBG = false;
+            GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, overrideSelectedBG);
+            if (overrideSelectedBG) {
+                pLVCD->nmcd.uItemState &= ~CDIS_SELECTED;
+            }
         }
     }
 }

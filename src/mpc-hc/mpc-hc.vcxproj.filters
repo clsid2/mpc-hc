@@ -630,6 +630,9 @@
     <ClCompile Include="PPageToolBarLayout.cpp">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClCompile>
+    <ClCompile Include="CMPCThemeScrollBarRenderer.cpp">
+      <Filter>MPCTheme</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppSettings.h">
@@ -1196,6 +1199,12 @@
     </ClInclude>
     <ClInclude Include="PPageToolBarLayout.h">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryDCBuffer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="CMPCThemeScrollBarRenderer.h">
+      <Filter>MPCTheme</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

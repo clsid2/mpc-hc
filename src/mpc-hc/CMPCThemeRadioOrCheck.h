@@ -10,7 +10,6 @@ private:
     bool isHover;
     BOOL isAuto;
     CBrush bgBrush;
-    DWORD buttonStyle;
     enum RadioOrCheck {
         radioType,
         checkType,

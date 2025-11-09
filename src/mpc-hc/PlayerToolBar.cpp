@@ -451,16 +451,23 @@ void CPlayerToolBar::ArrangeControls() {
 
     CRect r;
     GetClientRect(&r);
-
     CRect br = GetBorders();
-
     CRect vr;
-    float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
-    int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
-
-    m_volumeCtrlSize = targetsize * 2.5f;
-    vr = CRect(r.right + br.right - m_volumeCtrlSize, r.top + targetsize / 4, r.right + br.right, r.bottom - targetsize / 4);
-
+    if (AppIsThemeLoaded()) {
+        float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
+        int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
+        m_volumeCtrlSize = targetsize * 2.5f;
+        vr = CRect(r.right + br.right - m_volumeCtrlSize, r.top + targetsize / 4, r.right + br.right, r.bottom - targetsize / 4);
+    } else {
+        vr = CRect(r.right + br.right - 58, r.top - 2, r.right + br.right + 6, r.bottom);
+        m_volctrl.MoveWindow(vr);
+        CRect thumbRect;
+        m_volctrl.GetThumbRect(thumbRect);
+        m_volctrl.MapWindowPoints(this, thumbRect);
+        vr.top += std::max((r.bottom - thumbRect.bottom - 4) / 2, 0l);
+        vr.left -= MulDiv(thumbRect.Height(), 50, 19) - 50;
+        m_volumeCtrlSize = vr.Width();
+    }
     m_volctrl.MoveWindow(vr);
 
     volumeButtonIndex = GetToolBarCtrl().GetButtonCount() - 1;

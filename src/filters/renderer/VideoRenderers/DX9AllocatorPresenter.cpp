@@ -626,7 +626,6 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         if (r.m_AdvRendSets.bVMR9FullscreenGUISupport && !m_bHighColorResolution) {
             pp.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
         }
-        m_D3DDevExError = _T("No m_pD3DEx");
 
         if (!m_FocusThread) {
             m_FocusThread = (CFocusThread*)AfxBeginThread(RUNTIME_CLASS(CFocusThread), 0, 0, 0);
@@ -669,6 +668,8 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
                 m_BackbufferType = pp.BackBufferFormat;
                 m_DisplayType = DisplayMode.Format;
             }
+        } else {
+            m_D3DDevExError = _T("No m_pD3DEx");
         }
         if (bTryToReset && m_pD3DDev && !m_pD3DDevEx) {
             if (FAILED(hr = m_pD3DDev->Reset(&pp))) {
@@ -713,16 +714,11 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         m_hFocusWindow = m_hWnd;
 
         if (m_pD3DEx) {
-            HRESULT getModeResult = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
-
-            if (getModeResult == D3DERR_NOTAVAILABLE) {
-                m_pD3DEx = nullptr;
-                Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-                if (nullptr != m_pD3DEx) {
-                    getModeResult = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
-                }
+            HRESULT hr_adm = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
+            if (FAILED(hr_adm)) {
+                ASSERT(false);
+                return E_FAIL;
             }
-            CHECK_HR(getModeResult);
 
             m_ScreenSize.SetSize(DisplayMode.Width, DisplayMode.Height);
             m_refreshRate = DisplayMode.RefreshRate;
@@ -1670,21 +1666,6 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::ResetDevice()
     // Can't comment out this because CDX9AllocatorPresenter is used by EVR Custom
     // Why is EVR using a presenter for DX9 anyway ?!
     DeleteSurfaces();
-
-    if (m_pD3DEx) {
-        m_pD3DDevEx.Release();
-        m_pD3DDev.Release();
-        m_pD3DEx.Release();
-        m_pD3D = nullptr;
-        Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-        if (m_pD3DEx) {
-            m_pD3D = m_pD3DEx;
-        } else {
-            ASSERT(FALSE);
-            m_bDeviceResetRequested = false;
-            return false;
-        }
-    }
 
     HRESULT hr;
     CString Error;

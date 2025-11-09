@@ -264,7 +264,7 @@ namespace PathUtils
 
     bool IsURL(CString& fn)
     {
-        return fn.Find(_T("://")) > 1;
+        return (fn.Find(_T("://")) > 1) && (fn.Left(5) != L"file:");
     }
 
     bool IsFullFilePath(CString& fn)

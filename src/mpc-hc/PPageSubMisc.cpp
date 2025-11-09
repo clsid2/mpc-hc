@@ -326,8 +326,12 @@ void CPPageSubMisc::OnItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
                     } else {
                         msg = L"You should enter your OpenSubtitles login information to continue.\r\n\r\n" \
                             "If you do not yet have an OpenSubtitles account, you can create a free account on http://www.opensubtitles.com\r\n\r\n" \
-                            "Click OK if you have an account and want to fill in your login details.\r\n\r\n" \
-                            "Click CANCEL to use this subtitle search provider without login. Anonymous usage is restricted to 5 downloads per day.";
+                            "Click OK if you have an account and want to fill in your login details.\r\n" \
+                            "Click CANCEL to use this subtitle search provider without login.\r\n\r\n" \
+                            "Important warning:\r\n" \
+                            "There is a maximum amount of daily downloads for all global anonymous users combined.\r\n" \
+                            "This quota means that downloads are very likely to fail if you do not use a login.\r\n" \
+                            "A login is also required if you wish to use this provider for automatic downloads.";
                         allow_anon = true;
                     }
                     if (AfxMessageBox(msg, MB_OKCANCEL | MB_ICONINFORMATION) == IDCANCEL) {

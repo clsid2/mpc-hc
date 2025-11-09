@@ -74,10 +74,6 @@ CFileAssoc::CFileAssoc()
     , m_bNoRecentDocs(false)
     , m_checkIconsAssocInactiveEvent(TRUE, TRUE) // initially set, manual reset
 {
-    // Default manager (requires at least Vista)
-    VERIFY(CoCreateInstance(CLSID_ApplicationAssociationRegistration, nullptr,
-                            CLSCTX_INPROC, IID_PPV_ARGS(&m_pAAR)) != CO_E_NOTINITIALIZED);
-
     m_handlers[0] = { _T("VideoFiles"), _T(" %1"), IDS_AUTOPLAY_PLAYVIDEO };
     m_handlers[1] = { _T("MusicFiles"), _T(" %1"), IDS_AUTOPLAY_PLAYMUSIC };
     m_handlers[2] = { _T("CDAudio"), _T(" %1 /cd"), IDS_AUTOPLAY_PLAYAUDIOCD };
@@ -89,6 +85,15 @@ CFileAssoc::~CFileAssoc()
     HANDLE hEvent = m_checkIconsAssocInactiveEvent;
     DWORD dwEvent;
     VERIFY(CoWaitForMultipleHandles(0, INFINITE, 1, &hEvent, &dwEvent) == S_OK);
+}
+
+void CFileAssoc::LoadAAR()
+{
+    if (!m_pAAR) {
+        // Default manager (requires at least Vista)
+        VERIFY(CoCreateInstance(CLSID_ApplicationAssociationRegistration, nullptr,
+                            CLSCTX_INPROC, IID_PPV_ARGS(&m_pAAR)) != CO_E_NOTINITIALIZED);
+    }
 }
 
 std::shared_ptr<const CFileAssoc::IconLib> CFileAssoc::GetIconLib() const
@@ -136,6 +141,7 @@ bool CFileAssoc::RegisterApp()
 {
     bool success = false;
 
+    LoadAAR();
     if (m_pAAR) {
         CString appIcon = _T("\"") + PathUtils::GetProgramPath(true) + _T("\",0");
 
@@ -581,7 +587,7 @@ bool CFileAssoc::GetAssociatedExtensions(const CMediaFormats& mf, CAtlList<CStri
     return !exts.IsEmpty();
 }
 
-bool CFileAssoc::GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts) const
+bool CFileAssoc::GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts)
 {
     exts.RemoveAll();
 
@@ -590,6 +596,8 @@ bool CFileAssoc::GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts) co
     DWORD i = 0;
     CString keyName, ext;
     DWORD len = MAX_PATH;
+
+    LoadAAR();
 
     while ((ret = rkHKCR.EnumKey(i, keyName.GetBuffer(len), &len)) != ERROR_NO_MORE_ITEMS) {
         if (ret == ERROR_SUCCESS) {

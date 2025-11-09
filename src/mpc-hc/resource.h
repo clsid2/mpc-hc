@@ -72,7 +72,6 @@
 #define IDF_SHADER_RESIZER              700
 #define IDF_SHADER_EMPTY                701
 #define IDF_SHADER_FINAL                702
-#define IDF_SVG_TOOLBAR                 703
 #define IDF_SVG_ARROW                   704
 #define IDF_SVG_BUTTONS16               705
 #define IDF_SVG_BUTTONS24               706
@@ -1694,8 +1693,6 @@
 #define IDS_CMD_HELP                    57529
 #define IDS_PPAGEADVANCED_SCORE         57530
 #define IDS_PPAGE_FS_CLN_AUDIO_DELAY    57531
-#define IDS_PPAGEADVANCED_DEFAULTTOOLBARSIZE 57532
-#define IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR 57533
 #define IDS_SUBMENU_COPYURL             57535
 #define IDS_CMD_VIEWPRESET              57536
 #define IDS_CMD_MUTE                    57537

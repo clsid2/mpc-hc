@@ -1674,6 +1674,11 @@ HRESULT CMpcAudioRenderer::Transform(IMediaSample *pMediaSample)
 
 HRESULT CMpcAudioRenderer::PushToQueue(std::unique_ptr<CPacket>& p)
 {
+    if (!m_pWaveFormatExOutput) {
+        ASSERT(false);
+        return E_FAIL;
+    }
+
 	if (p && (!m_rtLastQueuedSampleTimeEnd || p->bDiscontinuity)) {
 		if (p->bDiscontinuity && (p->rtStop <= m_rtLastQueuedSampleTimeEnd)) {
 			TRACE(L"CMpcAudioRenderer::PushToQueue() - drop [%I64d]\n", p->rtStart);
@@ -2971,7 +2976,7 @@ void CMpcAudioRenderer::WaitFinish()
 {
 	if (!m_bIsBitstream && m_input_params.samplerate != m_output_params.samplerate) {
 		int out_samples = m_Resampler.CalcOutSamples(0);
-		if (out_samples) {
+		if (out_samples && m_pWaveFormatExOutput) {
 			REFERENCE_TIME rtStart = m_rtNextRenderedSampleTime;
 			for (;;) {
 				BYTE* buff = DNew BYTE[out_samples * m_output_params.channels * get_bytes_per_sample(m_output_params.sf)];
@@ -3057,7 +3062,8 @@ void CMpcAudioRenderer::StartReleaseTimer()
 
 void CMpcAudioRenderer::EndReleaseTimer()
 {
-	if (m_hReleaseTimerHandle) {
+    CAutoLock cRenderLock(&m_csRender);
+    if (m_hReleaseTimerHandle) {
 		std::ignore = DeleteTimerQueueTimer(nullptr, m_hReleaseTimerHandle, INVALID_HANDLE_VALUE);
 		m_hReleaseTimerHandle = nullptr;
 	}
@@ -3084,8 +3090,10 @@ void CMpcAudioRenderer::ReleaseDevice()
 		m_pAudioClient->Stop();
 	}
 
-	std::ignore = DeleteTimerQueueTimer(nullptr, m_hReleaseTimerHandle, nullptr);
-	m_hReleaseTimerHandle = nullptr;
+    if (m_hReleaseTimerHandle) {
+        std::ignore = DeleteTimerQueueTimer(nullptr, m_hReleaseTimerHandle, nullptr);
+        m_hReleaseTimerHandle = nullptr;
+    }
 }
 
 void CMpcAudioRenderer::ApplyVolumeBalance(BYTE* pData, UINT32 size)

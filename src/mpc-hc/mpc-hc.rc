@@ -1036,13 +1036,13 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "Debug Shaders"
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_COMBO1,2,2,224,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Debug Information",IDC_STATIC,2,16,369,272
-    EDITTEXT        IDC_EDIT1,6,26,362,259,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "PS 2.0",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,229,2,34,13
+    COMBOBOX        IDC_COMBO1,2,2,224,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "PS 2.0",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,229,2,34,13
     CONTROL         "PS 2.0b",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,265,2,34,13
     CONTROL         "PS 2.0a",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,301,2,34,13
     CONTROL         "PS 3.0",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,337,2,34,13
+    GROUPBOX        "Debug Information",IDC_STATIC,2,16,369,272,WS_GROUP
+    EDITTEXT        IDC_EDIT1,6,26,362,259,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PPAGEADVANCED DIALOGEX 0, 0, 355, 289
@@ -1507,14 +1507,6 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_PLAYERTOOLBAR       BITMAP                  "res\\toolbar.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3955,10 +3947,6 @@ BEGIN
     IDS_CMD_HELP            "/help /h /?\tShow help about command line switches"
     IDS_PPAGEADVANCED_SCORE "Threshold value for subtitles score which are going to be automatically downloaded. Higher values means that more accurately matched subtitles will be loaded, lower values could result in incorrect subtitles being loaded, but there is no one perfect value. Pick one that works best for you."
     IDS_PPAGE_FS_CLN_AUDIO_DELAY "Audio Delay (ms)"
-    IDS_PPAGEADVANCED_DEFAULTTOOLBARSIZE 
-                            "Size in pixels of the default toolbar."
-    IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR 
-                            "Use legacy toolbar instead of new vectorized one."
     IDS_SUBMENU_COPYURL     "Copy URL"
 END
 

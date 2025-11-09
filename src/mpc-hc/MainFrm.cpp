@@ -1250,13 +1250,18 @@ void CMainFrame::OnClose()
     s.dZoomX = m_ZoomX;
     s.dZoomY = m_ZoomY;
 
-    m_wndPlaylistBar.SavePlaylist();
-
     m_controls.SaveState();
 
     m_OSD.OnHide();
 
     ShowWindow(SW_HIDE);
+
+    if (GetMediaState() == State_Running) {
+        MediaControlPause(true);
+    }
+
+    m_wndPlaylistBar.SavePlaylist();
+    m_wndPlaylistBar.ClearExternalPlaylistIfInvalid();
 
     if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING) {
         CloseMedia();
@@ -1264,8 +1269,6 @@ void CMainFrame::OnClose()
 
     ASSERT(GetLoadState() == MLS::CLOSED);
     ASSERT(!m_bOpenMediaActive);
-
-    m_wndPlaylistBar.ClearExternalPlaylistIfInvalid();
 
     s.WinLircClient.DisConnect();
     s.UIceClient.DisConnect();
@@ -1467,6 +1470,11 @@ void CMainFrame::RecalcLayout(BOOL bNotify)
 
     CRect r;
     GetWindowRect(&r);
+    if (r.IsRectNull()) {
+        ASSERT(false);
+        return;
+    }
+
     MINMAXINFO mmi;
     ZeroMemory(&mmi, sizeof(mmi));
     OnGetMinMaxInfo(&mmi);
@@ -1987,7 +1995,7 @@ LRESULT CMainFrame::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
 {
     // Only stop screensaver if video playing; allow for audio only
-    if ((GetMediaState() == State_Running && !m_fEndOfStream && !m_fAudioOnly)
+    if ((!m_fAudioOnly && !m_fEndOfStream && GetLoadState() == MLS::LOADED && GetMediaState() == State_Running)
             && (((nID & 0xFFF0) == SC_SCREENSAVE) || ((nID & 0xFFF0) == SC_MONITORPOWER))) {
         TRACE(_T("SC_SCREENSAVE, nID = %u, lParam = %d\n"), nID, lParam);
         return;
@@ -2781,8 +2789,12 @@ void CMainFrame::OnABRepeat(UINT nID) {
         REFERENCE_TIME pos = 0;
 
         if (playmode == PM_FILE && m_pMS) {
-            m_pMS->GetDuration(&rtDur);
-            havePos = SUCCEEDED(m_pMS->GetCurrentPosition(&pos));
+            if (SUCCEEDED(m_pMS->GetDuration(&rtDur))) {
+                havePos = SUCCEEDED(m_pMS->GetCurrentPosition(&pos)) && (rtDur >= pos);
+            }
+            if (!havePos && !abRepeat.positionA && !abRepeat.positionB) {
+                return;
+            }
         } else if (playmode == PM_DVD && m_pDVDI) {
             DVD_PLAYBACK_LOCATION2 Location;
             if (m_pDVDI->GetCurrentLocation(&Location) == S_OK) {
@@ -2808,12 +2820,8 @@ void CMainFrame::OnABRepeat(UINT nID) {
                 abRepeat.positionA = 0;
             } else if (havePos) {
                 abRepeat.positionA = pos;
-                if (abRepeat.positionA < rtDur) {
-                    if (abRepeat.positionB && abRepeat.positionA >= abRepeat.positionB) {
-                        abRepeat.positionB = 0;
-                    }
-                } else {
-                    abRepeat.positionA = 0;
+                if (abRepeat.positionB && (abRepeat.positionA >= abRepeat.positionB || !m_fShockwaveGraph && abRepeat.positionA + 500 * 10000LL > abRepeat.positionB)) {
+                    abRepeat.positionB = 0;
                 }
             }
         } else if (nID == ID_PLAY_REPEAT_AB_MARK_B) {
@@ -2821,7 +2829,7 @@ void CMainFrame::OnABRepeat(UINT nID) {
                 abRepeat.positionB = 0;
             } else if (havePos) {
                 abRepeat.positionB = pos;
-                if (abRepeat.positionB > 0 && abRepeat.positionB > abRepeat.positionA && rtDur >= abRepeat.positionB) {
+                if (m_fShockwaveGraph && abRepeat.positionB > abRepeat.positionA || abRepeat.positionB >= abRepeat.positionA + 500 * 10000LL) {
                     if (GetMediaState() == State_Running) {
                         PerformABRepeat(); //we just set loop point B, so we need to repeat right now
                     }
@@ -2840,6 +2848,17 @@ void CMainFrame::OnABRepeat(UINT nID) {
 }
 
 void CMainFrame::PerformABRepeat() {
+    if (!m_fShockwaveGraph) {
+        ULONGLONG tcnow = GetTickCount64();
+        if (tcnow > abRepeat.tcLastRepeat + 500ULL) {
+            abRepeat.tcLastRepeat = tcnow;
+        } else {
+            // prevent endless loop
+            DisableABRepeat();
+            return;
+        }
+    }
+
     DoSeekTo(abRepeat.positionA, false);
 
     if (GetMediaState() == State_Stopped) {
@@ -3278,14 +3297,16 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 TRACE(_T("\t%Id %Id\n"), evParam1, evParam2);
                 break;
             case EC_VIDEO_SIZE_CHANGED: {
-                CSize size((DWORD)evParam1);
+                CSize size(LOWORD(evParam1), HIWORD(evParam1));
                 TRACE(_T("\t%ldx%ld\n"), size.cx, size.cy);
                 const bool bWasAudioOnly = m_fAudioOnly;
                 m_fAudioOnly = (size.cx <= 0 || size.cy <= 0);
                 OnVideoSizeChanged(bWasAudioOnly);
                 m_statusbarVideoSize.Format(_T("%dx%d"), size.cx, size.cy);
-                UpdateDXVAStatus();
-                CheckSelectedVideoStream();
+                if (m_eMediaLoadState == MLS::LOADED) {
+                    UpdateDXVAStatus();
+                    CheckSelectedVideoStream();
+                }
             }
             break;
             case EC_LENGTH_CHANGED: {
@@ -4130,11 +4151,12 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
         }
         else if (GetPlaybackMode() == PM_ANALOG_CAPTURE) {
             // show capture bar
-            if (!m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE)) {
-                m_controls.ToggleControl(CMainFrameControls::Panel::CAPTURE);
-            }
-            else {
-                ASSERT(FALSE);
+            if (!s.bHideCaptureSettings) {
+                if (!m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE)) {
+                    m_controls.ToggleControl(CMainFrameControls::Panel::CAPTURE);
+                } else {
+                    ASSERT(FALSE);
+                }
             }
         }
     }
@@ -4771,7 +4793,9 @@ void CMainFrame::OnFileOpenmedia()
     }
 
     if (!dlg.GetAppendToPlaylist()) {
-        CloseMediaBeforeOpen();
+        if (!CloseMediaBeforeOpen()) {
+            return;
+        }
     }
 
     if (IsIconic()) {
@@ -5425,7 +5449,9 @@ void CMainFrame::OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect)
 
     // load http url with youtube-dl, if available
     if (CanSendToYoutubeDL(slFiles.GetHead())) {
-        CloseMediaBeforeOpen();
+        if (!CloseMediaBeforeOpen()) {
+            return;
+        }
         if (ProcessYoutubeDLURL(slFiles.GetHead(), bAppend)) {
             if (!bAppend) {
                 OpenCurPlaylistItem();
@@ -6483,7 +6509,10 @@ void CMainFrame::OnFileSaveImage()
         } else {
             ext += s.strSnapshotExt;
         }
-        pdst.RenameExtension(ext);
+        if (!pdst.RenameExtension(ext)) {
+            ASSERT(false);
+            return;
+        }
     }
     CString path = (LPCTSTR)pdst;
     pdst.RemoveFileSpec();
@@ -6599,7 +6628,11 @@ void CMainFrame::OnFileSaveThumbnails()
         } else {
             ext += s.strSnapshotExt;
         }
-        pdst.RenameExtension(ext);
+        if (!pdst.RenameExtension(ext)) {
+            // ToDo: write helper functions for renaming that support long paths
+            ASSERT(false);
+            return;
+        }
     }
     CString path = (LPCTSTR)pdst;
     pdst.RemoveFileSpec();
@@ -8018,7 +8051,9 @@ void CMainFrame::OnUpdateViewNavigation(CCmdUI* pCmdUI)
 
 void CMainFrame::OnViewCapture()
 {
+    const bool bHiding = m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE);
     m_controls.ToggleControl(CMainFrameControls::Panel::CAPTURE);
+    AfxGetAppSettings().bHideCaptureSettings = bHiding;
 }
 
 void CMainFrame::OnUpdateViewCapture(CCmdUI* pCmdUI)
@@ -8160,25 +8195,31 @@ void CMainFrame::OnViewModifySize(UINT nID) {
     } usedMethod;
 
     const CAppSettings& s = AfxGetAppSettings();
+
     MINMAXINFO mmi;
     CSize videoSize = GetVideoOrArtSize(mmi);
     int minWidth = (int)mmi.ptMinTrackSize.x;
 
     int mult = (nID == ID_VIEW_ZOOM_ADD ? 1 : ID_VIEW_ZOOM_SUB ? -1 : 0);
-
     double videoRatio = double(videoSize.cy) / double(videoSize.cx);
 
-    CRect videoRect, workRect, maxRect;
+    CRect rect;
+    GetWindowRect(&rect);
+
+    CRect videoRect;
     videoRect = m_pVideoWnd->GetVideoRect();
+    if (videoRect.Width() == 0) { // logo or coverart
+        videoRect = rect;
+    }
     double videoRectRatio = double(videoRect.Height()) / double(videoRect.Width());
     bool previouslyProportional = IsNearlyEqual(videoRectRatio, videoRatio, 0.01);
 
+    CRect workRect, maxRect;
     GetWorkAreaRect(workRect);
     maxRect = GetZoomWindowRect(CSize(INT_MAX, INT_MAX), true);
-
-    CRect rect, zoomRect;
-    GetWindowRect(&rect);
+    
     CSize targetSize;
+    CRect zoomRect;
 
     auto calculateZoomWindowRect = [&](resizeMethod useMethod = autoChoose, CSize forceDimension = {0,0}) {
         int newWidth = videoRect.Width();
@@ -8540,13 +8581,20 @@ bool CMainFrame::PerformFlipRotate()
     HRESULT hr = E_NOTIMPL;
     // Note: m_AngleZ is counterclockwise, so value 270 means rotated 90 degrees clockwise
     if (m_pCAP3) {
-        bool isFlip   = m_AngleX == 180;
-        bool isMirror = m_AngleY == 180;
         int rotation = (360 - m_AngleZ + m_iDefRotation) % 360;
-        if (m_pMVRS) {
-            // MadVR: does not support mirror, instead of flip we rotate 180 degrees
+        if (m_pMVRS) { // MadVR
+            bool isFlip = m_AngleX == 180;
+            // MadVR does not support mirror, instead of flip we rotate 180 degrees
             hr = m_pCAP3->SetRotation(isFlip ? (rotation + 180) % 360 : rotation);
-        } else {
+        } else { // MPCVR
+            bool isFlip, isMirror;
+            if (m_iDefRotation == 90 || m_iDefRotation == 270) {
+                isFlip   = m_AngleY == 180;
+                isMirror = m_AngleX == 180;
+            } else {
+                isFlip   = m_AngleX == 180;
+                isMirror = m_AngleY == 180;
+            }
             // MPCVR: instead of flip, we mirror plus rotate 180 degrees
             hr = m_pCAP3->SetRotation(isFlip ? (rotation + 180) % 360 : rotation);
             if (SUCCEEDED(hr)) {
@@ -9019,7 +9067,9 @@ void CMainFrame::OnPlayStop(bool is_closing)
             MediaControlStop(true);
         }
 
-        m_dSpeedRate = 1.0;
+        if (!m_fEndOfStream) {
+            m_dSpeedRate = 1.0;
+        }
 
         if (m_fFrameSteppingActive) {
             m_pFS->CancelStep();
@@ -11312,7 +11362,9 @@ void CMainFrame::OnRecentFile(UINT nID)
         return;
     }
 
-    CloseMediaBeforeOpen();
+    if (!CloseMediaBeforeOpen()) {
+        return;
+    }
 
     if (fns.GetCount() == 1 && CanSendToYoutubeDL(r.fns.GetHead())) {
         if (ProcessYoutubeDLURL(fns.GetHead(), false)) {
@@ -13731,8 +13783,10 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
                         m_pSplitterSS = pBF;
                     } else {
                         if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
-                            m_pDVS = pBF;
-                            m_pDVS2 = pBF;
+                            if (!s.IsISRAutoLoadEnabled()) {
+                                m_pDVS = pBF;
+                                m_pDVS2 = pBF;
+                            }
                         } else {
                             if (clsid != CLSID_MPCBEAudioRenderer) {
                                 if (CComQIPtr<IAMStreamSelect> pTest = pBF) {
@@ -13917,8 +13971,7 @@ void CMainFrame::SetupExternalChapters()
     }
 
     CPath cp(fn);
-    cp.RenameExtension(_T(".xchp"));
-    if (!cp.FileExists()) {
+    if (!cp.RenameExtension(_T(".xchp")) || !cp.FileExists()) {
         return;
     }
     fn = cp.m_strPath;
@@ -14269,8 +14322,10 @@ void CMainFrame::OpenDVD(OpenDVDData* pODD)
             m_pAudioSwitcherSS = pBF;
         } else {
             if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
-                m_pDVS = pBF;
-                m_pDVS2 = pBF;
+                if (!s.IsISRAutoLoadEnabled()) {
+                    m_pDVS = pBF;
+                    m_pDVS2 = pBF;
+                }
             } else {
                 if (clsid != CLSID_MPCBEAudioRenderer) {
                     if (CComQIPtr<IAMStreamSelect> pTest = pBF) {
@@ -14386,8 +14441,10 @@ HRESULT CMainFrame::OpenBDAGraph()
                 m_pAudioSwitcherSS = pBF;
             } else {
                 if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
-                    m_pDVS = pBF;
-                    m_pDVS2 = pBF;
+                    if (!AfxGetAppSettings().IsISRAutoLoadEnabled()) {
+                        m_pDVS = pBF;
+                        m_pDVS2 = pBF;
+                    }
                 }
             }
         }
@@ -14967,6 +15024,9 @@ void CMainFrame::CheckSelectedVideoStream()
 {
     if (m_fCustomGraph) {
         return;
+    }
+    if (m_fAudioOnly) {
+        m_statusbarVideoFormat.Empty();
     }
 
     CString fcc;
@@ -15822,6 +15882,8 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
         } else {
             PostMessage(WM_OPENFAILED, args.first, args.second);
         }
+    } else {
+        m_bOpenMediaActive = false;
     }
 
     return err.IsEmpty();
@@ -18963,7 +19025,9 @@ void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = fa
     }
 
     if (pli.m_bYoutubeDL && (reopen || pli.m_fns.GetHead() == pli.m_ydlSourceURL && m_sydlLastProcessURL != pli.m_ydlSourceURL)) {
-        CloseMediaBeforeOpen();
+        if (!CloseMediaBeforeOpen()) {
+            return;
+        }
         if (ProcessYoutubeDLURL(pli.m_ydlSourceURL, false, true)) {
             OpenCurPlaylistItem(rtStart, false);
             return;
@@ -19013,7 +19077,10 @@ void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
     }
     m_bOpenMediaActive = true;
 
-    CloseMediaBeforeOpen();
+    if (!CloseMediaBeforeOpen()) {
+        m_bOpenMediaActive = false;
+        return;
+    }
 
     // if the file is on some removable drive and that drive is missing,
     // we yell at user before even trying to construct the graph
@@ -19136,11 +19203,21 @@ bool CMainFrame::DisplayChange()
     return true;
 }
 
-void CMainFrame::CloseMediaBeforeOpen()
+bool CMainFrame::CloseMediaBeforeOpen()
 {
     if (m_eMediaLoadState == MLS::LOADED || m_eMediaLoadState == MLS::LOADING || m_eMediaLoadState == MLS::FAILING) {
         CloseMedia(true);
+    } else if (m_eMediaLoadState == MLS::CLOSING) {
+        // was already busy closing, wait a little
+        for (int i = 0; i < 10; i++) {
+            Sleep(250);
+            if (m_eMediaLoadState == MLS::CLOSED) {
+                return true;
+            }
+        }
+        return (m_eMediaLoadState == MLS::CLOSED);
     }
+    return true;
 }
 
 void CMainFrame::ForceCloseProcess()
@@ -19164,8 +19241,19 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
     m_bUseSeekPreview = false;
     m_bDVDStillOn = false;
 
-    if (GetLoadState() == MLS::CLOSING || GetLoadState() == MLS::CLOSED) {
+    if (m_eMediaLoadState == MLS::CLOSED) {
         TRACE(_T("Ignoring duplicate close action.\n"));
+        return;
+    }
+    if (m_eMediaLoadState == MLS::CLOSING) {
+        TRACE(_T("Duplicate close action.\n"));
+        for (int i = 0; i < 10; i++) {
+            Sleep(250);
+            if (m_eMediaLoadState == MLS::CLOSED) {
+                break;
+            }
+        }
+        ASSERT(m_eMediaLoadState == MLS::CLOSED);
         return;
     }
 
@@ -19187,6 +19275,10 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
     auto& s = AfxGetAppSettings();
     bool savehistory = false;
     if (GetLoadState() == MLS::LOADED) {
+        if (GetMediaState() == State_Running) {
+            MediaControlPause(true);
+        }
+
         // abort sub search
         m_pSubtitlesProviders->Abort(SubtitlesThreadType(STT_SEARCH | STT_DOWNLOAD));
         m_wndSubtitlesDownloadDialog.DoClear();
@@ -19334,7 +19426,12 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
                         if (extendedwait || m_fFullScreen) {
                             processmsg = false;
                         } else {
-                            CString msg = L"Timeout while aborting filter graph creation.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
+                            CString msg;
+                            if (s.iDSVideoRendererType == VIDRNDT_DS_MADVR) {
+                                msg = L"Timeout while aborting filter graph creation.\n\nIf files load slowly with MadVR, you should change dithering in Madvr settings (Error Diffusion is broken on AMD GPU).\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
+                            } else {
+                                msg = L"Timeout while aborting filter graph creation.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
+                            }
                             if (IDYES == AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_YESNO, 0)) {
                                 processmsg = false;
                             } else {
@@ -22050,7 +22147,12 @@ bool CMainFrame::IsOnYDLWhitelist(CString url) {
 
 bool CMainFrame::CanSendToYoutubeDL(const CString url)
 {
-    if (url.Left(4).MakeLower() == _T("http") && AfxGetAppSettings().bUseYDL) {
+    if (url.Left(4).MakeLower() == _T("http")) {
+        auto& s = AfxGetAppSettings();
+        if (!s.bUseYDL) {
+            return false;
+        }
+
         // Blacklist: don't use for IP addresses
         std::wcmatch regmatch;
         std::wregex regexp(LR"(https?:\/\/(\d{1,3}\.){3}\d{1,3}.*)");
@@ -22085,7 +22187,7 @@ bool CMainFrame::CanSendToYoutubeDL(const CString url)
             if (ext == L".m3u8" || ext == L".mpd") {
                 return false;
             }
-            if (AfxGetAppSettings().m_Formats.FindExt(ext)) {
+            if (s.m_Formats.FindExt(ext)) {
                 return false;
             }
         }

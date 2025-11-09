@@ -30,6 +30,9 @@ class CPlayerCaptureBar : public CMPCThemePlayerBar
 {
     DECLARE_DYNAMIC(CPlayerCaptureBar)
 
+private:
+    CWnd* m_pParent;
+
 public:
     CPlayerCaptureDialog m_capdlg;
 
@@ -48,4 +51,6 @@ protected:
     virtual BOOL PreTranslateMessage(MSG* pMsg);
 
     DECLARE_MESSAGE_MAP()
+
+    afx_msg void OnNcLButtonUp(UINT nHitTest, CPoint point);
 };

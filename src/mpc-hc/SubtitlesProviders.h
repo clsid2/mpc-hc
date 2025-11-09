@@ -334,6 +334,7 @@ public: // overridden
                                                      VersionInfo::GetMinorNumber(),
                                                      VersionInfo::GetPatchNumber());
     }
+    virtual bool UseForAutoDownload() { return true; }
 
     bool LoginInternal();
     void OpenUrl() const;

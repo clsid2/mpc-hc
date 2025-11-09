@@ -25,6 +25,7 @@
 #include <algorithm>
 #include "TextFile.h"
 #include "Utf8.h"
+#include "../DSUtil/PathUtils.h"
 
 #define TEXTFILE_BUFFER_SIZE (64 * 1024)
 
@@ -43,7 +44,16 @@ CTextFile::CTextFile(enc e)
 
 bool CTextFile::Open(LPCTSTR lpszFileName)
 {
-    if (!__super::Open(lpszFileName, modeRead | typeBinary | shareDenyNone)) {
+    wchar_t shortpath[MAX_PATH];
+    LPCTSTR lpszFileNameShort = lpszFileName;
+    if (lstrlen(lpszFileName) > MAX_PATH) {
+        DWORD len = GetShortPathNameW(lpszFileName, shortpath, MAX_PATH);
+        if (len > 0 && len <= MAX_PATH) {
+            lpszFileNameShort = shortpath;
+        }
+    }
+
+    if (!__super::Open(lpszFileNameShort, modeRead | typeBinary | shareDenyNone)) {
         return false;
     }
 
@@ -761,7 +771,7 @@ bool CWebTextFile::Open(LPCTSTR lpszFileName, DWORD& dwError)
 
     CString fn(lpszFileName);
 
-    if (fn.Find(_T("://")) == -1) {
+    if (!PathUtils::IsURL(fn)) {
         return __super::Open(lpszFileName);
     }
 
@@ -806,6 +816,8 @@ bool CWebTextFile::Open(LPCTSTR lpszFileName, DWORD& dwError)
     } catch (CInternetException* ie) {
         dwError = ie->m_dwError;
         ie->Delete();
+        return false;
+    } catch (...) {
         return false;
     }
 

@@ -119,13 +119,13 @@ configure() {
     export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:../../../thirdparty/64/lib/pkgconfig/"
     if [ "${COMPILER}" == "MSVC" ]; then
       OPTIONS="${OPTIONS} --enable-debug"
-      EXTRA_CFLAGS="-D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -Zo -GS-"
+      EXTRA_CFLAGS="-D_WIN32_WINNT=0x0601 -DWINVER=0x0601 -Zo -GS-"
       EXTRA_CFLAGS="${EXTRA_CFLAGS} -I../../../thirdparty/64/include -I../../../../../zlib -I../../../../msvcInclude -MDd"
       EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -LIBPATH:../../../thirdparty/64/lib -LIBPATH:../../../../../../../bin/lib/Debug_x64 -NODEFAULTLIB:libcmt"
       TOOLCHAIN="--toolchain=msvc"
     else
       OPTIONS="${OPTIONS} --enable-cross-compile --cross-prefix=${cross_prefix} --target-os=mingw32 --pkg-config=pkg-config"
-      EXTRA_CFLAGS="-fno-tree-vectorize -D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -gdwarf-5 -fno-omit-frame-pointer"
+      EXTRA_CFLAGS="-fno-tree-vectorize -D_WIN32_WINNT=0x0601 -DWINVER=0x0601 -gdwarf-5 -fno-omit-frame-pointer"
       EXTRA_CFLAGS="${EXTRA_CFLAGS} -I../../../thirdparty/64/include"
       EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L../../../thirdparty/64/lib"
     fi
@@ -134,13 +134,13 @@ configure() {
     export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:../../../thirdparty/32/lib/pkgconfig/"
     if [ "${COMPILER}" == "MSVC" ]; then
       OPTIONS="${OPTIONS} --enable-debug"
-      EXTRA_CFLAGS="-D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -Zo -GS-"
+      EXTRA_CFLAGS="-D_WIN32_WINNT=0x0601 -DWINVER=0x0601 -Zo -GS-"
       EXTRA_CFLAGS="${EXTRA_CFLAGS} -I../../../thirdparty/32/include -I../../../../../zlib -I../../../../msvcInclude -MDd"
       EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -LIBPATH:../../../thirdparty/32/lib -LIBPATH:../../../../../../../bin/lib/Debug_Win32 -NODEFAULTLIB:libcmt"
       TOOLCHAIN="--toolchain=msvc"
     else
       OPTIONS="${OPTIONS} --cpu=i686 --target-os=mingw32"
-      EXTRA_CFLAGS="-fno-tree-vectorize -D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -gdwarf-5 -fno-omit-frame-pointer"
+      EXTRA_CFLAGS="-fno-tree-vectorize -D_WIN32_WINNT=0x0601 -DWINVER=0x0601 -gdwarf-5 -fno-omit-frame-pointer"
       EXTRA_CFLAGS="${EXTRA_CFLAGS} -I../../../thirdparty/32/include -mmmx -msse -msse2 -mfpmath=sse -mstackrealign"
       EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L../../../thirdparty/32/lib"
     fi

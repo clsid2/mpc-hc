@@ -411,7 +411,7 @@ msgstr "(FPS) まで"
 
 msgctxt "IDS_PPAGE_FS_CLN_DISPLAY_MODE"
 msgid "Display mode (Hz)"
-msgstr "ディスプレイ モード (Hz)"
+msgstr "表示モード (Hz)"
 
 msgctxt "IDS_PPAGE_FS_DEFAULT"
 msgid "Default"

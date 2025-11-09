@@ -307,6 +307,8 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     AddAnchor(IDC_BUTTON4, BOTTOM_RIGHT);
     AddAnchor(IDC_STATUSBAR, BOTTOM_LEFT, BOTTOM_RIGHT);
 
+    CheckDlgButton(IDC_CHECK1, true);
+
     CRect cr;
     GetClientRect(cr);
     const CSize s(cr.Width(), 250);
@@ -786,6 +788,9 @@ afx_msg LRESULT CSubtitleDlDlg::OnFailedDownload(WPARAM wParam, LPARAM /*lParam*
 {
     CString status = StrRes(IDS_SUBDL_DLG_FAILED_DL);
     status.AppendFormat(L" (error %lu)", (DWORD)wParam);
+    if (wParam == 406) {
+        status.Append(L" (global daily download quota exceeded)");
+    }
     SetStatusText(status);
 
     return S_OK;
