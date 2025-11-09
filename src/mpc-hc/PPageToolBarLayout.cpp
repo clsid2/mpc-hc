@@ -70,7 +70,10 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
     for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
         TBBUTTON button;
         tbctrl.GetButton(i, &button);
-        if (button.fsStyle != TBBS_SEPARATOR && supportedButtons.count(button.idCommand)) {
+        // Skip separators and pause button (play/pause share same position)
+        if (button.fsStyle != TBBS_SEPARATOR &&
+            supportedButtons.count(button.idCommand) &&
+            button.idCommand != ID_PLAY_PAUSE) {
             int index = m_list_active.InsertItem(LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM, i, tb.GetStringFromID(button.idCommand), 0, 0, DescriptiveIcon(button.idCommand), button.idCommand);
             idsAdded.insert(button.idCommand);
         }
@@ -84,7 +87,8 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
 
     std::map<int, WORD> idsSortedByIndex;
     for (auto &[id, bInfo] : supportedButtons) {
-        if (0 == idsAdded.count(id) && bInfo.style != TBBS_SEPARATOR) {
+        // Skip separators and pause button (play/pause share same position)
+        if (0 == idsAdded.count(id) && bInfo.style != TBBS_SEPARATOR && id != ID_PLAY_PAUSE) {
             idsSortedByIndex[bInfo.svgIndex] = id;
         }
     }
@@ -304,12 +308,17 @@ bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
     }
     if (supportedButtons[tidCommand].positionLocked == CPlayerToolBar::LOCK_LEFT) {
         return false;
-    } else {
+    }
+
+    // Check if prior item is locked to the right
+    if (destRow > 0) {
         int priorIdCommand = (int)m_list_active.GetItemData(destRow - 1);
         if (supportedButtons.count(priorIdCommand) == 0 || CPlayerToolBar::LOCK_RIGHT == supportedButtons[priorIdCommand].positionLocked) {
             return false;
         }
     }
+    // If destRow == 0, prior item is leftSeparator which is LOCK_LEFT, but that's okay - we can insert after it
+
     return true;
 }
 

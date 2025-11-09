@@ -9129,18 +9129,10 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
             pCmdUI->m_nID == ID_PLAY_PLAYPAUSE && (fs == State_Paused || fs == State_Running);
 
         if (pCmdUI->m_nID == ID_PLAY_PLAY) {
-            CToolBarCtrl& toolbarCtrl = m_wndToolBar.GetToolBarCtrl();
-            int playbuttonstate = toolbarCtrl.GetState(ID_PLAY_PLAY);
             if (fs == State_Running) {
-                if (!(playbuttonstate & TBSTATE_HIDDEN)) {
-                    toolbarCtrl.SetState(ID_PLAY_PLAY, TBSTATE_HIDDEN);
-                    toolbarCtrl.SetState(ID_PLAY_PAUSE, TBSTATE_ENABLED);
-                }
+                m_wndToolBar.SetPlayPauseActiveButton(ID_PLAY_PAUSE);
             } else {
-                if (playbuttonstate & TBSTATE_HIDDEN) {
-                    toolbarCtrl.SetState(ID_PLAY_PLAY, TBSTATE_ENABLED);
-                    toolbarCtrl.SetState(ID_PLAY_PAUSE, TBSTATE_HIDDEN);
-                }
+                m_wndToolBar.SetPlayPauseActiveButton(ID_PLAY_PLAY);
             }
         }
 
@@ -9168,12 +9160,8 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
         fEnable = (pCmdUI->m_nID == ID_PLAY_PLAY || pCmdUI->m_nID == ID_PLAY_PLAYPAUSE) && !IsPlaylistEmpty();
 
         if (pCmdUI->m_nID == ID_PLAY_PLAY) {
-            CToolBarCtrl& toolbarCtrl = m_wndToolBar.GetToolBarCtrl();
-            int playbuttonstate = toolbarCtrl.GetState(ID_PLAY_PLAY);
-            if (playbuttonstate & TBSTATE_HIDDEN) {
-                toolbarCtrl.SetState(ID_PLAY_PLAY, TBSTATE_ENABLED);
-                toolbarCtrl.SetState(ID_PLAY_PAUSE, TBSTATE_HIDDEN);
-            }
+            // Ensure play button is visible when no media is loaded
+            m_wndToolBar.SetPlayPauseActiveButton(ID_PLAY_PLAY);
         }
     }
 

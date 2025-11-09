@@ -110,6 +110,8 @@ public:
     std::optional<bool> lastFullscreen = std::nullopt;
     void SetFullscreen(bool isFS);
 
+    void SetPlayPauseActiveButton(UINT activeButtonId);
+
     std::optional<bool> lastPlaylist = std::nullopt;
     void SetPlaylist(bool isVisible);
 
