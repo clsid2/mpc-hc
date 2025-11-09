@@ -1196,8 +1196,8 @@ IDD_PPAGETOOLBAR DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "ToolBar Style",IDC_STATIC,6,6,343,58
-    LTEXT           "ToolBar Scale:",IDC_STATIC3,12,19,115,8
+    GROUPBOX        "Toolbar Style",IDC_STATIC,6,6,343,58
+    LTEXT           "Toolbar Scale:",IDC_STATIC3,12,19,115,8
     EDITTEXT        IDC_EDIT1,118,19,43,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,149,19,13,14
     LTEXT           "Active Style:",IDC_STATIC,12,48,72,8
@@ -2746,8 +2746,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGETOOLBAR        "Player::ToolBar"
-    IDD_PPAGETOOLBARLAYOUT  "Player::ToolBar Layout"
+    IDD_PPAGETOOLBAR        "Player::Toolbar"
+    IDD_PPAGETOOLBARLAYOUT  "Player::Toolbar Layout"
     IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS "Available Buttons"
     IDS_PPAGE_TOOLBAR_CUR_BUTTONS "Current Buttons"
 END
@@ -3048,7 +3048,7 @@ BEGIN
     IDS_AG_KEY              "Key"
     IDS_AG_MOUSE            "Mouse"
     IDS_AG_APP_COMMAND      "App Command"
-    IDS_AG_BUILTIN_TOOLBAR  "Built-in ToolBar"
+    IDS_AG_BUILTIN_TOOLBAR  "Built-in Toolbar"
 END
 
 STRINGTABLE

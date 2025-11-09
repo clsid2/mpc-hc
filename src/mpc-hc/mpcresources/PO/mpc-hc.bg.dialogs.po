@@ -1975,11 +1975,11 @@ msgid "Cancel"
 msgstr "Отказ"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Стил на лентата с инструменти"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Мащаб на лентата с инструменти"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

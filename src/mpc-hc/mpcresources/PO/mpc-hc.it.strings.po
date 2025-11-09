@@ -613,11 +613,11 @@ msgid "Playback::Shaders"
 msgstr "Riproduzione::Shaders"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Lettore::Barra degli strumenti"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "Lettore::Configurazione barra degli strumenti"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1516,7 +1516,7 @@ msgid "App Command"
 msgstr "Comando App."
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Barra degli strumenti integrata"
 
 msgctxt "IDS_AG_MEDIAFILES"

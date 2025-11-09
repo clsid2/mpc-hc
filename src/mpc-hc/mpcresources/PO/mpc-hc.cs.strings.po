@@ -609,11 +609,11 @@ msgid "Playback::Shaders"
 msgstr "Přehrávání::Shadery"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Přehrávač::Panel nástrojů"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "Přehrávač::Rozložení panelu nástrojů"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1493,7 +1493,7 @@ msgid "App Command"
 msgstr "Příkaz aplikace"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Vestavěný panel nástrojů"
 
 msgctxt "IDS_AG_MEDIAFILES"

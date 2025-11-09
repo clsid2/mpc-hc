@@ -1981,11 +1981,11 @@ msgid "Cancel"
 msgstr "Mégsem"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Eszköztár stílus"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Eszköztár arány:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

@@ -612,11 +612,11 @@ msgid "Playback::Shaders"
 msgstr "Lejátszás::Árnyékolók"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Lejátszó: Eszköztár"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "Lejátszó: Eszköztár elrendezés"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1522,7 +1522,7 @@ msgid "App Command"
 msgstr "Prog. parancs"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Beépített eszköztár"
 
 msgctxt "IDS_AG_MEDIAFILES"

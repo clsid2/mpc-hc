@@ -1978,11 +1978,11 @@ msgid "Cancel"
 msgstr ""
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr ""
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr ""
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

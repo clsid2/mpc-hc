@@ -1947,11 +1947,11 @@ msgid "Cancel"
 msgstr "キャンセル"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "ツールバーのスタイル"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "ツールバーのサイズ"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

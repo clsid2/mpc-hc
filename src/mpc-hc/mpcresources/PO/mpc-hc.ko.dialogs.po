@@ -1940,11 +1940,11 @@ msgid "Cancel"
 msgstr "취소"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "도구 모음 스타일"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "도구 모음 크기 :"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

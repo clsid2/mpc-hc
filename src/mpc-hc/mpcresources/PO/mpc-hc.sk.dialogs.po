@@ -1974,11 +1974,11 @@ msgid "Cancel"
 msgstr "Zrušiť"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Štýl panela nástrojov"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Mierka panela nástrojov:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

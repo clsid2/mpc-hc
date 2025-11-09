@@ -1975,11 +1975,11 @@ msgid "Cancel"
 msgstr "Storno"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Styl nástrojové lišty"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Měřítko nástrojové lišty:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

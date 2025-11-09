@@ -621,11 +621,11 @@ msgid "Playback::Shaders"
 msgstr "Reproducción::Sombreadores"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Reproductor::Barra de Herramientas"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "Reproductor::Disposición de la Barra de Herramientas"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1541,7 +1541,7 @@ msgid "App Command"
 msgstr "Comando de la aplicación"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Barra de Herramientas Interna"
 
 msgctxt "IDS_AG_MEDIAFILES"

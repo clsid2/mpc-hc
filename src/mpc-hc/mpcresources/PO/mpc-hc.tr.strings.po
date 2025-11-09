@@ -612,11 +612,11 @@ msgid "Playback::Shaders"
 msgstr "Oynatım::Tonlayıcılar"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Oynatıcı::Kontrol Çubuğu"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "Oynatıcı::Kontrol Çubuğu Düzeni"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1514,7 +1514,7 @@ msgid "App Command"
 msgstr "Uygulama komutu"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Yerleşik Kontrol Çubuğu"
 
 msgctxt "IDS_AG_MEDIAFILES"

@@ -602,11 +602,11 @@ msgid "Playback::Shaders"
 msgstr "再生::シェーダー"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "プレーヤー::ツールバー"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Toolbar Layout"
 msgstr "プレーヤー::ツールバーの構成"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1458,7 +1458,7 @@ msgid "App Command"
 msgstr "アプリケーション コマンド"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "内蔵ツールバー"
 
 msgctxt "IDS_AG_MEDIAFILES"
