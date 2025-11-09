@@ -43,6 +43,7 @@ private:
 protected:
     CMPCThemeSpinButtonCtrl m_DefaultToolbarSizeCtrl;
     CMPCThemeComboBox m_cmbActiveTheme;
+    CMPCThemeComboBox m_cmbToolbarAlignment;
     CMPCThemeComboBox m_cmbAction1, m_cmbAction2, m_cmbAction3, m_cmbAction4;
     CMPCThemeComboBox m_cmbRightAction1, m_cmbRightAction2, m_cmbRightAction3, m_cmbRightAction4;
 

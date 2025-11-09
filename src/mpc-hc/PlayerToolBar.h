@@ -51,6 +51,7 @@ private:
     void PlaceButtons(bool loadSavedLayout);
     int rightButtonIndex=-1, leftButtonIndex=-1;
     CMPCThemeToolTipCtrl themedToolTip;
+    int leftSeparatorIndex;
 
     int m_nButtonHeight;
     std::unique_ptr<CImageList> m_pButtonsImages;

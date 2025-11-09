@@ -234,6 +234,7 @@
 #define ID_STREAM_SUB_NEXT              954
 #define ID_STREAM_SUB_PREV              955
 #define ID_STREAM_SUB_ONOFF             956
+#define ID_LEFTSEPARATOR                957
 #define ID_AUDIOSHIFT_ONOFF             960
 #define ID_DVD_ANGLE_NEXT               961
 #define ID_DVD_ANGLE_PREV               962
@@ -1763,6 +1764,9 @@
 #define IDS_PPAGEADVANCED_LIBASS_FOR_SRT 57650
 #define IDS_CMD_AB_START                57651
 #define IDS_CMD_AB_END                  57652
+#define IDS_TOOLBAR_ALIGNMENT_LEFT      57653
+#define IDS_TOOLBAR_ALIGNMENT_CENTER    57654
+#define IDS_TOOLBAR_ALIGNMENT_RIGHT     57655
 #define IDS_ARS_WASAPI_MODE             57700
 #define IDS_ARS_EXCLUSIVE               57701
 #define IDS_ARS_SHARED                  57702
