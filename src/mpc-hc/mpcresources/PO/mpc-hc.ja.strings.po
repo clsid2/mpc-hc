@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: ever_green, 2025\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
@@ -411,7 +411,7 @@ msgstr "(FPS) まで"
 
 msgctxt "IDS_PPAGE_FS_CLN_DISPLAY_MODE"
 msgid "Display mode (Hz)"
-msgstr "表示モード (Hz)"
+msgstr "ディスプレイ モード (Hz)"
 
 msgctxt "IDS_PPAGE_FS_DEFAULT"
 msgid "Default"
@@ -602,11 +602,11 @@ msgid "Playback::Shaders"
 msgstr "再生::シェーダー"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::Toolbar"
+msgid "Player::ToolBar"
 msgstr "プレーヤー::ツールバー"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::ToolBar Layout"
 msgstr "プレーヤー::ツールバーの構成"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1458,7 +1458,7 @@ msgid "App Command"
 msgstr "アプリケーション コマンド"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in Toolbar"
+msgid "Built-in ToolBar"
 msgstr "内蔵ツールバー"
 
 msgctxt "IDS_AG_MEDIAFILES"
