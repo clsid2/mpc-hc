@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2025\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
@@ -612,11 +612,11 @@ msgid "Playback::Shaders"
 msgstr "Oynatım::Tonlayıcılar"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::Toolbar"
+msgid "Player::ToolBar"
 msgstr "Oynatıcı::Kontrol Çubuğu"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Toolbar Layout"
+msgid "Player::ToolBar Layout"
 msgstr "Oynatıcı::Kontrol Çubuğu Düzeni"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1514,7 +1514,7 @@ msgid "App Command"
 msgstr "Uygulama komutu"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in Toolbar"
+msgid "Built-in ToolBar"
 msgstr "Yerleşik Kontrol Çubuğu"
 
 msgctxt "IDS_AG_MEDIAFILES"
