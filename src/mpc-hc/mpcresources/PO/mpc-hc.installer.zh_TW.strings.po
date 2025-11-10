@@ -75,7 +75,7 @@ msgstr "僅安裝給目前使用者"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
-msgstr "其它工作："
+msgstr "其他工作："
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"
