@@ -31,17 +31,21 @@ class RarEntrySelectorDialog : public CMPCThemeResizableDialog
 private:
 
 public:
-    RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent);
+    RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent, int currentIndex = -1, bool selectNext = true);
     virtual ~RarEntrySelectorDialog();
     enum { IDD = IDD_RAR_ENTRY_SELECTOR };
 
     CStringW GetCurrentEntry();
+    int GetCurrentIndex();
 
 
 protected:
     CMPCThemeListBox m_list;
     CRFSList<CRFSFile>* file_list;
     CStringW currentEntry;
+    int currentIndex;
+    int preselectedIndex;
+    bool selectNext;
     virtual void OnOK();
     virtual void DoDataExchange(CDataExchange* pDX);
     DECLARE_MESSAGE_MAP()

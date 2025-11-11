@@ -10763,6 +10763,11 @@ void CMainFrame::OnNavigateSkipFile(UINT nID)
                 SendMessage(WM_COMMAND, ID_PLAY_STOP); // do not remove this, unless you want a circular call with OnPlayPlay()
                 SendMessage(WM_COMMAND, ID_PLAY_PLAY);
             } else {
+                bool forward = (nID == ID_NAVIGATE_SKIPFORWARDFILE);
+                if (TrySkipWithinRar(forward)) {
+                    return;
+                }
+
                 if (nID == ID_NAVIGATE_SKIPBACKFILE) {
                     if (!SearchInDir(false, s.bLoopFolderOnPlayNextFile)) {
                         m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_FIRST_IN_FOLDER));
@@ -13601,23 +13606,61 @@ HRESULT CMainFrame::PreviewWindowShow(REFERENCE_TIME rtCur2) {
     return hr;
 }
 
-HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn) {
-    CRFSList <CRFSFile> file_list(true); //true = clears itself on destruction
+bool CMainFrame::SelectRarEntry(CStringW fn, CStringW& outEntryName, int& outEntryIndex, int currentIndex, bool selectNext) {
+    CRFSList <CRFSFile> file_list(true);
     int num_files, num_ok_files;
 
     CRARFileSource::ScanArchive(fn.GetBuffer(), &file_list, &num_files, &num_ok_files);
-    if (num_ok_files > 1) {
-        RarEntrySelectorDialog entrySelector(&file_list, GetModalParent());
-        if (IDOK == entrySelector.DoModal()) {
-            CStringW entryName = entrySelector.GetCurrentEntry();
-            if (entryName.GetLength() > 0) {
-                CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
-                return fgm->RenderRFSFileEntry(fn, nullptr, entryName);
-            }
-        }
-        return RFS_E_ABORT; //we found multiple entries but no entry selected.
+    if (num_ok_files <= 1) {
+        return false;
     }
-    return E_NOTIMPL; //not a multi-entry rar
+
+    RarEntrySelectorDialog entrySelector(&file_list, GetModalParent(), currentIndex, selectNext);
+    if (IDOK != entrySelector.DoModal()) {
+        return false;
+    }
+
+    outEntryName = entrySelector.GetCurrentEntry();
+    outEntryIndex = entrySelector.GetCurrentIndex();
+    return outEntryName.GetLength() > 0;
+}
+
+HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, OpenFileData* pOFD) {
+    CStringW entryName;
+    int entryIndex;
+    if (!SelectRarEntry(fn, entryName, entryIndex)) {
+        return RFS_E_ABORT;
+    }
+
+    if (pOFD) {
+        pOFD->rarEntryIndex = entryIndex;
+    }
+    CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
+    return fgm->RenderRFSFileEntry(fn, nullptr, entryName);
+}
+
+bool CMainFrame::TrySkipWithinRar(bool forward) {
+    auto pFileData = dynamic_cast<OpenFileData*>(m_lastOMD.m_p);
+    if (!pFileData || pFileData->rarEntryIndex < 0) {
+        return false;
+    }
+
+    CString fn = pFileData->title;
+    if (fn.IsEmpty()) {
+        fn = lastOpenFile;
+    }
+
+    CStringW entryName;
+    int entryIndex;
+    if (!SelectRarEntry(fn, entryName, entryIndex, pFileData->rarEntryIndex, forward)) {
+        return false;
+    }
+
+    CAutoPtr<OpenFileData> p(DEBUG_NEW OpenFileData());
+    p->fns.AddHead(fn);
+    p->rarEntryIndex = entryIndex;
+    OpenMedia(CAutoPtr<OpenMediaData>(p.Detach()));
+    return true;
 }
 
 // Called from GraphThread
@@ -13661,7 +13704,23 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
         if (s.SrcFilters[SRC_RFS] && !PathUtils::IsURL(fn)) {
             CString ext = CPath(fn).GetExtension().MakeLower();
             if (ext == L".rar") {
-                rarHR = HandleMultipleEntryRar(fn);
+                if (pOFD->rarEntryIndex >= 0) {
+                    CRFSList <CRFSFile> file_list(true);
+                    int num_files, num_ok_files;
+                    CRARFileSource::ScanArchive(fn.GetBuffer(), &file_list, &num_files, &num_ok_files);
+
+                    CRFSFile* file = file_list.First();
+                    for (int i = 0; i < pOFD->rarEntryIndex && file; i++) {
+                        file = file_list.Next(file);
+                    }
+
+                    if (file) {
+                        CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
+                        rarHR = fgm->RenderRFSFileEntry(fn, nullptr, file->filename);
+                    }
+                } else {
+                    rarHR = HandleMultipleEntryRar(fn, pOFD);
+                }
             }
         }
 #endif

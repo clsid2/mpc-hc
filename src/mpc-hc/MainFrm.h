@@ -105,13 +105,14 @@ public:
 class OpenFileData : public OpenMediaData
 {
 public:
-    OpenFileData() : rtStart(0), bAddToRecent(true) {}
+    OpenFileData() : rtStart(0), bAddToRecent(true), rarEntryIndex(-1) {}
     CAtlList<CString> fns;
     REFERENCE_TIME rtStart;
     ABRepeat abRepeat;
     bool bAddToRecent;
     CString useragent;
     CString referrer;
+    int rarEntryIndex;
 };
 
 class OpenDVDData : public OpenMediaData
@@ -1226,7 +1227,9 @@ public:
     void ReleasePreviewGraph();
     HRESULT PreviewWindowHide();
     HRESULT PreviewWindowShow(REFERENCE_TIME rtCur2);
-    HRESULT HandleMultipleEntryRar(CStringW fn);
+    bool SelectRarEntry(CStringW fn, CStringW& outEntryName, int& outEntryIndex, int currentIndex = -1, bool selectNext = true);
+    HRESULT HandleMultipleEntryRar(CStringW fn, OpenFileData* pOFD);
+    bool TrySkipWithinRar(bool forward);
     bool CanPreviewUse();
 
     CFullscreenWnd* m_pDedicatedFSVideoWnd;
