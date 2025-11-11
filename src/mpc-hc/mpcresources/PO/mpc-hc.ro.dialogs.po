@@ -137,7 +137,7 @@ msgstr ""
 
 msgctxt "IDD_GOTO_DLG_IDC_STATIC"
 msgid "Time"
-msgstr "Timp"
+msgstr "Timpul"
 
 msgctxt "IDD_GOTO_DLG_IDC_OK1"
 msgid "Go!"
