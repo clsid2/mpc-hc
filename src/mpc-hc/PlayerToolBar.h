@@ -102,6 +102,10 @@ public:
     void ToolbarChange();
     void ToolBarReset();
 
+    // Safe button manipulation that handles play/pause as a pair
+    bool InsertButtonSafe(int beforeID, int buttonID, int existingStyle = -1);
+    bool DeleteButtonSafe(int buttonID);
+
     CImage& GetVolumeImageOn() { return volumeOn; };
     CImage& GetVolumeImageOff() { return volumeOff; };
 

@@ -256,40 +256,14 @@ void CPPageToolBarLayout::OnUpdateDown(CCmdUI* pCmdUI) {
 }
 
 
-bool CPPageToolBarLayout::InsertButton(int beforeID, int buttonID) {
+bool CPPageToolBarLayout::InsertButton(int beforeID, int buttonID, int existingStyle) {
     CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
-    CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
-
-    for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
-        TBBUTTON tButton;
-        tbctrl.GetButton(i, &tButton);
-        if (tButton.idCommand == beforeID) {
-            if (beforeID == ID_VOLUME_MUTE) {
-                i -= 1; //this is to force inserting before the hidden spacer
-            }
-            TBBUTTON button = tb.GetStandardButton(buttonID);
-            tbctrl.InsertButton(i, &button);
-            tb.ToolbarChange();
-            return true;
-        }
-    }
-    return false;
+    return tb.InsertButtonSafe(beforeID, buttonID, existingStyle);
 }
 
 bool CPPageToolBarLayout::DeleteButton(int buttonID) {
     CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
-    CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
-
-    for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
-        TBBUTTON tButton;
-        tbctrl.GetButton(i, &tButton);
-        if (tButton.idCommand == buttonID) {
-            tbctrl.DeleteButton(i);
-            tb.ToolbarChange();
-            return true;
-        }
-    }
-    return false;
+    return tb.DeleteButtonSafe(buttonID);
 }
 
 bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
@@ -415,8 +389,10 @@ bool CPPageToolBarLayout::OrderButton(ButtonPosition pos) {
                 m_list_active.SetItemState(insertRow, LVIS_SELECTED, LVIS_SELECTED);
                 m_list_active.SetSelectionMark(insertRow);
 
+                // Capture style before delete for move operation
+                int buttonStyle = tb.GetButtonStyle(tb.CommandToIndex(buttonID));
                 DeleteButton(buttonID);
-                InsertButton(beforeID, buttonID);
+                InsertButton(beforeID, buttonID, buttonStyle);
                 break;
             }
         }
@@ -432,8 +408,10 @@ bool CPPageToolBarLayout::OrderButton(ButtonPosition pos) {
 
                 m_list_active.DeleteItem(selectedRow);
 
+                // Capture style before delete for move operation
+                int buttonStyle = tb.GetButtonStyle(tb.CommandToIndex(buttonID));
                 DeleteButton(buttonID);
-                InsertButton(beforeID, buttonID);
+                InsertButton(beforeID, buttonID, buttonStyle);
                 break;
             }
         }

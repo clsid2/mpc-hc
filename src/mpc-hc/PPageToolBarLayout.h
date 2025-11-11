@@ -64,7 +64,7 @@ protected:
     void LoadToolBarButtons();
     virtual BOOL OnInitDialog() override;
     virtual BOOL OnApply() override;
-    bool InsertButton(int beforeID, int buttonID);
+    bool InsertButton(int beforeID, int buttonID, int existingStyle = -1);
     bool DeleteButton(int buttonID);
     bool IsValidInsertPos(int destRow);
     bool LeftSelectedButtonLocked();

@@ -847,6 +847,68 @@ void CPlayerToolBar::SetPlayPauseActiveButton(UINT activeButtonId)
     ctrl.HideButton(hideButton, TRUE);   // Hide
 }
 
+inline bool IsPlayOrPause(UINT id) {
+    return id == ID_PLAY_PLAY || id == ID_PLAY_PAUSE;
+}
+
+bool CPlayerToolBar::InsertButtonSafe(int beforeID, int buttonID, int existingStyle) {
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Find the index to insert at
+    int insertIndex = CommandToIndex(beforeID);
+    if (insertIndex == -1) {
+        return false;
+    }
+    if (beforeID == ID_VOLUME_MUTE) {
+        insertIndex -= 1; // Insert before the hidden spacer
+    }
+
+    // Use provided style, or default for new inserts
+    UINT buttonStyle = (existingStyle != -1) ? existingStyle : supportedSvgButtons[buttonID].style | TBBS_DISABLED;
+
+    // Insert the requested button
+    TBBUTTON button = GetStandardButton(buttonID);
+    ctrl.InsertButton(insertIndex, &button);
+    SetButtonStyle(insertIndex, buttonStyle);
+
+    // If it's play or pause, insert the other one too
+    if (IsPlayOrPause(buttonID)) {
+        UINT otherButtonID = (buttonID == ID_PLAY_PLAY) ? ID_PLAY_PAUSE : ID_PLAY_PLAY;
+        UINT otherStyle = supportedSvgButtons[otherButtonID].style | TBBS_DISABLED;
+
+        TBBUTTON otherButton = GetStandardButton(otherButtonID);
+        ctrl.InsertButton(insertIndex + 1, &otherButton);
+        SetButtonStyle(insertIndex + 1, otherStyle);
+        SetPlayPauseActiveButton(buttonID); // Keep the inserted one visible
+    }
+
+    ToolbarChange();
+    return true;
+}
+
+bool CPlayerToolBar::DeleteButtonSafe(int buttonID) {
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Delete the requested button
+    int buttonIndex = CommandToIndex(buttonID);
+    if (buttonIndex == -1) {
+        return false;
+    }
+    ctrl.DeleteButton(buttonIndex);
+
+    // If it was play or pause, delete the other one too
+    if (IsPlayOrPause(buttonID)) {
+        UINT otherButtonID = (buttonID == ID_PLAY_PLAY) ? ID_PLAY_PAUSE : ID_PLAY_PLAY;
+        int otherIndex = CommandToIndex(otherButtonID);
+        if (otherIndex != -1) {
+            ctrl.DeleteButton(otherIndex);
+        }
+    }
+
+    ToolbarChange();
+    return true;
+}
+
 //note, this differs from CMainFrame::OnUpdateViewFullscreen in order to avoid "checking" the button state
 void CPlayerToolBar::OnUpdateFullscreen(CCmdUI* pCmdUI) {
     pCmdUI->Enable(true);
