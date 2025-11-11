@@ -23,9 +23,12 @@
 #include "RarEntrySelectorDialog.h"
 #include "SettingsDefines.h"
 
-RarEntrySelectorDialog::RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent)
+RarEntrySelectorDialog::RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent, int currentIndex, bool selectNext)
     : CMPCThemeResizableDialog(RarEntrySelectorDialog::IDD, parent)
     ,currentEntry(L"")
+    ,currentIndex(-1)
+    ,preselectedIndex(currentIndex)
+    ,selectNext(selectNext)
 {
     this->file_list = file_list;
 }
@@ -37,11 +40,16 @@ CStringW RarEntrySelectorDialog::GetCurrentEntry() {
     return currentEntry;
 }
 
+int RarEntrySelectorDialog::GetCurrentIndex() {
+    return currentIndex;
+}
+
 void RarEntrySelectorDialog::OnOK() {
     int index = m_list.GetCurSel();
     if (LB_ERR != index) {
         CRFSFile* file = (CRFSFile*)m_list.GetItemData(index);
         currentEntry = file->filename;
+        currentIndex = index;
     }
 
     CMPCThemeResizableDialog::OnOK();
@@ -69,8 +77,18 @@ BOOL RarEntrySelectorDialog::OnInitDialog() {
         file = file_list->Next(file);
         index++;
     }
-    if (index) {
-        m_list.SetCurSel(0);
+
+    int selectIndex = 0;
+    if (preselectedIndex >= 0 && index > 0) {
+        if (selectNext) {
+            selectIndex = (preselectedIndex + 1) % index;
+        } else {
+            selectIndex = (preselectedIndex - 1 + index) % index;
+        }
+    }
+
+    if (index > 0) {
+        m_list.SetCurSel(selectIndex);
     }
 
     EnableSaveRestoreKey(IDS_R_DLG_RAR_ENTRY_SELECTOR);
