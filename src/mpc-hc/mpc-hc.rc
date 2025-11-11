@@ -1863,6 +1863,27 @@ BEGIN
             MENUITEM "A-B (Mark &A)",               ID_PLAY_REPEAT_AB_MARK_A
             MENUITEM "A-B (Mark &B)",               ID_PLAY_REPEAT_AB_MARK_B
         END
+        POPUP "&Playback Rate"
+        BEGIN
+            MENUITEM "0.25 x",                      ID_PLAY_PLAYBACKRATE_025
+            MENUITEM "0.50 x",                      ID_PLAY_PLAYBACKRATE_050
+            MENUITEM "0.75 x",                      ID_PLAY_PLAYBACKRATE_075
+            MENUITEM "0.90 x",                      ID_PLAY_PLAYBACKRATE_090
+            MENUITEM "1.00 x",                      ID_PLAY_PLAYBACKRATE_100
+            MENUITEM "1.10 x",                      ID_PLAY_PLAYBACKRATE_110
+            MENUITEM "1.25 x",                      ID_PLAY_PLAYBACKRATE_125
+            MENUITEM "1.50 x",                      ID_PLAY_PLAYBACKRATE_150
+            MENUITEM "1.75 x",                      ID_PLAY_PLAYBACKRATE_175
+            MENUITEM "2.00 x",                      ID_PLAY_PLAYBACKRATE_200
+            MENUITEM "3.00 x",                      ID_PLAY_PLAYBACKRATE_300
+            MENUITEM "4.00 x",                      ID_PLAY_PLAYBACKRATE_400
+            MENUITEM "6.00 x",                      ID_PLAY_PLAYBACKRATE_600
+            MENUITEM "8.00 x",                      ID_PLAY_PLAYBACKRATE_800
+            MENUITEM "23.976 fps",                  ID_PLAY_PLAYBACKRATE_FPS23
+            MENUITEM "24 fps",                      ID_PLAY_PLAYBACKRATE_FPS24
+            MENUITEM "25 fps",                      ID_PLAY_PLAYBACKRATE_FPS25
+            MENUITEM "59.94 fps",                   ID_PLAY_PLAYBACKRATE_FPS59
+        END
         MENUITEM SEPARATOR
         MENUITEM "F&ull Screen",                ID_VIEW_FULLSCREEN
         POPUP "&Zoom"
