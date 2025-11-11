@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hack茶ん, 2025\n"
 "Language-Team: Korean (https://app.transifex.com/mpchc/teams/106126/ko/)\n"
@@ -603,11 +603,11 @@ msgstr "재생::셰이더"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
-msgstr "플레이어::도구 모음"
+msgstr "재생기::도구 모음"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::Toolbar Layout"
-msgstr "플레이어::도구 모음 레이아웃"
+msgstr "재생기::도구 모음 레이아웃"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
@@ -1455,7 +1455,7 @@ msgstr "명령 추가"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
 msgid "Built-in Toolbar"
-msgstr "내장 도구 모음"
+msgstr "내장된 도구 모음"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
