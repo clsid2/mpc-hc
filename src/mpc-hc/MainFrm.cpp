@@ -13628,13 +13628,19 @@ bool CMainFrame::SelectRarEntry(CStringW fn, CStringW& outEntryName, int& outEnt
 HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, OpenFileData* pOFD) {
     CStringW entryName;
     int entryIndex;
-    if (!SelectRarEntry(fn, entryName, entryIndex)) {
-        return RFS_E_ABORT;
+
+    if (pOFD && pOFD->rarEntryName.GetLength() > 0) {
+        entryName = pOFD->rarEntryName;
+    } else {
+        if (!SelectRarEntry(fn, entryName, entryIndex)) {
+            return RFS_E_ABORT;
+        }
+        if (pOFD) {
+            pOFD->rarEntryIndex = entryIndex;
+            pOFD->rarEntryName = entryName;
+        }
     }
 
-    if (pOFD) {
-        pOFD->rarEntryIndex = entryIndex;
-    }
     CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
     return fgm->RenderRFSFileEntry(fn, nullptr, entryName);
 }
@@ -13659,6 +13665,7 @@ bool CMainFrame::TrySkipWithinRar(bool forward) {
     CAutoPtr<OpenFileData> p(DEBUG_NEW OpenFileData());
     p->fns.AddHead(fn);
     p->rarEntryIndex = entryIndex;
+    p->rarEntryName = entryName;
     OpenMedia(CAutoPtr<OpenMediaData>(p.Detach()));
     return true;
 }
@@ -13704,23 +13711,7 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
         if (s.SrcFilters[SRC_RFS] && !PathUtils::IsURL(fn)) {
             CString ext = CPath(fn).GetExtension().MakeLower();
             if (ext == L".rar") {
-                if (pOFD->rarEntryIndex >= 0) {
-                    CRFSList <CRFSFile> file_list(true);
-                    int num_files, num_ok_files;
-                    CRARFileSource::ScanArchive(fn.GetBuffer(), &file_list, &num_files, &num_ok_files);
-
-                    CRFSFile* file = file_list.First();
-                    for (int i = 0; i < pOFD->rarEntryIndex && file; i++) {
-                        file = file_list.Next(file);
-                    }
-
-                    if (file) {
-                        CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
-                        rarHR = fgm->RenderRFSFileEntry(fn, nullptr, file->filename);
-                    }
-                } else {
-                    rarHR = HandleMultipleEntryRar(fn, pOFD);
-                }
+                rarHR = HandleMultipleEntryRar(fn, pOFD);
             }
         }
 #endif

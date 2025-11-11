@@ -113,6 +113,7 @@ public:
     CString useragent;
     CString referrer;
     int rarEntryIndex;
+    CStringW rarEntryName;
 };
 
 class OpenDVDData : public OpenMediaData
