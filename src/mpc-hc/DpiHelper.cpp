@@ -39,11 +39,9 @@ namespace
     } MONITOR_DPI_TYPE;
 
     typedef int (WINAPI* tpGetSystemMetricsForDpi)(int nIndex, UINT dpi);
-    HRESULT WINAPI GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
-    BOOL WINAPI SystemParametersInfoForDpi(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni, UINT dpi);
-    int WINAPI GetSystemMetricsForDpi(int nIndex);
-    UINT WINAPI GetDpiForWindow(HWND hwnd);
-    double WINAPI TextScaleFactor(void);
+    typedef HRESULT WINAPI tpGetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
+    typedef BOOL WINAPI tpSystemParametersInfoForDpi(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni, UINT dpi);
+    typedef int WINAPI tpGetSystemMetricsForDpiFunc(int nIndex, UINT dpi);
 }
 
 DpiHelper::DpiHelper()
@@ -56,17 +54,8 @@ DpiHelper::DpiHelper()
     m_dpiy = m_sdpiy;
 }
 
-UINT DpiHelper::GetDPIForWindow(HWND wnd) {
-    const WinapiFunc<decltype(GetDpiForWindow)>
-        fnGetDpiForWindow = { _T("user32.dll"), "GetDpiForWindow" };
-    if (fnGetDpiForWindow) {
-        return fnGetDpiForWindow(wnd);
-    }
-    return 0;
-}
-
 UINT DpiHelper::GetDPIForMonitor(HMONITOR hMonitor) {
-    const WinapiFunc<decltype(GetDpiForMonitor)>
+    const WinapiFunc<tpGetDpiForMonitor>
         fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
 
     if (hMonitor && fnGetDpiForMonitor) {
@@ -80,7 +69,7 @@ UINT DpiHelper::GetDPIForMonitor(HMONITOR hMonitor) {
 
 void DpiHelper::Override(HWND hWindow)
 {
-    const WinapiFunc<decltype(GetDpiForMonitor)>
+    const WinapiFunc<tpGetDpiForMonitor>
         fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
 
     if (hWindow && fnGetDpiForMonitor) {
@@ -121,7 +110,7 @@ void DpiHelper::GetMessageFont(LOGFONT* lf) {
 }
 
 bool DpiHelper::GetNonClientMetrics(PNONCLIENTMETRICSW ncm, bool& dpiCorrected) {
-    const WinapiFunc<decltype(SystemParametersInfoForDpi)>
+    const WinapiFunc<tpSystemParametersInfoForDpi>
         fnSystemParametersInfoForDpi = { L"user32.dll", "SystemParametersInfoForDpi" };
 
     ZeroMemory(ncm, sizeof(NONCLIENTMETRICS));
@@ -141,19 +130,15 @@ bool DpiHelper::GetNonClientMetrics(PNONCLIENTMETRICSW ncm, bool& dpiCorrected) 
 }
 
 int DpiHelper::GetSystemMetrics(int type) {
-    const WinapiFunc<decltype(GetSystemMetricsForDpi)>
+    const WinapiFunc<tpGetSystemMetricsForDpiFunc>
         fnGetSystemMetricsForDpi = { L"user32.dll", "GetSystemMetricsForDpi" };
 
-    bool dpiCorrected = false;
-
     if (fnGetSystemMetricsForDpi) {
-        dpiCorrected = true;
-        return fnGetSystemMetricsForDpi(type);
+        return fnGetSystemMetricsForDpi(type, m_dpix);
     }
-    if (!dpiCorrected) {
-        int ret = fnGetSystemMetricsForDpi(type);
-        return ScaleSystemToOverrideY(ret);
-    }
+
+    int ret = ::GetSystemMetrics(type);
+    return ScaleSystemToOverrideY(ret);
 }
 
 bool DpiHelper::CanUsePerMonitorV2() {

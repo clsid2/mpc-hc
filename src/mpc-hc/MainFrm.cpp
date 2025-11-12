@@ -113,6 +113,8 @@
 
 #include "stb/stb_image.h"
 #include "stb/stb_image_resize2.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
 
 #include <dwmapi.h>
 #undef SubclassWindow
@@ -2209,6 +2211,11 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                             }
 
                             m_wndStatusBar.SetStatusTimer(rtNow, rtDur, IsSubresyncBarVisible(), GetTimeFormat());
+
+                            // Update media transport controls timeline
+                            if (m_media_trans_control.IsActive() && rtDur > 0) {
+                                m_media_trans_control.UpdateTimelineProperties(0, rtDur, rtNow);
+                            }
                         }
                         break;
                     case PM_DVD:
@@ -2239,6 +2246,11 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                             }
                         }
                         m_wndStatusBar.SetStatusTimer(rtNow, rtDur, IsSubresyncBarVisible(), GetTimeFormat());
+
+                        // Update media transport controls timeline for DVD
+                        if (m_media_trans_control.IsActive() && rtDur > 0) {
+                            m_media_trans_control.UpdateTimelineProperties(0, rtDur, rtNow);
+                        }
                         break;
                     case PM_ANALOG_CAPTURE:
                         g_bExternalSubtitleTime = true;
@@ -5644,18 +5656,24 @@ bool CMainFrame::GetDIB(BYTE** ppData, long& size, bool fSilent)
     return true;
 }
 
-void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
-{
-    CPath path(fn);
+// Callback for stb_image_write to append to vector
+static void stbi_write_to_vector(void* context, void* data, int size) {
+    std::vector<BYTE>* vec = (std::vector<BYTE>*)context;
+    size_t oldSize = vec->size();
+    vec->resize(oldSize + size);
+    memcpy(vec->data() + oldSize, data, size);
+}
 
+BYTE* CMainFrame::ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch)
+{
     PBITMAPINFO bi = reinterpret_cast<PBITMAPINFO>(pData);
     PBITMAPINFOHEADER bih = &bi->bmiHeader;
     int bpp = bih->biBitCount;
 
     if (bpp != 16 && bpp != 24 && bpp != 32) {
-        AfxMessageBox(IDS_SCREENSHOT_ERROR, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return nullptr;
     }
+
     bool topdown = (bih->biHeight < 0);
     int w = bih->biWidth;
     int h = abs(bih->biHeight);
@@ -5663,13 +5681,29 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
     int dstpitch = (w * 3 + 3) / 4 * 4; // round w * 3 to next multiple of 4
 
     BYTE* p = DEBUG_NEW BYTE[dstpitch * h];
-
     const BYTE* src = pData + sizeof(*bih);
 
     if (topdown) {
         BitBltFromRGBToRGB(w, h, p, dstpitch, 24, (BYTE*)src, srcpitch, bpp);
     } else {
         BitBltFromRGBToRGB(w, h, p, dstpitch, 24, (BYTE*)src + srcpitch * (h - 1), -srcpitch, bpp);
+    }
+
+    outWidth = w;
+    outHeight = h;
+    outPitch = dstpitch;
+    return p;
+}
+
+void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
+{
+    CPath path(fn);
+
+    int w, h, dstpitch;
+    BYTE* p = ConvertDIBTo24bppRGB(pData, size, w, h, dstpitch);
+    if (!p) {
+        AfxMessageBox(IDS_SCREENSHOT_ERROR, MB_ICONWARNING | MB_OK, 0);
+        return;
     }
 
     {
@@ -5744,6 +5778,43 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
     path.m_strPath.Replace(_T("\\\\"), _T("\\"));
 
     SendStatusMessage(m_wndStatusBar.PreparePathStatusMessage(path), 3000);
+}
+
+bool CMainFrame::CaptureVideoThumbnail(std::vector<BYTE>& thumbnail)
+{
+    // Get the current video frame as DIB
+    std::vector<BYTE> dib;
+    CString errmsg;
+    HRESULT hr = GetCurrentFrame(dib, errmsg);
+    if (FAILED(hr) || dib.empty()) {
+        return false;
+    }
+
+    // Convert DIB to 24bpp BGR
+    int w, h, dstpitch;
+    BYTE* bgr = ConvertDIBTo24bppRGB(dib.data(), (long)dib.size(), w, h, dstpitch);
+    if (!bgr) {
+        return false;
+    }
+
+    // Allocate buffer for RGB output (tightly packed, no padding)
+    int rgbPitch = w * 3;
+    BYTE* rgb = DEBUG_NEW BYTE[rgbPitch * h];
+
+    // Convert BGR to RGB using stb_image_resize2 (even with same dimensions, it can reorder channels)
+    STBIR_RESIZE resize;
+    stbir_resize_init(&resize, bgr, w, h, dstpitch, rgb, w, h, rgbPitch, STBIR_BGR, STBIR_TYPE_UINT8);
+    stbir_set_pixel_layouts(&resize, STBIR_BGR, STBIR_RGB);
+    stbir_resize_extended(&resize);
+
+    delete[] bgr;
+
+    // Encode to JPEG using stb_image_write
+    int quality = AfxGetAppSettings().nJpegQuality;
+    int result = stbi_write_jpg_to_func(stbi_write_to_vector, &thumbnail, w, h, 3, rgb, quality);
+
+    delete[] rgb;
+    return result != 0;
 }
 
 HRESULT GetBasicVideoFrame(IBasicVideo* pBasicVideo, std::vector<BYTE>& dib) {
@@ -18469,6 +18540,14 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
             if (abRepeat.positionA && rtPos == abRepeat.positionA) {
                 DisableABRepeat();
             }
+        } else {
+            // Update media transport controls timeline after seek
+            if (m_media_trans_control.IsActive()) {
+                REFERENCE_TIME rtDur = 0;
+                if (SUCCEEDED(m_pMS->GetDuration(&rtDur)) && rtDur > 0) {
+                    m_media_trans_control.UpdateTimelineProperties(0, rtDur, rtPos);
+                }
+            }
         }
         UpdateChapterInInfoBar();
         if (fs == State_Stopped) {
@@ -19085,7 +19164,7 @@ void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = fa
     }
 
     CAutoPtr<OpenMediaData> p(m_wndPlaylistBar.GetCurOMD(rtStart, abRepeat));
-    if (p) {
+    if ( p) {
         OpenMedia(p);
     }
 }
@@ -22600,34 +22679,48 @@ void CMainFrame::MediaTransportControlSetMedia() {
         }
 
         // Thumbnail
-        CComQIPtr<IFilterGraph> pFilterGraph = m_pGB;
-        std::vector<BYTE> internalCover;
-        if (CoverArt::FindEmbedded(pFilterGraph, internalCover)) {
-            m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
-        } else {
-            CPlaylistItem pli;
-            if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
-                m_media_trans_control.loadThumbnail(pli.m_cover);
+        if (m_fAudioOnly) {
+            // For audio files, look for cover art
+            CComQIPtr<IFilterGraph> pFilterGraph = m_pGB;
+            std::vector<BYTE> internalCover;
+            if (CoverArt::FindEmbedded(pFilterGraph, internalCover)) {
+                m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
             } else {
-                CString filename = m_wndPlaylistBar.GetCurFileName();
-                CString filename_no_ext;
-                CString filedir;
-                if (!PathUtils::IsURL(filename)) {
-                    CPath path = CPath(filename);
-                    if (path.FileExists()) {
-                        path.RemoveExtension();
-                        filename_no_ext = path.m_strPath;
-                        path.RemoveFileSpec();
-                        filedir = path.m_strPath;
-                        bool is_file_art = false;
-                        CString img = CoverArt::FindExternal(filename_no_ext, filedir, author, is_file_art);
-                        if (!img.IsEmpty()) {
-                            if (m_fAudioOnly || is_file_art) {
+                CPlaylistItem pli;
+                if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
+                    m_media_trans_control.loadThumbnail(pli.m_cover);
+                } else {
+                    CString filename = m_wndPlaylistBar.GetCurFileName();
+                    if (!PathUtils::IsURL(filename)) {
+                        CPath path = CPath(filename);
+                        if (path.FileExists()) {
+                            path.RemoveExtension();
+                            CString filename_no_ext = path.m_strPath;
+                            path.RemoveFileSpec();
+                            CString filedir = path.m_strPath;
+                            bool is_file_art = false;
+                            CString img = CoverArt::FindExternal(filename_no_ext, filedir, author, is_file_art);
+                            if (!img.IsEmpty()) {
                                 m_media_trans_control.loadThumbnail(img);
                             }
                         }
                     }
                 }
+            }
+        } else {
+            // For video files, capture current frame as thumbnail
+            std::vector<BYTE> thumbnail;
+            if (CaptureVideoThumbnail(thumbnail)) {
+                m_media_trans_control.loadThumbnail(thumbnail.data(), thumbnail.size());
+            }
+        }
+
+        // Update timeline properties (duration and position)
+        if (m_pMS) {
+            REFERENCE_TIME rtDur = 0, rtNow = 0;
+            if (SUCCEEDED(m_pMS->GetDuration(&rtDur)) && rtDur > 0) {
+                m_pMS->GetCurrentPosition(&rtNow);
+                m_media_trans_control.UpdateTimelineProperties(0, rtDur, rtNow);
             }
         }
 

@@ -68,6 +68,13 @@ bool MediaTransControls::Init(CMainFrame* main) {
         TRACE(_T("MediaTransControls: GetForWindow error %ld\n"), ret);
         return false;
     }
+
+    // Try to get ISystemMediaTransportControls2 (Windows 10 1607+)
+    ret = smtc_controls->QueryInterface(IID_PPV_ARGS(&smtc_controls2));
+    if (ret != S_OK) {
+        smtc_controls2 = nullptr;
+    }
+
     ret = smtc_controls->get_DisplayUpdater(&smtc_updater);
     if (ret != S_OK) {
         smtc_controls = nullptr;
@@ -112,6 +119,23 @@ bool MediaTransControls::Init(CMainFrame* main) {
     smtc_controls->put_IsStopEnabled(true);
     smtc_controls->put_IsPreviousEnabled(true);
     smtc_controls->put_IsNextEnabled(true);
+
+    // Register for playback position change requests (for timeline seeking)
+    if (smtc_controls2) {
+        auto callbackPositionChange = Callback<ABI::Windows::Foundation::ITypedEventHandler<SystemMediaTransportControls*, PlaybackPositionChangeRequestedEventArgs*>>(
+            [this](ISystemMediaTransportControls*, IPlaybackPositionChangeRequestedEventArgs* pArgs) {
+                HRESULT hr;
+                ABI::Windows::Foundation::TimeSpan requestedPosition;
+                if ((hr = pArgs->get_RequestedPlaybackPosition(&requestedPosition)) == S_OK) {
+                    OnPlaybackPositionChangeRequested(requestedPosition.Duration);
+                }
+                return S_OK;
+            });
+        ret = smtc_controls2->add_PlaybackPositionChangeRequested(callbackPositionChange.Get(), &m_EventRegistrationTokenPositionChange);
+        if (ret != S_OK) {
+            // Non-fatal, continue
+        }
+    }
 
     m_pMainFrame = main;
 
@@ -182,7 +206,9 @@ void MediaTransControls::loadThumbnail(CString fn) {
 }
 
 void MediaTransControls::loadThumbnail(BYTE* content, size_t size) {
-    if (!content || !size || !smtc_updater) return;
+    if (!content || !size || !smtc_updater) {
+        return;
+    }
 
     ComPtr<Streams::IRandomAccessStream> s;
     HRESULT ret;
@@ -249,6 +275,13 @@ void MediaTransControls::OnButtonPressed(SystemMediaTransportControlsButton butt
     }
 }
 
+void MediaTransControls::OnPlaybackPositionChangeRequested(REFERENCE_TIME position) {
+    if (!m_pMainFrame) return;
+
+    // Seek to the requested position
+    m_pMainFrame->SeekTo(position, false);
+}
+
 bool MediaTransControls::IsActive() {
     if (smtc_controls) {
         boolean enabled;
@@ -258,4 +291,73 @@ bool MediaTransControls::IsActive() {
         }
     }
     return false;
+}
+
+void MediaTransControls::SetAutoRepeatMode(ABI::Windows::Media::MediaPlaybackAutoRepeatMode mode) {
+    if (smtc_controls2) {
+        smtc_controls2->put_AutoRepeatMode(mode);
+    }
+}
+
+void MediaTransControls::SetShuffleEnabled(bool enabled) {
+    if (smtc_controls2) {
+        smtc_controls2->put_ShuffleEnabled(enabled);
+    }
+}
+
+void MediaTransControls::SetPlaybackRate(double rate) {
+    if (smtc_controls2) {
+        smtc_controls2->put_PlaybackRate(rate);
+    }
+}
+
+void MediaTransControls::UpdateTimelineProperties(REFERENCE_TIME startTime, REFERENCE_TIME endTime, REFERENCE_TIME position) {
+    if (!smtc_controls2) {
+        return;
+    }
+
+    HRESULT hr;
+    CComPtr<ISystemMediaTransportControlsTimelineProperties> timeline;
+
+    hr = ActivateInstance(HStringReference(RuntimeClass_Windows_Media_SystemMediaTransportControlsTimelineProperties).Get(), &timeline);
+    if (hr != S_OK) {
+        return;
+    }
+
+    // Convert REFERENCE_TIME (100ns units) to TimeSpan (also 100ns units)
+    ABI::Windows::Foundation::TimeSpan start, end, pos, minSeek, maxSeek;
+    start.Duration = startTime;
+    end.Duration = endTime;
+    pos.Duration = position;
+    minSeek.Duration = startTime;  // Min seekable position (usually start)
+    maxSeek.Duration = endTime;    // Max seekable position (usually end)
+
+    // Set timeline properties
+    hr = timeline->put_StartTime(start);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_EndTime(end);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_MinSeekTime(minSeek);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_MaxSeekTime(maxSeek);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_Position(pos);
+    if (hr != S_OK) {
+        return;
+    }
+
+    // Update the timeline
+    smtc_controls2->UpdateTimelineProperties(timeline);
 }

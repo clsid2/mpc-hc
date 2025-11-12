@@ -28,11 +28,17 @@ class MediaTransControls {
 public:
     MediaTransControls(void) {
         smtc_controls = nullptr;
+        smtc_controls2 = nullptr;
         smtc_updater = nullptr;
+        m_EventRegistrationToken.value = 0;
+        m_EventRegistrationTokenPositionChange.value = 0;
     }
     ~MediaTransControls(void) {
         if (smtc_controls && m_EventRegistrationToken.value) {
             smtc_controls->remove_ButtonPressed(m_EventRegistrationToken);
+        }
+        if (smtc_controls2 && m_EventRegistrationTokenPositionChange.value) {
+            smtc_controls2->remove_PlaybackPositionChangeRequested(m_EventRegistrationTokenPositionChange);
         }
     }
 
@@ -41,14 +47,23 @@ public:
     void close();
 
     CComPtr<ABI::Windows::Media::ISystemMediaTransportControls> smtc_controls;
+    CComPtr<ABI::Windows::Media::ISystemMediaTransportControls2> smtc_controls2;
     CComPtr<ABI::Windows::Media::ISystemMediaTransportControlsDisplayUpdater> smtc_updater;
 
     void loadThumbnail(CString fn);
     void loadThumbnail(BYTE* content, size_t size);
     void loadThumbnailFromUrl(CString url);
     bool IsActive();
+
+    // ISystemMediaTransportControls2 features (Windows 10 1607+)
+    void SetAutoRepeatMode(ABI::Windows::Media::MediaPlaybackAutoRepeatMode mode);
+    void SetShuffleEnabled(bool enabled);
+    void SetPlaybackRate(double rate);
+    void UpdateTimelineProperties(REFERENCE_TIME startTime, REFERENCE_TIME endTime, REFERENCE_TIME position);
 protected:
     CMainFrame* m_pMainFrame;
     EventRegistrationToken m_EventRegistrationToken;
+    EventRegistrationToken m_EventRegistrationTokenPositionChange;
     void OnButtonPressed(ABI::Windows::Media::SystemMediaTransportControlsButton button);
+    void OnPlaybackPositionChangeRequested(REFERENCE_TIME position);
 };
