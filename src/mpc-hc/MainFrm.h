@@ -481,9 +481,7 @@ private:
     HRESULT GetOriginalFrame(std::vector<BYTE>& dib, CString& errmsg);
     HRESULT RenderCurrentSubtitles(BYTE* pData);
     bool GetDIB(BYTE** ppData, long& size, bool fSilent = false);
-    BYTE* ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch);
     void SaveDIB(LPCTSTR fn, BYTE* pData, long size);
-    bool CaptureVideoThumbnail(std::vector<BYTE>& thumbnail);
     CString MakeSnapshotFileName(BOOL thumbnails);
     BOOL IsRendererCompatibleWithSaveImage();
     void SaveImage(LPCTSTR fn, bool displayed, bool includeSubtitles);
