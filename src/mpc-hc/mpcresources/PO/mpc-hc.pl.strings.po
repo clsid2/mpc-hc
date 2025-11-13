@@ -2605,7 +2605,7 @@ msgstr "kanał"
 
 msgctxt "IDS_MAINFRM_13"
 msgid "channels"
-msgstr "kanały/ów"
+msgstr "kanały"
 
 msgctxt "IDS_AG_TITLE"
 msgid "Title %u"
