@@ -13606,43 +13606,41 @@ HRESULT CMainFrame::PreviewWindowShow(REFERENCE_TIME rtCur2) {
     return hr;
 }
 
-bool CMainFrame::SelectRarEntry(CStringW fn, CStringW& outEntryName, int& outEntryIndex, int currentIndex, bool selectNext) {
-    CRFSList <CRFSFile> file_list(true);
+HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, int* pEntryIndex) {
+    CRFSList <CRFSFile> file_list(true); //true = clears itself on destruction
     int num_files, num_ok_files;
 
     CRARFileSource::ScanArchive(fn.GetBuffer(), &file_list, &num_files, &num_ok_files);
-    if (num_ok_files <= 1) {
-        return false;
-    }
+    if (num_ok_files > 1) {
+        CStringW entryName;
 
-    RarEntrySelectorDialog entrySelector(&file_list, GetModalParent(), currentIndex, selectNext);
-    if (IDOK != entrySelector.DoModal()) {
-        return false;
-    }
-
-    outEntryName = entrySelector.GetCurrentEntry();
-    outEntryIndex = entrySelector.GetCurrentIndex();
-    return outEntryName.GetLength() > 0;
-}
-
-HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, OpenFileData* pOFD) {
-    CStringW entryName;
-    int entryIndex;
-
-    if (pOFD && pOFD->rarEntryName.GetLength() > 0) {
-        entryName = pOFD->rarEntryName;
-    } else {
-        if (!SelectRarEntry(fn, entryName, entryIndex)) {
-            return RFS_E_ABORT;
+        if (pEntryIndex && *pEntryIndex >= 0) {
+            // Use the provided index
+            CRFSFile* file = file_list.First();
+            for (int i = 0; i < *pEntryIndex && file; i++) {
+                file = file_list.Next(file);
+            }
+            if (file) {
+                entryName = file->filename;
+            }
+        } else {
+            // Show dialog to select entry
+            RarEntrySelectorDialog entrySelector(&file_list, GetModalParent());
+            if (IDOK == entrySelector.DoModal()) {
+                entryName = entrySelector.GetCurrentEntry();
+                if (pEntryIndex) {
+                    *pEntryIndex = entrySelector.GetCurrentIndex();
+                }
+            }
         }
-        if (pOFD) {
-            pOFD->rarEntryIndex = entryIndex;
-            pOFD->rarEntryName = entryName;
-        }
-    }
 
-    CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
-    return fgm->RenderRFSFileEntry(fn, nullptr, entryName);
+        if (entryName.GetLength() > 0) {
+            CComPtr<CFGManager> fgm = static_cast<CFGManager*>(m_pGB.p);
+            return fgm->RenderRFSFileEntry(fn, nullptr, entryName);
+        }
+        return RFS_E_ABORT; //we found multiple entries but no entry selected.
+    }
+    return E_NOTIMPL; //not a multi-entry rar
 }
 
 bool CMainFrame::TrySkipWithinRar(bool forward) {
@@ -13656,16 +13654,32 @@ bool CMainFrame::TrySkipWithinRar(bool forward) {
         fn = lastOpenFile;
     }
 
-    CStringW entryName;
-    int entryIndex;
-    if (!SelectRarEntry(fn, entryName, entryIndex, pFileData->rarEntryIndex, forward)) {
+    // Scan the RAR archive to get the file list
+    CRFSList <CRFSFile> file_list(true);
+    int num_files, num_ok_files;
+    CRARFileSource::ScanArchive(fn.GetBuffer(), &file_list, &num_files, &num_ok_files);
+
+    if (num_ok_files <= 1) {
         return false;
+    }
+
+    // Calculate next/previous entry index (no wraparound)
+    int newIndex;
+    if (forward) {
+        newIndex = pFileData->rarEntryIndex + 1;
+        if (newIndex >= num_ok_files) {
+            return false; // At the end, skip to next file
+        }
+    } else {
+        newIndex = pFileData->rarEntryIndex - 1;
+        if (newIndex < 0) {
+            return false; // At the beginning, skip to previous file
+        }
     }
 
     CAutoPtr<OpenFileData> p(DEBUG_NEW OpenFileData());
     p->fns.AddHead(fn);
-    p->rarEntryIndex = entryIndex;
-    p->rarEntryName = entryName;
+    p->rarEntryIndex = newIndex;
     OpenMedia(CAutoPtr<OpenMediaData>(p.Detach()));
     return true;
 }
@@ -13711,7 +13725,7 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
         if (s.SrcFilters[SRC_RFS] && !PathUtils::IsURL(fn)) {
             CString ext = CPath(fn).GetExtension().MakeLower();
             if (ext == L".rar") {
-                rarHR = HandleMultipleEntryRar(fn, pOFD);
+                rarHR = HandleMultipleEntryRar(fn, &pOFD->rarEntryIndex);
             }
         }
 #endif

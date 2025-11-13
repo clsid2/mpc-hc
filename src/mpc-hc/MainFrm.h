@@ -113,7 +113,6 @@ public:
     CString useragent;
     CString referrer;
     int rarEntryIndex;
-    CStringW rarEntryName;
 };
 
 class OpenDVDData : public OpenMediaData
@@ -1228,8 +1227,7 @@ public:
     void ReleasePreviewGraph();
     HRESULT PreviewWindowHide();
     HRESULT PreviewWindowShow(REFERENCE_TIME rtCur2);
-    bool SelectRarEntry(CStringW fn, CStringW& outEntryName, int& outEntryIndex, int currentIndex = -1, bool selectNext = true);
-    HRESULT HandleMultipleEntryRar(CStringW fn, OpenFileData* pOFD);
+    HRESULT HandleMultipleEntryRar(CStringW fn, int* pEntryIndex = nullptr);
     bool TrySkipWithinRar(bool forward);
     bool CanPreviewUse();
 

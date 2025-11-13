@@ -31,7 +31,7 @@ class RarEntrySelectorDialog : public CMPCThemeResizableDialog
 private:
 
 public:
-    RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent, int currentIndex = -1, bool selectNext = true);
+    RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent);
     virtual ~RarEntrySelectorDialog();
     enum { IDD = IDD_RAR_ENTRY_SELECTOR };
 
@@ -44,8 +44,6 @@ protected:
     CRFSList<CRFSFile>* file_list;
     CStringW currentEntry;
     int currentIndex;
-    int preselectedIndex;
-    bool selectNext;
     virtual void OnOK();
     virtual void DoDataExchange(CDataExchange* pDX);
     DECLARE_MESSAGE_MAP()
