@@ -11138,7 +11138,13 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         }
 
         CString str = ImplodeEsc(args, sep);
-        s.AddFav(FAV_FILE, str);
+
+        // If organize dialog is visible, add to visual list only; otherwise persist immediately
+        if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
+            m_wndFavoriteOrganizeDialog.AddItemToVisualList(FAV_FILE, str);
+        } else {
+            s.AddFav(FAV_FILE, str);
+        }
         osdMsg = IDS_FILE_FAV_ADDED;
     } else if (GetPlaybackMode() == PM_DVD) {
         WCHAR path[MAX_PATH];
@@ -11189,7 +11195,13 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
             args.AddTail(fn);
 
             CString str = ImplodeEsc(args, sep);
-            s.AddFav(FAV_DVD, str);
+
+            // If organize dialog is visible, add to visual list only; otherwise persist immediately
+            if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
+                m_wndFavoriteOrganizeDialog.AddItemToVisualList(FAV_DVD, str);
+            } else {
+                s.AddFav(FAV_DVD, str);
+            }
             osdMsg = IDS_DVD_FAV_ADDED;
         }
     } // TODO: PM_ANALOG_CAPTURE and PM_DIGITAL_CAPTURE
@@ -11198,9 +11210,6 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         CString osdMsgStr(StrRes(osdMsg));
         SendStatusMessage(osdMsgStr, 3000);
         m_OSD.DisplayMessage(OSD_TOPLEFT, osdMsgStr, 3000);
-    }
-    if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd)) {
-        m_wndFavoriteOrganizeDialog.LoadList();
     }
 }
 

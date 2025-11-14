@@ -1793,6 +1793,7 @@
 #define IDS_CUSTOM_ACTION4              57727
 #define IDS_AUDIOS                      57728
 #define IDS_SUBTITLES                   57729
+#define IDS_FAVORITES_UNSAVED_CHANGES   57730
 
 // Next default values for new objects
 // 

@@ -514,7 +514,9 @@ BEGIN
     PUSHBUTTON      "Move Up",IDC_BUTTON3,214,43,58,14
     PUSHBUTTON      "Move Down",IDC_BUTTON4,214,58,58,14
     PUSHBUTTON      "Delete",IDC_BUTTON2,214,84,58,14
-    DEFPUSHBUTTON   "OK",IDOK,214,148,58,14
+    DEFPUSHBUTTON   "OK",IDOK,214,112,58,14
+    PUSHBUTTON      "Cancel",IDCANCEL,214,130,58,14
+    PUSHBUTTON      "Apply",ID_APPLY_NOW,214,148,58,14
 END
 
 IDD_PNSPRESET_DLG DIALOGEX 0, 0, 210, 120
@@ -4222,6 +4224,7 @@ BEGIN
     IDS_CUSTOM_ACTION4      "Custom Action 4"
     IDS_AUDIOS              "Audio Track"
     IDS_SUBTITLES           "Subtitle Track"
+    IDS_FAVORITES_UNSAVED_CHANGES   "Do you want to save changes to your favorites?"
     IDS_AG_EXIT_FULLSCREEN  "Exit Fullscreen"
     IDS_AG_SHOW_PLAYLIST    "Show Playlist"
     IDS_AG_HIDE_PLAYLIST    "Hide Playlist"

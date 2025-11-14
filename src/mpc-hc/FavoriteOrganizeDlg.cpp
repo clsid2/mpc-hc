@@ -118,6 +118,9 @@ BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CModelessResizableDialog)
     ON_UPDATE_COMMAND_UI(IDC_BUTTON4, OnUpdateDownBn)
     ON_NOTIFY(TCN_SELCHANGING, IDC_TAB1, OnTcnSelchangingTab1)
     ON_BN_CLICKED(IDOK, OnBnClickedOk)
+    ON_BN_CLICKED(ID_APPLY_NOW, OnBnClickedApply)
+    ON_UPDATE_COMMAND_UI(ID_APPLY_NOW, OnUpdateApplyBn)
+    ON_WM_SHOWWINDOW()
     ON_WM_ACTIVATE()
     ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST2, OnLvnEndlabeleditList2)
     ON_NOTIFY(NM_DBLCLK, IDC_LIST2, OnPlayFavorite)
@@ -160,6 +163,8 @@ BOOL CFavoriteOrganizeDlg::OnInitDialog()
     AddAnchor(IDC_BUTTON3, TOP_RIGHT);
     AddAnchor(IDC_BUTTON4, TOP_RIGHT);
     AddAnchor(IDOK, BOTTOM_RIGHT);
+    AddAnchor(IDCANCEL, BOTTOM_RIGHT);
+    AddAnchor(ID_APPLY_NOW, BOTTOM_RIGHT);
     EnableSaveRestoreKey(IDS_R_DLG_ORGANIZE_FAV);
     fulfillThemeReqs();
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -173,6 +178,30 @@ void CFavoriteOrganizeDlg::LoadList() {
     s.GetFav(FAV_DEVICE, m_sl[2]);
 
     SetupList(false);
+    m_bModified = false;
+}
+
+void CFavoriteOrganizeDlg::AddItemToVisualList(int tabIndex, const CString& favoriteString) {
+    // Add to the in-memory list
+    m_sl[tabIndex].AddTail(favoriteString);
+
+    // If we're currently on this tab, refresh the list
+    if (m_tab.GetCurSel() == tabIndex) {
+        SetupList(false);
+
+        // Select and scroll to the newly added item (it's at the end)
+        int newItemIndex = m_list.GetItemCount() - 1;
+        if (newItemIndex >= 0) {
+            m_list.SetItemState(newItemIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+            m_list.EnsureVisible(newItemIndex, FALSE);
+        }
+    }
+
+    // Mark as modified so changes can be saved
+    m_bModified = true;
+
+    // Update dialog controls to enable Apply button
+    UpdateDialogControls(this, TRUE);
 }
 
 BOOL CFavoriteOrganizeDlg::PreTranslateMessage(MSG* pMsg)
@@ -295,6 +324,7 @@ void CFavoriteOrganizeDlg::OnLvnEndlabeleditList2(NMHDR* pNMHDR, LRESULT* pResul
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
     if (pDispInfo->item.iItem >= 0 && pDispInfo->item.pszText) {
         m_list.SetItemText(pDispInfo->item.iItem, 0, pDispInfo->item.pszText);
+        m_bModified = true;
     }
     UpdateColumnsSizes();
 
@@ -383,6 +413,7 @@ void CFavoriteOrganizeDlg::OnDeleteBnClicked()
         }
 
         m_list.DeleteItem(nItem);
+        m_bModified = true;
     }
 
     nItem = std::min(nItem, m_list.GetItemCount() - 1);
@@ -408,6 +439,7 @@ void CFavoriteOrganizeDlg::MoveItem(int nItem, int offset)
     m_list.SetItemData(nItem, data);
     m_list.SetItemText(nItem, 1, strPos);
     m_list.SetItemState(nItem, LVIS_SELECTED, LVIS_SELECTED);
+    m_bModified = true;
 }
 
 void CFavoriteOrganizeDlg::OnUpBnClicked()
@@ -460,7 +492,7 @@ void CFavoriteOrganizeDlg::OnTcnSelchangingTab1(NMHDR* pNMHDR, LRESULT* pResult)
     *pResult = 0;
 }
 
-void CFavoriteOrganizeDlg::OnBnClickedOk()
+void CFavoriteOrganizeDlg::SaveChanges()
 {
     SetupList(true);
 
@@ -469,7 +501,50 @@ void CFavoriteOrganizeDlg::OnBnClickedOk()
     s.SetFav(FAV_DVD, m_sl[1]);
     s.SetFav(FAV_DEVICE, m_sl[2]);
 
+    m_bModified = false;
+}
+
+void CFavoriteOrganizeDlg::OnBnClickedOk()
+{
+    SaveChanges();
     OnOK();
+}
+
+void CFavoriteOrganizeDlg::OnBnClickedApply()
+{
+    SaveChanges();
+}
+
+void CFavoriteOrganizeDlg::OnUpdateApplyBn(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(m_bModified);
+}
+
+void CFavoriteOrganizeDlg::OnCancel()
+{
+    if (m_bModified) {
+        int nRet = AfxMessageBox(IDS_FAVORITES_UNSAVED_CHANGES, MB_YESNOCANCEL | MB_ICONQUESTION);
+        if (nRet == IDYES) {
+            SaveChanges();
+        } else if (nRet == IDCANCEL) {
+            return;
+        } else {
+            // IDNO - discard changes by reloading from settings
+            LoadList();
+        }
+    }
+
+    __super::OnCancel();
+}
+
+void CFavoriteOrganizeDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+    __super::OnShowWindow(bShow, nStatus);
+
+    if (bShow) {
+        // Always reload data from settings when showing the dialog
+        LoadList();
+    }
 }
 
 void CFavoriteOrganizeDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
