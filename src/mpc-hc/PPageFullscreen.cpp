@@ -55,6 +55,20 @@ CPPageFullscreen::~CPPageFullscreen()
 {
 }
 
+inline void CPPageFullscreen::RenumberListItem(int nItem)
+{
+    CString strItemPos;
+    strItemPos.Format(_T("%02d"), nItem);
+    VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+}
+
+void CPPageFullscreen::RenumberListItems(int nStartItem)
+{
+    for (int nItem = nStartItem, count = m_list.GetItemCount(); nItem < count; nItem++) {
+        RenumberListItem(nItem);
+    }
+}
+
 void CPPageFullscreen::ModesUpdate()
 {
     DisplayMode currentDisplayMode;
@@ -489,6 +503,9 @@ void CPPageFullscreen::OnAdd()
     VERIFY(m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED));
     m_list.SetFocus();
 
+    // Renumber items after the inserted one
+    RenumberListItems(nItem + 1);
+
     SetModified();
 }
 
@@ -509,11 +526,7 @@ void CPPageFullscreen::OnRemove()
         VERIFY(m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED));
         m_list.SetFocus();
         // Update all items that were after the removed one
-        for (int count = m_list.GetItemCount(); nItem < count; nItem++) {
-            CString strItemPos;
-            strItemPos.Format(_T("%02d"), nItem);
-            VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
-        }
+        RenumberListItems(nItem);
 
         SetModified();
     }
@@ -557,10 +570,8 @@ void CPPageFullscreen::OnMoveUp()
         m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_list.SetFocus();
 
-        // Update the item that got moved down if any
-        nItem++;
-        strItemPos.Format(_T("%02d"), nItem);
-        VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+        // Update the item that got moved down
+        RenumberListItem(nItem + 1);
 
         SetModified();
     }
@@ -604,10 +615,8 @@ void CPPageFullscreen::OnMoveDown()
         m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_list.SetFocus();
 
-        // Update the item that got moved up if any
-        nItem--;
-        strItemPos.Format(_T("%02d"), nItem);
-        VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+        // Update the item that got moved up
+        RenumberListItem(nItem - 1);
 
         SetModified();
     }

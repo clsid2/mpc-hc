@@ -66,7 +66,7 @@ msgstr "Salvar &Imagem..."
 
 msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
-msgstr "Salvar &Thumbnails..."
+msgstr "Salvar Minia&turas..."
 
 msgctxt "POPUP"
 msgid "S&ubtitles"

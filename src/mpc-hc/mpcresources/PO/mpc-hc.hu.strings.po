@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2025\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -612,11 +612,11 @@ msgid "Playback::Shaders"
 msgstr "Lejátszás::Árnyékolók"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Lejátszó: Eszköztár"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Lejátszó: Eszköztár elrendezés"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1522,7 +1522,7 @@ msgid "App Command"
 msgstr "Prog. parancs"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Beépített eszköztár"
 
 msgctxt "IDS_AG_MEDIAFILES"
@@ -4765,7 +4765,7 @@ msgstr "Az állapotsávbeli idő frissítése (ezredmásodpercekben)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr ""
+msgstr "A hangerőcsúszkán a százalékos érték megjelenítése (modern témában)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5063,8 +5063,8 @@ msgstr "Ismétlés letiltása"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "Véletlenszerű lejátszás: Be"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "Véletlenszerű lejátszás: Ki"

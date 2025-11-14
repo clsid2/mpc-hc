@@ -98,6 +98,11 @@ BOOL CPlayerSubresyncBar::PreTranslateMessage(MSG* pMsg)
         }
     }
 
+    if (pMsg->message == WM_LBUTTONDOWN && pMsg->hwnd == m_list.m_hWnd) {
+        bHadFocusBeforeClick = (GetFocus() == &m_list);
+    } 
+
+
     return __super::PreTranslateMessage(pMsg);
 }
 
@@ -812,8 +817,12 @@ void CPlayerSubresyncBar::OnDolabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LV_DISPINFO* pDispInfo = (LV_DISPINFO*)pNMHDR;
     LV_ITEM* pItem = &pDispInfo->item;
-
     *pResult = FALSE;
+
+    if (!bHadFocusBeforeClick) {
+        *pResult = TRUE;
+        return;
+    }
 
     if (pItem->iItem >= 0) {
         if ((pItem->iSubItem == COL_START || pItem->iSubItem == COL_END || pItem->iSubItem == COL_TEXT

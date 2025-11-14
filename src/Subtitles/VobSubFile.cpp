@@ -824,6 +824,10 @@ bool CVobSubFile::ReadRar(CString fn)
 #define SetCallback        RARSetCallback
 #endif /* USE_STATIC_UNRAR */
 
+    if (fn.GetLength() >= MAX_PATH) {
+        return false;
+    }
+
     RAROpenArchiveDataEx OpenArchiveData;
     ZeroMemory(&OpenArchiveData, sizeof(OpenArchiveData));
 

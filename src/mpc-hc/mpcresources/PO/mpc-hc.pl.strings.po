@@ -7,15 +7,15 @@
 # Orzełek, 2020
 # Rudolph RD, 2020
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
-# Mirosław Żylewicz, 2021
 # Krzysztof, 2024
 # MPC-HC Developer, 2025
+# Mirosław Żylewicz, 2025
 # Łukasz Janik, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Łukasz Janik, 2025\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
@@ -616,11 +616,11 @@ msgid "Playback::Shaders"
 msgstr "Odtwarzanie::Shadery"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Program::Pasek narzędzi"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Program::Układ paska narzędzi"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1110,7 +1110,7 @@ msgstr "Otwórz lokalizację pliku"
 
 msgctxt "IDS_AG_OPENDIRECTORY"
 msgid "Open Directory"
-msgstr "otwórz katalog"
+msgstr "Otwórz katalog"
 
 msgctxt "IDS_AG_TOGGLE_NAVIGATION"
 msgid "Toggle Navigation Bar"
@@ -1403,7 +1403,7 @@ msgstr "Obrót klatki wideo Z+"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_P2"
 msgid "Video Frame Rotate Z+ (2 degrees)"
-msgstr "Klatka wideo – obrót Z+ (2°)"
+msgstr "Klatka wideo - obrót Z+ (2°)"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_M"
 msgid "Video Frame Rotate Z-"
@@ -1518,7 +1518,7 @@ msgid "App Command"
 msgstr "Polecenie programu"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Wbudowany pasek narzędzi"
 
 msgctxt "IDS_AG_MEDIAFILES"
@@ -1824,7 +1824,7 @@ msgid ""
 "\n"
 "Do you really want to enable this option?"
 msgstr ""
-"Ta opcja może zostać użyta to zdalnego podglądu plików multimedialnych. Używaj jej tylko w prywatnej oraz zabezpieczonej sieci.\n"
+"Ta opcja może zostać użyta do zdalnego podglądu plików multimedialnych. Używaj jej tylko w prywatnej oraz zabezpieczonej sieci.\n"
 "\n"
 "Czy na pewno chcesz włączyć tę opcję?"
 
@@ -2260,7 +2260,7 @@ msgid ""
 "\n"
 "This feature can be disabled later from the Miscellaneous options page."
 msgstr ""
-"Chcesz, aby okresowo były sprawdzane aktualizacje MPC-HC?\n"
+"Czy chcesz, aby okresowo były sprawdzane aktualizacje MPC-HC?\n"
 "\n"
 "Ta opcja może zostać później wyłączona w ustawieniach w zakładce „Różne”."
 
@@ -2306,39 +2306,39 @@ msgstr "Proszę wprowadzić liczbę z przedziału od 1 do 365."
 
 msgctxt "IDS_AG_PNS_CENTER"
 msgid "Video Frame Center"
-msgstr "Klatka wideo – wyśrodkuj"
+msgstr "Klatka wideo - wyśrodkuj"
 
 msgctxt "IDS_AG_PNS_LEFT"
 msgid "Video Frame Left"
-msgstr "Klatka wideo – w lewo"
+msgstr "Klatka wideo - w lewo"
 
 msgctxt "IDS_AG_PNS_RIGHT"
 msgid "Video Frame Right"
-msgstr "Klatka wideo – w prawo"
+msgstr "Klatka wideo - w prawo"
 
 msgctxt "IDS_AG_PNS_UP"
 msgid "Video Frame Up"
-msgstr "Klatka wideo – w górę"
+msgstr "Klatka wideo - w górę"
 
 msgctxt "IDS_AG_PNS_DOWN"
 msgid "Video Frame Down"
-msgstr "Klatka wideo – w dół"
+msgstr "Klatka wideo - w dół"
 
 msgctxt "IDS_AG_PNS_UPLEFT"
 msgid "Video Frame Up/Left"
-msgstr "Klatka wideo – w górę / w lewo"
+msgstr "Klatka wideo - w górę / w lewo"
 
 msgctxt "IDS_AG_PNS_UPRIGHT"
 msgid "Video Frame Up/Right"
-msgstr "Klatka wideo – w górę / w prawo"
+msgstr "Klatka wideo - w górę / w prawo"
 
 msgctxt "IDS_AG_PNS_DOWNLEFT"
 msgid "Video Frame Down/Left"
-msgstr "Klatka wideo – w dół / w lewo"
+msgstr "Klatka wideo - w dół / w lewo"
 
 msgctxt "IDS_MPLAYERC_59"
 msgid "Video Frame Down/Right"
-msgstr "Klatka wideo – w dół / w prawo"
+msgstr "Klatka wideo - w dół / w prawo"
 
 msgctxt "IDS_AG_VOLUME_UP"
 msgid "Volume Up"
@@ -2406,7 +2406,7 @@ msgstr "DVD: Opuść menu"
 
 msgctxt "IDS_AG_BOSS_KEY"
 msgid "Boss key"
-msgstr "Przycisk Prezesa; ukrywa odtwarzacz"
+msgstr "Przycisk prezesa - ukrywa odtwarzacz"
 
 msgctxt "IDS_MPLAYERC_77"
 msgid "Player Menu"
@@ -3027,7 +3027,7 @@ msgstr "Maksymalne wzmocnienie"
 
 msgctxt "IDS_USAGE"
 msgid "Usage: mpc-hc.exe \"pathname\" [switches]"
-msgstr "Użycie: mpc-hc.exe „ścieżka” [parametry]"
+msgstr "Użycie: mpc-hc.exe \"ścieżka\" [przełączniki]"
 
 msgctxt "IDS_UNKNOWN_SWITCH"
 msgid ""
@@ -3151,7 +3151,7 @@ msgstr "Rozmiar okna - powiększ +"
 
 msgctxt "IDS_AG_ZOOM_SUB"
 msgid "Zoom Window -"
-msgstr "Rozmiar okna - zmiejsz -"
+msgstr "Rozmiar okna - zmniejsz -"
 
 msgctxt "IDS_SEEKBAR_HOVER_PREVIEW"
 msgid "Video Preview"
@@ -4339,30 +4339,30 @@ msgstr ""
 
 msgctxt "IDS_CMD_DUB"
 msgid "/dub \"dubname\"\tLoad an additional audio file"
-msgstr "/dub „nazwa_dźwięku”\twczytaj dodatkowy plik audio"
+msgstr "/dub „nazwa_dźwięku”\tWczytaj dodatkowy plik audio"
 
 msgctxt "IDS_CMD_DUBDELAY"
 msgid ""
 "/dubdelay \"file\"\tLoad an additional audio file shifted with XXms\n"
 "\t\t(if the file contains \"...DELAY XXms...\")"
 msgstr ""
-"/dubdelay „plik”\twczytaj dodatkowy plik audio przesunięty o XX ms\n"
+"/dubdelay „plik”\tWczytaj dodatkowy plik audio przesunięty o XX ms\n"
 "\t\t(jeśli plik zawiera „...DELAY XXms...”)"
 
 msgctxt "IDS_CMD_D3DFS"
 msgid "/d3dfs\t\tStart rendering in D3D fullscreen mode"
-msgstr "/d3dfs\t\trenderuj w trybie pełnoekranowym D3D"
+msgstr "/d3dfs\t\tRenderuj w trybie pełnoekranowym D3D"
 
 msgctxt "IDS_CMD_SUB"
 msgid "/sub \"subname\"\tLoad an additional subtitle file"
-msgstr "/sub „nazwa_pliku”\twczytaj dodatkowy plik napisów"
+msgstr "/sub „nazwa_pliku”\tWczytaj dodatkowy plik napisów"
 
 msgctxt "IDS_CMD_FILTER"
 msgid ""
 "/filter \"filtername\"\tLoad DirectShow filters from a dynamic link library "
 "(wildcards allowed)"
 msgstr ""
-"/filter „nazwa_filtra”\twczytaj filtry DirectShow z biblioteki DLL "
+"/filter „nazwa_filtra”\tWczytaj filtry DirectShow z biblioteki DLL "
 "(obsługiwane są symbole wieloznaczne)"
 
 msgctxt "IDS_CMD_DVD"
@@ -4371,7 +4371,7 @@ msgstr "/dvd\t\tUruchom w trybie DVD; „ścieżka” oznacza folder DVD (opcjon
 
 msgctxt "IDS_CMD_DVDPOS_TC"
 msgid "/dvdpos T#C\tStart playback at title T, chapter C"
-msgstr "/dvdpos T#C\trozpocznij odtwarzanie od tytułu T, rozdziału C"
+msgstr "/dvdpos T#C\tRozpocznij odtwarzanie od tytułu T, rozdziału C"
 
 msgctxt "IDS_CMD_DVDPOS_TIME"
 msgid "/dvdpos T#P\tStart playback at title T, position P (hh:mm:ss)"
@@ -4792,7 +4792,7 @@ msgstr "Wyświetlaj informacje o wideo (kodek, rozdzielczość) na pasku stanu."
 
 msgctxt "IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR"
 msgid "Pause playback while dragging the seekbar."
-msgstr "Wstrzymaj odtwarzanie podczas przeciągania paska wyszukiwania."
+msgstr "Wstrzymaj odtwarzanie podczas przesuwania paska przewijania."
 
 msgctxt "IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE"
 msgid "Show confirmation prompt before deleting file"

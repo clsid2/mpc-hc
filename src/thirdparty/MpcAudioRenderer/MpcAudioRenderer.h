@@ -206,8 +206,11 @@ private:
 	void SetBalanceMask(const DWORD output_layout);
 	void ApplyVolumeBalance(BYTE* pData, UINT32 size);
 
+	REFERENCE_TIME m_rtNextFilteredSampleTime = INVALID_TIME;
+	REFERENCE_TIME m_rtFilteredSampleTimeOffset = 0;
 	CAudioFilter m_AudioFilter;
 	HRESULT SetupAudioFilter();
+	void FlushAudioFilter();
 
 	CDitherInt16 m_DitherInt16;
 

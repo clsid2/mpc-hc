@@ -4,14 +4,15 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Peter Chen <petercpg@gmail.com>, 2020
+# MP Wang, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Peter Chen <petercpg@gmail.com>, 2020\n"
-"Language-Team: Chinese (Taiwan) (https://www.transifex.com/mpchc/teams/106126/zh_TW/)\n"
+"Last-Translator: MP Wang, 2025\n"
+"Language-Team: Chinese (Taiwan) (https://app.transifex.com/mpchc/teams/106126/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,9 +25,9 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"這將會安裝 [name] 在您的電腦中。\n"
+"即將在您的電腦上安裝 [name]。\n"
 "\n"
-"建議您關閉所有其它應用程式後再繼續。"
+"建議您關閉所有其他應用程式後再繼續。"
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
@@ -56,9 +57,9 @@ msgid ""
 "\n"
 "Your CPU does not have those capabilities."
 msgstr ""
-"此版的 MPC-HC 須要有支援 SSE2 延伸指令集的 CPU。\n"
+"這個版本的 MPC-HC 需要使用支援 SSE2 延伸指令集的 CPU。\n"
 "\n"
-"您的 CPU 並未相容這些功能。"
+"您的 CPU 並不支援這些功能。"
 
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"
@@ -74,7 +75,7 @@ msgstr "僅安裝給目前使用者"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
-msgstr "其它工作："
+msgstr "其他工作："
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"

@@ -269,15 +269,15 @@ msgstr "Detekovat automaticky"
 
 msgctxt "ID_VIEW_CM_INPUT_HDTV"
 msgid "&HDTV"
-msgstr "HDTV"
+msgstr "&HDTV"
 
 msgctxt "ID_VIEW_CM_INPUT_SDTV_NTSC"
 msgid "SDTV &NTSC"
-msgstr "SDTV NTSC"
+msgstr "SDTV &NTSC"
 
 msgctxt "ID_VIEW_CM_INPUT_SDTV_PAL"
 msgid "SDTV &PAL"
-msgstr "SDTV PAL"
+msgstr "SDTV &PAL"
 
 msgctxt "POPUP"
 msgid "Ambient &Light"
@@ -685,7 +685,7 @@ msgstr "&Video stopa"
 
 msgctxt "POPUP"
 msgid "&Volume"
-msgstr "H&lasitost"
+msgstr "&Hlasitost"
 
 msgctxt "ID_VOLUME_UP"
 msgid "&Up"

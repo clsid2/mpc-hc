@@ -707,10 +707,10 @@ IDD_PPAGELOGO DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LOGOPREVIEW,"Static",SS_BITMAP | SS_CENTERIMAGE,6,6,341,196
+    CONTROL         "",IDC_LOGOPREVIEW,"Static",SS_BITMAP | SS_CENTERIMAGE,8,8,340,208
     CONTROL         "Internal:",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,8,248,65,8
     CONTROL         "External:",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,8,268,65,8
-    CONTROL         "Apply Monitor Color Profile",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_GROUP | WS_TABSTOP,77,225,200,12
+    CONTROL         "Apply Monitor Color Profile",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_GROUP | WS_TABSTOP,77,228,200,12
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS | UDS_HORZ,76,246,43,13
     EDITTEXT        IDC_AUTHOR,124,246,224,13,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
     EDITTEXT        IDC_LOGOFILENAME,77,266,208,13,ES_AUTOHSCROLL | ES_READONLY
@@ -1196,8 +1196,8 @@ IDD_PPAGETOOLBAR DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "ToolBar Style",IDC_STATIC,6,6,343,70
-    LTEXT           "ToolBar Scale:",IDC_STATIC3,12,20,115,8
+    GROUPBOX        "Toolbar Style",IDC_STATIC,6,6,343,70
+    LTEXT           "Toolbar Scale:",IDC_STATIC3,12,20,115,8
     EDITTEXT        IDC_EDIT1,118,19,43,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,149,19,13,14
     LTEXT           "Toolbar Alignment:",IDC_STATIC,12,40,72,8
@@ -1864,6 +1864,27 @@ BEGIN
             MENUITEM "A-B (&Reset)",                ID_PLAY_REPEAT_AB
             MENUITEM "A-B (Mark &A)",               ID_PLAY_REPEAT_AB_MARK_A
             MENUITEM "A-B (Mark &B)",               ID_PLAY_REPEAT_AB_MARK_B
+        END
+        POPUP "&Playback Rate"
+        BEGIN
+            MENUITEM "0.25 x",                      ID_PLAY_PLAYBACKRATE_025
+            MENUITEM "0.50 x",                      ID_PLAY_PLAYBACKRATE_050
+            MENUITEM "0.75 x",                      ID_PLAY_PLAYBACKRATE_075
+            MENUITEM "0.90 x",                      ID_PLAY_PLAYBACKRATE_090
+            MENUITEM "1.00 x",                      ID_PLAY_PLAYBACKRATE_100
+            MENUITEM "1.10 x",                      ID_PLAY_PLAYBACKRATE_110
+            MENUITEM "1.25 x",                      ID_PLAY_PLAYBACKRATE_125
+            MENUITEM "1.50 x",                      ID_PLAY_PLAYBACKRATE_150
+            MENUITEM "1.75 x",                      ID_PLAY_PLAYBACKRATE_175
+            MENUITEM "2.00 x",                      ID_PLAY_PLAYBACKRATE_200
+            MENUITEM "3.00 x",                      ID_PLAY_PLAYBACKRATE_300
+            MENUITEM "4.00 x",                      ID_PLAY_PLAYBACKRATE_400
+            MENUITEM "6.00 x",                      ID_PLAY_PLAYBACKRATE_600
+            MENUITEM "8.00 x",                      ID_PLAY_PLAYBACKRATE_800
+            MENUITEM "23.976 fps",                  ID_PLAY_PLAYBACKRATE_FPS23
+            MENUITEM "24 fps",                      ID_PLAY_PLAYBACKRATE_FPS24
+            MENUITEM "25 fps",                      ID_PLAY_PLAYBACKRATE_FPS25
+            MENUITEM "59.94 fps",                   ID_PLAY_PLAYBACKRATE_FPS59
         END
         MENUITEM SEPARATOR
         MENUITEM "F&ull Screen",                ID_VIEW_FULLSCREEN
@@ -2748,8 +2769,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGETOOLBAR        "Player::ToolBar"
-    IDD_PPAGETOOLBARLAYOUT  "Player::ToolBar Layout"
+    IDD_PPAGETOOLBAR        "Player::Toolbar"
+    IDD_PPAGETOOLBARLAYOUT  "Player::Toolbar Layout"
     IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS "Available Buttons"
     IDS_PPAGE_TOOLBAR_CUR_BUTTONS "Current Buttons"
 END
@@ -3050,7 +3071,7 @@ BEGIN
     IDS_AG_KEY              "Key"
     IDS_AG_MOUSE            "Mouse"
     IDS_AG_APP_COMMAND      "App Command"
-    IDS_AG_BUILTIN_TOOLBAR  "Built-in ToolBar"
+    IDS_AG_BUILTIN_TOOLBAR  "Built-in Toolbar"
 END
 
 STRINGTABLE
