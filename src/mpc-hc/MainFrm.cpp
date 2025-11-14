@@ -11070,6 +11070,15 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
     WORD osdMsg = 0;
     const TCHAR sep = _T(';');
 
+    // Lambda to conditionally add favorite: to visual list if dialog is open, or persist immediately
+    auto addFavorite = [this, &s](favtype favType, const CString& str) {
+        if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
+            m_wndFavoriteOrganizeDialog.AddItemToVisualList(favType, str);
+        } else {
+            s.AddFav(favType, str);
+        }
+    };
+
     if (GetPlaybackMode() == PM_FILE) {
         bool is_BD = false;
         CString fn = m_wndPlaylistBar.GetCurFileNameTitle();
@@ -11138,13 +11147,7 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         }
 
         CString str = ImplodeEsc(args, sep);
-
-        // If organize dialog is visible, add to visual list only; otherwise persist immediately
-        if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
-            m_wndFavoriteOrganizeDialog.AddItemToVisualList(FAV_FILE, str);
-        } else {
-            s.AddFav(FAV_FILE, str);
-        }
+        addFavorite(FAV_FILE, str);
         osdMsg = IDS_FILE_FAV_ADDED;
     } else if (GetPlaybackMode() == PM_DVD) {
         WCHAR path[MAX_PATH];
@@ -11195,13 +11198,7 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
             args.AddTail(fn);
 
             CString str = ImplodeEsc(args, sep);
-
-            // If organize dialog is visible, add to visual list only; otherwise persist immediately
-            if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
-                m_wndFavoriteOrganizeDialog.AddItemToVisualList(FAV_DVD, str);
-            } else {
-                s.AddFav(FAV_DVD, str);
-            }
+            addFavorite(FAV_DVD, str);
             osdMsg = IDS_DVD_FAV_ADDED;
         }
     } // TODO: PM_ANALOG_CAPTURE and PM_DIGITAL_CAPTURE
