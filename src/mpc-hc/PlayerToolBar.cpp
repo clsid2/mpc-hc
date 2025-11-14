@@ -501,7 +501,7 @@ void CPlayerToolBar::ArrangeControls() {
         m_volctrl.MapWindowPoints(this, thumbRect);
         vrTop = vrTemp.top + std::max((r.bottom - thumbRect.bottom - 4) / 2, 0l);
         vrBottom = vrTemp.bottom;
-        m_volumeCtrlSize = vrTemp.Width() - (MulDiv(thumbRect.Height(), 50, 19) - 50);
+        m_volumeCtrlSize = vrTemp.Width() + (MulDiv(thumbRect.Height(), 50, 19) - 50);
     }
 
     leftSeparatorIndex = 0;
@@ -557,14 +557,14 @@ void CPlayerToolBar::ArrangeControls() {
             }
             break;
         case 2: // Right alignment
-            volumeSliderLeft = r.right - m_volumeCtrlSize;
+            volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
             leftSpacing = std::max(0, availableSeparatorSpace);
             rightSpacing = minSpacing;
             break;
         case 0: // Left alignment (default)
         default:
             leftSpacing = 0;  // leftSeparator hidden
-            volumeSliderLeft = r.right - m_volumeCtrlSize;
+            volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
             rightSpacing = std::max(minSpacing, availableSeparatorSpace) + minSpacing;
             break;
     }
