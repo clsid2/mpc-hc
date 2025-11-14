@@ -617,7 +617,9 @@ void drawButtonBG(NMCUSTOMDRAW nmcd, COLORREF c)
     dc.Attach(nmcd.hdc);
     CRect br;
     br.CopyRect(&nmcd.rc);
-    br.DeflateRect(0, 0, 1, 1); //we aren't offsetting button when pressed, so try to center better
+    //adipose: remove the below code.  it is no longer necessary due to TBCDRF_NOOFFSET
+    //and redesigning toolbar icons to be centered vs the old MFC style of "upper left" alignment
+    //br.DeflateRect(0, 0, 1, 1); //we aren't offsetting button when pressed, so try to center better
 
     dc.FillSolidRect(br, c);
 
