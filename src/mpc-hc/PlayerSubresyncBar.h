@@ -43,6 +43,7 @@ class CPlayerSubresyncBar : public CMPCThemePlayerBar
 private:
     CString m_strYes, m_strNo;
     CString m_strYesMenu, m_strNoMenu;
+    bool bHadFocusBeforeClick = false;
 
     CPlayerListCtrl m_list;
 

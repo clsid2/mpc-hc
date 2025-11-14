@@ -2,20 +2,20 @@
 # Copyright (C) 2002 - 2017 see Authors.txt
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
-# MPC HC <adiposegithub@gmail.com>, 2020
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # tobsen <github@tobsen.de>, 2020
 # fc5b3681a8011aa2097a1a11b3d42f55_901a704, 2021
 # Gaugg_Markus, 2024
 # Steve, 2024
-# Nico, 2024
+# Nico, 2025
+# MPC HC <adiposegithub@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-12-16 13:01:31+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Nico, 2024\n"
+"Last-Translator: MPC HC <adiposegithub@gmail.com>, 2025\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -614,20 +614,20 @@ msgid "Playback::Shaders"
 msgstr "Wiedergabe::Shader"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
-msgstr ""
+msgid "Player::Toolbar"
+msgstr "Programm::Symbolleiste"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
-msgstr ""
+msgid "Player::Toolbar Layout"
+msgstr "Programm::Symbolleistenlayout"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
-msgstr ""
+msgstr "Verfügbare Knöpfe"
 
 msgctxt "IDS_PPAGE_TOOLBAR_CUR_BUTTONS"
 msgid "Current Buttons"
-msgstr ""
+msgstr "Aktuelle Knöpfe"
 
 msgctxt "IDD_FILEPROPRES"
 msgid "Resources"
@@ -1403,7 +1403,7 @@ msgstr "Videofenster: Drehen Z+"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_P2"
 msgid "Video Frame Rotate Z+ (2 degrees)"
-msgstr ""
+msgstr "Videofenster: Drehen Z+ (2 Grad)"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_M"
 msgid "Video Frame Rotate Z-"
@@ -1518,8 +1518,8 @@ msgid "App Command"
 msgstr "Anwendungsbefehl"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
-msgstr ""
+msgid "Built-in Toolbar"
+msgstr "Eingebaute Symbolleiste"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
@@ -1782,6 +1782,9 @@ msgid ""
 "This only logs a few very specific things, such as DVB scanning, subtitle search, and yt-dlp data parsing.\n"
 "Do not enable this during normal use!"
 msgstr ""
+"Aktiviert die Dateiprotokollierung (Neustart erforderlich).\n"
+"Es werden nur ganz spezifische Dinge, wie der DVB-Scan, die Untertitelsuche und die \"yt-dlp\"-Datenauswertung ausgegeben.\n"
+"Nicht während normaler Nutzung aktivieren!"
 
 msgctxt "IDS_TIMER_REMAINING_TIME"
 msgid "Remaining time"
@@ -4457,10 +4460,13 @@ msgid ""
 "Youtube-DL failed to launch. Make sure yt-dlp.exe or youtube-dl.exe is "
 "located in MPC-HC folder or in PATH."
 msgstr ""
+"YouTube-DL konnte nicht gestartet werden. Stelle sicher, dass sich yt-"
+"dlp.exe oder youtube-dl.exe im \"MPC-HC\"-Ordner befindet bzw. über die "
+"\"PATH\"-Umgebungsvariable auffindbar sind."
 
 msgctxt "IDS_CONTROLS_YOUTUBEDL"
 msgid "Calling yt-dlp/youtube-dl..."
-msgstr ""
+msgstr "Aufrufen von yt-dlp/youtube-dl..."
 
 msgctxt "IDS_VERTICAL_ALIGN_VIDEO_TOP"
 msgid "Align Top"
@@ -4529,6 +4535,11 @@ msgid ""
 "-f bestvideo+bestaudio\n"
 "-o \"C:\\downloads\\%(title)s.%(ext)s"
 msgstr ""
+"Kommandozeilen-Paramter für das Herunterladen (\"Kopie speichern\") mit yt-dlp.exe (oder youtube-dl.exe)\n"
+"Beispiele:\n"
+"-f best[height<=1080]\n"
+"-f bestvideo+bestaudio\n"
+"-o \"C:\\downloads\\%(title)s.%(ext)s"
 
 msgctxt "IDS_PPAGEADVANCED_SAVEIMAGE_POSITION"
 msgid "Include video position in filename"
@@ -4752,7 +4763,7 @@ msgstr "Aktualisierung des Zeitintervalls (in ms) in der Statusleiste"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr ""
+msgstr "Zeige Prozentwert auf Lautstärkeregler (im modernen Design)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4832,6 +4843,9 @@ msgid ""
 "Just the filename is enough in case it is located in same folder as MPC-HC.\n"
 "Leave empty to use default filename: yt-dlp.exe"
 msgstr ""
+"Vollständiger Pfad zu yt-dlp.exe (oder youtube-dl.exe).\n"
+"Der Dateiname reicht, wenn sie sich im \"MPC-HC\"-Ordner befindet.\n"
+"Leer lassen, um den Standard-Dateinamen zu verwenden: yt-dlp.exe"
 
 msgctxt "IDS_PPAGEADVANCED_YDL_SUBS_PREFERENCE"
 msgid ""
@@ -4999,60 +5013,60 @@ msgstr "/thumbnails\tVorschaubild erstellen"
 
 msgctxt "IDS_CUSTOM_ACTION1"
 msgid "Custom Action 1"
-msgstr ""
+msgstr "Benutzerdefinierte Aktion 1"
 
 msgctxt "IDS_CUSTOM_ACTION2"
 msgid "Custom Action 2"
-msgstr ""
+msgstr "Benutzerdefinierte Aktion 2"
 
 msgctxt "IDS_CUSTOM_ACTION3"
 msgid "Custom Action 3"
-msgstr ""
+msgstr "Benutzerdefinierte Aktion 3"
 
 msgctxt "IDS_CUSTOM_ACTION4"
 msgid "Custom Action 4"
-msgstr ""
+msgstr "Benutzerdefinierte Aktion 4"
 
 msgctxt "IDS_AUDIOS"
 msgid "Audio Track"
-msgstr ""
+msgstr "Audiospur"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
-msgstr ""
+msgstr "Untertitelspur"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"
-msgstr ""
+msgstr "Vollbild beenden"
 
 msgctxt "IDS_AG_SHOW_PLAYLIST"
 msgid "Show Playlist"
-msgstr ""
+msgstr "Wiedergabeliste einblenden"
 
 msgctxt "IDS_AG_HIDE_PLAYLIST"
 msgid "Hide Playlist"
-msgstr ""
+msgstr "Wiedergabeliste ausblenden"
 
 msgctxt "IDS_AG_ENABLE_SHUFFLE"
 msgid "Enable Shuffle"
-msgstr ""
+msgstr "Zufallswiedergabe aktivieren"
 
 msgctxt "IDS_AG_DISABLE_SHUFFLE"
 msgid "Disable Shuffle"
-msgstr ""
+msgstr "Zufallswiedergabe deaktivieren"
 
 msgctxt "IDS_AG_ENABLE_REPEAT"
 msgid "Enable Repeat"
-msgstr ""
+msgstr "Wiedergabeschleife aktivieren"
 
 msgctxt "IDS_AG_DISABLE_REPEAT"
 msgid "Disable Repeat"
-msgstr ""
+msgstr "Wiedergabeschleife deaktivieren"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "Zufallswiedergabe: Ein"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "Zufallswiedergabe: Aus"

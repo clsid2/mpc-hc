@@ -1983,11 +1983,11 @@ msgid "Cancel"
 msgstr "İptal"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Kontrol çubuğu stili"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Kontrol çubuğu boyutu:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

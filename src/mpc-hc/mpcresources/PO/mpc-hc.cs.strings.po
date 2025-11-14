@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Jindřich T, 2025\n"
 "Language-Team: Czech (https://app.transifex.com/mpchc/teams/106126/cs/)\n"
@@ -178,11 +178,11 @@ msgstr "Režim opakování: Soubor"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_ON"
 msgid "Repeat Forever: On"
-msgstr "Opakovat donekonečna: Aktivní"
+msgstr "Opakovat donekonečna: Zapnuto"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_OFF"
 msgid "Repeat Forever: Off"
-msgstr "Opakovat donekonečna: Neaktivní"
+msgstr "Opakovat donekonečna: Vypnuto"
 
 msgctxt "IDS_PLAYLOOP_FOREVER"
 msgid "Repeat Forever"
@@ -609,11 +609,11 @@ msgid "Playback::Shaders"
 msgstr "Přehrávání::Shadery"
 
 msgctxt "IDD_PPAGETOOLBAR"
-msgid "Player::ToolBar"
+msgid "Player::Toolbar"
 msgstr "Přehrávač::Panel nástrojů"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
-msgid "Player::ToolBar Layout"
+msgid "Player::Toolbar Layout"
 msgstr "Přehrávač::Rozložení panelu nástrojů"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
@@ -1493,7 +1493,7 @@ msgid "App Command"
 msgstr "Příkaz aplikace"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
-msgid "Built-in ToolBar"
+msgid "Built-in Toolbar"
 msgstr "Vestavěný panel nástrojů"
 
 msgctxt "IDS_AG_MEDIAFILES"
@@ -2324,7 +2324,7 @@ msgstr "Snížit hlasitost"
 
 msgctxt "IDS_AG_VOLUME_MUTE"
 msgid "Volume Mute"
-msgstr "Ztlumit"
+msgstr "Ztlumit hlasitost"
 
 msgctxt "IDS_MPLAYERC_63"
 msgid "DVD Title Menu"
@@ -2684,7 +2684,7 @@ msgstr "Chyba"
 
 msgctxt "IDS_SUBTITLE_STREAM_OFF"
 msgid "Subtitle: off"
-msgstr "Titulky: vypnuty"
+msgstr "Titulky: Vypnuto"
 
 msgctxt "IDS_SUBTITLE_STREAM"
 msgid "Subtitle: %s"
@@ -3664,11 +3664,11 @@ msgstr "10bitový RGB výstup: Vypnuto"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_ON"
 msgid "Force 10-bit RGB Input: On"
-msgstr "Vynutit 10bitový RGB vstup: Vypnuto"
+msgstr "Vynutit 10bitový RGB vstup: Zapnuto"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_OFF"
 msgid "Force 10-bit RGB Input: Off"
-msgstr "Vynutit 10bitový RGB vstup: Zapnuto"
+msgstr "Vynutit 10bitový RGB vstup: Vypnuto"
 
 msgctxt "IDS_OSD_RS_FULL_FP_PROCESS_ON"
 msgid "Full Floating Point Processing: On"
@@ -4704,11 +4704,11 @@ msgstr "Přidat příponu video souboru k názvu obrázku (např. soubor.mkv.png
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"
 msgid "Pre-Resize Pixel Shaders: on"
-msgstr "Shadery před změnou velikosti: zapnuty"
+msgstr "Shadery před změnou velikosti: Zapnuto"
 
 msgctxt "IDS_PRESIZE_SHADERS_DISABLED"
 msgid "Pre-Resize Pixel Shaders: off"
-msgstr "Shadery před změnou velikosti: vypnuty"
+msgstr "Shadery před změnou velikosti: Vypnuto"
 
 msgctxt "IDS_PRESIZE_SHADERS_TOGGLE"
 msgid "Enable Pre-Resize Pixel Shaders"
@@ -4716,11 +4716,11 @@ msgstr "Povolit shadery před změnou velikosti"
 
 msgctxt "IDS_POSTSIZE_SHADERS_ENABLED"
 msgid "Post-Resize Pixel Shaders: on"
-msgstr "Shadery po změně velikosti: zapnuty"
+msgstr "Shadery po změně velikosti: Zapnuto"
 
 msgctxt "IDS_POSTSIZE_SHADERS_DISABLED"
 msgid "Post-Resize Pixel Shaders: off"
-msgstr "Shadery po změně velikosti: vypnuty"
+msgstr "Shadery po změně velikosti: Vypnuto"
 
 msgctxt "IDS_POSTSIZE_SHADERS_TOGGLE"
 msgid "Enable Post-Resize Pixel Shaders"
@@ -4733,6 +4733,7 @@ msgstr "Interval obnovení času stavového řádku (v milisekundách)"
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
 msgstr ""
+"Zobrazit procentuální hodnotu na posuvníku hlasitosti (v moderním motivu)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5027,8 +5028,8 @@ msgstr "Vypnout opakování"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "Náhodné přehrávání: Zapnuto"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "Náhodné přehrávání: Vypnuto"

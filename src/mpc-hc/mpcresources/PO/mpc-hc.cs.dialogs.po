@@ -1848,7 +1848,7 @@ msgstr "Použít moderní motiv"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
 msgid "Modern Theme Color:"
-msgstr "Barva motivu:"
+msgstr "Barva moderního motivu:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
@@ -1975,11 +1975,11 @@ msgid "Cancel"
 msgstr "Storno"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
+msgid "Toolbar Style"
 msgstr "Styl nástrojové lišty"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
+msgid "Toolbar Scale:"
 msgstr "Měřítko nástrojové lišty:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"

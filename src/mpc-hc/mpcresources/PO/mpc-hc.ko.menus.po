@@ -800,7 +800,7 @@ msgstr "명령줄 스위치(&C)"
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "툴바 이미지 내려받기(&T)"
+msgstr "도구 모음 이미지 내려받기(&T)"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"

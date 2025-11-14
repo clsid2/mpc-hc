@@ -5,14 +5,13 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Zyz696 Paga, 2020
 # Felipefpl, 2025
-# Fúlvio Alves <fga.fulvio@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2025-09-28 15:03:20+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Fúlvio Alves <fga.fulvio@gmail.com>, 2025\n"
+"Last-Translator: Felipefpl, 2025\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/mpchc/teams/106126/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -70,7 +69,7 @@ msgstr "Buffers de A/V:"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
 msgid "Audio to wav"
-msgstr "Áudio para wav"
+msgstr "Do áudio pra wav"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON2"
 msgid "Record"
@@ -122,7 +121,7 @@ msgstr "Segure o shift pra mudanças imediatas quando clicar em algo"
 
 msgctxt "IDD_GOTO_DLG_CAPTION"
 msgid "Go To..."
-msgstr "Ir Para..."
+msgstr "Ir Pra..."
 
 msgctxt "IDD_GOTO_DLG_IDC_STATIC"
 msgid ""
@@ -240,7 +239,7 @@ msgstr "Nome:"
 
 msgctxt "IDD_ABOUTBOX_IDC_BUTTON1"
 msgid "Copy to clipboard"
-msgstr "Copiar para área de transferência"
+msgstr "Copiar pra área de transferência"
 
 msgctxt "IDD_ABOUTBOX_IDOK"
 msgid "OK"
@@ -436,7 +435,7 @@ msgstr "Modo de repetição:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "After Playback"
-msgstr "Após a Reprodução"
+msgstr "Após o Playback"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Zoom and Alignment"
@@ -651,7 +650,7 @@ msgstr "Padrão"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK3"
 msgid "Auto-hide the mouse pointer during playback in windowed mode"
-msgstr "Auto-ocultar o ponteiro do mouse durante a reprodução no modo janela"
+msgstr "Auto-ocultar o ponteiro do mouse durante o playback no modo janela"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK4"
 msgid "Display \"Now Playing\" information in Skype's mood message"
@@ -805,11 +804,11 @@ msgstr "Renomear"
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON3"
 msgid "Move Up"
-msgstr "Mover para Cima"
+msgstr "Mover pra Cima"
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON4"
 msgid "Move Down"
-msgstr "Mover para Baixo"
+msgstr "Mover pra Baixo"
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON2"
 msgid "Delete"
@@ -833,11 +832,11 @@ msgstr "Apagar"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON4"
 msgid "Up"
-msgstr "Para cima"
+msgstr "Pra cima"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON5"
 msgid "Down"
-msgstr "Para baixo"
+msgstr "Pra baixo"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON1"
 msgid "&Set"
@@ -1469,8 +1468,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr ""
-"As mudanças tem efeito após a reprodução ter sido fechada e reiniciada."
+msgstr "As mudanças tem efeito após o playback ter sido fechado e reiniciado."
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
 msgid "Launch files in fullscreen"
@@ -1490,7 +1488,7 @@ msgstr "Esconder os painéis atracados"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
 msgid "Exit fullscreen at the end of playback"
-msgstr "Sair da tela cheia no fim da reprodução"
+msgstr "Sair da tela cheia no fim do playback"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1510,11 +1508,11 @@ msgstr "Apagar"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON3"
 msgid "Up"
-msgstr "Para cima"
+msgstr "Pra cima"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON4"
 msgid "Down"
-msgstr "Para baixo"
+msgstr "Pra baixo"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK3"
 msgid "Apply default monitor mode on fullscreen exit"
@@ -1694,7 +1692,7 @@ msgstr "Informação do Debug"
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
 msgstr ""
-"Configurações avançadas, não edite a menos que você saiba o que está "
+"Configurações avançadas, não edite a menos que você saiba o que você está "
 "fazendo."
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
@@ -1733,7 +1731,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Ativar crossfeed estéreo (para fones de ouvido)"
+msgstr "Ativar crossfeed estéreo (pra fones de ouvido)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
 msgid "C. Moy"
@@ -1787,7 +1785,7 @@ msgstr "Nós lamentamos, parece que o MPC-HC teve um crash. :("
 msgctxt "IDD_CRASH_REPORTER_IDC_CHECK1"
 msgid "Send a bug report to help us diagnose and fix the problem."
 msgstr ""
-"Envie um relatório de bugs para nos ajudar a diagnosticar e consertar o "
+"Envie um relatório de bugs pra nos ajudar a diagnosticar e consertar o "
 "problema."
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC1"
@@ -1804,7 +1802,7 @@ msgid ""
 "to contact you for more information."
 msgstr ""
 "Seu endereço de e-mail é opcional e só será usado se os desenvolvedores "
-"precisarem entrar em contato com você para mais informações."
+"precisarem contactar você pra mais informações."
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC4"
 msgid "Problem description (use English only):"
@@ -1979,12 +1977,12 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "ToolBar Style"
-msgstr "Escala da Barra de Ferramentas"
+msgid "Toolbar Style"
+msgstr "Estilo da Barra de Ferramentas"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "ToolBar Scale:"
-msgstr "Escala da Barra de Ferramentas:"
+msgid "Toolbar Scale:"
+msgstr "Estilo da Barra de Ferramentas:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"

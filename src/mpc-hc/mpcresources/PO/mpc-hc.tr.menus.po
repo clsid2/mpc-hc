@@ -673,15 +673,15 @@ msgstr "T&onlayıcılar"
 
 msgctxt "ID_AUDIOS"
 msgid "&Audio Track"
-msgstr "&Ses Parçası"
+msgstr "&Ses parçası"
 
 msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
-msgstr "&Altyazı Parçası"
+msgstr "&Altyazı parçası"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
-msgstr "Vide&o Parçası"
+msgstr "Vide&o parçası"
 
 msgctxt "POPUP"
 msgid "&Volume"
