@@ -13649,7 +13649,7 @@ bool CMainFrame::TrySkipWithinRar(bool forward) {
         return false;
     }
 
-    CString fn = pFileData->title;
+    CString fn = pFileData->fns.GetHead();
     if (fn.IsEmpty()) {
         fn = lastOpenFile;
     }
