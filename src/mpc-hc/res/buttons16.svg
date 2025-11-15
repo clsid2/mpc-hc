@@ -7,11 +7,9 @@
 <sodipodi:namedview  bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="layer1" inkscape:cx="144.97634" inkscape:cy="-0.056865311" inkscape:document-units="px" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:snap-grids="true" inkscape:window-height="966" inkscape:window-maximized="1" inkscape:window-width="1680" inkscape:window-x="-8" inkscape:window-y="-8" inkscape:zoom="2.0875" pagecolor="#ffffff" showgrid="true" units="px">
 	<inkscape:grid  id="grid3353" type="xygrid"></inkscape:grid>
 </sodipodi:namedview>
-<path id="path4159" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="-1.833329" inkscape:transform-center-y="-6.7848101e-005" sodipodi:arg1="2.0943951" sodipodi:arg2="3.1415927" sodipodi:cx="3" sodipodi:cy="1039.3621" sodipodi:r1="4.472136" sodipodi:r2="2.236068" sodipodi:sides="3" sodipodi:type="star" style="fill:#C8C8C8;" d="
-	M3,45.5v-11L14,40L3,45.5z"/>
 <rect id="rect4161" x="20" y="35.5" style="fill:#C8C8C8;" width="3" height="9"/>
 <rect id="rect4163" x="25" y="35.5" style="fill:#C8C8C8;" width="3" height="9"/>
-<rect id="rect4165" x="36" y="35.5" style="fill:#C8C8C8;" width="8" height="9"/>
+<rect id="rect4165" x="36" y="36" style="fill:#C8C8C8;" width="8" height="8"/>
 <rect id="rect4167" x="50" y="36.5" style="fill:#C8C8C8;" width="1" height="7"/>
 <path id="path4169" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="0.66666139" inkscape:transform-center-y="-3.0343961e-005" sodipodi:arg1="3.1415927" sodipodi:arg2="4.1887902" sodipodi:cx="73" sodipodi:cy="1040.3621" sodipodi:r1="2" sodipodi:r2="1" sodipodi:sides="3" sodipodi:type="star" style="fill:#C8C8C8;" d="
 	M52,40l4-3.5v7L52,40z"/>
@@ -48,11 +46,9 @@
 <rect id="rect4264" x="404" y="37" style="fill:#C8C8C8;" width="4" height="6"/>
 <path style="fill:#C8C8C8;" d="M404,56l8-7v14L404,56z M404,53h4v6h-4V53z"/>
 <path id="path4276" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;" d="M402,34l12,12"/>
-<path id="path4159_1_" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="-1.833329" inkscape:transform-center-y="-6.7848101e-005" sodipodi:arg1="2.0943951" sodipodi:arg2="3.1415927" sodipodi:cx="3" sodipodi:cy="1039.3621" sodipodi:r1="4.472136" sodipodi:r2="2.236068" sodipodi:sides="3" sodipodi:type="star" style="fill:#646464;" d="
-	M3,61.5v-11L14,56L3,61.5z"/>
 <rect id="rect4161_1_" x="20" y="51.5" style="fill:#646464;" width="3" height="9"/>
 <rect id="rect4163_1_" x="25" y="51.5" style="fill:#646464;" width="3" height="9"/>
-<rect id="rect4165_1_" x="36" y="51.5" style="fill:#646464;" width="8" height="9"/>
+<rect id="rect4165_1_" x="36" y="52" style="fill:#646464;" width="8" height="8"/>
 <rect id="rect4167_1_" x="50" y="52.5" style="fill:#646464;" width="1" height="7"/>
 <path id="path4169_1_" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="0.66666139" inkscape:transform-center-y="-3.0343961e-005" sodipodi:arg1="3.1415927" sodipodi:arg2="4.1887902" sodipodi:cx="73" sodipodi:cy="1040.3621" sodipodi:r1="2" sodipodi:r2="1" sodipodi:sides="3" sodipodi:type="star" style="fill:#646464;" d="
 	M52,56l4-3.5v7L52,56z"/>
@@ -73,10 +69,10 @@
 	M136,56l-4,3.5v-7L136,56z"/>
 <rect id="rect4187_1_" x="148" y="52.5" style="fill:#646464;" width="2" height="7"/>
 <path style="fill:#646464;" d="M152,52.5h1v7h-1V52.5z M157,56l-4,3.5v-7L157,56z"/>
-<polygon points="3,13.5 3,2.5 14,8 "/>
+<polygon points="3,14 3,2 13.4,8 "/>
 <rect x="20" y="3.5" width="3" height="9"/>
 <rect x="25" y="3.5" width="3" height="9"/>
-<rect x="36" y="3.5" width="8" height="9"/>
+<rect x="36" y="4" width="8" height="8"/>
 <rect x="50" y="4.5" width="1" height="7"/>
 <polygon points="52,8 56,4.5 56,11.5 "/>
 <polygon points="57,8 61,4.5 61,11.5 "/>
@@ -98,10 +94,9 @@
 <rect x="404" y="5" width="4" height="6"/>
 <path d="M404,24l8-7v14L404,24z M408,27h-4v-6h4V27z"/>
 <path style="fill:none;stroke:#FF0000;" d="M402,2l12,12"/>
-<polygon style="fill:#7F7F7F;" points="3,29.5 3,18.5 14,24 "/>
 <rect x="20" y="19.5" style="fill:#7F7F7F;" width="3" height="9"/>
 <rect x="25" y="19.5" style="fill:#7F7F7F;" width="3" height="9"/>
-<rect x="36" y="19.5" style="fill:#7F7F7F;" width="8" height="9"/>
+<rect x="36" y="20" style="fill:#7F7F7F;" width="8" height="8"/>
 <rect x="50" y="20.5" style="fill:#7F7F7F;" width="1" height="7"/>
 <polygon style="fill:#7F7F7F;" points="52,24 56,20.5 56,27.5 "/>
 <polygon style="fill:#7F7F7F;" points="57,24 61,20.5 61,27.5 "/>
@@ -470,4 +465,7 @@
 	H356z"/>
 <path id="path4276_2_" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;" d="M243.5,19.5l9,9"/>
 <path id="path4276_1_" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;" d="M243.5,51.5l9,9"/>
+<polygon style="fill:#7F7F7F;" points="3,30 3,18 13.4,24 "/>
+<polygon style="fill:#C8C8C8;" points="3,46 3,34 13.4,40 "/>
+<polygon style="fill:#646464;" points="3,62 3,50 13.4,56 "/>
 </svg>
