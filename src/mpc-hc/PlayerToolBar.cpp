@@ -530,6 +530,10 @@ void CPlayerToolBar::ArrangeControls() {
     CRect rVolumeButton;
     GetItemRect(volumeButtonIndex, &rVolumeButton);
     int volumeButtonWidth = rVolumeButton.Width();
+
+    // Proportional spacing between button groups: buttonWidth/4, minimum minSpacing
+    int groupSpacing = std::max(minSpacing, volumeButtonWidth / 4);
+
     int buttonsWidth = dynamicButtonsWidth + volumeButtonWidth;
 
     // Total width of button group + volume slider
@@ -544,28 +548,32 @@ void CPlayerToolBar::ArrangeControls() {
 
     const auto& s = AfxGetAppSettings();
 
-    // Calculate available space for separators (used by all alignment modes)
-    int availableSeparatorSpace = totalAvailableSpace - totalContentWidth - minSpacing - TOOLBAR_BUTTON_HORIZONTAL_PADDING - minSpacing;
+    // Calculate available space for separators (used by center alignment)
+    int availableSeparatorSpace = totalAvailableSpace - totalContentWidth - groupSpacing - groupSpacing;
 
     switch (s.nToolbarAlignment) {
         case 1: // Center alignment
             {
                 int centerOffset = availableSeparatorSpace / 2;
                 leftSpacing = std::max(0, centerOffset);
-                rightSpacing = minSpacing;
-                volumeSliderLeft = r.left + leftSpacing + dynamicButtonsWidth + rightSpacing + volumeButtonWidth + minSpacing + TOOLBAR_BUTTON_HORIZONTAL_PADDING;
+                rightSpacing = groupSpacing;
+                volumeSliderLeft = r.left + leftSpacing + dynamicButtonsWidth + rightSpacing + volumeButtonWidth + groupSpacing;
             }
             break;
         case 2: // Right alignment
             volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
-            leftSpacing = std::max(0, availableSeparatorSpace);
-            rightSpacing = minSpacing;
+            rightSpacing = groupSpacing;  // dummySeparator between dynamic buttons and mute
+            // leftSeparator pushes everything right, accounting for groupSpacing gaps
+            leftSpacing = totalAvailableSpace - dynamicButtonsWidth - rightSpacing - volumeButtonWidth - m_volumeCtrlSize - groupSpacing;
+            leftSpacing = std::max(0, leftSpacing);
             break;
         case 0: // Left alignment (default)
         default:
-            leftSpacing = 0;  // leftSeparator hidden
+            leftSpacing = 0;  // Dynamic buttons at left edge
             volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
-            rightSpacing = std::max(minSpacing, availableSeparatorSpace) + minSpacing;
+            // dummySeparator between dynamic buttons and mute, pushing mute right
+            rightSpacing = totalAvailableSpace - dynamicButtonsWidth - volumeButtonWidth - m_volumeCtrlSize - groupSpacing;
+            rightSpacing = std::max(groupSpacing, rightSpacing);
             break;
     }
 
@@ -639,7 +647,7 @@ int CPlayerToolBar::GetMinWidth() const
 {
     // button widths are inflated by TOOLBAR_BUTTON_HORIZONTAL_PADDING
     // x buttons + spacing + volume
-    int buttonCount = GetToolBarCtrl().GetButtonCount() - 2; //minus 2 because of play/pause being combined, dynamic spacer
+    int buttonCount = GetToolBarCtrl().GetButtonCount() - 3; //minus 3 because of play/pause being combined, 2 dynamic spacers
     return buttonCount * (m_nButtonHeight + 1 + TOOLBAR_BUTTON_HORIZONTAL_PADDING) + 4 + m_volumeCtrlSize;
 }
 
