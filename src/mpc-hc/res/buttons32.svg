@@ -41,11 +41,6 @@
 	M787,75.6c2.4,0.2,4.2,2,4.2,4.2s-1.8,4-4.2,4.2"/>
 <path id="path4230-0-7" sodipodi:cx="201.63358" sodipodi:cy="1044.3519" sodipodi:end="1.4835299" sodipodi:open="true" sodipodi:rx="4.5334277" sodipodi:ry="4.2615595" sodipodi:start="4.7996554" sodipodi:type="arc" style="fill:none;stroke:#C8C8C8;stroke-width:0.7;" d="
 	M788,71.4c4.6,0.4,8.2,4,8.2,8.4s-3.6,8.2-8.2,8.4"/>
-<path id="path4262" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="1.3333156" inkscape:transform-center-y="-0.00016308799" sodipodi:arg1="3.1415927" sodipodi:arg2="4.1887902" sodipodi:cx="73" sodipodi:cy="1040.3621" sodipodi:r1="2" sodipodi:r2="1" sodipodi:sides="3" sodipodi:type="star" style="fill:#C8C8C8;" d="
-	M808,80l16-14v28L808,80z"/>
-<rect id="rect4264" x="808" y="74" style="fill:#C8C8C8;" width="8" height="12"/>
-<path style="fill:#C8C8C8;" d="M808,112l16-14v28L808,112z M808,106h8v12h-8V106z"/>
-<path id="path4276" inkscape:connector-curvature="0" style="fill:none;stroke:#FF0000;stroke-width:2;" d="M804,68l24,24"/>
 <rect id="rect4161_1_" x="40" y="103" style="fill:#646464;" width="6" height="18"/>
 <rect id="rect4163_1_" x="50" y="103" style="fill:#646464;" width="6" height="18"/>
 <rect id="rect4165_1_" x="72" y="104" style="fill:#646464;" width="16" height="16"/>
@@ -89,10 +84,6 @@
 <path style="fill:none;stroke:#000000;stroke-width:0.5;" d="M785,13.8c1.2,0,2,1,2,2.2s-0.8,2-2,2.2"/>
 <path style="fill:none;stroke:#000000;stroke-width:0.6;" d="M787,11.8c2.4,0.2,4.2,2,4.2,4.2s-1.8,4-4.2,4.2"/>
 <path style="fill:none;stroke:#000000;stroke-width:0.7;" d="M788,7.4c4.6,0.4,8.2,4,8.2,8.4s-3.6,8.2-8.2,8.4"/>
-<path d="M808,16l16-14v28L808,16z"/>
-<rect x="808" y="10" width="8" height="12"/>
-<path d="M808,48l16-14v28L808,48z M816,54h-8V42h8V54z"/>
-<path style="fill:none;stroke:#FF0000;stroke-width:2;" d="M804,4l24,24"/>
 <rect x="40" y="39" style="fill:#7F7F7F;" width="6" height="18"/>
 <rect x="50" y="39" style="fill:#7F7F7F;" width="6" height="18"/>
 <rect x="72" y="40" style="fill:#7F7F7F;" width="16" height="16"/>
@@ -471,4 +462,20 @@
 <polygon style="fill:#7F7F7F;" points="6,60 6,36 26.8,48 "/>
 <polygon style="fill:#C8C8C8;" points="6,92 6,68 26.8,80 "/>
 <polygon style="fill:#646464;" points="6,124 6,100 26.8,112 "/>
+<polygon points="800,16 816,2 816,30 "/>
+<path d="M808,22h-8V10h8V22z"/>
+<line style="fill:none;stroke:#000000;stroke-miterlimit:10;" x1="821" y1="13" x2="827" y2="19"/>
+<line style="fill:none;stroke:#000000;stroke-miterlimit:10;" x1="821" y1="19" x2="827" y2="13"/>
+<polygon style="fill:#C8C8C8;" points="800,80 816,66 816,94 "/>
+<path style="fill:#C8C8C8;" d="M808,86h-8V74h8V86z"/>
+<line style="fill:none;stroke:#C8C8C8;stroke-miterlimit:10;" x1="821" y1="77" x2="827" y2="83"/>
+<line style="fill:none;stroke:#C8C8C8;stroke-miterlimit:10;" x1="821" y1="83" x2="827" y2="77"/>
+<polygon style="fill:#7F7F7F;" points="800,48 816,34 816,62 "/>
+<path style="fill:#7F7F7F;" d="M808,54h-8V42h8V54z"/>
+<line style="fill:none;stroke:#7F7F7F;stroke-miterlimit:10;" x1="821" y1="45" x2="827" y2="51"/>
+<line style="fill:none;stroke:#7F7F7F;stroke-miterlimit:10;" x1="821" y1="51" x2="827" y2="45"/>
+<polygon style="fill:#646464;" points="800,112 816,98 816,126 "/>
+<path style="fill:#646464;" d="M808,118h-8v-12h8V118z"/>
+<line style="fill:none;stroke:#646464;stroke-miterlimit:10;" x1="821" y1="109" x2="827" y2="115"/>
+<line style="fill:none;stroke:#646464;stroke-miterlimit:10;" x1="821" y1="115" x2="827" y2="109"/>
 </svg>
