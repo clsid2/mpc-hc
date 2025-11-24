@@ -449,6 +449,7 @@ void CFavoriteOrganizeDlg::MoveItem(int nItem, int offset)
     m_list.SetItemData(nItem, data);
     m_list.SetItemText(nItem, 1, strPos);
     m_list.SetItemState(nItem, LVIS_SELECTED, LVIS_SELECTED);
+    m_list.EnsureVisible(nItem, FALSE);
     m_bModified = true;
 }
 
