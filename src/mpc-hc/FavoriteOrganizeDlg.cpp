@@ -325,6 +325,7 @@ void CFavoriteOrganizeDlg::OnLvnEndlabeleditList2(NMHDR* pNMHDR, LRESULT* pResul
     if (pDispInfo->item.iItem >= 0 && pDispInfo->item.pszText) {
         m_list.SetItemText(pDispInfo->item.iItem, 0, pDispInfo->item.pszText);
         m_bModified = true;
+        UpdateDialogControls(this, TRUE);
     }
     UpdateColumnsSizes();
 
@@ -418,6 +419,7 @@ void CFavoriteOrganizeDlg::OnDeleteBnClicked()
 
     nItem = std::min(nItem, m_list.GetItemCount() - 1);
     m_list.SetItemState(nItem, LVIS_SELECTED, LVIS_SELECTED);
+    UpdateDialogControls(this, TRUE);
 }
 
 void CFavoriteOrganizeDlg::OnUpdateDeleteBn(CCmdUI* pCmdUI)
@@ -454,6 +456,7 @@ void CFavoriteOrganizeDlg::OnUpBnClicked()
 
         MoveItem(nItem, -1);
     }
+    UpdateDialogControls(this, TRUE);
 }
 
 void CFavoriteOrganizeDlg::OnUpdateUpBn(CCmdUI* pCmdUI)
@@ -478,6 +481,7 @@ void CFavoriteOrganizeDlg::OnDownBnClicked()
     for (INT_PTR i = selectedItems.GetSize() - 1; i >= 0; i--) {
         MoveItem(selectedItems[i], +1);
     }
+    UpdateDialogControls(this, TRUE);
 }
 
 void CFavoriteOrganizeDlg::OnUpdateDownBn(CCmdUI* pCmdUI)
@@ -513,6 +517,7 @@ void CFavoriteOrganizeDlg::OnBnClickedOk()
 void CFavoriteOrganizeDlg::OnBnClickedApply()
 {
     SaveChanges();
+    UpdateDialogControls(this, TRUE);
 }
 
 void CFavoriteOrganizeDlg::OnUpdateApplyBn(CCmdUI* pCmdUI)
