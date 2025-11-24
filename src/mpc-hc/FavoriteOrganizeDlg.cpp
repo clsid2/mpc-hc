@@ -46,6 +46,7 @@ void CFavoriteOrganizeDlg::SetupList(bool fSave)
     int i = m_tab.GetCurSel();
 
     if (fSave) {
+        // Update the internal list to match the visual list order and names
         CAtlList<CString> sl;
 
         for (int j = 0; j < m_list.GetItemCount(); j++) {
@@ -57,7 +58,14 @@ void CFavoriteOrganizeDlg::SetupList(bool fSave)
         }
         m_sl[i].RemoveAll();
         m_sl[i].AddTailList(&sl);
-        SetupList(false); //reload the list to invalide the old itemdata
+
+        // Update itemdata pointers to point to new positions in the rebuilt list
+        POSITION pos = m_sl[i].GetHeadPosition();
+        for (int j = 0; j < m_list.GetItemCount() && pos; j++) {
+            POSITION tmp = pos;
+            m_sl[i].GetNext(pos);
+            m_list.SetItemData(j, (DWORD_PTR)tmp);
+        }
     } else {
         m_list.SetRedraw(FALSE);
         m_list.DeleteAllItems();
