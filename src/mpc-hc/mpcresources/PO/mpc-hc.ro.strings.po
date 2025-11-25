@@ -298,7 +298,7 @@ msgstr "ID-ul Vob-ului"
 
 msgctxt "IDS_SUBRESYNC_CLN_CELL_ID"
 msgid "Cell ID"
-msgstr "ID celulă"
+msgstr "ID-ul celulei"
 
 msgctxt "IDS_SUBRESYNC_CLN_FORCED"
 msgid "Forced"
