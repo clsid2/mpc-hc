@@ -401,7 +401,7 @@ msgstr "Actorul"
 
 msgctxt "IDS_SUBRESYNC_CLN_EFFECT"
 msgid "Effect"
-msgstr "Efect"
+msgstr "Efectul"
 
 msgctxt "IDS_PLAYLIST_CAPTION"
 msgid "Playlist"
