@@ -310,7 +310,7 @@ msgstr "Text"
 
 msgctxt "IDS_SUBRESYNC_CLN_STYLE"
 msgid "Style"
-msgstr "Stil"
+msgstr "Stilul"
 
 msgctxt "IDS_SUBRESYNC_CLN_FONT"
 msgid "Font"
