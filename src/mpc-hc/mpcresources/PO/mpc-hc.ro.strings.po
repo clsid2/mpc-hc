@@ -294,7 +294,7 @@ msgstr "Previzualizare"
 
 msgctxt "IDS_SUBRESYNC_CLN_VOB_ID"
 msgid "Vob ID"
-msgstr "ID Vob"
+msgstr "ID-ul Vob-ului"
 
 msgctxt "IDS_SUBRESYNC_CLN_CELL_ID"
 msgid "Cell ID"
