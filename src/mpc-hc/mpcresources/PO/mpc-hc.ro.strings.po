@@ -3936,7 +3936,7 @@ msgid ""
 "The \"Save Image\" and \"Save Thumbnails\" functions do not work with the Overlay Mixer video renderer.\n"
 "Change the video renderer in MPC's output options and reopen the file."
 msgstr ""
-"Funcțiile „Salvează imaginea” și „Salvează miniaturile” nu funcționează cu redarea video Overlay Mixer.\n"
+"Funcțiile „Salvează imaginea” și „Salvează miniaturi” nu funcționează cu redarea video Overlay Mixer.\n"
 "Schimbă randorul video în opțiunile de ieșire ale MPC și redeschide fișierul."
 
 msgctxt "IDS_MB_SHOW_EDL_EDITOR"
