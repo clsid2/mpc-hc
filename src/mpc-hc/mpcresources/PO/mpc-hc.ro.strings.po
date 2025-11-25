@@ -1014,7 +1014,7 @@ msgstr "Nume"
 
 msgctxt "IDS_EMB_RESOURCES_VIEWER_TYPE"
 msgid "MIME Type"
-msgstr "Tip MIME"
+msgstr "Tipul MIME"
 
 msgctxt "IDS_EMB_RESOURCES_VIEWER_INFO"
 msgid ""
