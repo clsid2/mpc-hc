@@ -1058,9 +1058,7 @@ msgstr "Nie można znaleźć wszystkich wolumenów archiwum"
 
 msgctxt "IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "Reduces tearing but prevents the toolbar from being shown."
-msgstr ""
-"Redukuje rwanie obrazu, ale uniemożliwia wyświetlanie paska sterowania w "
-"trybie pełnoekranowym."
+msgstr "Redukuje rwanie obrazu, ale uniemożliwia wyświetlanie paska narzędzi."
 
 msgctxt "IDC_DSVMR9ALTERNATIVEVSYNC"
 msgid "Reduces tearing by bypassing the default VSync built into D3D."
