@@ -212,7 +212,8 @@ msgstr ""
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "English translation made by MPC-HC Team"
-msgstr "Tradução portuguesa: Hugo Simões e Hugo Carvalho"
+msgstr ""
+"Tradução portuguesa: Hugo Simões, Hugo Carvalho e Filipe Mota (BlackSpirits)"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Build information"
