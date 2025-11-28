@@ -2002,7 +2002,7 @@ msgstr "Stilul barei de unelte"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "Toolbar Scale:"
-msgstr "Scala barei de unelte:"
+msgstr "Scalarea barei de unelte:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
