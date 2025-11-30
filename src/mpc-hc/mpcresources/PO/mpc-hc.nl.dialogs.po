@@ -6,14 +6,14 @@
 # Arne Bezuijen <transifex@arnage.nl>, 2021
 # xknat <321knat@gmail.com>, 2022
 # mark van tilburg <markvantilburg@gmail.com>, 2025
-# Renz Straatman <renz75@outlook.com>, 2025
+# Renz Straatman <renz@kabelkrant.net>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-05 10:29:28+0000\n"
+"POT-Creation-Date: 2025-09-28 15:03:20+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Renz Straatman <renz75@outlook.com>, 2025\n"
+"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1969,56 +1969,56 @@ msgstr "Annuleren"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Style"
-msgstr ""
+msgstr "Werkbalk-stijl:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "Toolbar Scale:"
-msgstr ""
+msgstr "Werkbalk schaal:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr ""
+msgstr "Actieve stijl:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr ""
+msgstr "Aangepaste knop 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
-msgstr ""
+msgstr "Klik"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Right click"
-msgstr ""
+msgstr "Klik rechts:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr ""
+msgstr "Aangepaste knop 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr ""
+msgstr "Aangepaste knop 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr ""
+msgstr "Aangepaste knop 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"
-msgstr ""
+msgstr "Standaard"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
 msgid "<<"
-msgstr ""
+msgstr "<<"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
 msgid ">>"
-msgstr ""
+msgstr ">>"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
 msgid "^"
-msgstr ""
+msgstr "^"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
-msgstr ""
+msgstr "v"
