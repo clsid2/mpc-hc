@@ -688,7 +688,7 @@ msgstr "Verwijderen"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO1"
 msgid "Prefer"
-msgstr "Prefereren"
+msgstr "Voorkeur"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO2"
 msgid "Block"
