@@ -601,7 +601,7 @@ msgstr "Tweaks"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER"
 msgid "Internal Filters::Audio Switcher"
-msgstr "Filters::Audiofilter"
+msgstr "Interne filters::Audiofilter"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS"
 msgid "External Filters"
@@ -653,7 +653,7 @@ msgstr "Afspelen::Volledig scherm"
 
 msgctxt "IDD_PPAGEAUDIORENDERER"
 msgid "Internal Filters::Audio Renderer"
-msgstr "Filters::Audioverwerker"
+msgstr "Interne filters::Audioverwerker"
 
 msgctxt "IDS_AUDIOSWITCHER"
 msgid "Audio Switcher"
