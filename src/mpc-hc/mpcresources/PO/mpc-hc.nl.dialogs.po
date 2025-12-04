@@ -1548,7 +1548,8 @@ msgstr "Geef de voorkeur aan geforceerde en/of standaard ondertitels"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
 msgid "Prefer external subtitles over embedded subtitles"
-msgstr "Prefereer externe ondertiteling over bijgevoegde ondertiteling"
+msgstr ""
+"Prefereer externe ondertiteling ten opzichte van bijgevoegde ondertiteling"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
 msgid "Ignore embedded subtitles"
