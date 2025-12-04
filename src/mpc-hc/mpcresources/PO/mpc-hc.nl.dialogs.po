@@ -1741,7 +1741,7 @@ msgstr "Afsnijfrequentie:"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC3"
 msgid "Level:"
-msgstr "Hoogte:"
+msgstr "Niveau:"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC7"
 msgid "Note"
