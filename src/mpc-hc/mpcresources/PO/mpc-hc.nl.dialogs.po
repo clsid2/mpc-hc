@@ -43,7 +43,7 @@ msgstr "Toepassen"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "Output"
