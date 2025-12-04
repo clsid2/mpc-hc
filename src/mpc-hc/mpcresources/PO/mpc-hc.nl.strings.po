@@ -1451,7 +1451,7 @@ msgstr "&Vormgeving..."
 
 msgctxt "IDS_SUBTITLES_RELOAD"
 msgid "&Reload"
-msgstr "&Herladen"
+msgstr "&Vernieuwen"
 
 msgctxt "IDS_SUBTITLES_HIDE"
 msgid "&Hide Subtitles"
