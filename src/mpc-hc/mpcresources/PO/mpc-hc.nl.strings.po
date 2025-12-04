@@ -2425,7 +2425,7 @@ msgstr "Volgend audiospoor"
 
 msgctxt "IDS_AG_PREV_AUDIO"
 msgid "Prev Audio Track"
-msgstr "Vorig geluidsspoor"
+msgstr "Vorig audiospoor"
 
 msgctxt "IDS_AG_NEXT_SUBTITLE"
 msgid "Next Subtitle Track"
