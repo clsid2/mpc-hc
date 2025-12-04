@@ -775,7 +775,7 @@ msgstr "Ondertiteling::Vormgeving"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters"
-msgstr "Interne filters"
+msgstr "Filters"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
