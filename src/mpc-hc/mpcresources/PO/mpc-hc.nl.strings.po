@@ -4667,11 +4667,11 @@ msgstr "Muiswiel omhoog"
 
 msgctxt "IDS_MOUSE_WHEEL_DOWN"
 msgid "Wheel Down"
-msgstr "Muiswiel Omlaag"
+msgstr "Muiswiel omlaag"
 
 msgctxt "IDS_MOUSE_WHEEL_LEFT"
 msgid "Wheel Left"
-msgstr "Muiswiel naar Links"
+msgstr "Muiswiel naar links"
 
 msgctxt "IDS_MOUSE_WHEEL_RIGHT"
 msgid "Wheel Right"
