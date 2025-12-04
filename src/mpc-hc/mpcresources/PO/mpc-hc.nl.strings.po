@@ -71,7 +71,7 @@ msgstr "Bestand"
 
 msgctxt "IDS_SUB_OVERRIDE_DEFAULT_STYLE"
 msgid "Override Default Style"
-msgstr "Negeer standaard vormgeving"
+msgstr "Overschrijf standaard vormgeving"
 
 msgctxt "IDS_SUB_OVERRIDE_ALL_STYLES"
 msgid "Override All Styles"
