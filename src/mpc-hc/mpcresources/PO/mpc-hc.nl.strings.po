@@ -653,7 +653,7 @@ msgstr "Afspelen::Volledig scherm"
 
 msgctxt "IDD_PPAGEAUDIORENDERER"
 msgid "Internal Filters::Audio Renderer"
-msgstr "Interne filters::Audioverwerker"
+msgstr "Filters::Audioverwerker"
 
 msgctxt "IDS_AUDIOSWITCHER"
 msgid "Audio Switcher"
