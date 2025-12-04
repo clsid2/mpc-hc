@@ -1447,7 +1447,7 @@ msgstr "&Opties..."
 
 msgctxt "IDS_SUBTITLES_STYLES"
 msgid "&Styles..."
-msgstr "&Stijlen..."
+msgstr "&Vormgeving..."
 
 msgctxt "IDS_SUBTITLES_RELOAD"
 msgid "&Reload"
