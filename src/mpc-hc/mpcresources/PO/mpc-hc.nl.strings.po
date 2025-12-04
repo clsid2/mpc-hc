@@ -4659,7 +4659,7 @@ msgstr "Enkel klikken"
 
 msgctxt "IDS_MOUSE_CLICK_X2"
 msgid "X2 click"
-msgstr "X2 klik"
+msgstr "Dubbelklikken"
 
 msgctxt "IDS_MOUSE_WHEEL_UP"
 msgid "Wheel Up"
