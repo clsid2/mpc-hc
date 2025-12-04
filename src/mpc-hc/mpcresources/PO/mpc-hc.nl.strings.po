@@ -601,7 +601,7 @@ msgstr "Tweaks"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER"
 msgid "Internal Filters::Audio Switcher"
-msgstr "Interne filters::Audiofilter"
+msgstr "Filters::Audiofilter"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS"
 msgid "External Filters"
