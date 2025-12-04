@@ -1689,7 +1689,9 @@ msgstr "Debug informatie"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
-msgstr "Geavanceerde instellingen, pas niet aan tenzij je weet wat je doet."
+msgstr ""
+"Geavanceerde instellingen. Het wordt aanbevolen deze instellingen niet te "
+"wijzigen tenzij strikt noodzakelijk."
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
 msgid "True"
