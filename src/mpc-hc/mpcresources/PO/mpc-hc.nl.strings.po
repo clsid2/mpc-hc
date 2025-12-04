@@ -2147,7 +2147,7 @@ msgstr "OSD: Opbouwstatistieken resetten"
 
 msgctxt "IDD_PPAGESUBMISC"
 msgid "Subtitles::Misc"
-msgstr "Ondertiteling::Overige"
+msgstr "Ondertiteling::Opties"
 
 msgctxt "IDS_VIEW_BORDERLESS"
 msgid "Hide &borders"
