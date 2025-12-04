@@ -1737,7 +1737,7 @@ msgstr "J. Meier "
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC1"
 msgid "Cut-off:"
-msgstr "Afgeknepen:"
+msgstr "Afsnijfrequentie:"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC3"
 msgid "Level:"
