@@ -5016,7 +5016,7 @@ msgstr "Audiospoor"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
-msgstr "Ondertiteling"
+msgstr "Ondertitelspoor"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"
