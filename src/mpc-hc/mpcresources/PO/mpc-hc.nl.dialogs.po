@@ -1132,7 +1132,7 @@ msgstr "Rotatie"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
-msgstr "Geluid Renderer"
+msgstr "AudioRenderer"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
 msgid "Settings"
