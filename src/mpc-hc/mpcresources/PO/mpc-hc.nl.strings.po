@@ -75,7 +75,7 @@ msgstr "Overschrijf standaard vormgeving"
 
 msgctxt "IDS_SUB_OVERRIDE_ALL_STYLES"
 msgid "Override All Styles"
-msgstr "Negeer alle vormgeving"
+msgstr "Overschrijf alle vormgeving"
 
 msgctxt "IDS_PLAY_LOOPMODE_PLAYLIST"
 msgid "Playlist"
