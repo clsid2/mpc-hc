@@ -4663,7 +4663,7 @@ msgstr "Dubbelklikken"
 
 msgctxt "IDS_MOUSE_WHEEL_UP"
 msgid "Wheel Up"
-msgstr "Muiswiel Omhoog"
+msgstr "Muiswiel omhoog"
 
 msgctxt "IDS_MOUSE_WHEEL_DOWN"
 msgid "Wheel Down"
