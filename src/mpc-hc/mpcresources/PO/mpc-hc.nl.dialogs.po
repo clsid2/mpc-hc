@@ -257,7 +257,7 @@ msgstr "Nieuw bestand openen in het huidige venster"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
 msgid "Open a new player for each media file played"
-msgstr "Elk bestand in een nieuwe speler openen"
+msgstr "Elk bestand in een nieuw venster openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "Title bar"
