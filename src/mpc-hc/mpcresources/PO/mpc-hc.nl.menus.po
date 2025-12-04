@@ -4,15 +4,15 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Arne Bezuijen <transifex@arnage.nl>, 2021
-# Renz Straatman <renz75@outlook.com>, 2025
 # mark van tilburg <markvantilburg@gmail.com>, 2025
+# Renz Straatman <renz@kabelkrant.net>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: mark van tilburg <markvantilburg@gmail.com>, 2025\n"
+"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -674,7 +674,7 @@ msgstr "Shaders"
 
 msgctxt "ID_AUDIOS"
 msgid "&Audio Track"
-msgstr "&Geluidsspoor"
+msgstr "&Audiospoor"
 
 msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
