@@ -3264,7 +3264,7 @@ msgstr "&Deactiveer alle filters"
 
 msgctxt "IDS_ENABLE_AUDIO_FILTERS"
 msgid "Enable all audio decoders"
-msgstr "Activeer alle audio decoders"
+msgstr "Activeer alle audio-decoders"
 
 msgctxt "IDS_DISABLE_AUDIO_FILTERS"
 msgid "Disable all audio decoders"
