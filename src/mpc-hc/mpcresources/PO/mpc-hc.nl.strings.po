@@ -5012,7 +5012,7 @@ msgstr "Aangepaste actie 4"
 
 msgctxt "IDS_AUDIOS"
 msgid "Audio Track"
-msgstr "Geluidsspoor"
+msgstr "Audiospoor"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
