@@ -4671,7 +4671,7 @@ msgstr "Muiswiel omlaag"
 
 msgctxt "IDS_MOUSE_WHEEL_LEFT"
 msgid "Wheel Left"
-msgstr "Muiswiel naar links"
+msgstr "Scrollwiel naar links"
 
 msgctxt "IDS_MOUSE_WHEEL_RIGHT"
 msgid "Wheel Right"
