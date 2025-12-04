@@ -1717,7 +1717,7 @@ msgstr "Opties"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK1"
 msgid "Exclusive mode"
-msgstr "Exclusieve mode"
+msgstr "Exclusieve modus"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK4"
 msgid "Ignore system channel mixer (always ignored in exclusive WASAPI mode)"
