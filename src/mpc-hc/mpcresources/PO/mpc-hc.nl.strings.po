@@ -3268,11 +3268,11 @@ msgstr "Activeer alle audio-decoders"
 
 msgctxt "IDS_DISABLE_AUDIO_FILTERS"
 msgid "Disable all audio decoders"
-msgstr "Deactiveer alle audiodecoders"
+msgstr "Deactiveer alle audio-decoders"
 
 msgctxt "IDS_ENABLE_VIDEO_FILTERS"
 msgid "Enable all video decoders"
-msgstr "Activeer alle video decoders"
+msgstr "Activeer alle video-decoders"
 
 msgctxt "IDS_DISABLE_VIDEO_FILTERS"
 msgid "Disable all video decoders"
