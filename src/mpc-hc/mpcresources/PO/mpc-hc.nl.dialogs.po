@@ -1725,7 +1725,7 @@ msgstr "Windows volumemixer negeren (wordt altijd genegeerd in WASAPI modus)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Zet stereo \"kruis uitsturen\" aan (voor koptelefoons)"
+msgstr "Stereo-kanaalmenging inschakelen (voor hoofdtelefoons)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
 msgid "C. Moy"
