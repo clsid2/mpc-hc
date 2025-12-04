@@ -2457,7 +2457,7 @@ msgstr "Volgend audiospoor (DVD)"
 
 msgctxt "IDS_MPLAYERC_94"
 msgid "Prev Audio Track (DVD)"
-msgstr "Vorig geluidsspoor (DVD)"
+msgstr "Vorig audiospoor (DVD)"
 
 msgctxt "IDS_MPLAYERC_95"
 msgid "Next Subtitle Track (DVD)"
