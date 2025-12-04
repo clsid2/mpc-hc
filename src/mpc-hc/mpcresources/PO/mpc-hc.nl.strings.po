@@ -1455,7 +1455,7 @@ msgstr "&Vernieuwen"
 
 msgctxt "IDS_SUBTITLES_HIDE"
 msgid "&Hide Subtitles"
-msgstr "Ondertitels verbergen"
+msgstr "Ondertiteling verbergen"
 
 msgctxt "IDS_PANSCAN_EDIT"
 msgid "&Edit..."
