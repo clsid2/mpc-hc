@@ -4655,7 +4655,7 @@ msgstr "Middel klik"
 
 msgctxt "IDS_MOUSE_CLICK_X1"
 msgid "X1 click"
-msgstr "Enkel klikken"
+msgstr "1X klik"
 
 msgctxt "IDS_MOUSE_CLICK_X2"
 msgid "X2 click"
