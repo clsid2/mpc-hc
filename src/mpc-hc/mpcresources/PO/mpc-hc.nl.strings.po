@@ -159,7 +159,7 @@ msgstr "Sterkte: %d dB, kwaliteit: %ld%%"
 
 msgctxt "IDS_SUBTITLES_STYLES_CAPTION"
 msgid "Styles"
-msgstr "Stijlen"
+msgstr "Lettertypevormgeving"
 
 msgctxt "IDS_TEXT_SUB_RENDERING_TARGET"
 msgid ""
