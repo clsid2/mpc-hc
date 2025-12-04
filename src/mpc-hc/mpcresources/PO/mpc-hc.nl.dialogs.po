@@ -473,7 +473,7 @@ msgstr "Ondertitels:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC9"
 msgid "Audio:"
-msgstr "Geluid:"
+msgstr "Audio:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
 msgid "Allow overriding external splitter choice"
