@@ -605,7 +605,7 @@ msgstr "Filters::Audiofilter"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS"
 msgid "External Filters"
-msgstr "Filters::Extern"
+msgstr "Filters::Externe filters"
 
 msgctxt "IDD_PPAGESHADERS"
 msgid "Playback::Shaders"
