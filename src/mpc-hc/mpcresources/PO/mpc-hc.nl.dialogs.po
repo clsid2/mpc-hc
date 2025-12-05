@@ -1614,7 +1614,7 @@ msgid ""
 "Shaders contain special effects which can be added to the video rendering "
 "process."
 msgstr ""
-"Shaders bevatten effecten die kunnen worden toegevoegd aan het "
+"Shaders bevatten effecten die toegevoegd kunnen worden aan het "
 "videorenderproces."
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
