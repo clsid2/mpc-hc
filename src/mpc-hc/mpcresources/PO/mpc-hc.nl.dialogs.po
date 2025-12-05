@@ -1874,7 +1874,7 @@ msgstr "Toon voorvertoning bij aanwijzen tijdlijn"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
-msgstr "Toon tijd"
+msgstr "Toon label met tijd"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"
