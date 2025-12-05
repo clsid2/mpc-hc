@@ -1926,7 +1926,7 @@ msgstr "Toon huidige tijd"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Window Behavior"
-msgstr "Gedrag van venster"
+msgstr "Venster"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
 msgid "Limit window proportions on resize"
