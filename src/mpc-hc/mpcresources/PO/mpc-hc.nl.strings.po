@@ -645,7 +645,7 @@ msgstr "Afspelen::Opnemen"
 
 msgctxt "IDD_PPAGESYNC"
 msgid "Playback::Sync Renderer Settings"
-msgstr "Afspelen::Synchronisatie"
+msgstr "Afspelen::Monitorsynchronisatie-renderer"
 
 msgctxt "IDD_PPAGEFULLSCREEN"
 msgid "Playback::Fullscreen"
