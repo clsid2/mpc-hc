@@ -1949,7 +1949,7 @@ msgstr "Nooit tonen"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOWMOVED"
 msgid "Show when moving the cursor, hide after:"
-msgstr "Toon na bewegen cursor, en verberg na:"
+msgstr "Toon bij het bewegen van de cursor, en verberg na:"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
