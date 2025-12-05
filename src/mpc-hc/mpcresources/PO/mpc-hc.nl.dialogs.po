@@ -864,7 +864,7 @@ msgstr "Sneltoetsen"
 
 msgctxt "IDD_PPAGEACCELTBL_IDC_CHECK2"
 msgid "Global Media Keys"
-msgstr "Globale mediatoetsen op toetsenbord"
+msgstr "Globale mediaknoppen op toetsenbord"
 
 msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON1"
 msgid "Select All"
