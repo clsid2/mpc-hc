@@ -1946,7 +1946,7 @@ msgstr "Integratie met Windows"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
 msgid "Use enhanced taskbar features"
-msgstr "Gebruik uitgebreide taakbalk mogelijkheden"
+msgstr "Gebruik uitgebreide taakbalkmogelijkheden"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
 msgid "Control via Windows UI (SMTC)"
