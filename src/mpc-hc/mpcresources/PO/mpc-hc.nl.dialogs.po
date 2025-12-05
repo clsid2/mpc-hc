@@ -1934,7 +1934,7 @@ msgstr "Vergrendel venstergrootte aan beeldverhouding"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
 msgid "Snap to desktop edges"
-msgstr "Venster vastklikken aan schermranden"
+msgstr "Venster vastklikken aan bureaubladranden"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
 msgid "Hide Windowed Controls"
