@@ -1479,7 +1479,7 @@ msgstr "Bestanden openen in volledig scherm"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
 msgid "Hide controls in fullscreen"
-msgstr "Verberg besturing in schermvullende modus"
+msgstr "Besturingselementen verbergen bij volledig scherm"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
 msgid "ms"
