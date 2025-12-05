@@ -1469,7 +1469,7 @@ msgstr "ms"
 msgctxt "IDD_PPAGESYNC_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
 msgstr ""
-"Deze instellingen zijn van toepassing indien de EVS Monitorsynchronisatie-"
+"Deze instellingen zijn van toepassing indien de EVR Monitorsynchronisatie-"
 "renderer wordt gebruikt. Vereist opnieuw openen van de video."
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
