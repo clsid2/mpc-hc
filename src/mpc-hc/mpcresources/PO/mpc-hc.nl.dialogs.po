@@ -1862,7 +1862,7 @@ msgstr "Toon hoofdstukmarkeringen op de tijdlijn"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
-msgstr "Tijdlijn bij aanwijzen"
+msgstr "Trickplay"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
 msgid "Hover Position:"
