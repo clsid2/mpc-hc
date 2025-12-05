@@ -1953,7 +1953,7 @@ msgstr "Toon na bewegen cursor, en verbergen na:"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
-msgstr "Toon na zweven over bediening, verberg na:"
+msgstr "Toon na zweven over bediening, en verberg na:"
 
 msgctxt "IDS_MAINFRM_PRE_SHADERS_FAILED"
 msgid "Failed to set pre-resize shaders"
