@@ -1930,7 +1930,7 @@ msgstr "Gedrag van venster"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
 msgid "Limit window proportions on resize"
-msgstr "Vergrendel schermverhouding bij wijzen venstergrootte"
+msgstr "Vergrendel schermverhouding bij wijzigen venstergrootte"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
 msgid "Snap to desktop edges"
