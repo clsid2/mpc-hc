@@ -253,7 +253,7 @@ msgstr "Opties voor openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO1"
 msgid "Use the same player for each media file"
-msgstr "Nieuw bestand openen in het huidige venster"
+msgstr "Elk bestand in hetzelfde venster openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
 msgid "Open a new player for each media file played"
