@@ -938,7 +938,7 @@ msgstr "Hoogwaardige render, vereist een grafische kaart met D3D9 of nieuwer"
 
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
-msgstr "Enhanced Video Renderer (EVR), monitorsynchronisatie"
+msgstr "Enhanced Video Renderer (EVR) - Monitorsynchronisatie"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_MPC_REND"
 msgid "MPC Audio Renderer"
