@@ -1370,14 +1370,7 @@ void CMPCThemeUtil::RefreshBitmapIconControls(CWnd* parentWnd) {
 
                     // Reload icon at size appropriate for current window DPI
                     // (not system default which may be based on primary monitor DPI)
-                    HICON hNewIcon = (HICON)::LoadImage(
-                        AfxGetResourceHandle(),
-                        MAKEINTRESOURCE(resourceID),
-                        IMAGE_ICON,
-                        iconSize,
-                        iconSize,
-                        LR_SHARED
-                    );
+                    HICON hNewIcon = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(resourceID), IMAGE_ICON, iconSize, iconSize, LR_SHARED);
 
                     if (hNewIcon) {
                         sIcon->SetIcon(hNewIcon);
