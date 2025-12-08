@@ -876,7 +876,7 @@ void CMPCThemeUtil::MapDialogRectInternal(CDialog* wnd, CRect& r, CFont* font) {
         wnd->ReleaseDC(pDC);
 
         int avgWidth = (size.cx / 26 + 1) / 2;
-        int avgHeight = (WORD)(tm.tmHeight + tm.tmExternalLeading);
+        int avgHeight = (WORD)(tm.tmHeight + tm.tmExternalLeading); //adipose: added tmExternalLeading which was not mentioned in kb125681, but see GetFontDimensions()
 
         //MapDialogRect definition: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapdialogrect
         r.left = MulDiv(r.left, avgWidth, 4);
