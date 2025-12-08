@@ -38,6 +38,15 @@ public:
     static double GetTextScaleFactor();
     int CalculateListCtrlItemHeight(CListCtrl* wnd);
 
+    // Get dialog font metrics for DLU conversion at specified DPI (cached)
+    // fontFace: font name (e.g., "Segoe UI")
+    // fontSize: point size (e.g., 9)
+    static bool GetDialogFontMetricsForDPI(UINT dpi, LPCTSTR fontFace, int fontSize, int& avgWidth, int& avgHeight);
+    static void ClearDialogFontMetricsCache();
+
+    // DPI-aware window rect adjustment (adds window decorations like title bar, borders)
+    static BOOL AdjustWindowRectExForDpi(LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle, UINT dpi);
+
     inline double ScaleFactorX() const { return m_dpix / 96.0; }
     inline double ScaleFactorY() const { return m_dpiy / 96.0; }
 

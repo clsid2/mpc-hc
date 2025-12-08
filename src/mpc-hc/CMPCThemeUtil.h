@@ -98,7 +98,8 @@ public:
     static float getConstantFByDPI(CWnd* window, const float* constants);
     static int getConstantByDPI(CWnd* window, const int* constants);
     static UINT getResourceByDPI(CWnd* window, CDC* pDC, const UINT* resources);
-    static void MapDialogRect2(CDialog* wnd, CRect& r);
+    static void MapDialogRectInternal(CDialog* wnd, CRect& r, CFont* font);
+    static void MapDialogRectMessageFont(CDialog* wnd, CRect& r);
     static const std::vector<CMPCTheme::pathPoint> getIconPathByDPI(CMPCThemeTitleBarControlButton* button);
     static const std::vector<CMPCTheme::pathPoint> getIconPathByDPI(CWnd* wnd, WPARAM buttonType);
     static void drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size);
@@ -114,6 +115,7 @@ public:
     static void AdjustDynamicWidgetPair(CWnd* window, int left, int right, WidgetPairType lType = WidgetPairAuto, WidgetPairType rType = WidgetPairAuto);
     static void UpdateAnalogCaptureDeviceSlider(CScrollBar* pScrollBar);
     static bool IsWindowVisibleAndRendered(CWnd* window);
+    static void RefreshBitmapIconControls(CWnd* parentWnd);
 
     void PreDoModalRTL(LPPROPSHEETHEADERW m_psh);
 

@@ -22,6 +22,7 @@
 #include "DpiHelper.h"
 #include "WinapiFunc.h"
 #include <VersionHelpersInternal.h>
+#include <map>
 
 //used for GetTextScaleFactor
 #include <wrl.h>
@@ -230,5 +231,98 @@ double DpiHelper::GetTextScaleFactor() {
         return DoGetTextScaleFactor();
     } __except (EXCEPTION_EXECUTE_HANDLER) {
         return 1.0;
+    }
+}
+
+// Cache key for dialog font metrics
+struct DialogFontKey {
+    UINT dpi;
+    CString fontFace;
+    int fontSize;
+
+    bool operator<(const DialogFontKey& other) const {
+        if (dpi != other.dpi) return dpi < other.dpi;
+        int cmp = fontFace.Compare(other.fontFace);
+        if (cmp != 0) return cmp < 0;
+        return fontSize < other.fontSize;
+    }
+};
+
+// Static cache for dialog font metrics
+static std::map<DialogFontKey, std::pair<int, int>> s_dialogFontMetricsCache;
+
+bool DpiHelper::GetDialogFontMetricsForDPI(UINT dpi, LPCTSTR fontFace, int fontSize, int& avgWidth, int& avgHeight) {
+    // Create cache key
+    DialogFontKey key;
+    key.dpi = dpi;
+    key.fontFace = fontFace;
+    key.fontSize = fontSize;
+
+    // Check cache first
+    auto it = s_dialogFontMetricsCache.find(key);
+    if (it != s_dialogFontMetricsCache.end()) {
+        avgWidth = it->second.first;
+        avgHeight = it->second.second;
+        return true;
+    }
+
+    // Not in cache, create font at specified DPI and measure it
+    HDC hdc = ::GetDC(NULL);
+    if (!hdc) {
+        return false;
+    }
+
+    // Calculate font height for the specified DPI
+    // Font size is in points (1/72 inch), convert to pixels at this DPI
+    int fontHeight = -MulDiv(fontSize, dpi, 72);
+
+    LOGFONT lf = {};
+    lf.lfHeight = fontHeight;
+    lf.lfWeight = FW_NORMAL;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfQuality = CLEARTYPE_QUALITY;
+    _tcscpy_s(lf.lfFaceName, fontFace);
+
+    HFONT hFont = CreateFontIndirect(&lf);
+    if (!hFont) {
+        ::ReleaseDC(NULL, hdc);
+        return false;
+    }
+
+    HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+
+    TEXTMETRIC tm;
+    GetTextMetrics(hdc, &tm);
+
+    SIZE size;
+    GetTextExtentPoint32(hdc, _T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52, &size);
+    avgWidth = (size.cx / 26 + 1) / 2; // Average width of upper and lower case
+    avgHeight = tm.tmHeight;
+
+    SelectObject(hdc, hOldFont);
+    DeleteObject(hFont);
+    ::ReleaseDC(NULL, hdc);
+
+    // Cache the result
+    s_dialogFontMetricsCache[key] = std::make_pair(avgWidth, avgHeight);
+
+    return true;
+}
+
+void DpiHelper::ClearDialogFontMetricsCache() {
+    s_dialogFontMetricsCache.clear();
+}
+
+BOOL DpiHelper::AdjustWindowRectExForDpi(LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle, UINT dpi) {
+    // Use DPI-aware window rect adjustment if available (Windows 10 1607+)
+    typedef BOOL (WINAPI* PFN_AdjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
+    static PFN_AdjustWindowRectExForDpi pfnAdjustWindowRectExForDpi =
+        (PFN_AdjustWindowRectExForDpi)GetProcAddress(GetModuleHandleW(L"user32.dll"), "AdjustWindowRectExForDpi");
+
+    if (pfnAdjustWindowRectExForDpi) {
+        return pfnAdjustWindowRectExForDpi(lpRect, dwStyle, bMenu, dwExStyle, dpi);
+    } else {
+        // Fallback for older Windows versions
+        return ::AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
     }
 }

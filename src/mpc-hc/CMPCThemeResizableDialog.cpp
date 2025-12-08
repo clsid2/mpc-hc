@@ -4,24 +4,26 @@
 #include "mplayerc.h"
 
 CMPCThemeResizableDialog::CMPCThemeResizableDialog()
+    : CDpiAwareResizableDialog()
 {
 }
 
-CMPCThemeResizableDialog::CMPCThemeResizableDialog(UINT nIDTemplate, CWnd* pParent): CResizableDialog(nIDTemplate, pParent)
+CMPCThemeResizableDialog::CMPCThemeResizableDialog(UINT nIDTemplate, CWnd* pParent)
+    : CDpiAwareResizableDialog(nIDTemplate, pParent)
 {
 }
 
-CMPCThemeResizableDialog::CMPCThemeResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent): CResizableDialog(lpszTemplateName, pParent)
+CMPCThemeResizableDialog::CMPCThemeResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent)
+    : CDpiAwareResizableDialog(lpszTemplateName, pParent)
 {
 }
-
 
 CMPCThemeResizableDialog::~CMPCThemeResizableDialog()
 {
 }
 
 BOOL CMPCThemeResizableDialog::OnInitDialog() {
-    BOOL ret = CResizableDialog::OnInitDialog();
+    BOOL ret = __super::OnInitDialog();
     CMPCThemeUtil::enableWindows10DarkFrame(this);
     return ret;
 }
@@ -35,12 +37,13 @@ void CMPCThemeResizableDialog::fulfillThemeReqs()
     }
 }
 
+
 void CMPCThemeResizableDialog::EnableSaveRestoreKey(LPCTSTR pszKey, BOOL bRectOnly) {
     SetStateStore(pszKey);
     EnableSaveRestore(L"", bRectOnly);
 }
 
-BEGIN_MESSAGE_MAP(CMPCThemeResizableDialog, CResizableDialog)
+BEGIN_MESSAGE_MAP(CMPCThemeResizableDialog, CDpiAwareResizableDialog)
     ON_WM_CTLCOLOR()
     ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle) //code ported from CmdUI.h to support official CResizableDialog
     ON_WM_INITMENUPOPUP()                    //code ported from CmdUI.h to support official CResizableDialog

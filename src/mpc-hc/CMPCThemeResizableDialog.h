@@ -1,9 +1,11 @@
 #pragma once
+#include "DpiAwareResizableDialog.h"
 #include "CMPCThemeButton.h"
 #include "CMPCThemeGroupBox.h"
 #include "CMPCThemeLinkCtrl.h"
 #include "CMPCThemeUtil.h"
-class CMPCThemeResizableDialog : public CResizableDialog, public CMPCThemeUtil
+
+class CMPCThemeResizableDialog : public CDpiAwareResizableDialog, public CMPCThemeUtil
 {
 public:
     CMPCThemeResizableDialog();

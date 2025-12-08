@@ -633,6 +633,9 @@
     <ClCompile Include="CMPCThemeScrollBarRenderer.cpp">
       <Filter>MPCTheme</Filter>
     </ClCompile>
+    <ClCompile Include="DpiAwareResizableDialog.cpp">
+      <Filter>Modal Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppSettings.h">
@@ -1205,6 +1208,9 @@
     </ClInclude>
     <ClInclude Include="CMPCThemeScrollBarRenderer.h">
       <Filter>MPCTheme</Filter>
+    </ClInclude>
+    <ClInclude Include="DpiAwareResizableDialog.h">
+      <Filter>Modal Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
