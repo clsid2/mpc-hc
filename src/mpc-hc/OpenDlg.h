@@ -56,6 +56,7 @@ public:
 
     UINT GetDialogTemplateID() const override { return IDD; }
     void SetupAnchors() override;
+    TrackSizeConstraints GetTrackSizeConstraints() const override;
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

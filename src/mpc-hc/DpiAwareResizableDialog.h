@@ -1,6 +1,17 @@
 #pragma once
 #include "ResizableLib/ResizableDialog.h"
 
+struct TrackSizeConstraint {
+    double xMultiplier = 1.0;
+    double yMultiplier = 1.0;
+    bool enabled = true;
+};
+
+struct TrackSizeConstraints {
+    TrackSizeConstraint min{1.0, 1.0, true};
+    TrackSizeConstraint max{1.0, 1.0, false};
+};
+
 class CDpiAwareResizableDialog : public CResizableDialog, public _DialogSplitHelper
 {
 public:
@@ -16,6 +27,9 @@ public:
 
     // Override in derived classes to setup control anchors
     virtual void SetupAnchors() {}
+
+    // Override in derived classes to customize resize constraints
+    virtual TrackSizeConstraints GetTrackSizeConstraints() const { return TrackSizeConstraints(); }
 
 protected:
     // Dialog sizing and positioning

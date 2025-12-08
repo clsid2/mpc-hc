@@ -290,11 +290,23 @@ void CDpiAwareResizableDialog::UpdateMinMaxTrackSizeForDPI()
     CRect windowRect(0, 0, clientSize.cx, clientSize.cy);
     DpiHelper::AdjustWindowRectExForDpi(&windowRect, GetStyle(), FALSE, GetExStyle(), m_currentDpi);
 
-    CSize minSize = windowRect.Size();
-    CSize maxSize(windowRect.Width() * 2, windowRect.Height());
+    TrackSizeConstraints constraints = GetTrackSizeConstraints();
 
-    SetMinTrackSize(minSize);
-    SetMaxTrackSize(maxSize);
+    if (constraints.min.enabled) {
+        CSize minSize(
+            (int)(windowRect.Width() * constraints.min.xMultiplier),
+            (int)(windowRect.Height() * constraints.min.yMultiplier)
+        );
+        SetMinTrackSize(minSize);
+    }
+
+    if (constraints.max.enabled) {
+        CSize maxSize(
+            (int)(windowRect.Width() * constraints.max.xMultiplier),
+            (int)(windowRect.Height() * constraints.max.yMultiplier)
+        );
+        SetMaxTrackSize(maxSize);
+    }
 }
 
 void CDpiAwareResizableDialog::RepositionControlsFromTemplate()
