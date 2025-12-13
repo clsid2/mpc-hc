@@ -1597,7 +1597,7 @@ msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid ""
 "Shaders contain special effects which can be added to the video rendering "
 "process."
-msgstr "シェーダーには、動画の描画処理に追加できる特殊効果が含まれています。"
+msgstr "シェーダーには特殊効果が含まれており、動画のレンダリング処理に追加することができます。"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
 msgid "Add shader file"
