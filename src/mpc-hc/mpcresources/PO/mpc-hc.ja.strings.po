@@ -1235,7 +1235,7 @@ msgctxt "IDS_PPAGEADVANCED_USE_FREETYPE"
 msgid ""
 "Use FreeType for subtitle rendering.  Enables support for per-language "
 "glyphs."
-msgstr "字幕の描画に FreeType を使用します。言語ごとのグリフに対応します。"
+msgstr "字幕レンダリングに FreeType を使用します。これにより、言語ごとのグリフに対応できます。"
 
 msgctxt "IDS_PPAGEADVANCED_USE_MEDIAINFO_LOAD_FILE_DURATION"
 msgid ""
@@ -2755,7 +2755,7 @@ msgstr "開く処理を中止しました"
 
 msgctxt "IDS_MAINFRM_83"
 msgid "Failed to render the file"
-msgstr "ファイルの描画に失敗しました"
+msgstr "ファイルのレンダリングに失敗しました"
 
 msgctxt "IDS_AG_CHAPTER2"
 msgid "Chapter: "
@@ -2815,7 +2815,7 @@ msgstr "ソース フィルターを読み込めません"
 
 msgctxt "IDS_MAINFRM_88"
 msgid "Cannot render the file"
-msgstr "ファイルを描画できません"
+msgstr "ファイルをレンダリングできません"
 
 msgctxt "IDS_MAINFRM_89"
 msgid "Invalid file format"
