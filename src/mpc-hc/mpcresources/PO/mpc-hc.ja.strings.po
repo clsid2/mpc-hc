@@ -4689,7 +4689,7 @@ msgctxt "IDS_PPAGEADVANCED_LIBASS_FOR_SRT"
 msgid ""
 "Use libass (instead of standard renderer) for SRT subtitles. NOT "
 "recommended."
-msgstr "SRT 字幕の描画に標準レンダラーではなく libass を使用します。お勧めしません。"
+msgstr "SRT 字幕の描画に標準レンダラーではなく libass を使用します。推奨されません。"
 
 msgctxt "IDS_PPAGEADVANCED_OPEN_REC_PANEL_WHEN_OPENING_DEVICE"
 msgid ""
