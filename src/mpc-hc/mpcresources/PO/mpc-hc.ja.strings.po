@@ -2951,7 +2951,7 @@ msgstr "音量のブースト 最大"
 
 msgctxt "IDS_USAGE"
 msgid "Usage: mpc-hc.exe \"pathname\" [switches]"
-msgstr "使用法: mpc-hc.exe \"pathname\" [switches]"
+msgstr "使用方法: mpc-hc.exe \"pathname\" [switches]"
 
 msgctxt "IDS_UNKNOWN_SWITCH"
 msgid ""
