@@ -2815,7 +2815,7 @@ msgstr "ソース フィルターを読み込めません"
 
 msgctxt "IDS_MAINFRM_88"
 msgid "Cannot render the file"
-msgstr "ファイルをレンダリングできません"
+msgstr "ファイルを描画できません"
 
 msgctxt "IDS_MAINFRM_89"
 msgid "Invalid file format"
