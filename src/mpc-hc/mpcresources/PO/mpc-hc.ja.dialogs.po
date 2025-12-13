@@ -1397,7 +1397,7 @@ msgstr "受信機"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST10"
 msgid "Channel switching approach:"
-msgstr "チャンネル スイッチング アプローチ:"
+msgstr "チャンネル切り替え方式:"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
 msgid "Rebuild filter graph"
