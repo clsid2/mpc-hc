@@ -875,7 +875,7 @@ msgid ""
 "MPC-HC could not render some of the pins in the graph, you may not have the "
 "needed codecs or filters installed on the system."
 msgstr ""
-"MPC-HC はグラフ内の一部のピンを描画できませんでした。必要なコーデックまたはフィルターがシステムにインストールされていない可能性があります。"
+"MPC-HC はグラフ内の一部のピンをレンダリングできませんでした。必要なコーデックやフィルターがシステムにインストールされていない可能性があります。"
 
 msgctxt "IDD_MEDIATYPES_DLG_IDC_STATIC2"
 msgid "The following pin(s) failed to find a connectable filter:"
