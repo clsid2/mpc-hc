@@ -4249,7 +4249,7 @@ msgid ""
 "\"pathname\"\tThe main file or directory to be loaded\n"
 "\t\t(wildcards allowed, \"-\" denotes standard input)"
 msgstr ""
-"\"pathname\"\t読み込むメイン ファイルまたはディレクトリ\n"
+"\"pathname\"\t読み込むメインのファイルまたはディレクトリ\n"
 "\t\t(ワイルドカードの使用可, \"-\" が標準入力を表す)"
 
 msgctxt "IDS_CMD_DUB"
