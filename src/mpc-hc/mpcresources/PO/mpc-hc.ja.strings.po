@@ -165,7 +165,7 @@ msgid ""
 "rendered relative to the video frame while all other text subtitles will be "
 "rendered relative to the window."
 msgstr ""
-"レンダリングターゲットが未定義の場合、SSA/ASS "
+"レンダリング ターゲットが未定義の場合、SSA/ASS "
 "字幕は動画フレームを基準にレンダリングされ、その他のテキスト字幕はウィンドウを基準にレンダリングされます。"
 
 msgctxt "IDS_PLAYLOOPMODE_PLAYLIST"
