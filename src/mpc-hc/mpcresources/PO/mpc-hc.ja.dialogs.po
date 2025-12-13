@@ -485,7 +485,7 @@ msgstr "ワーカー スレッドを使用してフィルター グラフを作�
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK6"
 msgid "Report pins which fail to render"
-msgstr "描画に失敗したピンを報告する"
+msgstr "レンダリングに失敗したピンを報告する"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK2"
 msgid "Auto-load audio files"
