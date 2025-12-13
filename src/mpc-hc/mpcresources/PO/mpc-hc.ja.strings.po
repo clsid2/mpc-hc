@@ -310,7 +310,7 @@ msgstr "フォント"
 
 msgctxt "IDS_DVD_NAV_SOME_PINS_ERROR"
 msgid "Failed to render some of the pins of the DVD Navigator filter"
-msgstr "DVD ナビゲーター フィルターの一部のピンを描画できませんでした"
+msgstr "DVD ナビゲーター フィルターの一部のピンをレンダリングできませんでした"
 
 msgctxt "IDS_DVD_INTERFACES_ERROR"
 msgid "Failed to query the needed interfaces for DVD playback"
