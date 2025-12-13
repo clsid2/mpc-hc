@@ -2815,7 +2815,7 @@ msgstr "ソース フィルターを読み込めません"
 
 msgctxt "IDS_MAINFRM_88"
 msgid "Cannot render the file"
-msgstr "ファイルを描画できません"
+msgstr "ファイルをレンダリングできません"
 
 msgctxt "IDS_MAINFRM_89"
 msgid "Invalid file format"
@@ -4612,7 +4612,7 @@ msgstr "全画面表示の前に短い遅延を設け、表示の乱れを防ぎ
 
 msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
-msgstr "スクリーンショットに字幕を描画します"
+msgstr "スクリーンショットに字幕をレンダリングします"
 
 msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
 msgid ""
