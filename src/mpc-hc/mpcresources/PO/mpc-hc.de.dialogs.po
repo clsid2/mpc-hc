@@ -1995,6 +1995,10 @@ msgid "Toolbar Scale:"
 msgstr "Symbolleistenskalierung"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Alignment:"
+msgstr ""
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
 msgstr "Aktiver Stil:"
 

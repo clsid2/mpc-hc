@@ -2013,6 +2013,10 @@ msgid "Toolbar Scale:"
 msgstr "Scalarea barei de unelte:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Alignment:"
+msgstr ""
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
 msgstr "Stilul activ:"
 
