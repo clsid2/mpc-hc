@@ -353,7 +353,7 @@ msgstr "Curăță GPU-ul &după prezentare"
 
 msgctxt "ID_VIEW_FLUSHGPU_WAIT"
 msgid "&Wait for flushes"
-msgstr "&Așteaptă după curățări"
+msgstr "&Așteaptă după eliberări de memorie"
 
 msgctxt "POPUP"
 msgid "R&eset"
