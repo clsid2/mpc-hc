@@ -79,16 +79,36 @@ UINT DpiHelper::GetDPIForMonitor(HMONITOR hMonitor) {
     return 0;
 }
 
+UINT DpiHelper::GetDPIForRect(const RECT* pRect) {
+    if (!pRect) {
+        return 0;
+    }
+    HMONITOR hMonitor = MonitorFromRect(pRect, MONITOR_DEFAULTTONEAREST);
+    return GetDPIForMonitor(hMonitor);
+}
+
 void DpiHelper::Override(HWND hWindow)
 {
-    const WinapiFunc<decltype(GetDpiForMonitor)>
-        fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
+    // Use GetDPIForWindow to get the window's logical DPI, not the monitor's physical DPI
+    // During DPI transitions, a window can be on a 168 DPI monitor but have 96 DPI logical DPI
+    // note: GetDpiForMonitor available since 8.1, GetDPIForWindow since 10 1607
+    if (hWindow) {
+        UINT windowDpi = GetDPIForWindow(hWindow);
+        if (windowDpi != 0) {
+            m_dpix = windowDpi;
+            m_dpiy = windowDpi;
+        } else {
+            // Fallback: if GetDPIForWindow fails, use monitor DPI
+            const WinapiFunc<decltype(GetDpiForMonitor)>
+                fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
 
-    if (hWindow && fnGetDpiForMonitor) {
-        if (fnGetDpiForMonitor(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONULL),
-                               MDT_EFFECTIVE_DPI, (UINT*)&m_dpix, (UINT*)&m_dpiy) != S_OK) {
-            m_dpix = m_sdpix;
-            m_dpiy = m_sdpiy;
+            if (fnGetDpiForMonitor) {
+                if (fnGetDpiForMonitor(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONULL),
+                                       MDT_EFFECTIVE_DPI, (UINT*)&m_dpix, (UINT*)&m_dpiy) != S_OK) {
+                    m_dpix = m_sdpix;
+                    m_dpiy = m_sdpiy;
+                }
+            }
         }
     }
 }

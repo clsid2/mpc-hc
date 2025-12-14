@@ -71,7 +71,8 @@ protected:
     void RedrawDialogTooltipIfVisible();
     static bool metricsNeedCalculation;
 public:
-    static bool getFontByFace(CFont& font, CWnd *wnd, wchar_t* fontName, int size, LONG weight = FW_REGULAR);
+    static bool getFontByFace(CFont& font, CWnd *wnd, const wchar_t* fontName, int size, LONG weight = FW_REGULAR);
+    static bool getFontByFaceForDpi(CFont& font, const wchar_t* fontName, int size, UINT dpi, LONG weight = FW_REGULAR);
     static bool getFixedFont(CFont& font, CDC* pDC, CWnd* wnd);
     static bool getFontByType(CFont& font, CWnd* wnd, int type, bool underline = false, bool bold = false);
     enum fontType {

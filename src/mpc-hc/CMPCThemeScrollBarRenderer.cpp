@@ -3,6 +3,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
 #include "DpiHelper.h"
+#include "ClaudeTrace.h"
 #include <gdiplus.h>
 
 CMPCThemeScrollBarRenderer* CMPCThemeScrollBarRenderer::s_pActiveRenderer = nullptr;
@@ -110,25 +111,75 @@ bool CMPCThemeScrollBarRenderer::GetScrollBarState(HWND hWnd, int nBar, SCROLLBA
     return GetScrollBarInfo(hWnd, objId, &sbi) != FALSE;
 }
 
+bool CMPCThemeScrollBarRenderer::ScrollbarIsVisible(HWND hWnd, int nBar) {
+    SCROLLBARINFO sbi = { 0 };
+
+    if (!GetScrollBarState(hWnd, nBar, sbi)) {
+        return false;
+    }
+
+    if (sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE) {
+        return false;
+    }
+
+    return true;
+}
+
 BOOL CMPCThemeScrollBarRenderer::GetScrollBarRect(HWND hWnd, BOOL bVertical, CRect& rect) {
     if (!hWnd) {
         return FALSE;
     }
 
-    SCROLLBARINFO sbi = { 0 };
+    CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
+    if (!pWnd) {
+        return FALSE;
+    }
+
     int nBar = bVertical ? SB_VERT : SB_HORZ;
-    if (!GetScrollBarState(hWnd, nBar, sbi)) {
+    if (!ScrollbarIsVisible(hWnd, nBar)) {
         return FALSE;
     }
 
-    if (sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE) {
-        return FALSE;
+    // adipose: please note that sbi.rcScrollBar uses non-dpi-aware SystemMetrics
+    // Calculate scrollbar rect from window geometry using DPI-aware metrics
+    // Based on Wine's get_scroll_bar_rect implementation
+
+    DpiHelper dpiHelper;
+    dpiHelper.Override(hWnd);
+
+    pWnd->GetWindowRect(rect);
+    rect.OffsetRect(-rect.left, -rect.top);  // Convert to window coordinates
+
+    CPoint clientOffset = CMPCThemeUtil::GetClientRectOffset(pWnd);
+
+    if (bVertical) {
+        // Vertical scrollbar: positioned at right edge
+        int sbWidth = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+        rect.left = rect.right - sbWidth - clientOffset.x;
+        rect.right = rect.right - clientOffset.x;
+        rect.top = clientOffset.y;
+        rect.bottom = rect.bottom - clientOffset.y;
+
+        // Adjust for horizontal scrollbar if present
+        if (ScrollbarIsVisible(hWnd, SB_HORZ)) {
+            int sbHeight = dpiHelper.GetSystemMetricsDPI(SM_CYHSCROLL);
+            rect.bottom -= sbHeight;
+        }
+    } else {
+        // Horizontal scrollbar: positioned at bottom edge
+        int sbHeight = dpiHelper.GetSystemMetricsDPI(SM_CYHSCROLL);
+        rect.left = clientOffset.x;
+        rect.right = rect.right - clientOffset.x;
+        rect.top = rect.bottom - sbHeight - clientOffset.y;
+        rect.bottom = rect.bottom - clientOffset.y;
+
+        // Adjust for vertical scrollbar if present
+        if (ScrollbarIsVisible(hWnd, SB_VERT)) {
+            int sbWidth = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+            rect.right -= sbWidth;
+        }
     }
 
-    rect = sbi.rcScrollBar;
-    MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect, 2);
-    CPoint offset = CMPCThemeUtil::GetClientRectOffset(CWnd::FromHandlePermanent(hWnd));
-    rect += offset;
     return TRUE;
 }
 
@@ -164,7 +215,9 @@ bool CMPCThemeScrollBarRenderer::GetScrollBarCornerRect(HWND hWnd, CRect& corner
     pWnd->GetWindowRect(wr);
     wr.OffsetRect(-wr.left, -wr.top);
 
-    int sbThickness = GetSystemMetrics(SM_CXVSCROLL);
+    DpiHelper dpiHelper;
+    dpiHelper.Override(hWnd);
+    int sbThickness = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
     CPoint clientOffset = CMPCThemeUtil::GetClientRectOffset(pWnd);
     int borderThickness = clientOffset.x;
 
@@ -557,7 +610,9 @@ void CMPCThemeScrollBarRenderer::CalculateScrollBarRects(HWND hWnd, int nBar, co
     UINT uArrowWH = bHorizontal ? scrollRect.Height() : scrollRect.Width();
 
     // Use system scrollbar width as minimum thumb size (matches Windows 10)
-    UINT uThumbMinHW = GetSystemMetrics(SM_CXVSCROLL);
+    DpiHelper dpiHelper;
+    dpiHelper.Override(hWnd);
+    UINT uThumbMinHW = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
 
     if (bHorizontal) {
         int cxClient = scrollRect.Width();

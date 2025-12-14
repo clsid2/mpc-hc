@@ -16,6 +16,7 @@ CMPCThemePlayerListCtrl::CMPCThemePlayerListCtrl() : CListCtrl(), CMPCThemeScrol
     hasCBImages = false;
     customThemeInterface = nullptr;
     m_bReflectionRan = false;
+    m_imageListToggleHeight = 1;
 }
 
 
@@ -342,12 +343,32 @@ bool CMPCThemePlayerListCtrl::getFlaggedItem(int iItem)
     }
 }
 
+void CMPCThemePlayerListCtrl::ForceRowHeightRecalc()
+{
+    if (GetStyle() & LVS_OWNERDRAWFIXED) {
+        m_imageListToggleHeight = (m_imageListToggleHeight == 1) ? 2 : 1;
+
+        CImageList tempList;
+        tempList.Create(1, m_imageListToggleHeight, ILC_COLOR32, 0, 0);
+        SetImageList(&tempList, LVSIL_SMALL);
+        SetImageList(NULL, LVSIL_SMALL);
+
+        tempList.DeleteImageList();
+
+        SetRedraw(FALSE);
+        SetRedraw(TRUE);
+    }
+}
+
 void CMPCThemePlayerListCtrl::DoDPIChanged()
 {
     if (listMPCThemeFontBold.m_hObject) {
         listMPCThemeFontBold.DeleteObject();
     }
 
+    ForceRowHeightRecalc();
+
+    Invalidate();
 }
 
 

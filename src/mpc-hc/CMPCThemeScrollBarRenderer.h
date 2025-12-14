@@ -64,7 +64,8 @@ protected:
     void UninstallMouseHook();
     void HandleMouseEvent(WPARAM wParam, const POINT& pt);
 
-    bool GetScrollBarState(HWND hWnd, int nBar, SCROLLBARINFO& sbi);
+    static bool GetScrollBarState(HWND hWnd, int nBar, SCROLLBARINFO& sbi);
+    static bool ScrollbarIsVisible(HWND hWnd, int nBar);
 
     void OnNcMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam);
     void OnNcLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
@@ -73,7 +74,7 @@ protected:
 
     eXSB_AREA GetScrollBarArea(HWND hWnd, CPoint clientPoint, bool bVertical, const CRect& scrollRect);
     void CalculateScrollBarRects(HWND hWnd, int nBar, const CRect& scrollRect, CRect& rectTLArrow, CRect& rectBRArrow, CRect& rectThumb, CRect& rectTLChannel, CRect& rectBRChannel, bool* pbEnabled = nullptr);
-    BOOL GetScrollBarRect(HWND hWnd, BOOL bVertical, CRect& rect);
+    static BOOL GetScrollBarRect(HWND hWnd, BOOL bVertical, CRect& rect);
     static void drawSBArrow(CDC& dc, COLORREF arrowClr, CRect arrowRect, arrowOrientation orientation, int dpi);
     void DrawScrollBar(CDC* pDC, HWND hWnd, int nBar, const CRect& targetRect);
 };

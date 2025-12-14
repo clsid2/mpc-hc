@@ -2,21 +2,31 @@
 #include "DpiAwareResizableDialog.h"
 #include "CMPCThemeUtil.h"
 #include "mplayerc.h"
+#include "ClaudeTrace.h"
+#include "CMPCThemePlayerListCtrl.h"
+
+// ResizableLib constants (copied from ResizableWndState.cpp:42-43)
+#define PLACEMENT_ENT _T("WindowPlacement")
+#define PLACEMENT_FMT _T("%ld,%ld,%ld,%ld,%u,%u,%ld,%ld")
+
+// DLU size persistence constants
+#define DLUSIZE_ENT _T("DLUSize")
+#define DLUSIZE_FMT _T("%d,%d")
 
 // Forward declarations for MFC internal functions
 AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindFirstDlgItem(const DLGTEMPLATE* pTemplate);
 AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindNextDlgItem(DLGITEMTEMPLATE* pItem, BOOL bDialogEx);
 
 CDpiAwareResizableDialog::CDpiAwareResizableDialog()
-    : m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true)
+    : m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
@@ -24,35 +34,162 @@ CDpiAwareResizableDialog::~CDpiAwareResizableDialog()
 {
 }
 
+void CDpiAwareResizableDialog::EnableSaveRestoreKey(LPCTSTR pszKey, BOOL bRectOnly)
+{
+    m_bSaveRestoreEnabled = true;
+    SetStateStore(pszKey);
+    EnableSaveRestore(L"", bRectOnly);
+}
+
+UINT CDpiAwareResizableDialog::GetTargetDpiForRestoration()
+{
+    UINT currentDpi = DpiHelper::GetDPIForWindow(m_hWnd);
+    m_bRestorationPending = false;
+
+    if (!m_bSaveRestoreEnabled) {
+        return currentDpi;
+    }
+
+    LoadWindowDLUSize();
+
+    CString data;
+    if (!ReadState(CString(PLACEMENT_ENT), data)) {
+        return currentDpi;
+    }
+
+    RECT rc;
+    UINT showCmd, flags;
+    POINT ptMin;
+    if (_stscanf_s(data, PLACEMENT_FMT, &rc.left, &rc.top, &rc.right, &rc.bottom, &showCmd, &flags, &ptMin.x, &ptMin.y) == 8) {
+        UINT targetDpi = DpiHelper::GetDPIForRect(&rc);
+        if (targetDpi > 0 && targetDpi != currentDpi) {
+            // WM_DPICHANGED will handle correction after ResizableLib restores position
+            m_bRestorationPending = true;
+        }
+    }
+
+    return currentDpi;
+}
+
+void CDpiAwareResizableDialog::SaveWindowDLUSize()
+{
+    if (!m_bSaveRestoreEnabled) {
+        return;
+    }
+
+    if (m_currentDluSize.cx > 0 && m_currentDluSize.cy > 0) {
+        CString data;
+        data.Format(DLUSIZE_FMT, m_currentDluSize.cx, m_currentDluSize.cy);
+        WriteState(CString(DLUSIZE_ENT), data);
+    }
+}
+
+void CDpiAwareResizableDialog::LoadWindowDLUSize()
+{
+    if (!m_bSaveRestoreEnabled) {
+        return;
+    }
+
+    CString data;
+    if (!ReadState(CString(DLUSIZE_ENT), data)) {
+        return;
+    }
+
+    int dluWidth = 0, dluHeight = 0;
+    if (_stscanf_s(data, DLUSIZE_FMT, &dluWidth, &dluHeight) == 2) {
+        m_currentDluSize.cx = dluWidth;
+        m_currentDluSize.cy = dluHeight;
+    }
+}
+
+CSize CDpiAwareResizableDialog::GetTargetDluSize()
+{
+    CSize targetDluSize;
+    if (m_currentDluSize.cx > 0 && m_currentDluSize.cy > 0) {
+        targetDluSize = m_currentDluSize;
+    } else {
+        GetDialogBaseUnits(targetDluSize);
+    }
+    return targetDluSize;
+}
+
+void CDpiAwareResizableDialog::ApplyDialogSizeAndDpi(UINT targetDpi, CSize targetDluSize)
+{
+    CString fontFace;
+    int fontSize;
+    if (!GetDialogFontInfo(fontFace, fontSize)) {
+        return;
+    }
+
+    if (m_dialogFont.m_hObject) {
+        m_dialogFont.DeleteObject();
+    }
+    if (!CMPCThemeUtil::getFontByFaceForDpi(m_dialogFont, fontFace, fontSize, targetDpi)) {
+        return;
+    }
+
+    SetFont(&m_dialogFont, FALSE);
+    CWnd* pChild = GetWindow(GW_CHILD);
+    while (pChild) {
+        pChild->SetFont(&m_dialogFont, FALSE);
+        pChild = pChild->GetWindow(GW_HWNDNEXT);
+    }
+
+    int avgWidth, avgHeight;
+    if (!DpiHelper::GetDialogFontMetricsForDPI(targetDpi, fontFace, fontSize, avgWidth, avgHeight)) {
+        return;
+    }
+
+    CSize targetClientSize = DluToPixels(targetDluSize, avgWidth, avgHeight);
+
+    // Check if window is already the right size (might have been set in OnDpiChanged)
+    CRect currentWindowRect;
+    GetWindowRect(&currentWindowRect);
+
+    CRect targetRect(0, 0, targetClientSize.cx, targetClientSize.cy);
+    DpiHelper::AdjustWindowRectExForDpi(&targetRect, GetStyle(), FALSE, GetExStyle(), targetDpi);
+
+    if (currentWindowRect.Width() != targetRect.Width() || currentWindowRect.Height() != targetRect.Height()) {
+        SetWindowPos(NULL, 0, 0, targetRect.Width(), targetRect.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+    }
+
+    CRect actualClientRect;
+    GetClientRect(&actualClientRect);
+
+    RepositionControlsFromTemplate();
+
+    CSize templateDluSize;
+    if (GetDialogBaseUnits(templateDluSize)) {
+        CSize templatePixelSize = DluToPixels(templateDluSize, avgWidth, avgHeight);
+
+        // Calculate resize delta from template size
+        int deltaWidth = actualClientRect.Width() - templatePixelSize.cx;
+        int deltaHeight = actualClientRect.Height() - templatePixelSize.cy;
+
+        m_currentDluSize = targetDluSize;
+
+        if (deltaWidth != 0 || deltaHeight != 0) {
+            AdjustControlPositionsForResize(templateDluSize, deltaWidth, deltaHeight);
+        }
+    } else {
+        m_currentDluSize = targetDluSize;
+    }
+
+    UpdateSizeGripDPI();
+}
+
 BOOL CDpiAwareResizableDialog::OnInitDialog() {
     BOOL ret = __super::OnInitDialog();
 
-    m_currentDpi = DpiHelper::GetDPIForWindow(m_hWnd);
-
-    // Must set track sizes before resizing (required by ResizableLib)
+    m_currentDpi = GetTargetDpiForRestoration();
     UpdateMinMaxTrackSizeForDPI();
+    ApplyDialogSizeAndDpi(m_currentDpi, GetTargetDluSize());
 
-    CSize clientSize;
-    if (CalculateDialogSize(clientSize)) {
-        CRect windowRect(0, 0, clientSize.cx, clientSize.cy);
-        DpiHelper::AdjustWindowRectExForDpi(&windowRect, GetStyle(), FALSE, GetExStyle(), m_currentDpi);
-
-        CRect currentRect;
-        GetWindowRect(&currentRect);
-        int x = currentRect.left + (currentRect.Width() - windowRect.Width()) / 2;
-        int y = currentRect.top + (currentRect.Height() - windowRect.Height()) / 2;
-        SetWindowPos(NULL, x, y, windowRect.Width(), windowRect.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
-
-        RepositionControlsFromTemplate();
-    }
-
-    // Refresh grip state (initialized with primary monitor DPI, not current monitor)
+    // Refresh grip (initialized with primary monitor DPI, not current monitor)
     CWnd* pGrip = GetSizeGripWnd();
     if (pGrip && ::IsWindow(pGrip->GetSafeHwnd())) {
         pGrip->SendMessage(WM_SETTINGCHANGE, 0, 0);
     }
-
-    UpdateSizeGripDPI();
 
     return ret;
 }
@@ -60,7 +197,86 @@ BOOL CDpiAwareResizableDialog::OnInitDialog() {
 BEGIN_MESSAGE_MAP(CDpiAwareResizableDialog, CResizableDialog)
     ON_WM_SIZE()
     ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+    ON_MESSAGE_VOID(WM_KICKIDLE, OnKickIdle)
+    ON_WM_INITMENUPOPUP()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
+
+LRESULT CDpiAwareResizableDialog::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT ret = __super::DefWindowProc(message, wParam, lParam);
+
+    if (message == WM_INITDIALOG) {
+        SendMessage(WM_KICKIDLE);
+    }
+
+    return ret;
+}
+
+void CDpiAwareResizableDialog::OnKickIdle()
+{
+    UpdateDialogControls(this, false);
+}
+
+void CDpiAwareResizableDialog::OnInitMenuPopup(CMenu* pPopupMenu, UINT /*nIndex*/, BOOL /*bSysMenu*/)
+{
+    ASSERT(pPopupMenu != nullptr);
+
+    CCmdUI state;
+    state.m_pMenu = pPopupMenu;
+    ASSERT(state.m_pOther == nullptr);
+    ASSERT(state.m_pParentMenu == nullptr);
+
+    if (AfxGetThreadState()->m_hTrackingMenu == pPopupMenu->m_hMenu) {
+        state.m_pParentMenu = pPopupMenu;
+    } else if (::GetMenu(m_hWnd) != nullptr) {
+        HMENU hParentMenu;
+        CWnd* pParent = this;
+        if (pParent != nullptr &&
+            (hParentMenu = ::GetMenu(pParent->m_hWnd)) != nullptr) {
+            int nIndexMax = ::GetMenuItemCount(hParentMenu);
+            for (int nIndex = 0; nIndex < nIndexMax; nIndex++) {
+                if (::GetSubMenu(hParentMenu, nIndex) == pPopupMenu->m_hMenu) {
+                    state.m_pParentMenu = CMenu::FromHandle(hParentMenu);
+                    break;
+                }
+            }
+        }
+    }
+
+    state.m_nIndexMax = pPopupMenu->GetMenuItemCount();
+    for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax; state.m_nIndex++) {
+        state.m_nID = pPopupMenu->GetMenuItemID(state.m_nIndex);
+        if (state.m_nID == 0) {
+            continue;
+        }
+
+        ASSERT(state.m_pOther == nullptr);
+        ASSERT(state.m_pMenu != nullptr);
+        if (state.m_nID == UINT(-1)) {
+            state.m_pSubMenu = pPopupMenu->GetSubMenu(state.m_nIndex);
+            if (state.m_pSubMenu == nullptr ||
+                (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
+                state.m_nID == UINT(-1)) {
+                continue;
+            }
+            state.DoUpdate(this, TRUE);
+        } else {
+            state.m_pSubMenu = nullptr;
+            state.DoUpdate(this, FALSE);
+        }
+
+        UINT nCount = pPopupMenu->GetMenuItemCount();
+        if (nCount < state.m_nIndexMax) {
+            state.m_nIndex -= (state.m_nIndexMax - nCount);
+            while (state.m_nIndex < nCount &&
+                pPopupMenu->GetMenuItemID(state.m_nIndex) == state.m_nID) {
+                state.m_nIndex++;
+            }
+        }
+        state.m_nIndexMax = nCount;
+    }
+}
 
 void CDpiAwareResizableDialog::UpdateSizeGripDPI()
 {
@@ -72,16 +288,13 @@ void CDpiAwareResizableDialog::UpdateSizeGripDPI()
     CRect clientRect;
     GetClientRect(&clientRect);
 
-    // Skip if client rect not yet valid
     if (clientRect.Width() <= 0 || clientRect.Height() <= 0) {
         return;
     }
 
-    // Update DPI if it changed (happens before OnInitDialog sets it)
-    UINT actualDpi = DpiHelper::GetDPIForWindow(m_hWnd);
-    if (actualDpi > 0 && actualDpi != m_currentDpi) {
-        m_currentDpi = actualDpi;
-    }
+    // Don't update m_currentDpi here - only OnDpiChanged should update it
+    // Updating here causes incorrect DLU calculations in OnSize when dragging between monitors
+    UINT actualDpi = m_currentDpi;
 
     DpiHelper dpiHelper;
     dpiHelper.Override(m_currentDpi, m_currentDpi);
@@ -91,11 +304,7 @@ void CDpiAwareResizableDialog::UpdateSizeGripDPI()
     int gripX = clientRect.right - gripCx;
     int gripY = clientRect.bottom - gripCy;
 
-    pGrip->SetWindowPos(&CWnd::wndBottom,
-                       gripX, gripY,
-                       gripCx, gripCy,
-                       SWP_NOACTIVATE | SWP_NOREPOSITION |
-                       (m_bGripVisible ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+    pGrip->SetWindowPos(&CWnd::wndBottom, gripX, gripY, gripCx, gripCy, SWP_NOACTIVATE | SWP_NOREPOSITION | (m_bGripVisible ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 }
 
 //see CResizableDialog::OnSize -- we override and do not call parent because private implementation is not dpi aware
@@ -110,7 +319,6 @@ void CDpiAwareResizableDialog::OnSize(UINT nType, int cx, int cy) {
         return;
     }
 
-    // Hide grip when maximized, show otherwise
     if (nType == SIZE_MAXIMIZED) {
         m_bGripVisible = false;
     } else {
@@ -119,20 +327,48 @@ void CDpiAwareResizableDialog::OnSize(UINT nType, int cx, int cy) {
 
     UpdateSizeGripDPI();
     ArrangeLayout();
+
+    // Update tracked DLU size when user resizes (skip during initialization)
+    if (IsWindowVisible() && cx > 0 && cy > 0) {
+        CString fontFace;
+        int fontSize;
+        if (GetDialogFontInfo(fontFace, fontSize)) {
+            int avgWidth, avgHeight;
+            if (DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, avgWidth, avgHeight)) {
+                m_currentDluSize = PixelsToDlu(CSize(cx, cy), avgWidth, avgHeight);
+            }
+        }
+    }
+}
+
+void CDpiAwareResizableDialog::OnDestroy()
+{
+    for (const auto& info : m_staticImages) {
+        CWnd* pControl = GetDlgItem(info.controlID);
+        if (pControl) {
+            CStatic* pStatic = DYNAMIC_DOWNCAST(CStatic, pControl);
+            if (pStatic) {
+                HICON hIcon = pStatic->GetIcon();
+                if (hIcon) {
+                    DestroyIcon(hIcon);
+                }
+            }
+        }
+    }
+
+    SaveWindowDLUSize();
+    __super::OnDestroy();
 }
 
 LRESULT CDpiAwareResizableDialog::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 {
-
     if (m_inDpiChange) {
         return 0;
     }
 
-    if (!IsWindowVisible()) {
+    if (!IsWindowVisible() && !m_bRestorationPending) {
         return 0;
     }
-
-    m_inDpiChange = true;
 
     UINT oldDPI = LOWORD(wParam);
     UINT newDPI = HIWORD(wParam);
@@ -145,76 +381,71 @@ LRESULT CDpiAwareResizableDialog::OnDpiChanged(WPARAM wParam, LPARAM lParam)
         if (actualDPI != m_currentDpi) {
             realNewDPI = actualDPI;
         } else {
-            return 0;
+            if (!m_bRestorationPending) {
+                return 0;
+            }
         }
     }
 
-    if (realNewDPI == m_currentDpi) {
+    if (realNewDPI == m_currentDpi && !m_bRestorationPending) {
         return 0;
     }
 
-    CRect oldClientRect;
-    GetClientRect(&oldClientRect);
+    // Set flag AFTER all early exit checks to prevent leaking it as true
+    m_inDpiChange = true;
+    m_bRestorationPending = false;
 
-    CSize templateDluSize;
-    bool hasTemplate = GetDialogBaseUnits(templateDluSize);
-
-    CString fontFace;
-    int fontSize;
-    bool hasFontInfo = GetDialogFontInfo(fontFace, fontSize);
-
-    double dluWidthRatio = 1.0;
-    double dluHeightRatio = 1.0;
-
-    if (hasTemplate && hasFontInfo) {
-        CalculateCurrentDluRatio(oldClientRect, templateDluSize, fontFace, fontSize, dluWidthRatio, dluHeightRatio);
-    }
+    // Get target size before updating m_currentDpi
+    CSize targetDluSize = GetTargetDluSize();
 
     m_currentDpi = realNewDPI;
-
-    RECT customRect;
-    RECT* rectToUse = suggestedRect;
-
-    if (hasTemplate && hasFontInfo && (dluWidthRatio != 1.0 || dluHeightRatio != 1.0)) {
-        if (CalculateCustomDpiRect(templateDluSize, dluWidthRatio, dluHeightRatio, fontFace, fontSize, suggestedRect, customRect)) {
-            rectToUse = &customRect;
-        }
-    }
 
     UpdateMinMaxTrackSizeForDPI();
     RemoveAllAnchors();
 
-    DefWindowProc(WM_DPICHANGED, wParam, (LPARAM)rectToUse);
+    // On Windows 10/11, we MUST resize the window during WM_DPICHANGED handler
+    // Calculate the target client size and window rect
+    CString fontFace;
+    int fontSize;
+    if (GetDialogFontInfo(fontFace, fontSize)) {
+        int avgWidth, avgHeight;
+        if (DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, avgWidth, avgHeight)) {
+            CSize targetClientSize = DluToPixels(targetDluSize, avgWidth, avgHeight);
+            CRect targetRect(0, 0, targetClientSize.cx, targetClientSize.cy);
+            DpiHelper::AdjustWindowRectExForDpi(&targetRect, GetStyle(), FALSE, GetExStyle(), m_currentDpi);
 
-    RepositionControlsFromTemplate();
-    CMPCThemeUtil::RefreshBitmapIconControls(this);
+            // Use suggested position if available (required by Windows for proper DPI handling)
+            int x = suggestedRect ? suggestedRect->left : 0;
+            int y = suggestedRect ? suggestedRect->top : 0;
+            UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | (suggestedRect ? 0 : SWP_NOMOVE);
 
-    m_inDpiChange = false;
-
-    if (hasTemplate && hasFontInfo && (dluWidthRatio != 1.0 || dluHeightRatio != 1.0)) {
-        int newAvgWidth, newAvgHeight;
-        if (DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, newAvgWidth, newAvgHeight)) {
-            int templatePixelWidth = MulDiv(templateDluSize.cx, newAvgWidth, 4);
-            int templatePixelHeight = MulDiv(templateDluSize.cy, newAvgHeight, 8);
-
-            CRect actualClientRect;
-            GetClientRect(&actualClientRect);
-
-            int deltaWidth = actualClientRect.Width() - templatePixelWidth;
-            int deltaHeight = actualClientRect.Height() - templatePixelHeight;
-
-            AdjustControlPositionsForResize(templateDluSize, deltaWidth, deltaHeight);
+            SetWindowPos(NULL, x, y, targetRect.Width(), targetRect.Height(), flags);
         }
     }
 
-    // Refresh grip state and reposition for new DPI
+    ApplyDialogSizeAndDpi(m_currentDpi, targetDluSize);
+    RefreshStaticImages();
+
     CWnd* pGrip = GetSizeGripWnd();
     if (pGrip && ::IsWindow(pGrip->GetSafeHwnd())) {
         pGrip->SendMessage(WM_SETTINGCHANGE, 0, 0);
     }
-    UpdateSizeGripDPI();
 
     SetupAnchors();
+
+    // Update any CMPCThemePlayerListCtrl children
+    CWnd* pChild = GetWindow(GW_CHILD);
+    while (pChild) {
+        CMPCThemePlayerListCtrl* pListCtrl = DYNAMIC_DOWNCAST(CMPCThemePlayerListCtrl, pChild);
+        if (pListCtrl) {
+            pListCtrl->DoDPIChanged();
+        }
+        pChild = pChild->GetWindow(GW_HWNDNEXT);
+    }
+
+    RedrawWindow();
+
+    m_inDpiChange = false;
 
     return 0;
 }
@@ -250,43 +481,47 @@ bool CDpiAwareResizableDialog::GetDialogFontInfo(CString& fontFace, int& fontSiz
 
 void CDpiAwareResizableDialog::MapDialogRectAuto(CRect& r)
 {
+    // Use m_dialogFont if available (created for target DPI in ApplyDialogSizeAndDpi)
+    // This ensures DLU->pixel conversion uses the correct DPI during DPI changes
+    if (m_dialogFont.m_hObject) {
+        CMPCThemeUtil::MapDialogRectInternal(this, r, &m_dialogFont);
+        return;
+    }
+
     CString fontFace;
     int fontSize;
 
     if (GetDialogFontInfo(fontFace, fontSize)) {
-        // Use custom dialog font
         CFont dlgFont;
-        if (CMPCThemeUtil::getFontByFace(dlgFont, this, const_cast<wchar_t*>((LPCTSTR)fontFace), fontSize)) {
+        if (CMPCThemeUtil::getFontByFace(dlgFont, this, fontFace, fontSize)) {
             CMPCThemeUtil::MapDialogRectInternal(this, r, &dlgFont);
         }
     } else {
-        // Fallback: DS_SETFONT not set, use system message font
+        // DS_SETFONT not set, use system message font
         CMPCThemeUtil::MapDialogRectMessageFont(this, r);
     }
 }
 
-bool CDpiAwareResizableDialog::CalculateDialogSize(CSize& clientSize)
-{
-    CSize dluSize;
-    if (!GetDialogBaseUnits(dluSize)) {
-        return false;
-    }
-
-    CRect rect(0, 0, dluSize.cx, dluSize.cy);
-    MapDialogRectAuto(rect);
-
-    clientSize = rect.Size();
-
-    return true;
-}
-
 void CDpiAwareResizableDialog::UpdateMinMaxTrackSizeForDPI()
 {
-    CSize clientSize;
-    if (!CalculateDialogSize(clientSize)) {
+    // Use template size for constraints (saved size is for restoring preferred size)
+    CSize templateDluSize;
+    if (!GetDialogBaseUnits(templateDluSize)) {
         return;
     }
 
+    CString fontFace;
+    int fontSize;
+    if (!GetDialogFontInfo(fontFace, fontSize)) {
+        return;
+    }
+
+    int avgWidth, avgHeight;
+    if (!DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, avgWidth, avgHeight)) {
+        return;
+    }
+
+    CSize clientSize = DluToPixels(templateDluSize, avgWidth, avgHeight);
     CRect windowRect(0, 0, clientSize.cx, clientSize.cy);
     DpiHelper::AdjustWindowRectExForDpi(&windowRect, GetStyle(), FALSE, GetExStyle(), m_currentDpi);
 
@@ -320,7 +555,6 @@ void CDpiAwareResizableDialog::RepositionControlsFromTemplate()
     BOOL bDialogEx = IsDialogEx(pTemplate);
     int itemCount = bDialogEx ? pTemplateEx->cDlgItems : pTemplate->cdit;
 
-    // Build a list of all static controls (-1 ID) in window order
     struct StaticControlInfo {
         HWND hwnd;
         int sequence;
@@ -341,21 +575,17 @@ void CDpiAwareResizableDialog::RepositionControlsFromTemplate()
     DLGITEMTEMPLATE* pItem = _AfxFindFirstDlgItem(pTemplate);
     int templateStaticSequence = 0;
 
-
     for (int i = 0; i < itemCount && pItem; i++) {
-        // Get control ID and DLU position from template
         CRect dluRect;
         DWORD ctrlID;
         GetItemDimensions(pTemplate, pItem, dluRect, ctrlID);
 
-        // Convert DLUs to pixels using dialog font or fallback to message font
         MapDialogRectAuto(dluRect);
 
-        // Get the actual control
         HWND hControl = NULL;
         bool isStaticBySequence = false;
 
-        // For static controls with ID -1/0xFFFF, match by sequence order
+        // Match static controls by sequence order
         if (ctrlID == 0xFFFF || ctrlID == (DWORD)-1) {
             if (templateStaticSequence < (int)staticControls.size()) {
                 hControl = staticControls[templateStaticSequence].hwnd;
@@ -370,13 +600,11 @@ void CDpiAwareResizableDialog::RepositionControlsFromTemplate()
         }
 
         if (hControl) {
-            // Check if this is a combobox (preserve current height)
             TCHAR className[256];
             ::GetClassName(hControl, className, 256);
             bool isComboBox = (_tcsicmp(className, WC_COMBOBOX) == 0);
 
             if (isComboBox) {
-                // For comboboxes, preserve the current height
                 RECT currentRect;
                 ::GetWindowRect(hControl, &currentRect);
                 ::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&currentRect, 2);
@@ -391,44 +619,6 @@ void CDpiAwareResizableDialog::RepositionControlsFromTemplate()
         pItem = _AfxFindNextDlgItem(pItem, bDialogEx);
     }
 
-}
-
-void CDpiAwareResizableDialog::CalculateCurrentDluRatio(const CRect& clientRect, const CSize& templateDluSize, LPCTSTR fontFace, int fontSize, double& widthRatio, double& heightRatio)
-{
-    widthRatio = 1.0;
-    heightRatio = 1.0;
-
-    int oldAvgWidth, oldAvgHeight;
-    if (DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, oldAvgWidth, oldAvgHeight)) {
-        int actualDluWidth = MulDiv(clientRect.Width(), 4, oldAvgWidth);
-        int actualDluHeight = MulDiv(clientRect.Height(), 8, oldAvgHeight);
-        widthRatio = (double)actualDluWidth / templateDluSize.cx;
-        heightRatio = (double)actualDluHeight / templateDluSize.cy;
-    }
-}
-
-bool CDpiAwareResizableDialog::CalculateCustomDpiRect(const CSize& templateDluSize, double widthRatio, double heightRatio, LPCTSTR fontFace, int fontSize, const RECT* suggestedRect, RECT& customRect)
-{
-    int newAvgWidth, newAvgHeight;
-    if (!DpiHelper::GetDialogFontMetricsForDPI(m_currentDpi, fontFace, fontSize, newAvgWidth, newAvgHeight)) {
-        return false;
-    }
-
-    int targetDluWidth = (int)(templateDluSize.cx * widthRatio);
-    int targetDluHeight = (int)(templateDluSize.cy * heightRatio);
-
-    int targetPixelWidth = MulDiv(targetDluWidth, newAvgWidth, 4);
-    int targetPixelHeight = MulDiv(targetDluHeight, newAvgHeight, 8);
-
-    CRect tempRect(0, 0, targetPixelWidth, targetPixelHeight);
-    DpiHelper::AdjustWindowRectExForDpi(&tempRect, GetStyle(), FALSE, GetExStyle(), m_currentDpi);
-
-    customRect.left = suggestedRect->left;
-    customRect.top = suggestedRect->top;
-    customRect.right = customRect.left + tempRect.Width();
-    customRect.bottom = customRect.top + tempRect.Height();
-
-    return true;
 }
 
 void CDpiAwareResizableDialog::BuildControlTemplateDLUMap(std::map<int, CRect>& controlTemplateDLUs)
@@ -481,18 +671,21 @@ void CDpiAwareResizableDialog::AdjustControlPositionsForResize(const CSize& temp
         if (it != controlTemplateDLUs.end()) {
             const CRect& dluRect = it->second;
 
-            bool inBottomRight = (dluRect.left > templateDluSize.cx * 0.8) && (dluRect.top > templateDluSize.cy * 0.8);
-
-            if (inBottomRight) {
-                pChild = pChild->GetWindow(GW_HWNDNEXT);
-                continue;
-            }
-            else if (dluRect.left > templateDluSize.cx / 2) {
+            if (dluRect.left > templateDluSize.cx / 2) {
                 rectNew.OffsetRect(deltaWidth, 0);
                 moved = true;
             }
             else if (dluRect.Width() > templateDluSize.cx * 0.6) {
                 rectNew.right += deltaWidth;
+                moved = true;
+            }
+
+            if (dluRect.top > templateDluSize.cy / 2) {
+                rectNew.OffsetRect(0, deltaHeight);
+                moved = true;
+            }
+            else if (dluRect.Height() > templateDluSize.cy * 0.6) {
+                rectNew.bottom += deltaHeight;
                 moved = true;
             }
         }
@@ -516,6 +709,61 @@ void CDpiAwareResizableDialog::GetItemDimensions(const DLGTEMPLATE* pTemplate, D
     } else {
         rect.SetRect(pItem->x, pItem->y, pItem->x + pItem->cx, pItem->y + pItem->cy);
         id = pItem->id;
+    }
+}
+
+void CDpiAwareResizableDialog::LoadStaticIcon(int controlID, LPCTSTR iconResourceID, bool isSystemIcon)
+{
+    CWnd* pControl = GetDlgItem(controlID);
+    if (!pControl) {
+        return;
+    }
+
+    CStatic* pStatic = DYNAMIC_DOWNCAST(CStatic, pControl);
+    if (!pStatic) {
+        return;
+    }
+
+    CRect controlRect;
+    pStatic->GetClientRect(&controlRect);
+    int iconSize = std::min(controlRect.Width(), controlRect.Height());
+
+    HICON hIcon = nullptr;
+    HINSTANCE hInst = isSystemIcon ? nullptr : AfxGetResourceHandle();
+
+    if (SUCCEEDED(LoadIconWithScaleDown(hInst, iconResourceID, iconSize, iconSize, &hIcon))) {
+        pStatic->SetIcon(hIcon);
+        m_staticImages.push_back({controlID, iconResourceID, isSystemIcon});
+    }
+}
+
+void CDpiAwareResizableDialog::RefreshStaticImages()
+{
+    for (const auto& info : m_staticImages) {
+        CWnd* pControl = GetDlgItem(info.controlID);
+        if (!pControl) {
+            continue;
+        }
+
+        CStatic* pStatic = DYNAMIC_DOWNCAST(CStatic, pControl);
+        if (!pStatic) {
+            continue;
+        }
+
+        CRect controlRect;
+        pStatic->GetClientRect(&controlRect);
+        int iconSize = std::min(controlRect.Width(), controlRect.Height());
+
+        HICON hOldIcon = pStatic->GetIcon();
+        HICON hIcon = nullptr;
+        HINSTANCE hInst = info.isSystemIcon ? nullptr : AfxGetResourceHandle();
+
+        if (SUCCEEDED(LoadIconWithScaleDown(hInst, info.resourceID, iconSize, iconSize, &hIcon))) {
+            pStatic->SetIcon(hIcon);
+            if (hOldIcon) {
+                DestroyIcon(hOldIcon);
+            }
+        }
     }
 }
 

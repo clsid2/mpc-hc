@@ -91,7 +91,7 @@ enum {
 };
 
 CSubtitleDlDlg::CSubtitleDlDlg(CMainFrame* pParentWnd)
-    : CModelessResizableDialog(IDD, pParentWnd)
+    : CMPCThemeModelessResizableDialog(IDD, pParentWnd)
     , m_ps(nullptr, 0, 0)
     , m_bIsRefreshed(false)
     , m_pMainFrame(pParentWnd)
@@ -105,7 +105,6 @@ void CSubtitleDlDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_PROGRESS1, m_progress);
     DDX_Control(pDX, IDC_STATUSBAR, m_status);
     DDX_Text(pDX, IDC_EDIT1, manualSearch);
-    fulfillThemeReqs();
 }
 
 void CSubtitleDlDlg::SetStatusText(const CString& status, BOOL bPropagate/* = TRUE*/)
@@ -238,6 +237,8 @@ int CALLBACK CSubtitleDlDlg::SortCompare(LPARAM lParam1, LPARAM lParam2, LPARAM 
 
 BOOL CSubtitleDlDlg::OnInitDialog()
 {
+    EnableSaveRestoreKey(IDS_R_DLG_SUBTITLEDL, TRUE);
+
     __super::OnInitDialog();
     m_progress.SetParent(&m_status);
     if (AppIsThemeLoaded()) {
@@ -297,6 +298,20 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     m_list.InsertColumn(COL_DISC, ResStr(IDS_SUBDL_DLG_DISC_COL), LVCFMT_RIGHT, columnWidth[COL_DISC]);
     SetListViewSortColumn();
 
+    SetupAnchors();
+
+    CheckDlgButton(IDC_CHECK1, true);
+
+    CRect cr;
+    GetClientRect(cr);
+    const CSize s(cr.Width(), 250);
+    SetMinTrackSize(s);
+
+    return TRUE;
+}
+
+void CSubtitleDlDlg::SetupAnchors()
+{
     AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_CHECK1, BOTTOM_LEFT);
     AddAnchor(IDC_BUTTON1, BOTTOM_RIGHT);
@@ -306,16 +321,6 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     AddAnchor(IDC_EDIT1, BOTTOM_RIGHT, BOTTOM_RIGHT);
     AddAnchor(IDC_BUTTON4, BOTTOM_RIGHT);
     AddAnchor(IDC_STATUSBAR, BOTTOM_LEFT, BOTTOM_RIGHT);
-
-    CheckDlgButton(IDC_CHECK1, true);
-
-    CRect cr;
-    GetClientRect(cr);
-    const CSize s(cr.Width(), 250);
-    SetMinTrackSize(s);
-    EnableSaveRestoreKey(IDS_R_DLG_SUBTITLEDL, TRUE);
-
-    return TRUE;
 }
 
 BOOL CSubtitleDlDlg::PreTranslateMessage(MSG* pMsg)

@@ -56,7 +56,6 @@ void RarEntrySelectorDialog::OnOK() {
 void RarEntrySelectorDialog::DoDataExchange(CDataExchange* pDX) {
     __super::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_LIST1, m_list);
-    fulfillThemeReqs();
 }
 
 
@@ -65,6 +64,8 @@ BEGIN_MESSAGE_MAP(RarEntrySelectorDialog, CMPCThemeResizableDialog)
 END_MESSAGE_MAP()
 
 BOOL RarEntrySelectorDialog::OnInitDialog() {
+    EnableSaveRestoreKey(IDS_R_DLG_RAR_ENTRY_SELECTOR);
+
     __super::OnInitDialog();
 
     CRFSFile* file = file_list->First();
@@ -80,14 +81,17 @@ BOOL RarEntrySelectorDialog::OnInitDialog() {
         m_list.SetCurSel(0);
     }
 
-    EnableSaveRestoreKey(IDS_R_DLG_RAR_ENTRY_SELECTOR);
-    AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDOK, BOTTOM_RIGHT);
-    AddAnchor(IDCANCEL, BOTTOM_RIGHT);
-
+    SetupAnchors();
     fulfillThemeReqs();
 
     return FALSE;
+}
+
+void RarEntrySelectorDialog::SetupAnchors()
+{
+    AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDOK, BOTTOM_RIGHT);
+    AddAnchor(IDCANCEL, BOTTOM_RIGHT);
 }
 
 void RarEntrySelectorDialog::OnLbnDblclkList1() {

@@ -480,27 +480,30 @@ bool CMPCThemeUtil::MPCThemeEraseBkgnd(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     }
 }
 
-bool CMPCThemeUtil::getFontByFace(CFont& font, CWnd* wnd, wchar_t* fontName, int size, LONG weight)
+bool CMPCThemeUtil::getFontByFaceForDpi(CFont& font, const wchar_t* fontName, int size, UINT dpi, LONG weight)
 {
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
 
+    lf.lfHeight = -MulDiv(size, dpi, 72);
+    lf.lfWeight = weight;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfQuality = CLEARTYPE_QUALITY;
+    wcsncpy_s(lf.lfFaceName, fontName, LF_FACESIZE);
+
+    return font.CreateFontIndirect(&lf);
+}
+
+bool CMPCThemeUtil::getFontByFace(CFont& font, CWnd* wnd, const wchar_t* fontName, int size, LONG weight)
+{
     if (!wnd) {
         wnd = AfxGetMainWnd();
     }
 
     DpiHelper dpiWindow;
-
     dpiWindow.Override(wnd->GetSafeHwnd());
-    lf.lfHeight = -MulDiv(size, dpiWindow.DPIY(), 72);
 
-    lf.lfQuality = CLEARTYPE_QUALITY;
-
-    //lf.lfQuality = ANTIALIASED_QUALITY;
-    lf.lfWeight = weight;
-    wcsncpy_s(lf.lfFaceName, fontName, LF_FACESIZE);
-
-    return font.CreateFontIndirect(&lf);
+    return getFontByFaceForDpi(font, fontName, size, dpiWindow.DPIY(), weight);
 }
 
 bool CMPCThemeUtil::getFixedFont(CFont& font, CDC* pDC, CWnd* wnd)
@@ -1339,52 +1342,3 @@ bool CMPCThemeUtil::IsWindowVisibleAndRendered(CWnd* window) {
     return true;
 }
 
-void CMPCThemeUtil::RefreshBitmapIconControls(CWnd* parentWnd) {
-    if (!parentWnd) {
-        return;
-    }
-
-    CWnd* child = parentWnd->GetWindow(GW_CHILD);
-    while (child) {
-        TCHAR childClass[MAX_PATH];
-        DWORD style = child->GetStyle();
-        DWORD staticStyle = (style & SS_TYPEMASK);
-        ::GetClassName(child->GetSafeHwnd(), childClass, _countof(childClass));
-
-        if (0 == _tcsicmp(childClass, WC_STATIC) && SS_BITMAP == staticStyle) {
-            CStatic* sBMP = DYNAMIC_DOWNCAST(CStatic, child);
-            if (sBMP) {
-                sBMP->SetBitmap(sBMP->GetBitmap());
-            }
-        } else if (0 == _tcsicmp(childClass, WC_STATIC) && SS_ICON == staticStyle) {
-            CStatic* sIcon = DYNAMIC_DOWNCAST(CStatic, child);
-            if (sIcon) {
-                // Get the control's resource ID (dialog control ID for icon controls)
-                int resourceID = sIcon->GetDlgCtrlID();
-
-                if (resourceID > 0) {
-                    // Get control size to determine appropriate icon size for current DPI
-                    CRect controlRect;
-                    sIcon->GetClientRect(&controlRect);
-                    int iconSize = std::min(controlRect.Width(), controlRect.Height());
-
-                    // Reload icon at size appropriate for current window DPI
-                    // (not system default which may be based on primary monitor DPI)
-                    HICON hNewIcon = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(resourceID), IMAGE_ICON, iconSize, iconSize, LR_SHARED);
-
-                    if (hNewIcon) {
-                        sIcon->SetIcon(hNewIcon);
-                    } else {
-                        // Fallback: reset existing icon
-                        sIcon->SetIcon(sIcon->GetIcon());
-                    }
-                } else {
-                    // No resource ID, just reset existing icon
-                    sIcon->SetIcon(sIcon->GetIcon());
-                }
-            }
-        }
-
-        child = child->GetNextWindow();
-    }
-}

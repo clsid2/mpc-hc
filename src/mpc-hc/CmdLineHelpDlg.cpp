@@ -38,7 +38,6 @@ void CmdLineHelpDlg::DoDataExchange(CDataExchange* pDX)
     __super::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_STATIC1, m_icon);
     DDX_Text(pDX, IDC_EDIT1, m_text);
-    fulfillThemeReqs();
 }
 
 
@@ -47,9 +46,11 @@ END_MESSAGE_MAP()
 
 BOOL CmdLineHelpDlg::OnInitDialog()
 {
+    EnableSaveRestoreKey(IDS_R_DLG_CMD_LINE_HELP);
+
     __super::OnInitDialog();
 
-    m_icon.SetIcon(LoadIcon(nullptr, IDI_INFORMATION));
+    LoadStaticIcon(IDC_STATIC1, IDI_INFORMATION, true);
 
     if (!m_cmdLine.IsEmpty()) {
         m_text.LoadString(IDS_UNKNOWN_SWITCH);
@@ -79,12 +80,15 @@ BOOL CmdLineHelpDlg::OnInitDialog()
 
     GetDlgItem(IDOK)->SetFocus(); // Force the focus on the OK button
 
-    AddAnchor(IDC_STATIC1, TOP_LEFT);
-    AddAnchor(IDC_EDIT1, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDOK, BOTTOM_RIGHT);
-
-    EnableSaveRestoreKey(IDS_R_DLG_CMD_LINE_HELP);
+    SetupAnchors();
     fulfillThemeReqs();
 
     return FALSE;
+}
+
+void CmdLineHelpDlg::SetupAnchors()
+{
+    AddAnchor(IDC_STATIC1, TOP_LEFT);
+    AddAnchor(IDC_EDIT1, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDOK, BOTTOM_RIGHT);
 }

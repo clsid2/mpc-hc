@@ -72,11 +72,7 @@ BOOL COpenDlg::OnInitDialog()
 {
     __super::OnInitDialog();
 
-    // Load icon at size appropriate for control dimensions (not system default)
-    CRect iconRect;
-    m_icon.GetClientRect(&iconRect);
-    int iconSize = std::min(iconRect.Width(), iconRect.Height());
-    m_icon.SetIcon((HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, iconSize, iconSize, LR_SHARED));
+    LoadStaticIcon(IDR_MAINFRAME, MAKEINTRESOURCE(IDR_MAINFRAME), false);
 
     CAppSettings& s = AfxGetAppSettings();
 

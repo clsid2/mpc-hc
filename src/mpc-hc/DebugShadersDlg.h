@@ -62,6 +62,9 @@ private:
         TIMER_ONETIME_END = TIMER_ONETIME_START + 16,
     };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
 protected:
     int m_iVersion;
     CMPCThemeComboBox m_Shaders;
@@ -81,6 +84,7 @@ protected:
     CString GetShaderPath(int loc);
 
     virtual void DoDataExchange(CDataExchange* pDX) override;
+    afx_msg virtual BOOL OnInitDialog();
 
     BOOL PreTranslateMessage(MSG* pMsg);
 

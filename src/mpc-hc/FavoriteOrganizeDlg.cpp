@@ -32,7 +32,7 @@
 
 //IMPLEMENT_DYNAMIC(CFavoriteOrganizeDlg, CMPCThemeResizableDialog)
 CFavoriteOrganizeDlg::CFavoriteOrganizeDlg(CWnd* pParent /*=nullptr*/)
-    : CModelessResizableDialog(CFavoriteOrganizeDlg::IDD, pParent)
+    : CMPCThemeModelessResizableDialog(CFavoriteOrganizeDlg::IDD, pParent)
 {
 }
 
@@ -112,7 +112,7 @@ void CFavoriteOrganizeDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CModelessResizableDialog)
+BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CMPCThemeModelessResizableDialog)
     ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, OnTcnSelchangeTab1)
     ON_WM_DRAWITEM()
     ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST2, OnLvnItemchangedList2)
@@ -144,6 +144,8 @@ void  CFavoriteOrganizeDlg::OnLvnItemchangedList2(NMHDR* pNMHDR, LRESULT* pResul
 
 BOOL CFavoriteOrganizeDlg::OnInitDialog()
 {
+    EnableSaveRestoreKey(IDS_R_DLG_ORGANIZE_FAV);
+
     __super::OnInitDialog();
     if (GetExStyle() & WS_EX_TOPMOST) {
         if (auto tt = m_list.GetToolTips()) { //when dialog is topmost, tooltips appear behind the dialog?
@@ -164,17 +166,9 @@ BOOL CFavoriteOrganizeDlg::OnInitDialog()
 
     LoadList();
 
-    AddAnchor(IDC_TAB1, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDC_LIST2, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDC_BUTTON1, TOP_RIGHT);
-    AddAnchor(IDC_BUTTON2, TOP_RIGHT);
-    AddAnchor(IDC_BUTTON3, TOP_RIGHT);
-    AddAnchor(IDC_BUTTON4, TOP_RIGHT);
-    AddAnchor(IDOK, BOTTOM_RIGHT);
-    AddAnchor(IDCANCEL, BOTTOM_RIGHT);
-    AddAnchor(ID_APPLY_NOW, BOTTOM_RIGHT);
-    EnableSaveRestoreKey(IDS_R_DLG_ORGANIZE_FAV);
+    SetupAnchors();
     fulfillThemeReqs();
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -568,6 +562,19 @@ void CFavoriteOrganizeDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimi
     if (nState == WA_ACTIVE) {
         m_list.SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     }
+}
+
+void CFavoriteOrganizeDlg::SetupAnchors()
+{
+    AddAnchor(IDC_TAB1, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_LIST2, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_BUTTON1, TOP_RIGHT);
+    AddAnchor(IDC_BUTTON2, TOP_RIGHT);
+    AddAnchor(IDC_BUTTON3, TOP_RIGHT);
+    AddAnchor(IDC_BUTTON4, TOP_RIGHT);
+    AddAnchor(IDOK, BOTTOM_RIGHT);
+    AddAnchor(IDCANCEL, BOTTOM_RIGHT);
+    AddAnchor(ID_APPLY_NOW, BOTTOM_RIGHT);
 }
 
 void CFavoriteOrganizeDlg::OnSize(UINT nType, int cx, int cy)

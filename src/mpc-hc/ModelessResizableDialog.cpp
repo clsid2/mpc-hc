@@ -2,11 +2,10 @@
 #include "ModelessResizableDialog.h"
 #include "SysVersion.h"
 
-BEGIN_MESSAGE_MAP(CModelessResizableDialog, CMPCThemeResizableDialog)
-    ON_WM_CTLCOLOR()
+BEGIN_MESSAGE_MAP(CModelessResizableDialog, CDpiAwareResizableDialog)
 END_MESSAGE_MAP()
 
-CModelessResizableDialog::CModelessResizableDialog(UINT nIDTemplate, CWnd* pParent) : CMPCThemeResizableDialog(nIDTemplate, pParent) {
+CModelessResizableDialog::CModelessResizableDialog(UINT nIDTemplate, CWnd* pParent) : CDpiAwareResizableDialog(nIDTemplate, pParent) {
 }
 
 BOOL CModelessResizableDialog::Create(UINT nIDTemplate, CWnd* pParentWnd) {

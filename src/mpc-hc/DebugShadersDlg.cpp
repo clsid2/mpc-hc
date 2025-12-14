@@ -65,13 +65,6 @@ CDebugShadersDlg::CDebugShadersDlg()
     // Setup window auto-resize and restore last position
     SetSizeGripVisibility(FALSE);
     SetMinTrackSize(CSize(360, 100));
-    AddAnchor(IDC_COMBO1, TOP_LEFT, TOP_RIGHT);
-    AddAnchor((UINT)IDC_STATIC, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDC_EDIT1, TOP_LEFT, BOTTOM_RIGHT);
-    AddAnchor(IDC_RADIO1, TOP_RIGHT);
-    AddAnchor(IDC_RADIO2, TOP_RIGHT);
-    AddAnchor(IDC_RADIO3, TOP_RIGHT);
-    AddAnchor(IDC_RADIO4, TOP_RIGHT);
     EnableSaveRestoreKey(IDS_R_DEBUG_SHADERS);
 
     CWinApp* pApp = AfxGetApp();
@@ -254,7 +247,25 @@ void CDebugShadersDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO1, m_Shaders);
     DDX_Control(pDX, IDC_EDIT1, m_DebugInfo);
     DDX_Radio(pDX, IDC_RADIO1, m_iVersion);
+}
+
+BOOL CDebugShadersDlg::OnInitDialog()
+{
+    __super::OnInitDialog();
+    SetupAnchors();
     fulfillThemeReqs();
+    return TRUE;
+}
+
+void CDebugShadersDlg::SetupAnchors()
+{
+    AddAnchor(IDC_COMBO1, TOP_LEFT, TOP_RIGHT);
+    AddAnchor((UINT)IDC_STATIC, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_EDIT1, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_RADIO1, TOP_RIGHT);
+    AddAnchor(IDC_RADIO2, TOP_RIGHT);
+    AddAnchor(IDC_RADIO3, TOP_RIGHT);
+    AddAnchor(IDC_RADIO4, TOP_RIGHT);
 }
 
 BOOL CDebugShadersDlg::PreTranslateMessage(MSG* pMsg)

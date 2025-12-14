@@ -35,6 +35,9 @@ public:
     virtual ~RarEntrySelectorDialog();
     enum { IDD = IDD_RAR_ENTRY_SELECTOR };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
     CStringW GetCurrentEntry();
     int GetCurrentIndex();
 

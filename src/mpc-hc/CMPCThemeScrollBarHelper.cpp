@@ -2,6 +2,7 @@
 #include "CMPCThemeScrollBarHelper.h"
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
+#include "DpiHelper.h"
 
 CMPCThemeScrollBarHelper::CMPCThemeScrollBarHelper(CWnd* scrollWindow)
     :helperInfo(nullptr)
@@ -313,7 +314,10 @@ ScrollBarHelperInfo::ScrollBarHelperInfo(CWnd* w):
 
         wr.OffsetRect(-wr.left, -wr.top);
 
-        sbThickness = GetSystemMetrics(SM_CXVSCROLL);
+        // Use DPI-aware scrollbar metrics
+        DpiHelper dpi;
+        dpi.Override(w->GetSafeHwnd());
+        sbThickness = dpi.GetSystemMetricsDPI(SM_CXVSCROLL);
         clientOffset = CMPCThemeUtil::GetClientRectOffset(w);
         borderThickness = clientOffset.x;
 

@@ -45,6 +45,7 @@ public:
     bool getFlaggedItem(int iItem);
     void setColorInterface(CMPCThemeListCtrlCustomInterface* iface) { customThemeInterface = iface; };
     void DoDPIChanged();
+    void ForceRowHeightRecalc();
     bool IsCustomDrawActive();
     bool PaintHooksActive();
     void RedrawHeader(CRect headerRect);
@@ -74,6 +75,7 @@ protected:
     CFont* listMPCThemeFont, listMPCThemeFontBold;
     CMPCThemeListCtrlCustomInterface* customThemeInterface;
     bool m_bReflectionRan;
+    int m_imageListToggleHeight;
     BOOL EraseBkgnd(CDC* pDC, CRect updateRect);
     void drawItem(CDC* pDC, int nItem, int nSubItem, CRect itemRect, DWORD dwStyle, DWORD extendedStyle, UINT itemState, bool isChecked, CImageList* smallImageList, UINT cbResID);
     virtual void PreSubclassWindow();

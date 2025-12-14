@@ -21,13 +21,13 @@
 
 #pragma once
 
-#include "ModelessResizableDialog.h"
+#include "CMPCThemeModelessResizableDialog.h"
 #include "CMPCThemeTabCtrl.h"
 #include "CMPCThemePlayerListCtrl.h"
 
 // CFavoriteOrganizeDlg dialog
 
-class CFavoriteOrganizeDlg : public CModelessResizableDialog
+class CFavoriteOrganizeDlg : public CMPCThemeModelessResizableDialog
 {
     //  DECLARE_DYNAMIC(CFavoriteOrganizeDlg)
 
@@ -42,6 +42,9 @@ public:
 
     // Dialog Data
     enum { IDD = IDD_FAVORGANIZE };
+
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
 
     CMPCThemeTabCtrl m_tab;
     CMPCThemePlayerListCtrl m_list;
