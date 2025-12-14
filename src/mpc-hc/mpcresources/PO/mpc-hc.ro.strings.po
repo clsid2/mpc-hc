@@ -327,7 +327,7 @@ msgstr ""
 
 msgctxt "IDS_CAPTURE_LIVE"
 msgid "Live"
-msgstr "În direct"
+msgstr "În direct (Live)"
 
 msgctxt "IDS_CAPTURE_ERROR_VID_FILTER"
 msgid "Can't add video capture filter to the graph"
