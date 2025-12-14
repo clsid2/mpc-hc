@@ -172,7 +172,7 @@ msgstr ""
 
 msgctxt "IDS_PLAYLOOPMODE_PLAYLIST"
 msgid "Repeat Mode: Playlist"
-msgstr "Mod de repetare: Listă de redare (Playlist)"
+msgstr "Modul de repetare: Listă de redare (Playlist)"
 
 msgctxt "IDS_PLAYLOOPMODE_FILE"
 msgid "Repeat Mode: File"
