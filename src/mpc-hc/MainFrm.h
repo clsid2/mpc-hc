@@ -105,13 +105,14 @@ public:
 class OpenFileData : public OpenMediaData
 {
 public:
-    OpenFileData() : rtStart(0), bAddToRecent(true) {}
+    OpenFileData() : rtStart(0), bAddToRecent(true), rarEntryIndex(-1) {}
     CAtlList<CString> fns;
     REFERENCE_TIME rtStart;
     ABRepeat abRepeat;
     bool bAddToRecent;
     CString useragent;
     CString referrer;
+    int rarEntryIndex;
 };
 
 class OpenDVDData : public OpenMediaData
@@ -826,6 +827,7 @@ public:
 protected:  // control bar embedded members
     friend class CMainFrameControls;
     friend class CPPageToolBarLayout;
+    friend class CPPageToolBar;
     CMainFrameControls m_controls;
     friend class CPlayerBar; // it notifies m_controls of panel re-dock
 
@@ -1226,7 +1228,8 @@ public:
     void ReleasePreviewGraph();
     HRESULT PreviewWindowHide();
     HRESULT PreviewWindowShow(REFERENCE_TIME rtCur2);
-    HRESULT HandleMultipleEntryRar(CStringW fn);
+    HRESULT HandleMultipleEntryRar(CStringW fn, int* pEntryIndex = nullptr);
+    bool TrySkipWithinRar(bool forward);
     bool CanPreviewUse();
 
     CFullscreenWnd* m_pDedicatedFSVideoWnd;

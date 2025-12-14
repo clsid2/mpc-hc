@@ -4682,6 +4682,18 @@ msgstr ""
 "/shaderpreset \"Pr\"\tSe inicia usando el preajuste \"Pr\" de shader "
 "('sombreador')"
 
+msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
+msgid "Left"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
+msgid "Center"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
+msgid "Right"
+msgstr ""
+
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
 msgstr "Cancelar"

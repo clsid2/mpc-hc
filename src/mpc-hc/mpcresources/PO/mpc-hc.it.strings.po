@@ -4652,6 +4652,18 @@ msgctxt "IDS_CMD_SHADERPRESET"
 msgid "/shaderpreset \"Pr\"\tStart using \"Pr\" shader preset"
 msgstr "/shaderpreset \"Pr\"\tInizia usando shader preimpostato \"Pr\""
 
+msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
+msgid "Left"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
+msgid "Center"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
+msgid "Right"
+msgstr ""
+
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
 msgstr "Annulla"

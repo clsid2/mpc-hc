@@ -72,11 +72,13 @@ Sound muted(active state) + Sound unavailable(inactive state)
 */
 
 #define VOLUMEBUTTON_SVG_INDEX 24
+#define TOOLBAR_BUTTON_HORIZONTAL_PADDING 7  // From SetSizes(height+7, height+6)
 
 std::map<WORD, CPlayerToolBar::svgButtonInfo> CPlayerToolBar::supportedSvgButtons = {
-    {ID_PLAY_PLAY, {TBBS_CHECKGROUP, 0, 0, LOCK_LEFT}},
-    {ID_PLAY_PAUSE, {TBBS_CHECKGROUP, 1, 0, LOCK_LEFT}},
-    {ID_PLAY_STOP, {TBBS_CHECKGROUP, 2, 0, LOCK_LEFT}},
+    {ID_LEFTSEPARATOR, {TBBS_SEPARATOR, -1, 0, LOCK_LEFT}},
+    {ID_PLAY_PLAY, {TBBS_CHECKGROUP, 0}},
+    {ID_PLAY_PAUSE, {TBBS_CHECKGROUP, 1}},
+    {ID_PLAY_STOP, {TBBS_CHECKGROUP, 2}},
     {ID_NAVIGATE_SKIPBACK, {TBBS_BUTTON, 3}},
     {ID_NAVIGATE_SKIPFORWARD, {TBBS_BUTTON, 4}},
     {ID_AUDIOS, {TBBS_BUTTON, 5, IDS_AUDIOS}},
@@ -112,6 +114,7 @@ CPlayerToolBar::CPlayerToolBar(CMainFrame* pMainFrame)
     , volumeButtonIndex(12)
     , dummySeparatorIndex(11)
     , flexibleSpaceIndex(10)
+    , leftSeparatorIndex(-1)
     , currentlyDraggingButton(-1)
     , toolbarAdjustActive(false)
 {
@@ -415,15 +418,21 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
     };
 
     std::vector<int> buttons(0);
+    int layoutRevision = 0;
+
     if (loadSavedLayout) {
         buttons = AfxGetMyApp()->GetProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence");
+        layoutRevision = AfxGetMyApp()->GetProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", 0);
     }
 
-    addButton(ID_PLAY_PLAY);
-    addButton(ID_PLAY_PAUSE);
-    addButton(ID_PLAY_STOP);
+    addButton(ID_LEFTSEPARATOR);
 
-    if (buttons.size() >= 5) { //it is required that the toolbar have the 5 standard items, otherwise this is invalid
+    if (layoutRevision == 0 && buttons.size() >= 5) {
+        // Revision 0: play/pause/stop were locked at front, not in saved layout
+        addButton(ID_PLAY_PLAY);
+        addButton(ID_PLAY_PAUSE);
+        addButton(ID_PLAY_STOP);
+        // Load remaining buttons (skip first 3, stop before last 2 which are dummy separator and volume)
         for (int i = 3; i < buttons.size() - 2; i++) {
             if (supportedSvgButtons.count(buttons[i])) {
                 auto& btn = supportedSvgButtons[buttons[i]];
@@ -432,7 +441,20 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
                 }
             }
         }
-    } else { //add standard dynamic items
+    } else if (layoutRevision >= 1 && buttons.size() >= 6) {
+        // Revision 1: all movable buttons saved (skip first=left separator, skip last 2=dummy separator and volume)
+        for (int i = 1; i < buttons.size() - 2; i++) {
+            if (supportedSvgButtons.count(buttons[i])) {
+                auto& btn = supportedSvgButtons[buttons[i]];
+                if (!btn.positionLocked) {
+                    addButton(buttons[i]);
+                }
+            }
+        }
+    } else {
+        addButton(ID_PLAY_PLAY);
+        addButton(ID_PLAY_PAUSE);
+        addButton(ID_PLAY_STOP);
         addButton(ID_NAVIGATE_SKIPBACK);
         addButton(ID_PLAY_DECRATE);
         addButton(ID_PLAY_INCRATE);
@@ -444,6 +466,16 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
     addButton(ID_VOLUME_MUTE);
 }
 
+void CPlayerToolBar::SetSeparatorWidth(int buttonIndex, int width) {
+    UINT buttonId = GetItemID(buttonIndex);
+    if (width == 0) {
+        GetToolBarCtrl().HideButton(buttonId, TRUE);
+    } else {
+        SetButtonInfo(buttonIndex, buttonId, TBBS_SEPARATOR, width);
+        GetToolBarCtrl().HideButton(buttonId, FALSE);
+    }
+}
+
 void CPlayerToolBar::ArrangeControls() {
     if (!::IsWindow(m_volctrl.m_hWnd)) {
         return;
@@ -452,33 +484,105 @@ void CPlayerToolBar::ArrangeControls() {
     CRect r;
     GetClientRect(&r);
     CRect br = GetBorders();
-    CRect vr;
+
+    // Calculate volume control size first
+    int vrTop, vrBottom;
     if (AppIsThemeLoaded()) {
         float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
         int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
         m_volumeCtrlSize = targetsize * 2.5f;
-        vr = CRect(r.right + br.right - m_volumeCtrlSize, r.top + targetsize / 4, r.right + br.right, r.bottom - targetsize / 4);
+        vrTop = r.top + targetsize / 4;
+        vrBottom = r.bottom - targetsize / 4;
     } else {
-        vr = CRect(r.right + br.right - 58, r.top - 2, r.right + br.right + 6, r.bottom);
-        m_volctrl.MoveWindow(vr);
+        CRect vrTemp = CRect(r.right + br.right - 58, r.top - 2, r.right + br.right + 6, r.bottom);
+        m_volctrl.MoveWindow(vrTemp);
         CRect thumbRect;
         m_volctrl.GetThumbRect(thumbRect);
         m_volctrl.MapWindowPoints(this, thumbRect);
-        vr.top += std::max((r.bottom - thumbRect.bottom - 4) / 2, 0l);
-        vr.left -= MulDiv(thumbRect.Height(), 50, 19) - 50;
-        m_volumeCtrlSize = vr.Width();
+        vrTop = vrTemp.top + std::max((r.bottom - thumbRect.bottom - 4) / 2, 0l);
+        vrBottom = vrTemp.bottom;
+        m_volumeCtrlSize = vrTemp.Width() + (MulDiv(thumbRect.Height(), 50, 19) - 50);
     }
-    m_volctrl.MoveWindow(vr);
 
+    leftSeparatorIndex = 0;
     volumeButtonIndex = GetToolBarCtrl().GetButtonCount() - 1;
     dummySeparatorIndex = volumeButtonIndex - 1;
     flexibleSpaceIndex = dummySeparatorIndex - 1;
 
-    CRect rFlexible, rVolumeButton;
-    GetItemRect(flexibleSpaceIndex, &rFlexible);
+    const int minSpacing = 4; // Minimum spacing between button groups
+
+    // Calculate total width of visible buttons
+    int dynamicButtonsWidth = 0;
+    int numDynamicButtons = 0;
+    for (int i = 1; i < dummySeparatorIndex; i++) {  // Start at 1 (skip left separator), stop before dummy separator
+        UINT id = GetItemID(i);
+        if (id != ID_SEPARATOR) {  // Skip any separators
+            UINT state = GetToolBarCtrl().GetState(id);
+            if (!(state & TBSTATE_HIDDEN)) {  // Skip hidden buttons (like pause when play is showing)
+                CRect rButton;
+                GetItemRect(i, &rButton);
+                dynamicButtonsWidth += rButton.Width();
+                numDynamicButtons++;
+            }
+        }
+    }
+
+    CRect rVolumeButton;
     GetItemRect(volumeButtonIndex, &rVolumeButton);
-    int spacing = vr.left - rFlexible.right - rVolumeButton.Width();
-    SetButtonInfo(dummySeparatorIndex, GetItemID(dummySeparatorIndex), TBBS_SEPARATOR, spacing);
+    int volumeButtonWidth = rVolumeButton.Width();
+
+    // Proportional spacing between button groups: buttonWidth/4, minimum minSpacing
+    int groupSpacing = std::max(minSpacing, volumeButtonWidth / 4);
+
+    int buttonsWidth = dynamicButtonsWidth + volumeButtonWidth;
+
+    // Total width of button group + volume slider
+    int totalContentWidth = buttonsWidth + m_volumeCtrlSize;
+
+    // Total available space in toolbar
+    int totalAvailableSpace = r.Width();
+
+    int leftSpacing = 0;
+    int rightSpacing = 0;
+    int volumeSliderLeft = 0;
+
+    const auto& s = AfxGetAppSettings();
+
+    // Calculate available space for separators (used by center alignment)
+    int availableSeparatorSpace = totalAvailableSpace - totalContentWidth - groupSpacing - groupSpacing;
+
+    switch (s.nToolbarAlignment) {
+        case 1: // Center alignment
+            {
+                int centerOffset = availableSeparatorSpace / 2;
+                leftSpacing = std::max(0, centerOffset);
+                rightSpacing = groupSpacing;
+                volumeSliderLeft = r.left + leftSpacing + dynamicButtonsWidth + rightSpacing + volumeButtonWidth + groupSpacing;
+            }
+            break;
+        case 2: // Right alignment
+            volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
+            rightSpacing = groupSpacing;  // dummySeparator between dynamic buttons and mute
+            // leftSeparator pushes everything right, accounting for groupSpacing gaps
+            leftSpacing = totalAvailableSpace - dynamicButtonsWidth - rightSpacing - volumeButtonWidth - m_volumeCtrlSize - groupSpacing;
+            leftSpacing = std::max(0, leftSpacing);
+            break;
+        case 0: // Left alignment (default)
+        default:
+            leftSpacing = 0;  // Dynamic buttons at left edge
+            volumeSliderLeft = r.right + br.right - m_volumeCtrlSize;
+            // dummySeparator between dynamic buttons and mute, pushing mute right
+            rightSpacing = totalAvailableSpace - dynamicButtonsWidth - volumeButtonWidth - m_volumeCtrlSize - groupSpacing;
+            rightSpacing = std::max(groupSpacing, rightSpacing);
+            break;
+    }
+
+    // Position the volume slider control
+    CRect vr = CRect(volumeSliderLeft, vrTop, volumeSliderLeft + m_volumeCtrlSize, vrBottom);
+    m_volctrl.MoveWindow(vr);
+
+    SetSeparatorWidth(leftSeparatorIndex, leftSpacing);
+    SetSeparatorWidth(dummySeparatorIndex, rightSpacing);
 }
 
 void CPlayerToolBar::SetMute(bool fMute) {
@@ -541,10 +645,10 @@ int CPlayerToolBar::GetVolume() const
 
 int CPlayerToolBar::GetMinWidth() const
 {
-    // button widths are inflated by 7px
+    // button widths are inflated by TOOLBAR_BUTTON_HORIZONTAL_PADDING
     // x buttons + spacing + volume
-    int buttonCount = GetToolBarCtrl().GetButtonCount() - 2; //minus 2 because of play/pause being combined, dynamic spacer
-    return buttonCount * (m_nButtonHeight + 1 + 7) + 4 + m_volumeCtrlSize;
+    int buttonCount = GetToolBarCtrl().GetButtonCount() - 3; //minus 3 because of play/pause being combined, 2 dynamic spacers
+    return buttonCount * (m_nButtonHeight + 1 + TOOLBAR_BUTTON_HORIZONTAL_PADDING) + 4 + m_volumeCtrlSize;
 }
 
 void CPlayerToolBar::SetVolume(int volume)
@@ -617,7 +721,9 @@ void drawButtonBG(NMCUSTOMDRAW nmcd, COLORREF c)
     dc.Attach(nmcd.hdc);
     CRect br;
     br.CopyRect(&nmcd.rc);
-    br.DeflateRect(0, 0, 1, 1); //we aren't offsetting button when pressed, so try to center better
+    //adipose: remove the below code.  it is no longer necessary due to TBCDRF_NOOFFSET
+    //and redesigning toolbar icons to be centered vs the old MFC style of "upper left" alignment
+    //br.DeflateRect(0, 0, 1, 1); //we aren't offsetting button when pressed, so try to center better
 
     dc.FillSolidRect(br, c);
 
@@ -670,11 +776,18 @@ void CPlayerToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
             }
             break;
         case CDDS_ITEMPOSTPAINT:
-            // paint over the duplicated separator
+            // paint over the separators to hide them
             CDC dc;
             dc.Attach(pTBCD->nmcd.hdc);
             RECT r;
             GetItemRect(dummySeparatorIndex, &r);
+            if (AppIsThemeLoaded()) {
+                dc.FillSolidRect(&r, CMPCTheme::PlayerBGColor);
+            } else {
+                dc.FillSolidRect(&r, GetSysColor(COLOR_BTNFACE));
+            }
+            // Also hide the left separator
+            GetItemRect(leftSeparatorIndex, &r);
             if (AppIsThemeLoaded()) {
                 dc.FillSolidRect(&r, CMPCTheme::PlayerBGColor);
             } else {
@@ -710,6 +823,100 @@ void CPlayerToolBar::OnUpdateVolumeMute(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(true);
     pCmdUI->SetCheck(IsMuted());
+}
+
+void CPlayerToolBar::SetPlayPauseActiveButton(UINT activeButtonId)
+{
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Determine which button to show and which to hide
+    UINT showButton = activeButtonId;
+    UINT hideButton = (activeButtonId == ID_PLAY_PLAY) ? ID_PLAY_PAUSE : ID_PLAY_PLAY;
+
+    // Find indices of both buttons
+    int showIndex = -1, hideIndex = -1;
+    for (int i = 0; i < ctrl.GetButtonCount(); i++) {
+        TBBUTTON button;
+        ctrl.GetButton(i, &button);
+        if (button.idCommand == showButton) showIndex = i;
+        else if (button.idCommand == hideButton) hideIndex = i;
+    }
+
+    // If they're not adjacent, move hidden button next to visible one
+    if (showIndex != -1 && hideIndex != -1 && abs(showIndex - hideIndex) > 1) {
+        TBBUTTON hiddenButton;
+        ctrl.GetButton(hideIndex, &hiddenButton);
+        ctrl.DeleteButton(hideIndex);
+        if (hideIndex < showIndex) showIndex--;
+        // Insert hidden button adjacent to shown button
+        ctrl.InsertButton(showIndex + 1, &hiddenButton);
+    }
+
+    // Set visibility states
+    ctrl.HideButton(showButton, FALSE);  // Show
+    ctrl.HideButton(hideButton, TRUE);   // Hide
+}
+
+inline bool IsPlayOrPause(UINT id) {
+    return id == ID_PLAY_PLAY || id == ID_PLAY_PAUSE;
+}
+
+bool CPlayerToolBar::InsertButtonSafe(int beforeID, int buttonID, int existingStyle) {
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Find the index to insert at
+    int insertIndex = CommandToIndex(beforeID);
+    if (insertIndex == -1) {
+        return false;
+    }
+    if (beforeID == ID_VOLUME_MUTE) {
+        insertIndex -= 1; // Insert before the hidden spacer
+    }
+
+    // Use provided style, or default for new inserts
+    UINT buttonStyle = (existingStyle != -1) ? existingStyle : supportedSvgButtons[buttonID].style | TBBS_DISABLED;
+
+    // Insert the requested button
+    TBBUTTON button = GetStandardButton(buttonID);
+    ctrl.InsertButton(insertIndex, &button);
+    SetButtonStyle(insertIndex, buttonStyle);
+
+    // If it's play or pause, insert the other one too
+    if (IsPlayOrPause(buttonID)) {
+        UINT otherButtonID = (buttonID == ID_PLAY_PLAY) ? ID_PLAY_PAUSE : ID_PLAY_PLAY;
+        UINT otherStyle = supportedSvgButtons[otherButtonID].style | TBBS_DISABLED;
+
+        TBBUTTON otherButton = GetStandardButton(otherButtonID);
+        ctrl.InsertButton(insertIndex + 1, &otherButton);
+        SetButtonStyle(insertIndex + 1, otherStyle);
+        SetPlayPauseActiveButton(buttonID); // Keep the inserted one visible
+    }
+
+    ToolbarChange();
+    return true;
+}
+
+bool CPlayerToolBar::DeleteButtonSafe(int buttonID) {
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Delete the requested button
+    int buttonIndex = CommandToIndex(buttonID);
+    if (buttonIndex == -1) {
+        return false;
+    }
+    ctrl.DeleteButton(buttonIndex);
+
+    // If it was play or pause, delete the other one too
+    if (IsPlayOrPause(buttonID)) {
+        UINT otherButtonID = (buttonID == ID_PLAY_PLAY) ? ID_PLAY_PAUSE : ID_PLAY_PLAY;
+        int otherIndex = CommandToIndex(otherButtonID);
+        if (otherIndex != -1) {
+            ctrl.DeleteButton(otherIndex);
+        }
+    }
+
+    ToolbarChange();
+    return true;
 }
 
 //note, this differs from CMainFrame::OnUpdateViewFullscreen in order to avoid "checking" the button state
@@ -1057,10 +1264,15 @@ void CPlayerToolBar::OnRButtonUp(UINT nFlags, CPoint point) {
 
 void CPlayerToolBar::OnTbnQueryDelete(NMHDR* pNMHDR, LRESULT* pResult) {
     LPNMTOOLBAR pNMTB = reinterpret_cast<LPNMTOOLBAR>(pNMHDR);
-    if (pNMTB->iItem < 3 || pNMTB->iItem >= dummySeparatorIndex) {
+
+    // Protect spacing separators and volume mute button
+    if (pNMTB->iItem == leftSeparatorIndex ||
+        pNMTB->iItem == dummySeparatorIndex ||
+        pNMTB->iItem == volumeButtonIndex) {
         *pResult = FALSE;
         return;
     }
+
     *pResult = TRUE;
 }
 
@@ -1090,10 +1302,15 @@ void CPlayerToolBar::OnTbnQueryInsert(NMHDR* pNMHDR, LRESULT* pResult) {
     }
 
     //this code prevents inserting at the given point
-    //first test is to prevent inserting buttons outside of the "dynamic" area
-    //second test is to prevent the insertion of a separator directly to the left of the dragged button
-    if (pNMTB->iItem < 3 || pNMTB->iItem >= volumeButtonIndex //do not allow moving between beginning and ending standard toolbar items
-        || preventSeparatorInsert) 
+    //Prevent inserting before leftSeparator or after volume button
+    //Allow inserting at volume button position (we'll redirect it in ToolbarChange)
+    //Also prevent insertion of a separator directly to the left of the dragged button
+    //Also prevent dropping on volume if the button is already in the last position (before dummySeparator)
+    bool alreadyInLastPosition = (currentlyDraggingButton == dummySeparatorIndex - 1);
+    bool droppingOnVolume = (pNMTB->iItem == volumeButtonIndex);
+
+    if (pNMTB->iItem <= leftSeparatorIndex || pNMTB->iItem > volumeButtonIndex
+        || preventSeparatorInsert || (alreadyInLastPosition && droppingOnVolume))
     {
         *pResult = FALSE;
         return;
@@ -1109,13 +1326,69 @@ void CPlayerToolBar::SaveToolbarState() {
         for (int i = 0; i < ctrl.GetButtonCount(); i++) {
             TBBUTTON button;
             ctrl.GetButton(i, &button);
-            buttons.push_back(button.idCommand);
+            // When we encounter play button, always add pause right after it
+            if (button.idCommand == ID_PLAY_PLAY) {
+                buttons.push_back(ID_PLAY_PLAY);
+                buttons.push_back(ID_PLAY_PAUSE);
+            } else if (button.idCommand != ID_PLAY_PAUSE) {
+                // Skip pause - it's always saved right after play
+                buttons.push_back(button.idCommand);
+            }
         }
         AfxGetMyApp()->WriteProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence", buttons);
+        AfxGetMyApp()->WriteProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", 1);
     }
 }
 
 void CPlayerToolBar::ToolbarChange() {
+    CToolBarCtrl& ctrl = GetToolBarCtrl();
+
+    // Find volume button and check if a button was dropped on it
+    int volumeIndex = -1;
+    for (int i = 0; i < ctrl.GetButtonCount(); i++) {
+        TBBUTTON button;
+        ctrl.GetButton(i, &button);
+        if (button.idCommand == ID_VOLUME_MUTE) {
+            volumeIndex = i;
+            break;
+        }
+    }
+
+    // If there's a button right before volume that isn't dummySeparator, move it there
+    if (volumeIndex > 0) {
+        TBBUTTON prevButton;
+        ctrl.GetButton(volumeIndex - 1, &prevButton);
+        if (prevButton.idCommand != ID_DUMMYSEPARATOR && prevButton.fsStyle != TBBS_SEPARATOR) {
+            // A button was dropped on volume position - move it before dummySeparator
+            int dummyIndex = -1;
+            for (int i = 0; i < ctrl.GetButtonCount(); i++) {
+                TBBUTTON button;
+                ctrl.GetButton(i, &button);
+                if (button.idCommand == ID_DUMMYSEPARATOR) {
+                    dummyIndex = i;
+                    break;
+                }
+            }
+
+            if (dummyIndex != -1 && dummyIndex != volumeIndex - 1) {
+                // Remove the button from before volume
+                TBBUTTON movedButton = prevButton;
+                ctrl.DeleteButton(volumeIndex - 1);
+
+                // Find dummySeparator again (index may have changed)
+                for (int i = 0; i < ctrl.GetButtonCount(); i++) {
+                    TBBUTTON button;
+                    ctrl.GetButton(i, &button);
+                    if (button.idCommand == ID_DUMMYSEPARATOR) {
+                        // Insert before dummySeparator
+                        ctrl.InsertButton(i, &movedButton);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     //clear these to ensure states are updated for new or moved buttons
     lastFullscreen = std::nullopt;
     lastPlaylist = std::nullopt;
@@ -1181,17 +1454,17 @@ void CPlayerToolBar::OnLButtonDblClk(UINT nFlags, CPoint point) {
 void CPlayerToolBar::ToolBarReset() {
     CToolBarCtrl& tb = GetToolBarCtrl();
 
+    // Save which button was visible before reset
     int playState = tb.GetState(ID_PLAY_PLAY);
-    int pauseState = tb.GetState(ID_PLAY_PAUSE);
+    bool playWasVisible = !(playState & TBSTATE_HIDDEN);
 
     for (int i = tb.GetButtonCount() - 1; i >= 0; i--) {
         tb.DeleteButton(i);
     }
     PlaceButtons(false);
 
-    //this is done to restore the states used for feature 'Hide play or pause button based on playback state'
-    tb.SetState(ID_PLAY_PLAY, playState);
-    tb.SetState(ID_PLAY_PAUSE, pauseState);
+    // Restore the visibility state
+    SetPlayPauseActiveButton(playWasVisible ? ID_PLAY_PLAY : ID_PLAY_PAUSE);
 
     ArrangeControls();
     Invalidate();

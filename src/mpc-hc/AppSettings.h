@@ -668,6 +668,7 @@ public:
 
     TOOLBAR_TYPE nToolbarType;
     CStringW strToolbarName;
+    int nToolbarAlignment;
 
     // Logo
     int             nLogoId;

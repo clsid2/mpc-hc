@@ -54,6 +54,7 @@ void CPPageToolBar::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO7, m_cmbRightAction3);
     DDX_Control(pDX, IDC_COMBO8, m_cmbRightAction4);
     DDX_Control(pDX, IDC_COMBO9, m_cmbActiveTheme);
+    DDX_Control(pDX, IDC_COMBO10, m_cmbToolbarAlignment);
 
 }
 
@@ -144,6 +145,11 @@ BOOL CPPageToolBar::OnInitDialog()
     AddCmdToAction(s.nToolbarRightAction3, m_cmbRightAction3);
     AddCmdToAction(s.nToolbarRightAction4, m_cmbRightAction4);
     PopulateThemes();
+
+    m_cmbToolbarAlignment.AddString(ResStr(IDS_TOOLBAR_ALIGNMENT_LEFT));
+    m_cmbToolbarAlignment.AddString(ResStr(IDS_TOOLBAR_ALIGNMENT_CENTER));
+    m_cmbToolbarAlignment.AddString(ResStr(IDS_TOOLBAR_ALIGNMENT_RIGHT));
+    m_cmbToolbarAlignment.SetCurSel(s.nToolbarAlignment);
 
     UpdateData(FALSE);
 
@@ -282,6 +288,17 @@ BOOL CPPageToolBar::OnApply()
     persistAction(s.nToolbarRightAction3, m_cmbRightAction3);
     persistAction(s.nToolbarRightAction4, m_cmbRightAction4);
 
+    int nOldToolbarAlignment = s.nToolbarAlignment;
+    s.nToolbarAlignment = m_cmbToolbarAlignment.GetCurSel();
+
+    // Trigger layout recalculation if alignment changed
+    if (nOldToolbarAlignment != s.nToolbarAlignment) {
+        if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
+            // Force the toolbar to recalculate its control positions
+            pMainFrame->m_wndToolBar.ArrangeControls();
+            pMainFrame->RecalcLayout();
+        }
+    }
 
     return __super::OnApply();
 }

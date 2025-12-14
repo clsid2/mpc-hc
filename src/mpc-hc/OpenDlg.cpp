@@ -72,7 +72,11 @@ BOOL COpenDlg::OnInitDialog()
 {
     __super::OnInitDialog();
 
-    m_icon.SetIcon((HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
+    // Load icon at size appropriate for control dimensions (not system default)
+    CRect iconRect;
+    m_icon.GetClientRect(&iconRect);
+    int iconSize = std::min(iconRect.Width(), iconRect.Height());
+    m_icon.SetIcon((HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, iconSize, iconSize, LR_SHARED));
 
     CAppSettings& s = AfxGetAppSettings();
 
@@ -106,20 +110,7 @@ BOOL COpenDlg::OnInitDialog()
     m_bMultipleFiles = false;
     m_bAppendToPlaylist = FALSE;
 
-    AddAnchor(m_cbMRU, TOP_LEFT, TOP_RIGHT);
-    AddAnchor(m_cbMRUDub, TOP_LEFT, TOP_RIGHT);
-    AddAnchor(IDC_BUTTON1, TOP_RIGHT);
-    AddAnchor(IDC_BUTTON2, TOP_RIGHT);
-    AddAnchor(IDOK, TOP_RIGHT);
-    AddAnchor(IDCANCEL, TOP_RIGHT);
-    AddAnchor(IDC_STATIC1, TOP_LEFT, TOP_RIGHT);
-
-    CRect r;
-    GetWindowRect(r);
-    CSize size = r.Size();
-    SetMinTrackSize(size);
-    size.cx = 1000;
-    SetMaxTrackSize(size);
+    SetupAnchors();
 
     fulfillThemeReqs();
 
@@ -234,4 +225,23 @@ void COpenDlg::OnUpdateOk(CCmdUI* pCmdUI)
 {
     UpdateData();
     pCmdUI->Enable(!m_path.IsEmpty() || !m_pathDub.IsEmpty());
+}
+
+void COpenDlg::SetupAnchors()
+{
+    AddAnchor(m_cbMRU, TOP_LEFT, TOP_RIGHT);
+    AddAnchor(m_cbMRUDub, TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_BUTTON1, TOP_RIGHT);
+    AddAnchor(IDC_BUTTON2, TOP_RIGHT);
+    AddAnchor(IDOK, TOP_RIGHT);
+    AddAnchor(IDCANCEL, TOP_RIGHT);
+    AddAnchor(IDC_STATIC1, TOP_LEFT, TOP_RIGHT);
+}
+
+TrackSizeConstraints COpenDlg::GetTrackSizeConstraints() const
+{
+    TrackSizeConstraints constraints;
+    constraints.max.enabled = true;
+    constraints.max.xMultiplier = 2.0;
+    return constraints;
 }

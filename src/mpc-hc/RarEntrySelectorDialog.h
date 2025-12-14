@@ -36,12 +36,14 @@ public:
     enum { IDD = IDD_RAR_ENTRY_SELECTOR };
 
     CStringW GetCurrentEntry();
+    int GetCurrentIndex();
 
 
 protected:
     CMPCThemeListBox m_list;
     CRFSList<CRFSFile>* file_list;
     CStringW currentEntry;
+    int currentIndex;
     virtual void OnOK();
     virtual void DoDataExchange(CDataExchange* pDX);
     DECLARE_MESSAGE_MAP()

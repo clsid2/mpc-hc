@@ -70,7 +70,10 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
     for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
         TBBUTTON button;
         tbctrl.GetButton(i, &button);
-        if (button.fsStyle != TBBS_SEPARATOR && supportedButtons.count(button.idCommand)) {
+        // Skip separators and pause button (play/pause share same position)
+        if (button.fsStyle != TBBS_SEPARATOR &&
+            supportedButtons.count(button.idCommand) &&
+            button.idCommand != ID_PLAY_PAUSE) {
             int index = m_list_active.InsertItem(LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM, i, tb.GetStringFromID(button.idCommand), 0, 0, DescriptiveIcon(button.idCommand), button.idCommand);
             idsAdded.insert(button.idCommand);
         }
@@ -84,7 +87,8 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
 
     std::map<int, WORD> idsSortedByIndex;
     for (auto &[id, bInfo] : supportedButtons) {
-        if (0 == idsAdded.count(id) && bInfo.style != TBBS_SEPARATOR) {
+        // Skip separators and pause button (play/pause share same position)
+        if (0 == idsAdded.count(id) && bInfo.style != TBBS_SEPARATOR && id != ID_PLAY_PAUSE) {
             idsSortedByIndex[bInfo.svgIndex] = id;
         }
     }
@@ -252,40 +256,14 @@ void CPPageToolBarLayout::OnUpdateDown(CCmdUI* pCmdUI) {
 }
 
 
-bool CPPageToolBarLayout::InsertButton(int beforeID, int buttonID) {
+bool CPPageToolBarLayout::InsertButton(int beforeID, int buttonID, int existingStyle) {
     CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
-    CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
-
-    for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
-        TBBUTTON tButton;
-        tbctrl.GetButton(i, &tButton);
-        if (tButton.idCommand == beforeID) {
-            if (beforeID == ID_VOLUME_MUTE) {
-                i -= 1; //this is to force inserting before the hidden spacer
-            }
-            TBBUTTON button = tb.GetStandardButton(buttonID);
-            tbctrl.InsertButton(i, &button);
-            tb.ToolbarChange();
-            return true;
-        }
-    }
-    return false;
+    return tb.InsertButtonSafe(beforeID, buttonID, existingStyle);
 }
 
 bool CPPageToolBarLayout::DeleteButton(int buttonID) {
     CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
-    CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
-
-    for (int i = 0; i < tbctrl.GetButtonCount(); i++) {
-        TBBUTTON tButton;
-        tbctrl.GetButton(i, &tButton);
-        if (tButton.idCommand == buttonID) {
-            tbctrl.DeleteButton(i);
-            tb.ToolbarChange();
-            return true;
-        }
-    }
-    return false;
+    return tb.DeleteButtonSafe(buttonID);
 }
 
 bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
@@ -304,12 +282,17 @@ bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
     }
     if (supportedButtons[tidCommand].positionLocked == CPlayerToolBar::LOCK_LEFT) {
         return false;
-    } else {
+    }
+
+    // Check if prior item is locked to the right
+    if (destRow > 0) {
         int priorIdCommand = (int)m_list_active.GetItemData(destRow - 1);
         if (supportedButtons.count(priorIdCommand) == 0 || CPlayerToolBar::LOCK_RIGHT == supportedButtons[priorIdCommand].positionLocked) {
             return false;
         }
     }
+    // If destRow == 0, prior item is leftSeparator which is LOCK_LEFT, but that's okay - we can insert after it
+
     return true;
 }
 
@@ -406,8 +389,10 @@ bool CPPageToolBarLayout::OrderButton(ButtonPosition pos) {
                 m_list_active.SetItemState(insertRow, LVIS_SELECTED, LVIS_SELECTED);
                 m_list_active.SetSelectionMark(insertRow);
 
+                // Capture style before delete for move operation
+                int buttonStyle = tb.GetButtonStyle(tb.CommandToIndex(buttonID));
                 DeleteButton(buttonID);
-                InsertButton(beforeID, buttonID);
+                InsertButton(beforeID, buttonID, buttonStyle);
                 break;
             }
         }
@@ -423,8 +408,10 @@ bool CPPageToolBarLayout::OrderButton(ButtonPosition pos) {
 
                 m_list_active.DeleteItem(selectedRow);
 
+                // Capture style before delete for move operation
+                int buttonStyle = tb.GetButtonStyle(tb.CommandToIndex(buttonID));
                 DeleteButton(buttonID);
-                InsertButton(beforeID, buttonID);
+                InsertButton(beforeID, buttonID, buttonStyle);
                 break;
             }
         }

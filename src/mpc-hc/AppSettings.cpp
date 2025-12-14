@@ -125,6 +125,7 @@ CAppSettings::CAppSettings()
     , nToolbarRightAction4(0)
     , nToolbarType(INTERNAL_TOOLBAR)
     , strToolbarName(L"")
+    , nToolbarAlignment(0)
     , eAfterPlayback(AfterPlayback::DO_NOTHING)
     , fUseDVDPath(false)
     , idMenuLang(0)
@@ -1308,6 +1309,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION4, nToolbarRightAction4);
     pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_TYPE, nToolbarType);
     pApp->WriteProfileString(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_NAME, strToolbarName);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_ALIGNMENT, nToolbarAlignment);
 
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_POSITION, bSaveImagePosition);
@@ -2259,6 +2261,7 @@ void CAppSettings::LoadSettings()
     nToolbarRightAction4 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION4, 0);
     nToolbarType = (TOOLBAR_TYPE)pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_TYPE, INTERNAL_TOOLBAR);
     strToolbarName = pApp->GetProfileString(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_NAME, L"");
+    nToolbarAlignment = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_ALIGNMENT, 0);
 
 
     bSaveImagePosition = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_POSITION, TRUE);

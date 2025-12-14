@@ -26,6 +26,7 @@
 RarEntrySelectorDialog::RarEntrySelectorDialog(CRFSList<CRFSFile>* file_list, CWnd* parent)
     : CMPCThemeResizableDialog(RarEntrySelectorDialog::IDD, parent)
     ,currentEntry(L"")
+    ,currentIndex(-1)
 {
     this->file_list = file_list;
 }
@@ -37,11 +38,16 @@ CStringW RarEntrySelectorDialog::GetCurrentEntry() {
     return currentEntry;
 }
 
+int RarEntrySelectorDialog::GetCurrentIndex() {
+    return currentIndex;
+}
+
 void RarEntrySelectorDialog::OnOK() {
     int index = m_list.GetCurSel();
     if (LB_ERR != index) {
         CRFSFile* file = (CRFSFile*)m_list.GetItemData(index);
         currentEntry = file->filename;
+        currentIndex = index;
     }
 
     CMPCThemeResizableDialog::OnOK();
@@ -62,14 +68,15 @@ BOOL RarEntrySelectorDialog::OnInitDialog() {
     __super::OnInitDialog();
 
     CRFSFile* file = file_list->First();
-    int index=0;
+    int index = 0;
     while (file) {
         int item = m_list.AddString(file->filename);
         m_list.SetItemData(item, (DWORD_PTR)file);
         file = file_list->Next(file);
         index++;
     }
-    if (index) {
+
+    if (index > 0) {
         m_list.SetCurSel(0);
     }
 

@@ -4493,6 +4493,18 @@ msgctxt "IDS_CMD_SHADERPRESET"
 msgid "/shaderpreset \"Pr\"\tStart using \"Pr\" shader preset"
 msgstr "/shaderpreset \"Pr\"\t使用 \"Pr\" 著色器初始設定啟動播放器"
 
+msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
+msgid "Left"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
+msgid "Center"
+msgstr ""
+
+msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
+msgid "Right"
+msgstr ""
+
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
 msgstr "取消"
@@ -4848,6 +4860,10 @@ msgstr ""
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
+msgstr ""
+
+msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
+msgid "Do you want to save changes to your favorites?"
 msgstr ""
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"

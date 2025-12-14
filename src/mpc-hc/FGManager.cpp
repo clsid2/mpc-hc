@@ -806,6 +806,9 @@ HRESULT CFGManager::Connect(IPin* pPinOut, IPin* pPinIn, bool bContinueRender)
         POSITION pos = m_transform.GetHeadPosition();
         while (pos) {
             CFGFilter* pFGF = m_transform.GetNext(pos);
+#if !WIN64
+            if (pFGF != (CFGFilter*)0x3) // invalid pointer value, weird x86 bug
+#endif
             if (pFGF->GetMerit() < MERIT64_DO_USE || pFGF->CheckTypes(types, false)) {
                 fl.Insert(pFGF, 0, pFGF->CheckTypes(types, true), false);
             }

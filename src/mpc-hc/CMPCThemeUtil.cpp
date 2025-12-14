@@ -16,6 +16,9 @@
 #include "CMPCThemePropPageButton.h"
 #undef SubclassWindow
 
+using DLGTEMPLATEEX = _DialogSplitHelper::DLGTEMPLATEEX;
+using DLGITEMTEMPLATEEX = _DialogSplitHelper::DLGITEMTEMPLATEEX;
+
 CBrush CMPCThemeUtil::contentBrush;
 CBrush CMPCThemeUtil::windowBrush;
 CBrush CMPCThemeUtil::controlAreaBrush;
@@ -328,13 +331,13 @@ AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindFirstDlgItem(const DLGTEMPLATE* pTemp
 
 AFX_STATIC inline BOOL IsDialogEx(const DLGTEMPLATE* pTemplate)
 {
-    return ((_DialogSplitHelper::DLGTEMPLATEEX*)pTemplate)->signature == 0xFFFF;
+    return ((DLGTEMPLATEEX*)pTemplate)->signature == 0xFFFF;
 }
 
 static inline WORD& DlgTemplateItemCount(DLGTEMPLATE* pTemplate)
 {
     if (IsDialogEx(pTemplate)) {
-        return reinterpret_cast<_DialogSplitHelper::DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
+        return reinterpret_cast<DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
     } else {
         return pTemplate->cdit;
     }
@@ -343,7 +346,7 @@ static inline WORD& DlgTemplateItemCount(DLGTEMPLATE* pTemplate)
 static inline const WORD& DlgTemplateItemCount(const DLGTEMPLATE* pTemplate)
 {
     if (IsDialogEx(pTemplate)) {
-        return reinterpret_cast<const _DialogSplitHelper::DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
+        return reinterpret_cast<const DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
     } else {
         return pTemplate->cdit;
     }
@@ -389,7 +392,7 @@ bool CMPCThemeUtil::ModifyTemplates(CPropertySheet* sheet, CRuntimeClass* pageCl
                     pNextItem = _AfxFindNextDlgItem(pItem, bDialogEx);
                     DWORD dwOldProtect, tp;
                     if (bDialogEx) {
-                        _DialogSplitHelper::DLGITEMTEMPLATEEX* pItemEx = (_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem;
+                        auto* pItemEx = (DLGITEMTEMPLATEEX*)pItem;
                         if (pItemEx->id == id) {
                             if (VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), PAGE_READWRITE, &dwOldProtect)) {
                                 pItemEx->style |= addStyle;
@@ -854,16 +857,15 @@ const std::vector<CMPCTheme::pathPoint> CMPCThemeUtil::getIconPathByDPI(CWnd* wn
 // 2. for templateless dialogs (e.g., MessageBoxDialog.cpp), the caching requires a reboot to fix
 // 3. Does not honor selected font
 // 4. For PropSheet, always uses "MS Shell Dlg" no matter what the sheet has selected in the .rc
-void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
-    CDC* pDC;
-    if (wnd && (pDC = wnd->GetDC())) {
-        CFont msgFont;
-        if (!getFontByType(msgFont, wnd, CMPCThemeUtil::MessageFont)) {
-        //if (!getFontByFace(msgFont, wnd, L"MS Shell Dlg", 9)){
-            return;
-        }
 
-        CFont* oldFont = pDC->SelectObject(&msgFont);
+void CMPCThemeUtil::MapDialogRectInternal(CDialog* wnd, CRect& r, CFont* font) {
+    if (!font || !wnd) {
+        return;
+    }
+
+    CDC* pDC;
+    if ((pDC = wnd->GetDC())) {
+        CFont* oldFont = pDC->SelectObject(font);
 
         //average character dimensions: https://web.archive.org/web/20131208002908/http://support.microsoft.com/kb/125681
         TEXTMETRICW tm;
@@ -871,8 +873,10 @@ void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
         pDC->GetTextMetricsW(&tm);
         GetTextExtentPoint32W(pDC->GetSafeHdc(), L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52, &size);
         pDC->SelectObject(oldFont);
+        wnd->ReleaseDC(pDC);
+
         int avgWidth = (size.cx / 26 + 1) / 2;
-        int avgHeight = (WORD)tm.tmHeight;
+        int avgHeight = (WORD)(tm.tmHeight + tm.tmExternalLeading); //adipose: added tmExternalLeading which was not mentioned in kb125681, but see GetFontDimensions()
 
         //MapDialogRect definition: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapdialogrect
         r.left = MulDiv(r.left, avgWidth, 4);
@@ -880,6 +884,14 @@ void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
         r.top = MulDiv(r.top, avgHeight, 8);
         r.bottom = MulDiv(r.bottom, avgHeight, 8);
     }
+}
+
+void CMPCThemeUtil::MapDialogRectMessageFont(CDialog* wnd, CRect& r) {
+    CFont msgFont;
+    if (!getFontByType(msgFont, wnd, CMPCThemeUtil::MessageFont)) {
+        return;
+    }
+    MapDialogRectInternal(wnd, r, &msgFont);
 }
 
 const std::vector<CMPCTheme::pathPoint> CMPCThemeUtil::getIconPathByDPI(CMPCThemeTitleBarControlButton* button)
@@ -1325,4 +1337,54 @@ bool CMPCThemeUtil::IsWindowVisibleAndRendered(CWnd* window) {
         }
     }
     return true;
+}
+
+void CMPCThemeUtil::RefreshBitmapIconControls(CWnd* parentWnd) {
+    if (!parentWnd) {
+        return;
+    }
+
+    CWnd* child = parentWnd->GetWindow(GW_CHILD);
+    while (child) {
+        TCHAR childClass[MAX_PATH];
+        DWORD style = child->GetStyle();
+        DWORD staticStyle = (style & SS_TYPEMASK);
+        ::GetClassName(child->GetSafeHwnd(), childClass, _countof(childClass));
+
+        if (0 == _tcsicmp(childClass, WC_STATIC) && SS_BITMAP == staticStyle) {
+            CStatic* sBMP = DYNAMIC_DOWNCAST(CStatic, child);
+            if (sBMP) {
+                sBMP->SetBitmap(sBMP->GetBitmap());
+            }
+        } else if (0 == _tcsicmp(childClass, WC_STATIC) && SS_ICON == staticStyle) {
+            CStatic* sIcon = DYNAMIC_DOWNCAST(CStatic, child);
+            if (sIcon) {
+                // Get the control's resource ID (dialog control ID for icon controls)
+                int resourceID = sIcon->GetDlgCtrlID();
+
+                if (resourceID > 0) {
+                    // Get control size to determine appropriate icon size for current DPI
+                    CRect controlRect;
+                    sIcon->GetClientRect(&controlRect);
+                    int iconSize = std::min(controlRect.Width(), controlRect.Height());
+
+                    // Reload icon at size appropriate for current window DPI
+                    // (not system default which may be based on primary monitor DPI)
+                    HICON hNewIcon = (HICON)::LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(resourceID), IMAGE_ICON, iconSize, iconSize, LR_SHARED);
+
+                    if (hNewIcon) {
+                        sIcon->SetIcon(hNewIcon);
+                    } else {
+                        // Fallback: reset existing icon
+                        sIcon->SetIcon(sIcon->GetIcon());
+                    }
+                } else {
+                    // No resource ID, just reset existing icon
+                    sIcon->SetIcon(sIcon->GetIcon());
+                }
+            }
+        }
+
+        child = child->GetNextWindow();
+    }
 }

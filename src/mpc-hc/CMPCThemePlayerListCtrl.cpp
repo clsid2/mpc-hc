@@ -615,16 +615,18 @@ void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect 
             }
         }
 
-        HFONT hFont = GetFlaggedFont(nItem);
-        if (hFont) {
-            curFont = pDC->GetCurrentFont();
-            pDC->SelectObject(hFont);
-        }
-        pDC->DrawTextW(text, rText, textFormat);
-        pDC->SetTextColor(oldTextColor);
-        pDC->SetBkColor(oldBkColor);
-        if (curFont) {
-            pDC->SelectObject(curFont);
+        if (pDC) {
+            HFONT hFont = GetFlaggedFont(nItem);
+            if (hFont) {
+                curFont = pDC->GetCurrentFont();
+                pDC->SelectObject(hFont);
+            }
+            pDC->DrawTextW(text, rText, textFormat);
+            pDC->SetTextColor(oldTextColor);
+            pDC->SetBkColor(oldBkColor);
+            if (curFont) {
+                pDC->SelectObject(curFont);
+            }
         }
     }
 }

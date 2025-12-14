@@ -2490,12 +2490,18 @@ void CVobSubStream::Open(CString name, BYTE* pData, int len)
 
 void CVobSubStream::Add(REFERENCE_TIME tStart, REFERENCE_TIME tStop, BYTE* pData, int len)
 {
-    if (len <= 4 || ((pData[0] << 8) | pData[1]) != len) {
+    int pkt_size = (pData[0] << 8) | pData[1];
+    if (len <= 4 || pkt_size != len) {
         return;
     }
 
     CVobSubImage vsi;
-    vsi.GetPacketInfo(pData, (pData[0] << 8) | pData[1], (pData[2] << 8) | pData[3]);
+    int dat_size = (pData[2] << 8) | pData[3];
+    if (pkt_size < dat_size + 4) {
+        ASSERT(false);
+        return;
+    }
+    vsi.GetPacketInfo(pData, pkt_size, dat_size);
 
     CAutoPtr<SubPic> p(DEBUG_NEW SubPic());
     p->tStart = tStart;
