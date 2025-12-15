@@ -4536,7 +4536,7 @@ msgstr "/shaderpreset \"Pr\"\t\"Pr\" シェーダー プリセットを使用す
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
-msgstr "左"
+msgstr "左寄せ"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
