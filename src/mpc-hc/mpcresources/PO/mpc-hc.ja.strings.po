@@ -4544,7 +4544,7 @@ msgstr "中央寄せ"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
-msgstr "右"
+msgstr "右寄せ"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
