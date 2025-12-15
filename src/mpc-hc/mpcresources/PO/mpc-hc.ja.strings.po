@@ -4540,7 +4540,7 @@ msgstr "左寄せ"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
-msgstr "中央"
+msgstr "中央寄せ"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
