@@ -65,6 +65,8 @@ CDebugShadersDlg::CDebugShadersDlg()
     // Setup window auto-resize and restore last position
     SetSizeGripVisibility(FALSE);
     SetMinTrackSize(CSize(360, 100));
+    SetupAnchors();
+
     EnableSaveRestoreKey(IDS_R_DEBUG_SHADERS);
 
     CWinApp* pApp = AfxGetApp();
@@ -247,14 +249,7 @@ void CDebugShadersDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO1, m_Shaders);
     DDX_Control(pDX, IDC_EDIT1, m_DebugInfo);
     DDX_Radio(pDX, IDC_RADIO1, m_iVersion);
-}
-
-BOOL CDebugShadersDlg::OnInitDialog()
-{
-    __super::OnInitDialog();
-    SetupAnchors();
     fulfillThemeReqs();
-    return TRUE;
 }
 
 void CDebugShadersDlg::SetupAnchors()

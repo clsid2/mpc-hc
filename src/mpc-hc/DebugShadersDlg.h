@@ -84,7 +84,6 @@ protected:
     CString GetShaderPath(int loc);
 
     virtual void DoDataExchange(CDataExchange* pDX) override;
-    afx_msg virtual BOOL OnInitDialog();
 
     BOOL PreTranslateMessage(MSG* pMsg);
 
