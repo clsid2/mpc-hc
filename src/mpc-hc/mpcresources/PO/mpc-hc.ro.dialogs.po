@@ -439,7 +439,7 @@ msgstr "dată (ori)"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
 msgid "Repeat mode:"
-msgstr "Mod de repetare:"
+msgstr "Modul de repetare:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "After Playback"
