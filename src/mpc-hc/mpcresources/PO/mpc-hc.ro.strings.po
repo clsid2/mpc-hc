@@ -2008,7 +2008,7 @@ msgstr "Miniaturi salvate cu succes"
 
 msgctxt "IDS_MENU_VIDEO_STREAM"
 msgid "Vide&o Track"
-msgstr "Pistă &video"
+msgstr "Pista &video"
 
 msgctxt "IDS_MENU_VIDEO_ANGLE"
 msgid "Video Ang&le"
