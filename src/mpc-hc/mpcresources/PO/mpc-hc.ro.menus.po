@@ -650,7 +650,7 @@ msgstr "25 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr "59.94 fps (cadre pe secundă)"
+msgstr "59.94 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
