@@ -3617,7 +3617,7 @@ msgstr "Lumină ambientală: Luminoasă (2.2 Gamma)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DIM"
 msgid "Ambient Light: Dim (2.35 Gamma)"
-msgstr "Lumină ambientală: Estompată (2.35 Gamma)"
+msgstr "Lumină ambientală: Slabă (2.35 Gamma)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DARK"
 msgid "Ambient Light: Dark (2.4 Gamma)"
