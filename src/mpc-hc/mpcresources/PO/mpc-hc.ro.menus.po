@@ -538,7 +538,7 @@ msgstr "&Redare"
 
 msgctxt "ID_PLAY_PLAYPAUSE"
 msgid "&Play/Pause"
-msgstr "&Redă/Pauzează"
+msgstr "&Redă/Pune pe pauză (Întrerupe)"
 
 msgctxt "ID_PLAY_STOP"
 msgid "&Stop"
