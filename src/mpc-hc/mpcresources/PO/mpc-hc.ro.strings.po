@@ -4451,7 +4451,7 @@ msgstr "/hibernate\t\tPune pe hibernare sistemul de operare după redare"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
-msgstr "/logoff\t\tDeconectează-te după redare"
+msgstr "/logoff\t\tDeconectează-te (Fă log off) după redare"
 
 msgctxt "IDS_CMD_LOCK"
 msgid "/lock\t\tLock workstation after playback"
