@@ -30,6 +30,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeMenu.h"
 #include "SysVersion.h"
+#include "DpiHelper.h"
 
 BEGIN_MESSAGE_MAP(CSubtitleDlDlgListCtrl, CMPCThemePlayerListCtrl)
     ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolNeedText)
@@ -105,6 +106,7 @@ void CSubtitleDlDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_PROGRESS1, m_progress);
     DDX_Control(pDX, IDC_STATUSBAR, m_status);
     DDX_Text(pDX, IDC_EDIT1, manualSearch);
+    fulfillThemeReqs();
 }
 
 void CSubtitleDlDlg::SetStatusText(const CString& status, BOOL bPropagate/* = TRUE*/)
@@ -434,32 +436,45 @@ void CSubtitleDlDlg::OnColumnClick(NMHDR* pNMHDR, LRESULT* pResult)
     m_list.UpdateWindow();
 }
 
-void CSubtitleDlDlg::OnSize(UINT nType, int cx, int cy)
+void CSubtitleDlDlg::UpdateStatusBarLayout()
 {
-    __super::OnSize(nType, cx, cy);
-
     if (m_status && m_progress) {
-        // Reposition the progress control correctly!
         CRect statusRect, buttonRect;
         m_status.GetClientRect(&statusRect);
         GetDlgItem(IDOK)->GetWindowRect(&buttonRect);
         ScreenToClient(&buttonRect);
+
+        // Calculate part widths - if there's a gripper, the last part should not extend over it
         int parts[2] = { buttonRect.left - 2, -1 };
+        if (m_status.GetStyle() & SBARS_SIZEGRIP) {
+            DpiHelper dpiHelper;
+            dpiHelper.Override(m_currentDpi, m_currentDpi);
+            int gripperWidth = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+            parts[1] = statusRect.Width() - gripperWidth;
+        }
+
         m_status.SetParts(2, parts);
         m_status.GetRect(1, &statusRect);
         statusRect.DeflateRect(1, 1, 1, 1);
-        m_progress.SetWindowPos(nullptr, statusRect.left, statusRect.top, statusRect.Width(), statusRect.Height(),  SWP_NOACTIVATE | SWP_NOZORDER);
+        m_progress.SetWindowPos(nullptr, statusRect.left, statusRect.top, statusRect.Width(), statusRect.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
     }
-    if (m_status && AppIsThemeLoaded()) {
-        //m_status currently set up to draw a gripper, but doesn't play nice with theme until it gets invalidated
-        //style 0x103 from mpc-hc.rc = SBARS_SIZEGRIP | CCS_TOP | CCS_NOMOVEY ??
-        if (m_status.GetStyle() & SBARS_SIZEGRIP) { 
-            CRect statusRect;
-            m_status.GetClientRect(statusRect);
-            statusRect.left = statusRect.right - GetSystemMetrics(SM_CXVSCROLL);
-            m_status.InvalidateRect(statusRect);
-        }
-    }
+}
+
+void CSubtitleDlDlg::OnSize(UINT nType, int cx, int cy)
+{
+    __super::OnSize(nType, cx, cy);
+    UpdateStatusBarLayout();
+}
+
+LRESULT CSubtitleDlDlg::OnDpiChanged(WPARAM wParam, LPARAM lParam)
+{
+    // Call base class to handle DPI change
+    LRESULT result = __super::OnDpiChanged(wParam, lParam);
+
+    // OnSize was blocked during DPI change, so update status bar layout manually
+    UpdateStatusBarLayout();
+
+    return result;
 }
 
 void CSubtitleDlDlg::OnDestroy()
@@ -494,9 +509,10 @@ void CSubtitleDlDlg::DownloadSelectedSubtitles()
 }
 
 // ON_UPDATE_COMMAND_UI does not work for modeless dialogs
-BEGIN_MESSAGE_MAP(CSubtitleDlDlg, CModelessResizableDialog)
+BEGIN_MESSAGE_MAP(CSubtitleDlDlg, CMPCThemeModelessResizableDialog)
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
+    ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
     ON_COMMAND(IDC_BUTTON1, OnRefresh)
     ON_COMMAND(IDC_BUTTON2, OnAbort)
     ON_COMMAND(IDC_BUTTON3, OnOptions)

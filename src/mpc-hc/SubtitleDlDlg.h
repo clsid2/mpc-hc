@@ -91,6 +91,8 @@ public:
     UINT GetDialogTemplateID() const override { return IDD; }
     void SetupAnchors() override;
 
+    void UpdateStatusBarLayout();
+
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
@@ -114,6 +116,7 @@ protected:
     afx_msg void OnItemChanging(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+    afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
     afx_msg LRESULT OnSearch(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSearching(WPARAM wParam, LPARAM lParam);

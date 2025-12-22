@@ -3,6 +3,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
 #include "mplayerc.h"
+#include "DpiHelper.h"
 
 CMPCThemeStatusBar::CMPCThemeStatusBar()
 {
@@ -107,6 +108,17 @@ void CMPCThemeStatusBar::OnNcPaint()
                 dc.ExcludeClipRect(rc);
             }
         }
+
+        // Also exclude the gripper area (background is painted in OnEraseBkgnd)
+        if (GetStyle() & SBARS_SIZEGRIP) {
+            DpiHelper dpiHelper;
+            dpiHelper.Override(GetSafeHwnd());
+            CRect rcGripper = rcWindow;
+            rcGripper.left = rcGripper.right - dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+            dc.ExcludeClipRect(rcGripper);
+        }
+
+        // Fill the borders only (parts and gripper are already excluded)
         dc.FillSolidRect(rcWindow, CMPCTheme::StatusBarBGColor);
         dc.SelectClipRgn(nullptr);
     }
@@ -118,6 +130,16 @@ BOOL CMPCThemeStatusBar::OnEraseBkgnd(CDC* pDC)
     if (!AppIsThemeLoaded()) {
         return __super::OnEraseBkgnd(pDC);
     } else {
+        // Paint the gripper background so it has the correct color
+        if (GetStyle() & SBARS_SIZEGRIP) {
+            DpiHelper dpiHelper;
+            dpiHelper.Override(GetSafeHwnd());
+            CRect rcClient;
+            GetClientRect(&rcClient);
+            CRect rcGripper = rcClient;
+            rcGripper.left = rcGripper.right - dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+            pDC->FillSolidRect(rcGripper, CMPCTheme::StatusBarBGColor);
+        }
         return TRUE;
     }
 }
