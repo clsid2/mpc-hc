@@ -11284,7 +11284,7 @@ void CMainFrame::PlayFavoriteFile(const CString& fav)
 
     m_wndPlaylistBar.SetCurLabel(ff.Name);
 
-    if (GetPlaybackMode() == PM_FILE && args.GetHead() == m_lastOMD->title) {
+    if (GetPlaybackMode() == PM_FILE && m_lastOMD && args.GetHead() == m_lastOMD->title) {
         m_pMS->SetPositions(&rtStart, AM_SEEKING_AbsolutePositioning, nullptr, AM_SEEKING_NoPositioning);
         OnPlayPlay();
     } else {
@@ -15628,12 +15628,12 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
     // Debug trace code - Begin
     // Check for bad / buggy auto loading file code
     if (pFileData) {
+        TRACE(_T("--> CMainFrame::OpenMediaPrivate on thread: %lu\n"), GetCurrentThreadId());
         POSITION pos = pFileData->fns.GetHeadPosition();
         UINT index = 0;
         while (pos != nullptr) {
             CString path = pFileData->fns.GetNext(pos);
-            TRACE(_T("--> CMainFrame::OpenMediaPrivate - pFileData->fns[%u]:\n"), index);
-            TRACE(_T("\t%ws\n"), path.GetString()); // %ws - wide character string always
+            TRACE(_T("\tpFileData->fns[%u]: %ws\n"), index, path.GetString()); // %ws - wide character string always
             index++;
         }
     }
@@ -19133,8 +19133,10 @@ void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
     }
 
     if (m_bOpenMediaActive) {
-        TRACE(_T("CMainFrame::OpenMedia -> skipping because there already is an active OpenMedia call\n"));
+        TRACE(_T("CMainFrame::OpenMedia (thread %lu) -> skipping because there already is an active OpenMedia call\n"), GetCurrentThreadId());
         return;
+    } else {
+        TRACE(_T("CMainFrame::OpenMedia (thread %lu)\n"), GetCurrentThreadId());
     }
     m_bOpenMediaActive = true;
 

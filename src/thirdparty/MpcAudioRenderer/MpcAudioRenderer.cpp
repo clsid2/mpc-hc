@@ -1519,7 +1519,7 @@ HRESULT CMpcAudioRenderer::Transform(IMediaSample *pMediaSample)
 
 	auto pInputBufferPointer = pMediaBuffer;
 
-	std::unique_ptr<BYTE> pChangedBuffer;
+	std::unique_ptr<BYTE[]> pChangedBuffer;
 
 	if (m_bUpdateBalanceMask) {
 		SetBalanceMask(m_output_params.layout);

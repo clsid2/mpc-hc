@@ -634,7 +634,7 @@ void CMPCThemePlayerListCtrl::drawItem(CDC* pDC, int nItem, int nSubItem, CRect 
 BOOL CMPCThemePlayerListCtrl::OnEraseBkgnd(CDC* pDC) {
     if (AppNeedsThemedControls() && !PaintHooksActive()) {
         return TRUE;
-    } else {
+    } else if (pDC) {
         CRect updateRect;
         pDC->GetClipBox(&updateRect);
         return EraseBkgnd(pDC, updateRect);
