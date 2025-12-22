@@ -1268,7 +1268,7 @@ msgstr "În redare"
 
 msgctxt "IDS_CONTROLS_PAUSED"
 msgid "Paused"
-msgstr "Pus pe pauză (Întrerupt/Pauzat)"
+msgstr "Pus pe pauză (Întrerupt)"
 
 msgctxt "IDS_SUBTITLE_RENDERER_NONE"
 msgid "None"
