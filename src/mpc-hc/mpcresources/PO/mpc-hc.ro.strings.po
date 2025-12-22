@@ -2881,7 +2881,7 @@ msgstr "Include subdirectoarele"
 
 msgctxt "IDS_AG_PAUSE"
 msgid "Pause"
-msgstr "Pauzează"
+msgstr "Pune pe pauză (Întrerupe)"
 
 msgctxt "IDS_AG_TOGGLE_CAPTION"
 msgid "Toggle Caption&Menu"
