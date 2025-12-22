@@ -135,6 +135,7 @@ BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CMPCThemeModelessResizableDialog)
     ON_NOTIFY(LVN_KEYDOWN, IDC_LIST2, OnKeyPressed)
     ON_NOTIFY(LVN_GETINFOTIP, IDC_LIST2, OnLvnGetInfoTipList)
     ON_WM_SIZE()
+    ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
 
 void  CFavoriteOrganizeDlg::OnLvnItemchangedList2(NMHDR* pNMHDR, LRESULT* pResult) {
@@ -584,6 +585,18 @@ void CFavoriteOrganizeDlg::OnSize(UINT nType, int cx, int cy)
     if (IsWindow(m_list)) {
         UpdateColumnsSizes(); //on first size, we need to call this, or it doesn't use the full window until a rename/resize
     }
+}
+
+LRESULT CFavoriteOrganizeDlg::OnDpiChanged(WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = __super::OnDpiChanged(wParam, lParam);
+
+    // CDpiAwareResizableDialog blocks OnSize during dpi changes.  Update columns here
+    if (IsWindow(m_list)) {
+        UpdateColumnsSizes();
+    }
+
+    return result;
 }
 
 void CFavoriteOrganizeDlg::OnLvnGetInfoTipList(NMHDR* pNMHDR, LRESULT* pResult)
