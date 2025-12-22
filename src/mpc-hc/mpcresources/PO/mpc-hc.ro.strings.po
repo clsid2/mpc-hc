@@ -1280,7 +1280,7 @@ msgid ""
 "video."
 msgstr ""
 "Întârziere maximă în milisecunde a evenimentului LeftUp al mouse-ului când "
-"faci clic pe videoclip."
+"dai clic pe videoclip."
 
 msgctxt "IDS_PPAGEADVANCED_USE_FREETYPE"
 msgid ""
