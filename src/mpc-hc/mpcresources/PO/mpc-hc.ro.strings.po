@@ -1885,7 +1885,7 @@ msgstr "Ieșire"
 
 msgctxt "IDS_AG_PLAYPAUSE"
 msgid "Play/Pause"
-msgstr "Redă/Pauzează"
+msgstr "Redă/Pune pe pauză (Întrerupe)"
 
 msgctxt "IDS_AG_PLAY"
 msgid "Play"
