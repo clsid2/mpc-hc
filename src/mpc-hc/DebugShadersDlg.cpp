@@ -25,10 +25,9 @@
 #include "SettingsDefines.h"
 #include "AppSettings.h"
 
-CModelessDialog::CModelessDialog(UINT nIDTemplate)
-    : CMPCThemeResizableDialog(nIDTemplate)
+CModelessDialog::CModelessDialog(UINT nIDTemplate, CWnd* pParent)
+    : CMPCThemeModelessResizableDialog(nIDTemplate, pParent)
 {
-    Create(nIDTemplate, GetDesktopWindow());
 }
 
 BOOL CModelessDialog::DestroyWindow()
@@ -51,10 +50,19 @@ void CModelessDialog::OnOK()
 }
 
 CDebugShadersDlg::CDebugShadersDlg()
-    : CModelessDialog(IDD)
+    : CModelessDialog(IDD, GetDesktopWindow())
     , m_timerOneTime(this, TIMER_ONETIME_START, TIMER_ONETIME_END - TIMER_ONETIME_START + 1)
     , m_Compiler(nullptr)
 {
+    Create(IDD, GetDesktopWindow());
+}
+
+BOOL CDebugShadersDlg::OnInitDialog()
+{
+    EnableSaveRestoreKey(IDS_R_DEBUG_SHADERS);
+
+    __super::OnInitDialog();
+
     EventRouter::EventSelection receives;
     receives.insert(MpcEvent::SHADER_LIST_CHANGED);
     GetEventd().Connect(m_eventc, receives, std::bind(&CDebugShadersDlg::EventCallback, this, std::placeholders::_1));
@@ -66,8 +74,6 @@ CDebugShadersDlg::CDebugShadersDlg()
     SetSizeGripVisibility(FALSE);
     SetMinTrackSize(CSize(360, 100));
     SetupAnchors();
-
-    EnableSaveRestoreKey(IDS_R_DEBUG_SHADERS);
 
     CWinApp* pApp = AfxGetApp();
 
@@ -119,6 +125,8 @@ CDebugShadersDlg::CDebugShadersDlg()
         VERIFY(pApp->WriteProfileInt(IDS_R_DEBUG_SHADERS, IDS_RS_DEBUG_SHADERS_FIRSTRUN, 0));
     }
     EnableThemedDialogTooltips(this);
+
+    return TRUE;
 }
 
 BOOL CDebugShadersDlg::DestroyWindow()
@@ -255,7 +263,7 @@ void CDebugShadersDlg::DoDataExchange(CDataExchange* pDX)
 void CDebugShadersDlg::SetupAnchors()
 {
     AddAnchor(IDC_COMBO1, TOP_LEFT, TOP_RIGHT);
-    AddAnchor((UINT)IDC_STATIC, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_STATIC1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_EDIT1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_RADIO1, TOP_RIGHT);
     AddAnchor(IDC_RADIO2, TOP_RIGHT);
