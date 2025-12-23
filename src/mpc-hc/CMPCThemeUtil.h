@@ -113,7 +113,7 @@ public:
     static void drawParentDialogBGClr(CWnd* wnd, CDC* pDC, CRect r, bool fill = true);
     static void fulfillThemeReqs(CProgressCtrl* ctl);
     static void enableWindows10DarkFrame(CWnd* window);
-    static void AdjustDynamicWidgetPair(CWnd* window, int left, int right, WidgetPairType lType = WidgetPairAuto, WidgetPairType rType = WidgetPairAuto);
+    static void AdjustDynamicWidgetPair(CWnd* window, int left, int right);
     static void UpdateAnalogCaptureDeviceSlider(CScrollBar* pScrollBar);
     static bool IsWindowVisibleAndRendered(CWnd* window);
     static void RefreshBitmapIconControls(CWnd* parentWnd);

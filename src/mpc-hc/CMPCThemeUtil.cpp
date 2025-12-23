@@ -1211,40 +1211,35 @@ CPoint CMPCThemeUtil::GetClientRectOffset(CWnd* window) {
     return offset;
 }
 
-void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget, WidgetPairType lType, WidgetPairType rType) {
+void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget) {
     if (window && IsWindow(window->m_hWnd)) {
         DpiHelper dpiWindow;
         dpiWindow.Override(window->GetSafeHwnd());
         LONG dynamicSpace = dpiWindow.ScaleX(5);
 
-
-
         CWnd* leftW = window->GetDlgItem(leftWidget);
         CWnd* rightW = window->GetDlgItem(rightWidget);
 
-        WidgetPairType ll = lType;
-        WidgetPairType rr = rType;
+        // Always auto-detect left widget type
+        WidgetPairType lType;
+        LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
+        DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
 
-        if (true || lType == WidgetPairAuto) {
-            LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
-            DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
-
-            if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
-                lType = WidgetPairCheckBox;
-            } else { //we only support checkbox or text on the left, just assume it's text now
-                lType = WidgetPairText;
-            }
+        if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
+            lType = WidgetPairCheckBox;
+        } else { //we only support checkbox or text on the left, just assume it's text now
+            lType = WidgetPairText;
         }
 
-        if (true || rType == WidgetPairAuto) {
-            TCHAR windowClass[MAX_PATH];
-            ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
+        // Always auto-detect right widget type
+        WidgetPairType rType;
+        TCHAR windowClass[MAX_PATH];
+        ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
 
-            if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
-                rType = WidgetPairCombo;
-            } else { //we only support combo or edit on the right, just assume it's edit now
-                rType = WidgetPairEdit;
-            }
+        if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
+            rType = WidgetPairCombo;
+        } else { //we only support combo or edit on the right, just assume it's edit now
+            rType = WidgetPairEdit;
         }
 
         if (leftW && rightW && IsWindow(leftW->m_hWnd) && IsWindow(rightW->m_hWnd)) {
