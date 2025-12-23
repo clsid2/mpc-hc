@@ -242,13 +242,7 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     EnableSaveRestoreKey(IDS_R_DLG_SUBTITLEDL, TRUE);
 
     __super::OnInitDialog();
-    m_progress.SetParent(&m_status);
-    if (AppIsThemeLoaded()) {
-        SetWindowTheme(m_progress.GetSafeHwnd(), _T(""), _T(""));
-        m_progress.SetBarColor(CMPCTheme::ProgressBarColor);
-        m_progress.SetBkColor(CMPCTheme::ProgressBarBGColor);
-    }
-    m_progress.UpdateWindow();
+    m_status.SetProgressBar(&m_progress, 1);
 
     m_list.SetExtendedStyle(m_list.GetExtendedStyle()
                             /*| LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT */
@@ -453,10 +447,8 @@ void CSubtitleDlDlg::UpdateStatusBarLayout()
             parts[1] = statusRect.Width() - gripperWidth;
         }
 
+        // Status bar handles progress bar positioning automatically
         m_status.SetParts(2, parts);
-        m_status.GetRect(1, &statusRect);
-        statusRect.DeflateRect(1, 1, 1, 1);
-        m_progress.SetWindowPos(nullptr, statusRect.left, statusRect.top, statusRect.Width(), statusRect.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
     }
 }
 

@@ -566,8 +566,8 @@ void CMPCTheme::InitializeColors() {
         StatusBarBGColor = RGB(51, 51, 51);
         StatusBarSeparatorColor = RGB(247, 247, 247);
 
-        ProgressBarBGColor = RGB(0, 0, 0);
-        ProgressBarColor = RGB(75, 75, 75);
+        ProgressBarBGColor = RGBGS(128);
+        ProgressBarColor = RGB(15, 101, 31);
 
         SubresyncFadeText1 = RGB(190, 190, 190);
         SubresyncFadeText2 = RGB(160, 160, 160);

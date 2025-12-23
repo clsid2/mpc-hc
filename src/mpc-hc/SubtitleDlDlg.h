@@ -27,6 +27,7 @@
 #include "CMPCThemePlayerListCtrl.h"
 #include "CMPCThemeModelessResizableDialog.h"
 #include "CMPCThemeStatusBar.h"
+#include "CMPCThemeProgressCtrl.h"
 
 class CMainFrame;
 struct SubtitlesInfo;
@@ -72,7 +73,7 @@ private:
     bool m_bIsRefreshed;
 
     CSubtitleDlDlgListCtrl m_list;
-    CProgressCtrl m_progress;
+    CMPCThemeProgressCtrl m_progress;
     CMPCThemeStatusBar m_status;
     CMainFrame* m_pMainFrame;
     SubtitlesList m_Subtitles;

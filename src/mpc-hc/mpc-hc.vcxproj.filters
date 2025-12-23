@@ -639,6 +639,9 @@
     <ClCompile Include="CMPCThemeModelessResizableDialog.cpp">
       <Filter>MPCTheme</Filter>
     </ClCompile>
+    <ClCompile Include="CMPCThemeProgressCtrl.cpp">
+      <Filter>MPCTheme</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppSettings.h">
@@ -1216,6 +1219,9 @@
       <Filter>Modal Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="CMPCThemeModelessResizableDialog.h">
+      <Filter>MPCTheme</Filter>
+    </ClInclude>
+    <ClInclude Include="CMPCThemeProgressCtrl.h">
       <Filter>MPCTheme</Filter>
     </ClInclude>
   </ItemGroup>
