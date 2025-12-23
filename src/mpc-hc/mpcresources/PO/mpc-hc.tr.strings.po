@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2025\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
@@ -4647,15 +4647,15 @@ msgstr "/shaderpreset \"Pr\"\tÖn ayarlanmış tonlayıcı kullan"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
-msgstr ""
+msgstr "Sol"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
-msgstr ""
+msgstr "Orta"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
-msgstr ""
+msgstr "Sağ"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
@@ -5047,7 +5047,7 @@ msgstr "Altyazı parçası"
 
 msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
 msgid "Do you want to save changes to your favorites?"
-msgstr ""
+msgstr "Değişiklikleri kaydetmek istiyor musunuz?"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"

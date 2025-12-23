@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
 # Mac Balls, 2022
-# Andrei Miloiu <miloiuandrei@gmail.com>, 2025
+# Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
+"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Andrei Miloiu <miloiuandrei@gmail.com>, 2025\n"
+"Last-Translator: Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -122,7 +122,7 @@ msgstr "Setările implicite din Windows"
 
 msgctxt "IDS_INFOBAR_CHANNEL"
 msgid "Channel"
-msgstr "Canal"
+msgstr "Canalul"
 
 msgctxt "IDS_INFOBAR_TIME"
 msgid "Time"
@@ -134,7 +134,7 @@ msgstr "Decalajul de sincronizare"
 
 msgctxt "IDS_STATSBAR_SYNC_OFFSET_FORMAT"
 msgid "avg: %d ms, dev: %d ms"
-msgstr "În medie: %d ms, deviație: %d ms"
+msgstr "În medie: %d (de) ms, deviație de: %d (de) ms"
 
 msgctxt "IDS_STATSBAR_JITTER"
 msgid "Jitter"
@@ -172,11 +172,11 @@ msgstr ""
 
 msgctxt "IDS_PLAYLOOPMODE_PLAYLIST"
 msgid "Repeat Mode: Playlist"
-msgstr "Mod de repetare: Listă de redare (Playlist)"
+msgstr "Modul de repetare: Listă de redare (Playlist)"
 
 msgctxt "IDS_PLAYLOOPMODE_FILE"
 msgid "Repeat Mode: File"
-msgstr "Mod de repetare: Fișier"
+msgstr "Modul de repetare: Fișier"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_ON"
 msgid "Repeat Forever: On"
@@ -266,7 +266,7 @@ msgstr "Fișierul a fost adăugat la favorite"
 
 msgctxt "IDS_DVD_FAV_ADDED"
 msgid "DVD added to favorites"
-msgstr "DVD--ul a fost adăugat la favorite"
+msgstr "DVD-ul a fost adăugat la favorite"
 
 msgctxt "IDS_CAPTURE_SETTINGS"
 msgid "Capture Settings"
@@ -294,11 +294,11 @@ msgstr "Previzualizare"
 
 msgctxt "IDS_SUBRESYNC_CLN_VOB_ID"
 msgid "Vob ID"
-msgstr "ID Vob"
+msgstr "ID-ul Vob-ului"
 
 msgctxt "IDS_SUBRESYNC_CLN_CELL_ID"
 msgid "Cell ID"
-msgstr "ID celulă"
+msgstr "ID-ul celulei"
 
 msgctxt "IDS_SUBRESYNC_CLN_FORCED"
 msgid "Forced"
@@ -310,7 +310,7 @@ msgstr "Text"
 
 msgctxt "IDS_SUBRESYNC_CLN_STYLE"
 msgid "Style"
-msgstr "Stil"
+msgstr "Stilul"
 
 msgctxt "IDS_SUBRESYNC_CLN_FONT"
 msgid "Font"
@@ -327,7 +327,7 @@ msgstr ""
 
 msgctxt "IDS_CAPTURE_LIVE"
 msgid "Live"
-msgstr "În direct"
+msgstr "În direct (Live)"
 
 msgctxt "IDS_CAPTURE_ERROR_VID_FILTER"
 msgid "Can't add video capture filter to the graph"
@@ -373,7 +373,7 @@ msgstr "Limbă"
 
 msgctxt "IDS_SUBDL_DLG_FORMAT_COL"
 msgid "Format"
-msgstr "Format"
+msgstr "Formatul"
 
 msgctxt "IDS_SUBDL_DLG_DISC_COL"
 msgid "Disc"
@@ -393,15 +393,15 @@ msgstr "Unicode"
 
 msgctxt "IDS_SUBRESYNC_CLN_LAYER"
 msgid "Layer"
-msgstr "Strat"
+msgstr "Stratul"
 
 msgctxt "IDS_SUBRESYNC_CLN_ACTOR"
 msgid "Actor"
-msgstr "Actor"
+msgstr "Actorul"
 
 msgctxt "IDS_SUBRESYNC_CLN_EFFECT"
 msgid "Effect"
-msgstr "Efect"
+msgstr "Efectul"
 
 msgctxt "IDS_PLAYLIST_CAPTION"
 msgid "Playlist"
@@ -946,7 +946,7 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
-msgstr "Randor Sincronizare"
+msgstr "Randorul de sincronizare"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_MPC_REND"
 msgid "MPC Audio Renderer"
@@ -1014,7 +1014,7 @@ msgstr "Nume"
 
 msgctxt "IDS_EMB_RESOURCES_VIEWER_TYPE"
 msgid "MIME Type"
-msgstr "Tip MIME"
+msgstr "Tipul MIME"
 
 msgctxt "IDS_EMB_RESOURCES_VIEWER_INFO"
 msgid ""
@@ -1179,8 +1179,8 @@ msgid ""
 "Pause\n"
 "Pause"
 msgstr ""
-"Pauzează\n"
-"Pauzează"
+"Pune pe pauză (Întrerupe)\n"
+"Pune pe pauză (Întrerupe)"
 
 msgctxt "ID_PLAY_STOP"
 msgid ""
@@ -1268,7 +1268,7 @@ msgstr "În redare"
 
 msgctxt "IDS_CONTROLS_PAUSED"
 msgid "Paused"
-msgstr "Pauzat"
+msgstr "Pus pe pauză (Întrerupt)"
 
 msgctxt "IDS_SUBTITLE_RENDERER_NONE"
 msgid "None"
@@ -1280,7 +1280,7 @@ msgid ""
 "video."
 msgstr ""
 "Întârziere maximă în milisecunde a evenimentului LeftUp al mouse-ului când "
-"faci clic pe videoclip."
+"dai clic pe videoclip."
 
 msgctxt "IDS_PPAGEADVANCED_USE_FREETYPE"
 msgid ""
@@ -1698,7 +1698,7 @@ msgstr ""
 msgctxt "IDS_PPAGEADVANCED_FILE_POS_LONGER"
 msgid "Remember file position only for files longer than N minutes."
 msgstr ""
-"Reține poziția fișierului numai pentru fișierele mai lungi de N minute."
+"Reține poziția fișierului numai pentru fișierele mai lungi de N (de) minute."
 
 msgctxt "IDS_PPAGEADVANCED_FILE_POS_AUDIO"
 msgid "Remember file position also for audio files."
@@ -1885,7 +1885,7 @@ msgstr "Ieșire"
 
 msgctxt "IDS_AG_PLAYPAUSE"
 msgid "Play/Pause"
-msgstr "Redă/Pauzează"
+msgstr "Redă/Pune pe pauză (Întrerupe)"
 
 msgctxt "IDS_AG_PLAY"
 msgid "Play"
@@ -2008,7 +2008,7 @@ msgstr "Miniaturi salvate cu succes"
 
 msgctxt "IDS_MENU_VIDEO_STREAM"
 msgid "Vide&o Track"
-msgstr "Pistă &video"
+msgstr "Pista &video"
 
 msgctxt "IDS_MENU_VIDEO_ANGLE"
 msgid "Video Ang&le"
@@ -2881,7 +2881,7 @@ msgstr "Include subdirectoarele"
 
 msgctxt "IDS_AG_PAUSE"
 msgid "Pause"
-msgstr "Pauzează"
+msgstr "Pune pe pauză (Întrerupe)"
 
 msgctxt "IDS_AG_TOGGLE_CAPTION"
 msgid "Toggle Caption&Menu"
@@ -3617,7 +3617,7 @@ msgstr "Lumină ambientală: Luminoasă (2.2 Gamma)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DIM"
 msgid "Ambient Light: Dim (2.35 Gamma)"
-msgstr "Lumină ambientală: Estompată (2.35 Gamma)"
+msgstr "Lumină ambientală: Slabă (2.35 Gamma)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DARK"
 msgid "Ambient Light: Dark (2.4 Gamma)"
@@ -3936,7 +3936,7 @@ msgid ""
 "The \"Save Image\" and \"Save Thumbnails\" functions do not work with the Overlay Mixer video renderer.\n"
 "Change the video renderer in MPC's output options and reopen the file."
 msgstr ""
-"Funcțiile „Salvează imaginea” și „Salvează miniaturile” nu funcționează cu redarea video Overlay Mixer.\n"
+"Funcțiile „Salvează imaginea” și „Salvează miniaturi” nu funcționează cu redarea video Overlay Mixer.\n"
 "Schimbă randorul video în opțiunile de ieșire ale MPC și redeschide fișierul."
 
 msgctxt "IDS_MB_SHOW_EDL_EDITOR"
@@ -4451,7 +4451,7 @@ msgstr "/hibernate\t\tPune pe hibernare sistemul de operare după redare"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
-msgstr "/logoff\t\tDeconectează-te după redare"
+msgstr "/logoff\t\tDeconectează-te (Fă log off) după redare"
 
 msgctxt "IDS_CMD_LOCK"
 msgid "/lock\t\tLock workstation after playback"
@@ -4679,15 +4679,15 @@ msgstr ""
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
-msgstr ""
+msgstr "Stânga"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
-msgstr ""
+msgstr "Centru"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
-msgstr ""
+msgstr "Dreapta"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
@@ -4935,9 +4935,9 @@ msgid ""
 "disable reload after hibernate/sleep."
 msgstr ""
 "Reîncarcă fișierul video înainte de a relua redarea dacă a fost întrerupt "
-"mai mult de X minute. Folosește 0 pentru a dezactiva reîncărcarea automată a"
-" fișierului după pauză. Folosește -1 ca să dezactivezi și reîncărcarea după "
-"hibernare/repaus."
+"mai mult de X (de) minute. Folosește 0 pentru a dezactiva reîncărcarea "
+"automată a fișierului după pauză. Folosește -1 ca să dezactivezi și "
+"reîncărcarea după hibernare/repaus."
 
 msgctxt "IDS_PPAGEADVANCED_REDIRECT_OPEN_TO_APPEND_THRESHOLD"
 msgid ""
@@ -5086,7 +5086,7 @@ msgstr "Pista de subtitrări"
 
 msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
 msgid "Do you want to save changes to your favorites?"
-msgstr ""
+msgstr "Dorești să salvezi modificările la favoritele tale?"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"

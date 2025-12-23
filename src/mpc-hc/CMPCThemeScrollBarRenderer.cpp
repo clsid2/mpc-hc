@@ -3,6 +3,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
 #include "DpiHelper.h"
+#include "ClaudeTrace.h"
 #include <gdiplus.h>
 
 CMPCThemeScrollBarRenderer* CMPCThemeScrollBarRenderer::s_pActiveRenderer = nullptr;

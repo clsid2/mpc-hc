@@ -5,15 +5,15 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Arne Bezuijen <transifex@arnage.nl>, 2021
 # xknat <321knat@gmail.com>, 2022
-# Renz Straatman <renz75@outlook.com>, 2025
 # mark van tilburg <markvantilburg@gmail.com>, 2025
+# Renz Straatman <renz@kabelkrant.net>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-05-21 22:58:36+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: mark van tilburg <markvantilburg@gmail.com>, 2025\n"
+"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,11 +71,11 @@ msgstr "Bestand"
 
 msgctxt "IDS_SUB_OVERRIDE_DEFAULT_STYLE"
 msgid "Override Default Style"
-msgstr "Standaardlettertype vervangen"
+msgstr "Overschrijf standaard vormgeving"
 
 msgctxt "IDS_SUB_OVERRIDE_ALL_STYLES"
 msgid "Override All Styles"
-msgstr "Alle stylen vervangen"
+msgstr "Overschrijf alle vormgeving"
 
 msgctxt "IDS_PLAY_LOOPMODE_PLAYLIST"
 msgid "Playlist"
@@ -159,7 +159,7 @@ msgstr "Sterkte: %d dB, kwaliteit: %ld%%"
 
 msgctxt "IDS_SUBTITLES_STYLES_CAPTION"
 msgid "Styles"
-msgstr "Stijlen"
+msgstr "Ondertitelvormgeving"
 
 msgctxt "IDS_TEXT_SUB_RENDERING_TARGET"
 msgid ""
@@ -613,19 +613,19 @@ msgstr "Afspelen::Shaders"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
-msgstr ""
+msgstr "Speler::Werkbalk"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::Toolbar Layout"
-msgstr ""
+msgstr "Speler::Werkbalkindeling"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
-msgstr ""
+msgstr "Beschikbare knoppen"
 
 msgctxt "IDS_PPAGE_TOOLBAR_CUR_BUTTONS"
 msgid "Current Buttons"
-msgstr ""
+msgstr "Huidige knoppen"
 
 msgctxt "IDD_FILEPROPRES"
 msgid "Resources"
@@ -645,7 +645,7 @@ msgstr "Afspelen::Opnemen"
 
 msgctxt "IDD_PPAGESYNC"
 msgid "Playback::Sync Renderer Settings"
-msgstr "Afspelen::Synchronisatie"
+msgstr "Afspelen::Monitorsynchronisatie-renderer"
 
 msgctxt "IDD_PPAGEFULLSCREEN"
 msgid "Playback::Fullscreen"
@@ -697,7 +697,7 @@ msgstr "Enhanced Video Renderer (EVR)"
 
 msgctxt "IDS_PPAGE_OUTPUT_EVR_CUSTOM"
 msgid "Enhanced Video Renderer (custom presenter)"
-msgstr "Enhanced Video Renderer (EVR), aangepaste presentator"
+msgstr "Enhanced Video Renderer (EVR) - Aangepaste presentator"
 
 msgctxt "IDS_PPAGE_OUTPUT_DXR"
 msgid "Haali Video Renderer"
@@ -938,7 +938,7 @@ msgstr "Hoogwaardige render, vereist een grafische kaart met D3D9 of nieuwer"
 
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
-msgstr "Enhanced Video Renderer (EVR), monitorsynchronisatie"
+msgstr "Enhanced Video Renderer (EVR) - Monitorsynchronisatie"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_MPC_REND"
 msgid "MPC Audio Renderer"
@@ -1395,7 +1395,7 @@ msgstr "Videoframe rotatie Z+"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_P2"
 msgid "Video Frame Rotate Z+ (2 degrees)"
-msgstr ""
+msgstr "Videoframe roteer Z+ (2 graden)"
 
 msgctxt "IDS_AG_PNS_ROTATEZ_M"
 msgid "Video Frame Rotate Z-"
@@ -1447,15 +1447,15 @@ msgstr "&Opties..."
 
 msgctxt "IDS_SUBTITLES_STYLES"
 msgid "&Styles..."
-msgstr "&Stijlen..."
+msgstr "&Vormgeving..."
 
 msgctxt "IDS_SUBTITLES_RELOAD"
 msgid "&Reload"
-msgstr "&Herladen"
+msgstr "&Vernieuwen"
 
 msgctxt "IDS_SUBTITLES_HIDE"
 msgid "&Hide Subtitles"
-msgstr "Verberg Ondertitels"
+msgstr "Ondertiteling verbergen"
 
 msgctxt "IDS_PANSCAN_EDIT"
 msgid "&Edit..."
@@ -1511,7 +1511,7 @@ msgstr "App opdracht"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
 msgid "Built-in Toolbar"
-msgstr ""
+msgstr "Ingebouwde werkbalk"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
@@ -1949,11 +1949,11 @@ msgstr "Nooit tonen"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOWMOVED"
 msgid "Show when moving the cursor, hide after:"
-msgstr "Toon na bewegen cursor, en verbergen na:"
+msgstr "Toon bij het bewegen van de cursor, en verberg na:"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
-msgstr "Toon na zweven over bediening, verberg na:"
+msgstr "Toon bij zweven over bedieningselementen, en verberg na:"
 
 msgctxt "IDS_MAINFRM_PRE_SHADERS_FAILED"
 msgid "Failed to set pre-resize shaders"
@@ -2147,7 +2147,7 @@ msgstr "OSD: Opbouwstatistieken resetten"
 
 msgctxt "IDD_PPAGESUBMISC"
 msgid "Subtitles::Misc"
-msgstr "Ondertiteling::Overige"
+msgstr "Ondertiteling::Opties"
 
 msgctxt "IDS_VIEW_BORDERLESS"
 msgid "Hide &borders"
@@ -2421,11 +2421,11 @@ msgstr "Opties"
 
 msgctxt "IDS_AG_NEXT_AUDIO"
 msgid "Next Audio Track"
-msgstr "Volgend geluidsspoor"
+msgstr "Volgend audiospoor"
 
 msgctxt "IDS_AG_PREV_AUDIO"
 msgid "Prev Audio Track"
-msgstr "Vorig geluidsspoor"
+msgstr "Vorig audiospoor"
 
 msgctxt "IDS_AG_NEXT_SUBTITLE"
 msgid "Next Subtitle Track"
@@ -2453,11 +2453,11 @@ msgstr "Vorige camerahoek (DVD)"
 
 msgctxt "IDS_MPLAYERC_93"
 msgid "Next Audio Track (DVD)"
-msgstr "Volgend geluidsspoor (DVD)"
+msgstr "Volgend audiospoor (DVD)"
 
 msgctxt "IDS_MPLAYERC_94"
 msgid "Prev Audio Track (DVD)"
-msgstr "Vorig geluidsspoor (DVD)"
+msgstr "Vorig audiospoor (DVD)"
 
 msgctxt "IDS_MPLAYERC_95"
 msgid "Next Subtitle Track (DVD)"
@@ -3264,19 +3264,19 @@ msgstr "&Deactiveer alle filters"
 
 msgctxt "IDS_ENABLE_AUDIO_FILTERS"
 msgid "Enable all audio decoders"
-msgstr "Activeer alle audio decoders"
+msgstr "Activeer alle audio-decoders"
 
 msgctxt "IDS_DISABLE_AUDIO_FILTERS"
 msgid "Disable all audio decoders"
-msgstr "Deactiveer alle audiodecoders"
+msgstr "Deactiveer alle audio-decoders"
 
 msgctxt "IDS_ENABLE_VIDEO_FILTERS"
 msgid "Enable all video decoders"
-msgstr "Activeer alle video decoders"
+msgstr "Activeer alle video-decoders"
 
 msgctxt "IDS_DISABLE_VIDEO_FILTERS"
 msgid "Disable all video decoders"
-msgstr "Deactiveer alle video decoders"
+msgstr "Deactiveer alle video-decoders"
 
 msgctxt "IDS_STRETCH_TO_WINDOW"
 msgid "Stretch To Window"
@@ -4667,27 +4667,27 @@ msgstr "Middel klik"
 
 msgctxt "IDS_MOUSE_CLICK_X1"
 msgid "X1 click"
-msgstr "X1 klik"
+msgstr "1X klik"
 
 msgctxt "IDS_MOUSE_CLICK_X2"
 msgid "X2 click"
-msgstr "X2 klik"
+msgstr "Dubbelklikken"
 
 msgctxt "IDS_MOUSE_WHEEL_UP"
 msgid "Wheel Up"
-msgstr "Muiswiel Omhoog"
+msgstr "Scrollwiel omhoog"
 
 msgctxt "IDS_MOUSE_WHEEL_DOWN"
 msgid "Wheel Down"
-msgstr "Muiswiel Omlaag"
+msgstr "Scrollwiel omlaag"
 
 msgctxt "IDS_MOUSE_WHEEL_LEFT"
 msgid "Wheel Left"
-msgstr "Muiswiel naar Links"
+msgstr "Scrollwiel naar links"
 
 msgctxt "IDS_MOUSE_WHEEL_RIGHT"
 msgid "Wheel Right"
-msgstr "Muiswiel naar Rechts"
+msgstr "Scrollwiel naar rechts"
 
 msgctxt "IDS_MOUSE_ACTION"
 msgid "Action"
@@ -4761,7 +4761,7 @@ msgstr "Vernieuwingsinterval (in milliseconden) van tijd in statusbalk"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
-msgstr ""
+msgstr "Toon percentage bij de volumeregelaar (in modern thema)"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5008,27 +5008,27 @@ msgstr "/thumbnails\tThumbnails aanmaken"
 
 msgctxt "IDS_CUSTOM_ACTION1"
 msgid "Custom Action 1"
-msgstr ""
+msgstr "Aangepaste actie 1"
 
 msgctxt "IDS_CUSTOM_ACTION2"
 msgid "Custom Action 2"
-msgstr ""
+msgstr "Aangepaste actie 2"
 
 msgctxt "IDS_CUSTOM_ACTION3"
 msgid "Custom Action 3"
-msgstr ""
+msgstr "Aangepaste actie 3"
 
 msgctxt "IDS_CUSTOM_ACTION4"
 msgid "Custom Action 4"
-msgstr ""
+msgstr "Aangepaste actie 4"
 
 msgctxt "IDS_AUDIOS"
 msgid "Audio Track"
-msgstr ""
+msgstr "Audiospoor"
 
 msgctxt "IDS_SUBTITLES"
 msgid "Subtitle Track"
-msgstr ""
+msgstr "Ondertitelspoor"
 
 msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
 msgid "Do you want to save changes to your favorites?"
@@ -5036,36 +5036,36 @@ msgstr ""
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"
-msgstr ""
+msgstr "Volledig scherm afsluiten"
 
 msgctxt "IDS_AG_SHOW_PLAYLIST"
 msgid "Show Playlist"
-msgstr ""
+msgstr "Toon afspeellijst"
 
 msgctxt "IDS_AG_HIDE_PLAYLIST"
 msgid "Hide Playlist"
-msgstr ""
+msgstr "Verberg afspeellijst"
 
 msgctxt "IDS_AG_ENABLE_SHUFFLE"
 msgid "Enable Shuffle"
-msgstr ""
+msgstr "Shuffle inschakelen"
 
 msgctxt "IDS_AG_DISABLE_SHUFFLE"
 msgid "Disable Shuffle"
-msgstr ""
+msgstr "Shuffle uitschakelen"
 
 msgctxt "IDS_AG_ENABLE_REPEAT"
 msgid "Enable Repeat"
-msgstr ""
+msgstr "Herhalen inschakelen"
 
 msgctxt "IDS_AG_DISABLE_REPEAT"
 msgid "Disable Repeat"
-msgstr ""
+msgstr "Herhalen uitschakelen"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr ""
+msgstr "Shuffle: aan"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr ""
+msgstr "Shuffle: uit"

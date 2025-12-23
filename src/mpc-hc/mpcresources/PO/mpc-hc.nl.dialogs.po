@@ -6,14 +6,14 @@
 # Arne Bezuijen <transifex@arnage.nl>, 2021
 # xknat <321knat@gmail.com>, 2022
 # mark van tilburg <markvantilburg@gmail.com>, 2025
-# Renz Straatman <renz75@outlook.com>, 2025
+# Renz Straatman <renz@kabelkrant.net>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-05 10:29:28+0000\n"
+"POT-Creation-Date: 2025-09-28 15:03:20+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Renz Straatman <renz75@outlook.com>, 2025\n"
+"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,7 +43,7 @@ msgstr "Toepassen"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "Output"
@@ -59,7 +59,7 @@ msgstr "Voorvertoning"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK3"
 msgid "Record Audio"
-msgstr "Geluid opnemen"
+msgstr "Audio opnemen"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK4"
 msgid "Preview"
@@ -99,11 +99,11 @@ msgstr "Volume herstellen"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
 msgid "Boost:"
-msgstr "Audioversterking:"
+msgstr "Versterking:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
 msgid "Audio time shift (ms):"
-msgstr "Audiovertraging (ms):"
+msgstr "Vertraging (ms):"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK1"
 msgid "Enable custom channel mapping"
@@ -253,11 +253,11 @@ msgstr "Opties voor openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO1"
 msgid "Use the same player for each media file"
-msgstr "Nieuw bestand openen in de huidige speler"
+msgstr "Elk bestand in hetzelfde venster openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
 msgid "Open a new player for each media file played"
-msgstr "Elk bestand in een nieuwe speler openen"
+msgstr "Elk bestand in een nieuw venster openen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "Title bar"
@@ -357,7 +357,7 @@ msgstr "Menu"
 
 msgctxt "IDD_PPAGEDVD_IDC_RADIO4"
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 msgctxt "IDD_PPAGEDVD_IDC_RADIO5"
 msgid "Subtitles"
@@ -373,7 +373,7 @@ msgstr "Sta ondertiteling voor doven en slechthorenden toe in \"Line 21 decoder\
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Volume"
@@ -473,7 +473,7 @@ msgstr "Ondertitels:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC9"
 msgid "Audio:"
-msgstr "Geluid:"
+msgstr "Audio:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
 msgid "Allow overriding external splitter choice"
@@ -688,7 +688,7 @@ msgstr "Verwijderen"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO1"
 msgid "Prefer"
-msgstr "Prefereren"
+msgstr "Voorkeur"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO2"
 msgid "Block"
@@ -872,7 +872,7 @@ msgstr "Sneltoetsen"
 
 msgctxt "IDD_PPAGEACCELTBL_IDC_CHECK2"
 msgid "Global Media Keys"
-msgstr "Globale media toetsen"
+msgstr "Globale mediaknoppen op toetsenbord"
 
 msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON1"
 msgid "Select All"
@@ -1092,7 +1092,7 @@ msgstr "Video decoder"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
 msgid "Audio decoder"
-msgstr "Geluid decoder"
+msgstr "Audiodecoder"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
 msgid "Internal:"
@@ -1140,7 +1140,7 @@ msgstr "Rotatie"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
-msgstr "Geluid Renderer"
+msgstr "Audiorenderer"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
 msgid "Settings"
@@ -1392,7 +1392,7 @@ msgstr "Video"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC2"
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC3"
 msgid "Country"
@@ -1476,7 +1476,10 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr "Vereist opnieuw openen van de video."
+msgstr ""
+"Deze instellingen zijn alleen van toepassing indien de EVR "
+"Monitorsynchronisatie-renderer wordt gebruikt. Vereist opnieuw openen van de"
+" video."
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
 msgid "Launch files in fullscreen"
@@ -1484,7 +1487,7 @@ msgstr "Bestanden openen in volledig scherm"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
 msgid "Hide controls in fullscreen"
-msgstr "Verberg besturing in schermvullende modus"
+msgstr "Besturingselementen verbergen bij volledig scherm"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
 msgid "ms"
@@ -1492,7 +1495,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK6"
 msgid "Hide docked panels"
-msgstr "Verberg gekoppelde panelen"
+msgstr "Gekoppelde panelen verbergen"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
 msgid "Exit fullscreen at the end of playback"
@@ -1556,7 +1559,7 @@ msgstr "Geef de voorkeur aan geforceerde en/of standaard ondertitels"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
 msgid "Prefer external subtitles over embedded subtitles"
-msgstr "Prefereer externe ondertiteling over bijgevoegde ondertiteling"
+msgstr "Prefereer externe ondertiteling t.o.v. bijgevoegde ondertiteling"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
 msgid "Ignore embedded subtitles"
@@ -1619,8 +1622,8 @@ msgid ""
 "Shaders contain special effects which can be added to the video rendering "
 "process."
 msgstr ""
-"Shaders bevatten effecten die kunnen worden toegevoegd aan het "
-"videorenderproces."
+"Shaders bevatten effecten die toegevoegd kunnen worden aan het videorender-"
+"proces."
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
 msgid "Add shader file"
@@ -1697,7 +1700,9 @@ msgstr "Debug informatie"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
-msgstr "Geavanceerde instellingen, pas niet aan tenzij je weet wat je doet."
+msgstr ""
+"Geavanceerde instellingen. Het wordt aanbevolen deze instellingen niet te "
+"wijzigen tenzij strikt noodzakelijk."
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
 msgid "True"
@@ -1725,15 +1730,15 @@ msgstr "Opties"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK1"
 msgid "Exclusive mode"
-msgstr "Exclusieve mode"
+msgstr "Exclusieve modus"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK4"
 msgid "Ignore system channel mixer (always ignored in exclusive WASAPI mode)"
-msgstr "Systeem kanaal mixer negeren (wordt altijd genegeerd in WASAPI modus)"
+msgstr "Windows volumemixer negeren (wordt altijd genegeerd in WASAPI modus)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Zet stereo \"kruis uitsturen\" aan (voor koptelefoons)"
+msgstr "Stereo-kanaalmenging inschakelen (voor hoofdtelefoons)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
 msgid "C. Moy"
@@ -1745,11 +1750,11 @@ msgstr "J. Meier "
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC1"
 msgid "Cut-off:"
-msgstr "Afgeknepen:"
+msgstr "Afsnijfrequentie:"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC3"
 msgid "Level:"
-msgstr "Hoogte:"
+msgstr "Niveau:"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC7"
 msgid "Note"
@@ -1760,8 +1765,8 @@ msgid ""
 "To minimize audio distortion, it is recommended to keep player volume at "
 "around 85% when playing loud lossy-encoded content."
 msgstr ""
-"Om audiovervorming te verminderen, is het aanbevolen om het volume rond 85% "
-"te houden bij luide gecomprimeerde content."
+"Om audiovervorming te reduceren, is het aanbevolen om het volume rond 85% te"
+" houden bij luide gecomprimeerde content."
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
 msgid "MPC Audio Renderer Settings"
@@ -1865,7 +1870,7 @@ msgstr "Toon hoofdstukmarkeringen op de tijdlijn"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
-msgstr "Tijdlijn bij aanwijzen"
+msgstr "Trickplay"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
 msgid "Hover Position:"
@@ -1873,15 +1878,15 @@ msgstr "Positie:"
 
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
-msgstr "Toon video voorbeeld"
+msgstr "Toon voorvertoning bij aanwijzen tijdlijn"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
-msgstr "Toon tijd"
+msgstr "Toon label met tijd"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"
-msgstr "Voorbeeld breedte (% van scherm)"
+msgstr "Voorvertoning breedte (% van scherm)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC10"
 msgid "Status Bar Elements"
@@ -1929,15 +1934,15 @@ msgstr "Toon huidige tijd"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Window Behavior"
-msgstr "Gedrag van venster"
+msgstr "Venster"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
 msgid "Limit window proportions on resize"
-msgstr "Limiteer vensterproporties bij wijzigen formaat"
+msgstr "Vergrendel venstergrootte aan beeldverhouding"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
 msgid "Snap to desktop edges"
-msgstr "Venster vastklikken aan schermranden"
+msgstr "Venster vastklikken aan bureaubladranden"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
 msgid "Hide Windowed Controls"
@@ -1949,7 +1954,7 @@ msgstr "Integratie met Windows"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
 msgid "Use enhanced taskbar features"
-msgstr "Gebruik uitgebreide taakbalk mogelijkheden"
+msgstr "Gebruik uitgebreide taakbalkmogelijkheden"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
 msgid "Control via Windows UI (SMTC)"
@@ -1977,11 +1982,11 @@ msgstr "Annuleren"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Style"
-msgstr ""
+msgstr "Werkbalk-stijl:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "Toolbar Scale:"
-msgstr ""
+msgstr "Werkbalk schaal:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Alignment:"
@@ -1989,48 +1994,48 @@ msgstr ""
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr ""
+msgstr "Actieve stijl:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr ""
+msgstr "Aangepaste knop 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
-msgstr ""
+msgstr "Klik"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Right click"
-msgstr ""
+msgstr "Klik rechts:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr ""
+msgstr "Aangepaste knop 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr ""
+msgstr "Aangepaste knop 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr ""
+msgstr "Aangepaste knop 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"
-msgstr ""
+msgstr "Standaard"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
 msgid "<<"
-msgstr ""
+msgstr "<<"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
 msgid ">>"
-msgstr ""
+msgstr ">>"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
 msgid "^"
-msgstr ""
+msgstr "^"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
-msgstr ""
+msgstr "v"

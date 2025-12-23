@@ -8,13 +8,14 @@
 # Jackson Chen, 2022
 # CyanVesper <SharpNight93@gmail.com>, 2024
 # lychichem <leichixian@outlook.com>, 2025
+# YuanHao Du, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-28 09:30:10+0000\n"
+"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: lychichem <leichixian@outlook.com>, 2025\n"
+"Last-Translator: YuanHao Du, 2025\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1448,7 +1449,7 @@ msgstr "应用程序命令"
 
 msgctxt "IDS_AG_BUILTIN_TOOLBAR"
 msgid "Built-in Toolbar"
-msgstr "内建工具栏"
+msgstr "默认工具栏"
 
 msgctxt "IDS_AG_MEDIAFILES"
 msgid "Media files (all types)"
