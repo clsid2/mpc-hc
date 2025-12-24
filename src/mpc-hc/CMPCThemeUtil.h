@@ -108,6 +108,7 @@ public:
     static void drawGripper(CWnd* window, CWnd* dpiRefWnd, CRect rectGripper, CDC* pDC, bool rot90);
     static void drawToolbarHideButton(CDC* pDC, CWnd* window, CRect iconRect, std::vector<CMPCTheme::pathPoint> icon, double dpiScaling, bool antiAlias, bool hover);
     static bool canUseWin10DarkTheme();
+    static bool IsBasicMode(); // Returns true if DWM composition is disabled (classic/basic mode)
     static UINT defaultLogo();
     static HBRUSH getParentDialogBGClr(CWnd* wnd, CDC* pDC);
     static void drawParentDialogBGClr(CWnd* wnd, CDC* pDC, CRect r, bool fill = true);

@@ -14,6 +14,7 @@
 #include "Translations.h"
 #include "ImageGrayer.h"
 #include "CMPCThemePropPageButton.h"
+#include <dwmapi.h>
 #undef SubclassWindow
 
 using DLGTEMPLATEEX = _DialogSplitHelper::DLGTEMPLATEEX;
@@ -1089,6 +1090,14 @@ bool CMPCThemeUtil::canUseWin10DarkTheme()
         return ret;
     }
     return false;
+}
+
+bool CMPCThemeUtil::IsBasicMode()
+{
+    // Returns true if DWM composition is disabled (Windows 7 classic mode, etc.)
+    BOOL bCompositionEnabled = FALSE;
+    DwmIsCompositionEnabled(&bCompositionEnabled);
+    return !bCompositionEnabled;
 }
 
 UINT CMPCThemeUtil::defaultLogo()

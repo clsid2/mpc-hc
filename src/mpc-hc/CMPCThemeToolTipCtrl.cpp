@@ -10,9 +10,7 @@ CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrl()
 {
     this->useFlickerHelper = false;
     this->helper = nullptr;
-    BOOL notBasicMode;
-    DwmIsCompositionEnabled(&notBasicMode);
-    basicMode = !notBasicMode;
+    basicMode = CMPCThemeUtil::IsBasicMode();
 }
 
 

@@ -1,192 +1,17 @@
 # MPC-HC - Strings extracted from dialogs
 # Copyright (C) 2002 - 2017 see Authors.txt
 # This file is distributed under the same license as the MPC-HC package.
-# Translators:
-# MPC HC <adiposegithub@gmail.com>, 2020
-# A S Alam <alam.yellow@gmail.com>, 2020
-# 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2021-02-23 16:03:02+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: A S Alam <alam.yellow@gmail.com>, 2020\n"
-"Language-Team: Panjabi (Punjabi) (https://www.transifex.com/mpchc/teams/106126/pa/)\n"
+"POT-Creation-Date: 2025-12-24 03:03:50+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pa\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-msgctxt "IDD_SELECTMEDIATYPE_CAPTION"
-msgid "Select Media Type"
-msgstr "ਮੀਡਿਆ ਕਿਸਮ ਚੁਣੋ"
-
-msgctxt "IDD_SELECTMEDIATYPE_IDOK"
-msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
-
-msgctxt "IDD_SELECTMEDIATYPE_IDCANCEL"
-msgid "Cancel"
-msgstr "ਰੱਦ ਕਰੋ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_STATIC1"
-msgid "Video"
-msgstr "ਵਿਡੀਓ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON1"
-msgid "Set"
-msgstr "ਸੈਟ ਕਰੋ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
-msgid "Audio"
-msgstr "ਆਡੀਓ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
-msgid "Output"
-msgstr "ਆਉਟਪੁੱਟ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_CHECK1"
-msgid "Record Video"
-msgstr "ਵਿਡੀਓ ਰਿਕਾਰਡ ਕਰੋ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_CHECK2"
-msgid "Preview"
-msgstr "ਝਲਕ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_CHECK3"
-msgid "Record Audio"
-msgstr "ਆਡੀਓ ਰਿਕਾਰਡ ਕਰੋ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_CHECK4"
-msgid "Preview"
-msgstr "ਝਲਕ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
-msgid "V/A Buffers:"
-msgstr "V/A ਬਫ਼ਰ:"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
-msgid "Audio to wav"
-msgstr "ਆਡੀਓ ਤੋਂ ਵੇਵ"
-
-msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON2"
-msgid "Record"
-msgstr "ਰਿਕਾਰਡ ਕਰੋ"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
-msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
-msgid "Normalize"
-msgstr "ਨਾਰਮਲਾਈਜ਼"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC4"
-msgid "Max amplification:"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC5"
-msgid "%"
-msgstr "%"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK6"
-msgid "Regain volume"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
-msgid "Boost:"
-msgstr "ਬੂਸਟ:"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
-msgid "Audio time shift (ms):"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK1"
-msgid "Enable custom channel mapping"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM1"
-msgid "Speaker configuration for"
-msgstr "ਇਸ ਵਾਸਤੇ ਸਪੀਕਰ ਦੀ ਸੰਰਚਨਾ"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM2"
-msgid "input channels:"
-msgstr "ਇਨਪੁਟ ਚੈਨਲ:"
-
-msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM3"
-msgid "Hold shift for immediate changes when clicking something"
-msgstr ""
-
-msgctxt "IDD_GOTO_DLG_CAPTION"
-msgid "Go To..."
-msgstr "...ਉੱਤੇ ਜਾਓ"
-
-msgctxt "IDD_GOTO_DLG_IDC_STATIC"
-msgid ""
-"Enter a timecode using the format [hh:]mm:ss.ms to jump to a specified time."
-" You do not need to enter the separators explicitly."
-msgstr ""
-
-msgctxt "IDD_GOTO_DLG_IDC_STATIC"
-msgid "Time"
-msgstr "ਸਮਾਂ"
-
-msgctxt "IDD_GOTO_DLG_IDC_OK1"
-msgid "Go!"
-msgstr "ਜਾਓ!"
-
-msgctxt "IDD_GOTO_DLG_IDC_STATIC"
-msgid ""
-"Enter two numbers to jump to a specified frame, the first is the frame "
-"number, the second is the frame rate."
-msgstr ""
-
-msgctxt "IDD_GOTO_DLG_IDC_STATIC"
-msgid "Frame"
-msgstr "ਫਰੇਮ"
-
-msgctxt "IDD_GOTO_DLG_IDC_OK2"
-msgid "Go!"
-msgstr "ਜਾਓ!"
-
-msgctxt "IDD_OPEN_DLG_CAPTION"
-msgid "Open"
-msgstr "ਖੋਲ੍ਹੋ"
-
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
-msgid ""
-"Type the address of a movie or audio file (on the Internet or your computer)"
-" and the player will open it for you."
-msgstr ""
-
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
-msgid "Open:"
-msgstr "ਖੋਲ੍ਹੋ:"
-
-msgctxt "IDD_OPEN_DLG_IDC_BUTTON1"
-msgid "Browse..."
-msgstr "...ਝਲਕ"
-
-msgctxt "IDD_OPEN_DLG_IDC_STATIC1"
-msgid "Dub:"
-msgstr "ਡੱਬ:"
-
-msgctxt "IDD_OPEN_DLG_IDC_BUTTON2"
-msgid "Browse..."
-msgstr "...ਝਲਕ"
-
-msgctxt "IDD_OPEN_DLG_IDOK"
-msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
-
-msgctxt "IDD_OPEN_DLG_IDCANCEL"
-msgid "Cancel"
-msgstr "ਰੱਦ ਕਰੋ"
-
-msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
-msgid "Add to playlist without opening"
-msgstr ""
 
 msgctxt "IDD_ABOUTBOX_CAPTION"
 msgid "About"
@@ -194,7 +19,15 @@ msgstr "ਇਸ ਬਾਰੇ"
 
 msgctxt "IDD_ABOUTBOX_IDC_AUTHORS_LINK"
 msgid "Copyright 2002-2025 clsid2 and others"
-msgstr ""
+msgstr "ਕਾਪੀਰਾਈਟ 2002-2025 clsid2 ਅਤੇ ਹੋਰ"
+
+msgctxt "IDD_ABOUTBOX_IDC_BUTTON1"
+msgid "Copy to clipboard"
+msgstr "ਕਲਿੱਪਬੋਰਡ ਵਿੱਚ ਕਾਪੀ ਕਰੋ"
+
+msgctxt "IDD_ABOUTBOX_IDC_LAVFILTERS_VERSION"
+msgid "Not used"
+msgstr "ਨਹੀਂ ਵਰਤਿਆ"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
@@ -217,10 +50,6 @@ msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Build date:"
 msgstr "ਬਿਲਡ ਮਿਤੀ:"
 
-msgctxt "IDD_ABOUTBOX_IDC_LAVFILTERS_VERSION"
-msgid "Not used"
-msgstr "ਨਹੀਂ ਵਰਤਿਆ"
-
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Operating system"
 msgstr "ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ"
@@ -229,503 +58,225 @@ msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Name:"
 msgstr "ਨਾਂ:"
 
-msgctxt "IDD_ABOUTBOX_IDC_BUTTON1"
-msgid "Copy to clipboard"
-msgstr "ਕਲਿੱਪਬੋਰਡ ਵਿੱਚ ਕਾਪੀ ਕਰੋ"
-
 msgctxt "IDD_ABOUTBOX_IDOK"
 msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
-msgid "Open options"
-msgstr "ਚੋਣਾਂ ਖੋਲ੍ਹੋ"
+msgctxt "IDD_ADDCOMMAND_DLG_CAPTION"
+msgid "Select command"
+msgstr "ਕਮਾਂਡ ਚੁਣੋ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_RADIO1"
-msgid "Use the same player for each media file"
-msgstr "ਹਰੇਕ ਮੀਡਿਆ ਫਾਈਲ ਲਈ ਉਹੀ ਪਲੇਅਰ ਵਰਤੋਂ"
+msgctxt "IDD_ADDCOMMAND_DLG_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
-msgid "Open a new player for each media file played"
-msgstr ""
+msgctxt "IDD_ADDCOMMAND_DLG_IDC_STATIC"
+msgid "Filter:"
+msgstr "ਫਿਲਟਰ:"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
-msgid "Title bar"
-msgstr "ਟਾਈਟਲ ਪੱਟੀ"
+msgctxt "IDD_ADDCOMMAND_DLG_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_RADIO3"
-msgid "Display full path"
-msgstr "ਪੂਰਾ ਪਾਥ ਦਿਖਾਓ"
+msgctxt "IDD_ADDREGFILTER_CAPTION"
+msgid "Select Filter"
+msgstr "ਫਿਲਟਰ ਚੁਣੋ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_RADIO4"
-msgid "File name only"
-msgstr "ਕੇਵਲ ਫ਼ਾਈਲ ਨਾਂ ਹੀ"
+msgctxt "IDD_ADDREGFILTER_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_RADIO5"
-msgid "Don't prefix anything"
-msgstr "ਕੁਝ ਵੀ ਅੱਗੇ ਨਾ ਲਗਾਓ"
+msgctxt "IDD_ADDREGFILTER_IDC_BUTTON1"
+msgid "Browse..."
+msgstr "ਬ੍ਰਾਉਜ਼ ਕਰੋ..."
 
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK13"
-msgid "Replace file name with title"
-msgstr "ਫ਼ਾਈਲ ਨਾਂ ਨੂੰ ਟਾਈਟਲ ਨਾਲ ਬਦਲੋ"
+msgctxt "IDD_ADDREGFILTER_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
-msgid "Other"
-msgstr "ਹੋਰ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK3"
-msgid "Tray icon"
-msgstr "ਟਰੇ ਆਈਕਾਨ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK8"
-msgid "Store settings in .ini file"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK10"
-msgid "Disable \"Open Disc\" menu"
-msgstr "\"ਡਿਸਕ ਖੋਲ੍ਹੋ\" ਮੀਨੂ ਅਸਮਰੱਥ ਕਰੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK9"
-msgid "Process priority above normal"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK14"
-msgid "Enable cover-art support"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
-msgid "History"
-msgstr "ਅਤੀਤ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK1"
-msgid "Keep history of recently opened files"
-msgstr "ਤਾਜ਼ਾ ਖੋਲ੍ਹੀਆਂ ਫ਼ਾਈਲਾਂ ਦਾ ਅਤੀਤ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK2"
-msgid "Remember last playlist"
-msgstr "ਆਖਰੀ ਪਲੇਅਲਿਸਟ ਯਾਦ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
-msgid "Remember File position"
-msgstr "ਫ਼ਾਈਲ ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_DVD_POS"
-msgid "Remember DVD position"
-msgstr "DVD ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK6"
-msgid "Remember last window position"
-msgstr "ਆਖਰੀ ਵਿੰਡੋ ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
-msgid "Remember last window size"
-msgstr "ਆਖਰੀ ਵਿੰਡੋ ਆਕਾਰ ਯਾਦ ਰੱਖੋ"
-
-msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
-msgid "Remember last Pan && Scan Zoom"
-msgstr ""
-
-msgctxt "IDD_PPAGEDVD_IDC_STATIC"
-msgid "\"Open DVD/BD\" behavior"
-msgstr ""
-
-msgctxt "IDD_PPAGEDVD_IDC_RADIO1"
-msgid "Prompt for location"
-msgstr "ਟਿਕਾਣੇ ਲਈ ਪੁੱਛੋ"
-
-msgctxt "IDD_PPAGEDVD_IDC_RADIO2"
-msgid "Always open the default location:"
-msgstr "ਹਮੇਸ਼ਾ ਮੂਲ ਟਿਕਾਣਾ ਖੋਲ੍ਹੋ:"
-
-msgctxt "IDD_PPAGEDVD_IDC_STATIC"
-msgid "Preferred language for DVD"
-msgstr ""
-
-msgctxt "IDD_PPAGEDVD_IDC_RADIO3"
-msgid "Menu"
-msgstr "ਮੀਨੂ"
-
-msgctxt "IDD_PPAGEDVD_IDC_RADIO4"
-msgid "Audio"
-msgstr "ਆਡੀਓ"
-
-msgctxt "IDD_PPAGEDVD_IDC_RADIO5"
-msgid "Subtitles"
-msgstr "ਸਬ-ਟਾਈਟਲ"
-
-msgctxt "IDD_PPAGEDVD_IDC_STATIC"
-msgid "Additional settings"
-msgstr "ਵਧੀਕ ਸੈਟਿੰਗਾਂ"
-
-msgctxt "IDD_PPAGEDVD_IDC_CHECK2"
-msgid "Allow closed captions in \"Line 21 Decoder\""
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Audio"
-msgstr "ਆਡੀਓ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Volume"
-msgstr "ਵਾਲੀਅਮ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Min"
-msgstr "ਘੱਟੋ-ਘੱਟ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Max"
-msgstr "ਵੱਧੋ-ਵੱਧ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC_BALANCE"
-msgid "Balance"
-msgstr "ਸੰਤੁਲਨ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "L"
-msgstr "ਖੱ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "R"
-msgstr "ਸੱ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Control"
-msgstr "ਕੰਟਰੋਲ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC5"
-msgid "Volume step:"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "%"
-msgstr "%"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC6"
-msgid "Speed step:"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Playback"
-msgstr "ਚਲਾਓ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO1"
-msgid "Play"
-msgstr "ਚਲਾਓ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO2"
-msgid "Repeat forever"
-msgstr "ਹਮੇਸ਼ਾ ਦੁਹਰਾਓ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC1"
-msgid "time(s)"
-msgstr "ਵਾਰ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
-msgid "Repeat mode:"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "After Playback"
-msgstr "ਚਲਾਓ ਬਾਅਦ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Zoom and Alignment"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK5"
-msgid "Auto-zoom:"
-msgstr "ਆਟੋ-ਜ਼ੂਮ:"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC2"
-msgid "Auto fit factor:"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "min %"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "max %"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC4"
-msgid "Vertical Alignment:"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Default track preference"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC8"
-msgid "Subtitles:"
-msgstr "ਸਬ-ਟਾਈਟਲ:"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC9"
-msgid "Audio:"
-msgstr "ਆਡੀਓ:"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
-msgid "Allow overriding external splitter choice"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Open settings"
-msgstr "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK7"
-msgid "Use worker thread to construct the filter graph"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK6"
-msgid "Report pins which fail to render"
-msgstr ""
-
-msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK2"
-msgid "Auto-load audio files"
-msgstr "ਆਡੀਓ ਫ਼ਾਈਲਾਂ ਆਟੋ-ਲੋਡ ਕਰੋ"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK3"
-msgid "Override placement"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC1"
-msgid "Horizontal:"
-msgstr "ਲੇਟਵਾਂ:"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC2"
-msgid "%"
-msgstr "%"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC3"
-msgid "Vertical:"
-msgstr "ਖੜ੍ਹਵਾਂ:"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC4"
-msgid "%"
-msgstr "%"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid "Delay step"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid "ms"
-msgstr "ਮਿ.ਸ."
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid "Texture settings (open the video again to see the changes)"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC9"
-msgid "Sub pictures to buffer:"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC21"
-msgid "Maximum texture resolution:"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_NO_SUB_ANIM"
-msgid "Never animate the subtitles"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC5"
-msgid "Render at"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC6"
-msgid "% of the animation"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC7"
-msgid "Animate at"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC8"
-msgid "% of the video frame rate"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_ALLOW_DROPPING_SUBPIC"
-msgid "Allow dropping some subpictures if the queue is running late"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid "Renderer Layout"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_SUB_AR_COMPENSATION"
-msgid "Apply aspect ratio compensation for anamorphic videos"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid "Warning"
-msgstr "ਚੇਤਾਵਨੀ"
-
-msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
-msgid ""
-"If you override and enable fullscreen antialiasing somewhere at your "
-"videocard's settings, subtitles aren't going to look any better but it will "
-"surely eat your CPU."
-msgstr ""
-
-msgctxt "IDD_PPAGEFORMATS_IDC_STATIC2"
-msgid "File extensions"
-msgstr "ਫ਼ਾਈਲ ਇਕਸਟੈਨਸ਼ਨਾਂ"
-
-msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON2"
-msgid "Default"
-msgstr "ਡਿਫਾਲਟ"
-
-msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON_EXT_SET"
+msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON1"
 msgid "Set"
 msgstr "ਸੈਟ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_STATIC3"
-msgid "Association"
-msgstr "ਸੰਬੰਧ"
+msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON2"
+msgid "Record"
+msgstr "ਰਿਕਾਰਡ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK8"
-msgid "Use the format-specific icons"
-msgstr "ਖਾਸ-ਫਾਰਮੈਟ ਆਈਕਾਨ ਵਰਤੋਂ"
+msgctxt "IDD_CAPTURE_DLG_IDC_CHECK1"
+msgid "Record Video"
+msgstr "ਵਿਡੀਓ ਰਿਕਾਰਡ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON1"
-msgid "Run as &administrator"
-msgstr "ਪਰਸ਼ਾਸ਼ਕ ਵਜੋਂ ਚਲਾਓ(&a)"
+msgctxt "IDD_CAPTURE_DLG_IDC_CHECK2"
+msgid "Preview"
+msgstr "ਝਲਕ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON7"
-msgid "Set as &default program"
-msgstr "ਡਿਫਾਲਟ ਪਰੋਗਰਾਮ ਵਜੋਂ ਸੈਟ ਕਰੋ(&d)"
+msgctxt "IDD_CAPTURE_DLG_IDC_CHECK3"
+msgid "Record Audio"
+msgstr "ਆਡੀਓ ਰਿਕਾਰਡ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_STATIC"
-msgid "Explorer Context Menu"
-msgstr ""
+msgctxt "IDD_CAPTURE_DLG_IDC_CHECK4"
+msgid "Preview"
+msgstr "ਝਲਕ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK6"
-msgid "Directory"
-msgstr "ਡਾਇਰੈਕਟਰੀ"
+msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
+msgid "Audio to wav"
+msgstr "ਆਡੀਓ ਤੋਂ ਵੇਵ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK7"
-msgid "Playlist"
-msgstr ""
+msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
+msgid "Audio"
+msgstr "ਆਡੀਓ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_STATIC1"
-msgid "Autoplay"
-msgstr "ਆਟੋ-ਪਲੇਅ"
+msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
+msgid "Output"
+msgstr "ਆਉਟਪੁੱਟ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK1"
+msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
+msgid "V/A Buffers:"
+msgstr "V/A ਬਫ਼ਰ:"
+
+msgctxt "IDD_CAPTURE_DLG_IDC_STATIC1"
 msgid "Video"
 msgstr "ਵਿਡੀਓ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK2"
-msgid "Music"
-msgstr "ਸੰਗੀਤ"
+msgctxt "IDD_CMD_LINE_HELP_CAPTION"
+msgid "Command line help"
+msgstr "ਕਮਾਂਡ ਲਾਈਨ ਮਦਦ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK4"
-msgid "DVD"
-msgstr "ਡੀਵੀਡੀ"
+msgctxt "IDD_CMD_LINE_HELP_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_PPAGEFORMATS_IDC_CHECK3"
-msgid "Audio CD"
-msgstr "ਆਡੀਓ ਸੀਡੀ"
+msgctxt "IDD_CRASH_REPORTER_CAPTION"
+msgid "Crash reporter"
+msgstr "ਕਰੈਸ਼ ਰਿਪੋਰਟਰ"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_STATIC"
-msgid "Jump distances (small, medium, large in ms)"
-msgstr ""
+msgctxt "IDD_CRASH_REPORTER_IDC_BUTTON1"
+msgid "Restart MPC-HC"
+msgstr "MPC-HC ਮੁੜ-ਚਾਲੂ ਕਰੋ"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_BUTTON1"
-msgid "Default"
-msgstr "ਡਿਫਾਲਟ"
+msgctxt "IDD_CRASH_REPORTER_IDC_BUTTON2"
+msgid "Quit MPC-HC"
+msgstr "MPC-HC ਬੰਦ ਕਰੋ"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_CHECK3"
-msgid "Auto-hide the mouse pointer during playback in windowed mode"
-msgstr ""
+msgctxt "IDD_CRASH_REPORTER_IDC_CHECK1"
+msgid "Send a bug report to help us diagnose and fix the problem."
+msgstr "ਈਮੇਲ ਸ਼ਾਮਲ ਕਰੋ (ਸੰਪਰਕ ਲਈ)"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_CHECK4"
-msgid "Display \"Now Playing\" information in Skype's mood message"
-msgstr ""
+msgctxt "IDD_CRASH_REPORTER_IDC_STATIC"
+msgid "We are sorry, it seems MPC-HC just crashed. :("
+msgstr "ਸਾਨੂੰ ਅਫਸੋਸ ਹੈ ਕਿ MPC-HC ਕਰੈਸ਼ ਹੋ ਗਿਆ ਹੈ। :("
 
-msgctxt "IDD_PPAGETWEAKS_IDC_CHECK_LCD"
-msgid "Enable Logitech LCD support (experimental)"
-msgstr ""
+msgctxt "IDD_CRASH_REPORTER_IDC_STATIC1"
+msgid "Optional information"
+msgstr "ਚੋਣਵੀਂ ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_CHECK6"
+msgctxt "IDD_CRASH_REPORTER_IDC_STATIC2"
+msgid "Email:"
+msgstr "ਈਮੇਲ:"
+
+msgctxt "IDD_CRASH_REPORTER_IDC_STATIC3"
 msgid ""
-"Prevent minimizing the player when in fullscreen on a non default monitor"
+"Your email address is optional and will only be used if the developers need "
+"to contact you for more information."
 msgstr ""
+"ਤੁਹਾਡਾ ਈਮੇਲ ਪਤਾ ਵਿਕਲਪਿਕ ਹੈ ਅਤੇ ਸਿਰਫ਼ ਜੇ ਲੋੜ ਹੋਵੇ ਤਾਂ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ"
+" ਵਰਤਿਆ ਜਾਵੇਗਾ।"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_CHECK7"
-msgid ""
-"Open previous/next file in folder on \"Skip back/forward\" when there is "
-"only one item in playlist"
-msgstr ""
+msgctxt "IDD_CRASH_REPORTER_IDC_STATIC4"
+msgid "Problem description (use English only):"
+msgstr "ਸਮੱਸਿਆ ਦਾ ਵੇਰਵਾ (ਕੇਵਲ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ):"
 
-msgctxt "IDD_PPAGETWEAKS_IDC_FASTSEEK_CHECK"
-msgid "Fast seek (on keyframe)"
-msgstr ""
+msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
+msgid "Debug Shaders"
+msgstr "ਸ਼ੇਡਰ ਡੀਬੱਗ ਕਰੋ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON1"
-msgid "Add Filter..."
-msgstr "...ਫਿਲਟਰ ਜੋੜੋ"
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
+msgid "PS 2.0"
+msgstr "PS 2.0"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON2"
-msgid "Remove"
-msgstr "ਹਟਾਓ"
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO2"
+msgid "PS 2.0b"
+msgstr "PS 2.0b"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO1"
-msgid "Prefer"
-msgstr "ਤਰਜੀਹ"
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO3"
+msgid "PS 2.0a"
+msgstr "PS 2.0a"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO2"
-msgid "Block"
-msgstr "ਪਾਬੰਦੀ"
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
+msgid "PS 3.0"
+msgstr "PS 3.0"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO3"
-msgid "Set merit:"
-msgstr ""
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
+msgid "Debug Information"
+msgstr "ਡੀਬੱਗ ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON3"
-msgid "Up"
-msgstr "ਉੱਤੇ"
+msgctxt "IDD_FAVADD_CAPTION"
+msgid "Add Favorite"
+msgstr "ਪਸੰਦ ਵਿੱਚ ਜੋੜੋ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON4"
-msgid "Down"
-msgstr "ਹੇਠਾਂ"
+msgctxt "IDD_FAVADD_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON5"
-msgid "Add Media Type..."
-msgstr "....ਮੀਡਿਆ ਕਿਸਮ ਜੋੜੋ"
+msgctxt "IDD_FAVADD_IDC_CHECK1"
+msgid "Remember position"
+msgstr "ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON6"
-msgid "Add Sub Type..."
-msgstr ""
+msgctxt "IDD_FAVADD_IDC_CHECK2"
+msgid "Relative drive"
+msgstr "ਸੰਬੰਧਿਤ ਡਰਾਇਵ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON7"
+msgctxt "IDD_FAVADD_IDC_CHECK3"
+msgid "Remember A-B repeat marks"
+msgstr "A-B ਦੁਹਰਾਓ ਨਿਸ਼ਾਨ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_FAVADD_IDC_STATIC1"
+msgid "Choose a name for your shortcut:"
+msgstr "ਆਪਣੇ ਸ਼ਾਰਟਕੱਟ ਲਈ ਇੱਕ ਨਾਮ ਚੁਣੋ:"
+
+msgctxt "IDD_FAVADD_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
+
+msgctxt "IDD_FAVORGANIZE_CAPTION"
+msgid "Organize Favorites"
+msgstr "ਮਨਪਸੰਦ ਦਾ ਪਰਬੰਧ ਕਰੋ"
+
+msgctxt "IDD_FAVORGANIZE_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON1"
+msgid "Rename"
+msgstr "ਨਾਂ ਬਦਲੋ"
+
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON2"
 msgid "Delete"
-msgstr "ਹਟਾਓ"
+msgstr "ਮਿਟਾਓ"
 
-msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON8"
-msgid "Reset List"
-msgstr "ਸੂਚੀ ਮੁੜ-ਸੈਟ ਕਰੋ"
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON3"
+msgid "Move Up"
+msgstr "ਉੱਤੇ ਭੇਜੋ"
 
-msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
-msgid "Type:"
-msgstr "ਕਿਸਮ:"
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON4"
+msgid "Move Down"
+msgstr "ਹੇਠਾਂ ਭੇਜੋ"
 
-msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
-msgid "Size:"
-msgstr "ਆਕਾਰ:"
+msgctxt "IDD_FAVORGANIZE_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
-msgid "Media length:"
-msgstr "ਮੀਡਿਆ ਲੰਬਾਈ:"
+msgctxt "IDD_FAVORGANIZE_ID_APPLY_NOW"
+msgid "Apply"
+msgstr "ਲਾਗੂ ਕਰੋ"
 
-msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
-msgid "Video size:"
-msgstr "ਵਿਡੀਓ ਆਕਾਰ:"
+msgctxt "IDD_FILEMEDIAINFO"
+msgid "MediaInfo"
+msgstr "ਮੀਡੀਆ-ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
-msgid "Created:"
-msgstr "ਬਣਾਇਆ:"
+msgctxt "IDD_FILEPROPCLIP"
+msgid "Clip"
+msgstr "ਕਲਿੱਪ"
 
 msgctxt "IDD_FILEPROPCLIP_IDC_STATIC"
 msgid "Clip:"
@@ -751,121 +302,73 @@ msgctxt "IDD_FILEPROPCLIP_IDC_STATIC"
 msgid "Description:"
 msgstr "ਵੇਰਵਾ:"
 
-msgctxt "IDD_FAVADD_CAPTION"
-msgid "Add Favorite"
-msgstr "ਪਸੰਦ ਵਿੱਚ ਜੋੜੋ"
+msgctxt "IDD_FILEPROPDETAILS"
+msgid "Details"
+msgstr "ਵੇਰਵੇ"
 
-msgctxt "IDD_FAVADD_IDC_STATIC1"
-msgid "Choose a name for your shortcut:"
+msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
+msgid "Type:"
+msgstr "ਕਿਸਮ:"
+
+msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
+msgid "Size:"
+msgstr "ਆਕਾਰ:"
+
+msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
+msgid "Media length:"
+msgstr "ਮੀਡਿਆ ਲੰਬਾਈ:"
+
+msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
+msgid "Video size:"
+msgstr "ਵਿਡੀਓ ਆਕਾਰ:"
+
+msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
+msgid "Created:"
+msgstr "ਬਣਾਇਆ:"
+
+msgctxt "IDD_FILEPROPRES"
+msgid "Resources"
+msgstr "ਸਰੋਤ"
+
+msgctxt "IDD_FILEPROPRES_IDC_BUTTON1"
+msgid "Save As..."
+msgstr "ਇਸ ਤਰ੍ਹਾਂ ਸਾਂਭੋ..."
+
+msgctxt "IDD_GOTO_DLG_CAPTION"
+msgid "Go To..."
+msgstr "ਉੱਤੇ ਜਾਓ..."
+
+msgctxt "IDD_GOTO_DLG_IDC_OK1"
+msgid "Go!"
+msgstr "ਜਾਓ!"
+
+msgctxt "IDD_GOTO_DLG_IDC_OK2"
+msgid "Go!"
+msgstr "ਜਾਓ!"
+
+msgctxt "IDD_GOTO_DLG_IDC_STATIC"
+msgid ""
+"Enter a timecode using the format [hh:]mm:ss.ms to jump to a specified time."
+" You do not need to enter the separators explicitly."
 msgstr ""
+"ਇੱਕ ਨਿਰਧਾਰਤ ਸਮੇਂ 'ਤੇ ਜਾਣ ਲਈ [hh:]mm:ss.ms ਫਾਰਮੈਟ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਟਾਈਮਕੋਡ ਦਰਜ "
+"ਕਰੋ। ਤੁਹਾਨੂੰ ਵਿਭਾਜਕ ਸਪਸ਼ਟ ਤੌਰ 'ਤੇ ਦਰਜ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।"
 
-msgctxt "IDD_FAVADD_IDC_CHECK1"
-msgid "Remember position"
-msgstr "ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
+msgctxt "IDD_GOTO_DLG_IDC_STATIC"
+msgid "Time"
+msgstr "ਸਮਾਂ"
 
-msgctxt "IDD_FAVADD_IDC_CHECK3"
-msgid "Remember A-B repeat marks"
+msgctxt "IDD_GOTO_DLG_IDC_STATIC"
+msgid ""
+"Enter two numbers to jump to a specified frame, the first is the frame "
+"number, the second is the frame rate."
 msgstr ""
+"ਨਿਰਧਾਰਤ ਫਰੇਮ 'ਤੇ ਜਾਣ ਲਈ ਦੋ ਨੰਬਰ ਦਰਜ ਕਰੋ, ਪਹਿਲਾ ਫਰੇਮ ਨੰਬਰ ਹੈ, ਦੂਜਾ ਫਰੇਮ ਦਰ "
+"ਹੈ।"
 
-msgctxt "IDD_FAVADD_IDC_CHECK2"
-msgid "Relative drive"
-msgstr "ਸੰਬੰਧਿਤ ਡਰਾਇਵ"
-
-msgctxt "IDD_FAVADD_IDOK"
-msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
-
-msgctxt "IDD_FAVADD_IDCANCEL"
-msgid "Cancel"
-msgstr "ਰੱਦ ਕਰੋ"
-
-msgctxt "IDD_FAVORGANIZE_CAPTION"
-msgid "Organize Favorites"
-msgstr "ਮਨਪਸੰਦ ਦਾ ਪਰਬੰਧ ਕਰੋ"
-
-msgctxt "IDD_FAVORGANIZE_IDC_BUTTON1"
-msgid "Rename"
-msgstr "ਨਾਂ ਬਦਲੋ"
-
-msgctxt "IDD_FAVORGANIZE_IDC_BUTTON3"
-msgid "Move Up"
-msgstr "ਉੱਤੇ ਭੇਜੋ"
-
-msgctxt "IDD_FAVORGANIZE_IDC_BUTTON4"
-msgid "Move Down"
-msgstr "ਹੇਠਾਂ ਭੇਜੋ"
-
-msgctxt "IDD_FAVORGANIZE_IDC_BUTTON2"
-msgid "Delete"
-msgstr "ਹਟਾਓ"
-
-msgctxt "IDD_FAVORGANIZE_IDOK"
-msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
-
-msgctxt "IDD_FAVORGANIZE_IDCANCEL"
-msgid "Cancel"
-msgstr ""
-
-msgctxt "IDD_FAVORGANIZE_ID_APPLY_NOW"
-msgid "Apply"
-msgstr ""
-
-msgctxt "IDD_PNSPRESET_DLG_CAPTION"
-msgid "PnS Frame Adjust Presets"
-msgstr ""
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON2"
-msgid "New"
-msgstr "ਨਵਾਂ"
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON3"
-msgid "Delete"
-msgstr "ਹਟਾਓ"
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON4"
-msgid "Up"
-msgstr "ਉੱਤੇ"
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON5"
-msgid "Down"
-msgstr "ਹੇਠਾਂ"
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON1"
-msgid "&Set"
-msgstr "ਸੈੱਟ ਕਰੋ(&S)"
-
-msgctxt "IDD_PNSPRESET_DLG_IDCANCEL"
-msgid "&Cancel"
-msgstr "ਰੱਦ ਕਰੋ(&C)"
-
-msgctxt "IDD_PNSPRESET_DLG_IDOK"
-msgid "&Save"
-msgstr "ਸੰਭਾਲੋ(&S)"
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_STATIC2"
-msgid "Pos: 0.0 -> 1.0"
-msgstr ""
-
-msgctxt "IDD_PNSPRESET_DLG_IDC_STATIC3"
-msgid "Zoom: 0.2 -> 3.0"
-msgstr ""
-
-msgctxt "IDD_PPAGEACCELTBL_CAPTION"
-msgid "Shortcut Keys"
-msgstr "ਸ਼ਾਰਟਕੱਟ ਸਵਿੱਚ"
-
-msgctxt "IDD_PPAGEACCELTBL_IDC_CHECK2"
-msgid "Global Media Keys"
-msgstr "ਗਲੋਬਲ ਮੀਡੀਆ ਸਵਿੱਚਾਂ"
-
-msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON1"
-msgid "Select All"
-msgstr "ਸਭ ਚੁਣੋ"
-
-msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON2"
-msgid "Reset Selected"
-msgstr "ਚੁਣੇ ਮੁੜ-ਸੈਟ ਕਰੋ"
+msgctxt "IDD_GOTO_DLG_IDC_STATIC"
+msgid "Frame"
+msgstr "ਫਰੇਮ"
 
 msgctxt "IDD_MEDIATYPES_DLG_CAPTION"
 msgid "Warning"
@@ -876,66 +379,1111 @@ msgid ""
 "MPC-HC could not render some of the pins in the graph, you may not have the "
 "needed codecs or filters installed on the system."
 msgstr ""
+"MPC-HC ਗ੍ਰਾਫ ਵਿੱਚ ਕੁਝ ਪਿੰਨ ਨੂੰ ਰੇਂਡਰ ਨਹੀਂ ਕਰ ਸਕਿਆ, ਤੁਹਾਡੇ ਸਿਸਟਮ 'ਤੇ ਲੋੜੀਂਦੇ "
+"ਕੋਡੈਕ ਜਾਂ ਫਿਲਟਰ ਸਥਾਪਿਤ ਨਹੀਂ ਹੋ ਸਕਦੇ।"
 
 msgctxt "IDD_MEDIATYPES_DLG_IDC_STATIC2"
 msgid "The following pin(s) failed to find a connectable filter:"
-msgstr ""
+msgstr "ਹੇਠਾਂ ਦਿੱਤੇ ਪਿੰਨ(ਜ਼) ਨੂੰ ਕਨੈਕਟ ਕਰਨ ਯੋਗ ਫਿਲਟਰ ਨਹੀਂ ਮਿਲਿਆ:"
 
 msgctxt "IDD_MEDIATYPES_DLG_IDOK"
 msgid "Close"
 msgstr "ਬੰਦ ਕਰੋ"
 
-msgctxt "IDD_SAVE_DLG_CAPTION"
-msgid "Saving..."
-msgstr "...ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ"
+msgctxt "IDD_NAVIGATION_DLG_IDC_NAVIGATION_INFO"
+msgid "Info"
+msgstr "ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_SAVE_DLG_IDCANCEL"
+msgctxt "IDD_NAVIGATION_DLG_IDC_NAVIGATION_SCAN"
+msgid "Scan"
+msgstr "ਸਕੈਨ ਕਰੋ"
+
+msgctxt "IDD_OPEN_DLG_CAPTION"
+msgid "Open"
+msgstr "ਖੋਲ੍ਹੋ"
+
+msgctxt "IDD_OPEN_DLG_IDCANCEL"
 msgid "Cancel"
 msgstr "ਰੱਦ ਕਰੋ"
 
-msgctxt "IDD_ADDREGFILTER_CAPTION"
-msgid "Select Filter"
-msgstr "ਫਿਲਟਰ ਚੁਣੋ"
-
-msgctxt "IDD_ADDREGFILTER_IDC_BUTTON1"
+msgctxt "IDD_OPEN_DLG_IDC_BUTTON1"
 msgid "Browse..."
-msgstr "...ਝਲਕ"
+msgstr "ਬ੍ਰਾਉਜ਼ ਕਰੋ..."
 
-msgctxt "IDD_ADDREGFILTER_IDOK"
+msgctxt "IDD_OPEN_DLG_IDC_BUTTON2"
+msgid "Browse..."
+msgstr "ਬ੍ਰਾਉਜ਼ ਕਰੋ..."
+
+msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
+msgid "Add to playlist without opening"
+msgstr "ਖੋਲ੍ਹੇ ਬਿਨਾਂ ਪਲੇਅਲਿਸਟ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ"
+
+msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgid ""
+"Type the address of a movie or audio file (on the Internet or your computer)"
+" and the player will open it for you."
+msgstr ""
+"ਇੰਟਰਨੈੱਟ ਜਾਂ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ 'ਤੇ ਮੂਵੀ ਜਾਂ ਆਡੀਓ ਫਾਈਲ ਦਾ ਪਤਾ ਟਾਈਪ ਕਰੋ ਅਤੇ ਪਲੇਅਰ"
+" ਇਸ ਨੂੰ ਤੁਹਾਡੇ ਲਈ ਖੋਲ੍ਹੇਗਾ।"
+
+msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgid "Open:"
+msgstr "ਖੋਲ੍ਹੋ:"
+
+msgctxt "IDD_OPEN_DLG_IDC_STATIC1"
+msgid "Dub:"
+msgstr "ਡੱਬ:"
+
+msgctxt "IDD_OPEN_DLG_IDOK"
 msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
+msgstr "ਠੀਕ"
 
-msgctxt "IDD_ADDREGFILTER_IDCANCEL"
-msgid "Cancel"
-msgstr "ਰੱਦ ਕਰੋ"
+msgctxt "IDD_PNSPRESET_DLG_CAPTION"
+msgid "PnS Frame Adjust Presets"
+msgstr "PnS ਫ਼ਰੇਮ ਐਡਜਸਟ ਪ੍ਰੀਸੈੱਟ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
-msgid "Font"
-msgstr "ਫ਼ੋਂਟ"
+msgctxt "IDD_PNSPRESET_DLG_IDCANCEL"
+msgid "&Cancel"
+msgstr "ਰੱਦ ਕਰੋ(&C)"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON1"
+msgid "&Set"
+msgstr "ਸੈੱਟ ਕਰੋ(&S)"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON2"
+msgid "New"
+msgstr "ਨਵਾਂ"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON3"
+msgid "Delete"
+msgstr "ਮਿਟਾਓ"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON4"
+msgid "Up"
+msgstr "ਉੱਤੇ"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON5"
+msgid "Down"
+msgstr "ਹੇਠਾਂ"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_STATIC2"
+msgid "Pos: 0.0 -> 1.0"
+msgstr "ਸਥਿਤੀ: 0.0 -> 1.0"
+
+msgctxt "IDD_PNSPRESET_DLG_IDC_STATIC3"
+msgid "Zoom: 0.2 -> 3.0"
+msgstr "ਜ਼ੂਮ: 0.2 -> 3.0"
+
+msgctxt "IDD_PNSPRESET_DLG_IDOK"
+msgid "&Save"
+msgstr "ਸਾਂਭੋ(&S)"
+
+msgctxt "IDD_PPAGEACCELTBL"
+msgid "Player::Keys"
+msgstr "ਪਲੇਅਰ::ਸਵਿੱਚਾਂ"
+
+msgctxt "IDD_PPAGEACCELTBL_CAPTION"
+msgid "Shortcut Keys"
+msgstr "ਸ਼ਾਰਟਕੱਟ ਸਵਿੱਚ"
+
+msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON1"
+msgid "Select All"
+msgstr "ਸਭ ਚੁਣੋ"
+
+msgctxt "IDD_PPAGEACCELTBL_IDC_BUTTON2"
+msgid "Reset Selected"
+msgstr "ਚੁਣੇ ਮੁੜ-ਸੈਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEACCELTBL_IDC_CHECK2"
+msgid "Global Media Keys"
+msgstr "ਗਲੋਬਲ ਮੀਡੀਆ ਸਵਿੱਚਾਂ"
+
+msgctxt "IDD_PPAGEADVANCED"
+msgid "Advanced"
+msgstr "ਤਕਨੀਕੀ"
+
+msgctxt "IDD_PPAGEADVANCED_IDC_BUTTON1"
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
+msgid "True"
+msgstr "ਸਹੀ"
+
+msgctxt "IDD_PPAGEADVANCED_IDC_RADIO2"
+msgid "False"
+msgstr "ਗਲਤ"
+
+msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
+msgid "Advanced Settings, do not edit unless you know what you are doing."
+msgstr ""
+"ਉੱਨਤ ਸੈਟਿੰਗਾਂ, ਜਦ ਤੱਕ ਤੁਹਾਨੂੰ ਪਤਾ ਨਾ ਹੋਵੇ ਕਿ ਤੁਸੀਂ ਕੀ ਕਰ ਰਹੇ ਹੋ, ਸੋਧ ਨਾ ਕਰੋ।"
+
+msgctxt "IDD_PPAGEAUDIORENDERER"
+msgid "Internal Filters::Audio Renderer"
+msgstr "ਅੰਦਰੂਨੀ ਫਿਲਟਰ::ਆਡੀਓ ਰੈਂਡਰਰ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
+msgid "C. Moy"
+msgstr "C. Moy"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON2"
+msgid "J. Meier"
+msgstr "J. Meier"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
+msgid "MPC Audio Renderer Settings"
+msgstr "MPC ਆਡੀਓ ਰੈਂਡਰਰ ਸੈਟਿੰਗਜ਼"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK1"
+msgid "Exclusive mode"
+msgstr "ਵਿਸ਼ੇਸ਼ ਮੋਡ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
+msgid "Enable stereo crossfeed (for headphones)"
+msgstr "ਸਟੀਰੀਓ ਕਰਾਸਫੀਡ ਸਮਰੱਥ ਕਰੋ (ਹੈੱਡਫੋਨ ਲਈ)"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK4"
+msgid "Ignore system channel mixer (always ignored in exclusive WASAPI mode)"
+msgstr "ਆਡੀਓ ਟਾਈਮਸਟੈਂਪ ਸੁਧਾਰ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK5"
+msgid "SaneAR Audio Renderer Enabled"
+msgstr "SaneAR ਆਡੀਓ ਰੇਂਡਰਰ ਚਾਲੂ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC1"
+msgid "Cut-off:"
+msgstr "ਕੱਟ-ਔਫ:"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC3"
+msgid "Level:"
+msgstr "ਲੈਵਲ:"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC5"
+msgid "Device"
+msgstr "ਡਿਵਾਈਸ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC6"
+msgid "Options"
+msgstr "ਵਿਕਲਪ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC7"
+msgid "Note"
+msgstr "ਨੋਟ"
+
+msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC8"
+msgid ""
+"To minimize audio distortion, it is recommended to keep player volume at "
+"around 85% when playing loud lossy-encoded content."
+msgstr ""
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER"
+msgid "Internal Filters::Audio Switcher"
+msgstr "ਅੰਦਰੂਨੀ ਫਿਲਟਰ::ਆਡੀਓ ਸਵਿੱਚਰ"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK1"
+msgid "Enable custom channel mapping"
+msgstr "ਕਸਟਮ ਚੈਨਲ ਮੈਪਿੰਗ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
+msgid "Enable built-in audio switcher filter (requires restart)"
+msgstr "ਬਿਲਟ-ਇਨ ਆਡੀਓ ਸਵਿੱਚਰ ਫਿਲਟਰ ਸਮਰੱਥ ਕਰੋ (ਮੁੜ ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ)"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
+msgid "Audio time shift (ms):"
+msgstr "ਆਡੀਓ ਸਮਾਂ ਤਬਦੀਲੀ (ਮਿਲੀਸੈਕੰਡ):"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
+msgid "Normalize"
+msgstr "ਨਾਰਮਲਾਈਜ਼"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK6"
+msgid "Regain volume"
+msgstr "ਵਾਲੀਅਮ ਮੁੜ ਪ੍ਰਾਪਤ ਕਰੋ"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC4"
+msgid "Max amplification:"
+msgstr "ਵੱਧ ਤੋਂ ਵੱਧ ਵਧਾਈ:"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC5"
+msgid "%"
+msgstr "%"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
+msgid "Boost:"
+msgstr "ਬੂਸਟ:"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM1"
+msgid "Speaker configuration for"
+msgstr "ਇਸ ਵਾਸਤੇ ਸਪੀਕਰ ਦੀ ਸੰਰਚਨਾ"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM2"
+msgid "input channels:"
+msgstr "ਇਨਪੁਟ ਚੈਨਲ:"
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM3"
+msgid "Hold shift for immediate changes when clicking something"
+msgstr "ਤੁਰੰਤ ਬਦਲਾਅ ਲਈ ਕੁਝ ਕਲਿੱਕ ਕਰਦੇ ਸਮੇਂ ਸ਼ਿਫਟ ਦਬਾਈ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGECAPTURE"
+msgid "Playback::Capture"
+msgstr "ਚਲਾਓ::ਕੈਪਚਰ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST10"
+msgid "Channel switching approach:"
+msgstr "ਚੈਨਲ ਸਵਿਚਿੰਗ ਤਰੀਕਾ:"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
+msgid "Rebuild filter graph"
+msgstr "ਫਿਲਟਰ ਗ੍ਰਾਫ ਮੁੜ-ਬਣਾਓ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST12"
+msgid "Stop filter graph"
+msgstr "ਫਿਲਟਰ ਗ੍ਰਾਫ ਬੰਦ ਕਰੋ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_RADIO1"
+msgid "Analog"
+msgstr "ਐਨਾਲਾਗ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_RADIO2"
+msgid "Digital"
+msgstr "ਡਿਜ਼ੀਟਲ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
+msgid "Default Device"
+msgstr "ਡਿਫਾਲਟ ਡਿਵਾਇਸ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
+msgid "Analog settings"
+msgstr "ਐਨਾਲਾਗ ਸੈਟਿੰਗਾਂ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
+msgid "Digital settings (BDA)"
+msgstr "ਡਿਜ਼ਿਟਲ ਸੈਟਿੰਗਾਂ (BDA)"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC1"
+msgid "Video"
+msgstr "ਵਿਡੀਓ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC2"
+msgid "Audio"
+msgstr "ਆਡੀਓ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC3"
+msgid "Country"
+msgstr "ਦੇਸ਼"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC4"
+msgid "Network Provider"
+msgstr "ਨੈਟਵਰਕ ਪਰਦਾਤਾ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC5"
+msgid "Tuner"
+msgstr "ਟਿਊਨਰ"
+
+msgctxt "IDD_PPAGECAPTURE_IDC_STATIC6"
+msgid "Receiver"
+msgstr "ਰਿਸੀਵਰ"
+
+msgctxt "IDD_PPAGEDPICALC_IDC_STATIC1"
+msgid "Groupbox"
+msgstr "ਗਰੁੱਪਬਾਕਸ"
+
+msgctxt "IDD_PPAGEDPICALC_IDC_STATIC2"
+msgid "Autoplay"
+msgstr "ਆਟੋਪਲੇਅ"
+
+msgctxt "IDD_PPAGEDVD"
+msgid "Playback::DVD"
+msgstr "ਚਲਾਓ::DVD"
+
+msgctxt "IDD_PPAGEDVD_IDC_CHECK2"
+msgid "Allow closed captions in \"Line 21 Decoder\""
+msgstr ""
+
+msgctxt "IDD_PPAGEDVD_IDC_RADIO1"
+msgid "Prompt for location"
+msgstr "ਟਿਕਾਣੇ ਲਈ ਪੁੱਛੋ"
+
+msgctxt "IDD_PPAGEDVD_IDC_RADIO2"
+msgid "Always open the default location:"
+msgstr "ਹਮੇਸ਼ਾ ਮੂਲ ਟਿਕਾਣਾ ਖੋਲ੍ਹੋ:"
+
+msgctxt "IDD_PPAGEDVD_IDC_RADIO3"
+msgid "Menu"
+msgstr "ਮੀਨੂ"
+
+msgctxt "IDD_PPAGEDVD_IDC_RADIO4"
+msgid "Audio"
+msgstr "ਆਡੀਓ"
+
+msgctxt "IDD_PPAGEDVD_IDC_RADIO5"
+msgid "Subtitles"
+msgstr "ਸਬਟਾਈਟਲ"
+
+msgctxt "IDD_PPAGEDVD_IDC_STATIC"
+msgid "\"Open DVD/BD\" behavior"
+msgstr "\"ਡੀਵੀਡੀ/ਬੀਡੀ ਖੋਲ੍ਹੋ\" ਵਿਵਹਾਰ"
+
+msgctxt "IDD_PPAGEDVD_IDC_STATIC"
+msgid "Preferred language for DVD"
+msgstr "ਡੀਵੀਡੀ ਲਈ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ"
+
+msgctxt "IDD_PPAGEDVD_IDC_STATIC"
+msgid "Additional settings"
+msgstr "ਵਧੀਕ ਸੈਟਿੰਗਾਂ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS"
+msgid "External Filters"
+msgstr "ਬਾਹਰੀ ਫਿਲਟਰ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON1"
+msgid "Add Filter..."
+msgstr "ਫਿਲਟਰ ਜੋੜੋ..."
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON2"
+msgid "Remove"
+msgstr "ਹਟਾਓ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON3"
+msgid "Up"
+msgstr "ਉੱਤੇ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON4"
+msgid "Down"
+msgstr "ਹੇਠਾਂ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON5"
+msgid "Add Media Type..."
+msgstr "ਮੀਡਿਆ ਕਿਸਮ ਜੋੜੋ..."
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON6"
+msgid "Add Sub Type..."
+msgstr "ਉਪ ਕਿਸਮ ਸ਼ਾਮਲ ਕਰੋ..."
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON7"
+msgid "Delete"
+msgstr "ਮਿਟਾਓ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON8"
+msgid "Reset List"
+msgstr "ਸੂਚੀ ਮੁੜ-ਸੈਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO1"
+msgid "Prefer"
+msgstr "ਤਰਜੀਹ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO2"
+msgid "Block"
+msgstr "ਪਾਬੰਦੀ"
+
+msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO3"
+msgid "Set merit:"
+msgstr "ਮਹੱਤਵ ਸੈੱਟ ਕਰੋ:"
+
+msgctxt "IDD_PPAGEFORMATS"
+msgid "Player::Formats"
+msgstr "ਚਲਾਓ::ਫਾਰਮੈਟ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON1"
+msgid "Run as &administrator"
+msgstr "ਪਰਸ਼ਾਸ਼ਕ ਵਜੋਂ ਚਲਾਓ(&a)"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON2"
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON7"
+msgid "Set as &default program"
+msgstr "ਡਿਫਾਲਟ ਪਰੋਗਰਾਮ ਵਜੋਂ ਸੈਟ ਕਰੋ(&d)"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_BUTTON_EXT_SET"
+msgid "Set"
+msgstr "ਸੈਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK1"
+msgid "Video"
+msgstr "ਵਿਡੀਓ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK2"
+msgid "Music"
+msgstr "ਸੰਗੀਤ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK3"
+msgid "Audio CD"
+msgstr "ਆਡੀਓ ਸੀਡੀ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK4"
+msgid "DVD"
+msgstr "ਡੀਵੀਡੀ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK6"
+msgid "Directory"
+msgstr "ਡਾਇਰੈਕਟਰੀ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK7"
+msgid "Playlist"
+msgstr "ਪਲੇਅਲਿਸਟ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_CHECK8"
+msgid "Use the format-specific icons"
+msgstr "ਖਾਸ-ਫਾਰਮੈਟ ਆਈਕਾਨ ਵਰਤੋਂ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_STATIC"
+msgid "Explorer Context Menu"
+msgstr "ਐਕਸਪਲੋਰਰ ਸੰਦਰਭ ਮੀਨੂ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_STATIC1"
+msgid "Autoplay"
+msgstr "ਆਟੋ-ਪਲੇਅ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_STATIC2"
+msgid "File extensions"
+msgstr "ਫ਼ਾਈਲ ਇਕਸਟੈਨਸ਼ਨਾਂ"
+
+msgctxt "IDD_PPAGEFORMATS_IDC_STATIC3"
+msgid "Association"
+msgstr "ਸੰਬੰਧ"
+
+msgctxt "IDD_PPAGEFULLSCREEN"
+msgid "Playback::Fullscreen"
+msgstr "ਚਲਾਓ::ਪੂਰੀ ਸਕਰੀਨ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON1"
+msgid "Add"
+msgstr "ਜੋੜੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON2"
+msgid "Del"
+msgstr "ਹਟਾਓ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON3"
+msgid "Up"
+msgstr "ਉੱਤੇ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON4"
+msgid "Down"
+msgstr "ਹੇਠਾਂ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
+msgid "Launch files in fullscreen"
+msgstr "ਫ਼ਾਈਲਾਂ ਪੂਰੀ ਸਕਰੀਨ ਉੱਤੇ ਚਲਾਓ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK2"
+msgid "Use autochange fullscreen monitor mode"
+msgstr "ਆਟੋ-ਬਦਲਣ ਫੁੱਲਸਕਰੀਨ ਮਾਨੀਟਰ ਮੋਡ ਵਰਤੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK3"
+msgid "Apply default monitor mode on fullscreen exit"
+msgstr "ਸਕਰੀਨਸੇਵਰ ਸ਼ੁਰੂ ਨੂੰ ਰੋਕੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
+msgid "Hide controls in fullscreen"
+msgstr "ਪੂਰੀ ਸਕਰੀਨ ਵਿੱਚ ਕੰਟਰੋਲ ਓਹਲੇ ਕਰੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
+msgid "Exit fullscreen at the end of playback"
+msgstr "ਚਲਾਉਣਾ ਖਤਮ ਹੋਣ ਦੇ ਬਾਅਦ ਪੂਰੀ-ਸਕਰੀਨ ਨੂੰ ਛੱਡੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK6"
+msgid "Hide docked panels"
+msgstr "ਡੌਕ ਕੀਤੇ ਪੈਨਲ ਓਹਲੇ ਕਰੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK7"
+msgid "Allow separate control window"
+msgstr "ਵੱਖਰੀ ਕੰਟਰੋਲ ਵਿੰਡੋ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_RESTORERESCHECK"
+msgid "Restore resolution on program exit"
+msgstr "ਪ੍ਰੋਗਰਾਮ ਬੰਦ ਕਰਨ 'ਤੇ ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਬਹਾਲ ਕਰੋ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
+msgid "Fullscreen monitor"
+msgstr "ਪੂਰੀ ਸਕਰੀਨ ਮਾਨੀਟਰ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
+msgid "Delay"
+msgstr "ਦੇਰੀ"
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
+msgid "ms"
+msgstr "ਮਿ.ਸ."
+
+msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC2"
+msgid "s"
+msgstr "ਸ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS"
+msgid "Internal Filters"
+msgstr "ਅੰਦਰੂਨੀ ਫਿਲਟਰ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
+msgid "Audio decoder"
+msgstr "ਆਡੀਓ ਡਿਕੋਡਰ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_SPLITTER_CONF"
+msgid "Splitter"
+msgstr "ਸਪਲਿੱਟਰ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
+msgid ""
+"If you would like to use the stand-alone versions of these filters or "
+"another replacement, disable them here."
+msgstr ""
+"ਜੇ ਤੁਸੀਂ ਇਨ੍ਹਾਂ ਫਿਲਟਰਾਂ ਦੇ ਸਵੈ-ਨਿਰਭਰ ਸੰਸਕਰਣਾਂ ਜਾਂ ਹੋਰ ਬਦਲਾਂ ਨੂੰ ਵਰਤਣਾ "
+"ਚਾਹੁੰਦੇ ਹੋ, ਤਾਂ ਇਨ੍ਹਾਂ ਨੂੰ ਇੱਥੇ ਅਯੋਗ ਕਰੋ।"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
+msgid "Source Filters"
+msgstr "ਸਰੋਤ ਫਿਲਟਰ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
+msgid "Transform Filters"
+msgstr "ਟ੍ਰਾਂਸਫਾਰਮ ਫਿਲਟਰ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
+msgid "Internal LAV Filters settings"
+msgstr "ਅੰਦਰੂਨੀ LAV ਫਿਲਟਰ ਸੈਟਿੰਗਾਂ"
+
+msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_VIDEO_DEC_CONF"
+msgid "Video decoder"
+msgstr "ਵਿਡੀਓ ਡੀਕੋਡਰ"
+
+msgctxt "IDD_PPAGELOGO"
+msgid "Player::Logo"
+msgstr "ਪਲੇਅਰ::ਲੋਗੋ"
+
+msgctxt "IDD_PPAGELOGO_IDC_BUTTON2"
+msgid "Browse..."
+msgstr "ਬ੍ਰਾਉਜ਼ ਕਰੋ..."
+
+msgctxt "IDD_PPAGELOGO_IDC_CHECK1"
+msgid "Apply Monitor Color Profile"
+msgstr "ਮਾਨੀਟਰ ਰੰਗ ਪ੍ਰੋਫਾਈਲ ਲਾਗੂ ਕਰੋ"
+
+msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
+msgid "Internal:"
+msgstr "ਅੰਦਰੂਨੀ:"
+
+msgctxt "IDD_PPAGELOGO_IDC_RADIO2"
+msgid "External:"
+msgstr "ਬਾਹਰੀ:"
+
+msgctxt "IDD_PPAGEMISC"
+msgid "Miscellaneous"
+msgstr "ਫੁਟਕਲ"
+
+msgctxt "IDD_PPAGEMISC_IDC_CHECK1"
+msgid "Enable automatic update check"
+msgstr "ਆਟੋਮੈਟਿਕ ਅੱਪਡੇਟ ਜਾਂਚ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEMISC_IDC_EXPORT_KEYS"
+msgid "Export keys"
+msgstr "ਸਵਿੱਚਾਂ ਬਰਾਮਦ ਕਰੋ"
+
+msgctxt "IDD_PPAGEMISC_IDC_EXPORT_SETTINGS"
+msgid "Export"
+msgstr "ਦਰਾਮਦ"
+
+msgctxt "IDD_PPAGEMISC_IDC_RESET"
+msgid "Reset"
+msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEMISC_IDC_RESET_SETTINGS"
+msgid "Reset"
+msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Color controls (for VMR-9, EVR and madVR)"
+msgstr "ਰੰਗ ਨਿਯੰਤਰਣ (VMR-9, EVR ਅਤੇ madVR ਲਈ)"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Brightness"
+msgstr "ਚਮਕ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Contrast"
+msgstr "ਕਨਟਰਾਸਟ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Hue"
+msgstr "ਰੰਗਤ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Saturation"
+msgstr "ਸੰਤ੍ਰਿਪਤਾ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Update check"
+msgstr "ਅੱਪਡੇਟ ਜਾਂਚ ਕਰੋ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC"
+msgid "Settings management"
+msgstr "ਸੈਟਿੰਗ ਪਰਬੰਧ"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC5"
+msgid "Check every:"
+msgstr "ਜਾਂਚ ਕਰੋ ਹਰੇਕ:"
+
+msgctxt "IDD_PPAGEMISC_IDC_STATIC6"
+msgid "day(s)"
+msgstr "ਦਿਨ"
+
+msgctxt "IDD_PPAGEMOUSE"
+msgid "Player::Mouse"
+msgstr "ਪਲੇਅਰ::ਮਾਊਸ"
+
+msgctxt "IDD_PPAGEMOUSE_IDC_BUTTON2"
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
+msgid "Buttons"
+msgstr "ਬਟਨ"
+
+msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
+msgid "Click"
+msgstr "ਕਲਿੱਕ"
+
+msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
+msgid "Double click"
+msgstr "ਡਬਲ ਕਲਿੱਕ"
+
+msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
+msgid "Right click"
+msgstr "ਸੱਜਾ ਕਲਿੱਕ"
+
+msgctxt "IDD_PPAGEOUTPUT"
+msgid "Playback::Output"
+msgstr "ਚਲਾਓ::ਆਉਟਪੁੱਟ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON1"
+msgid "Settings"
+msgstr "ਸੈਟਿੰਗਜ਼"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
+msgid "Settings"
+msgstr "ਸੈਟਿੰਗਜ਼"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_CACHESHADERS"
+msgid "Cache compiled Shaders"
+msgstr "ਕੰਪਾਇਲ ਕੀਤੇ ਸ਼ੇਡਰ ਕੈਸ਼ ਕਰੋ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_D3D9DEVICE"
+msgid "Select D3D9 Render Device"
+msgstr "D3D9 ਰੈਂਡਰ ਡਿਵਾਈਸ ਚੁਣੋ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_DSVMR9ALTERNATIVEVSYNC"
+msgid "Alternative VSync"
+msgstr "ਵਿਕਲਪਿਕ VSync"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_DSVMR9LOADMIXER"
+msgid "VMR-9 Mixer Mode"
+msgstr "VMR-9 ਮਿਕਸਰ ਮੋਡ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_EVR_BUFFERS_TXT"
+msgid "EVR Buffers:"
+msgstr "EVR ਬਫਰ:"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_FULLSCREEN_MONITOR_CHECK"
+msgid "D3D Fullscreen"
+msgstr "D3D ਪੂਰੀ-ਸਕਰੀਨ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_RESETDEVICE"
+msgid "Reinitialize when changing display"
+msgstr "ਡਿਸਪਲੇਅ ਬਦਲਦੇ ਸਮੇਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰੋ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "DirectShow Video"
+msgstr "DirectShow ਵਿਡੀਓ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "DXVA"
+msgstr "DXVA"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Subtitles"
+msgstr "ਸਬਟਾਈਟਲ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Screenshot"
+msgstr "ਸਕਰੀਨਸ਼ਾਟ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Shaders"
+msgstr "ਸ਼ੇਡਰ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Rotation"
+msgstr "ਘੁੰਮਾਉਣਾ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Audio Renderer"
+msgstr "ਆਡੀਓ ਰੈਂਡਰਰ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Subtitle Renderer"
+msgstr "ਸਬਟਾਈਟਲ ਰੈਂਡਰਰ"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "VMR-9 (renderless) and EVR (CP) settings"
+msgstr "VMR-9 (ਬਿਨਾਂ ਰੈਂਡਰ) ਅਤੇ EVR (CP) ਸੈਟਿੰਗਜ਼"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Surface:"
+msgstr "ਸਰਫੇਸ:"
+
+msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgid "Resizer:"
+msgstr "ਰੀਸਾਈਜ਼ਰ:"
+
+msgctxt "IDD_PPAGEPLAYBACK"
+msgid "Playback"
+msgstr "ਚਲਾਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK2"
+msgid "Auto-load audio files"
+msgstr "ਆਡੀਓ ਫ਼ਾਈਲਾਂ ਆਟੋ-ਲੋਡ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
+msgid "Allow overriding external splitter choice"
+msgstr "ਪਲੇਬੈਕ ਸ਼ੁਰੂ ਕਰਨ ਵੇਲੇ OSD ਦਿਖਾਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK5"
+msgid "Auto-zoom:"
+msgstr "ਆਟੋ-ਜ਼ੂਮ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK6"
+msgid "Report pins which fail to render"
+msgstr "ਰੈਂਡਰ ਕਰਨ ਵਿੱਚ ਅਸਫ਼ਲ ਹੋਏ ਪਿੰਨ ਰਿਪੋਰਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK7"
+msgid "Use worker thread to construct the filter graph"
+msgstr "ਫਿਲਟਰ ਗ੍ਰਾਫ ਬਣਾਉਣ ਲਈ ਵਰਕਰ ਥ੍ਰੈਡ ਦੀ ਵਰਤੋਂ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO1"
+msgid "Play"
+msgstr "ਚਲਾਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO2"
+msgid "Repeat forever"
+msgstr "ਹਮੇਸ਼ਾ ਦੁਹਰਾਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Audio"
+msgstr "ਆਡੀਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Volume"
+msgstr "ਵਾਲੀਅਮ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Min"
+msgstr "ਘੱਟੋ-ਘੱਟ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Max"
+msgstr "ਵੱਧੋ-ਵੱਧ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "L"
+msgstr "ਖੱ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "R"
+msgstr "ਸੱ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Control"
+msgstr "ਕੰਟਰੋਲ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "%"
+msgstr "%"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Playback"
+msgstr "ਚਲਾਓ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "After Playback"
+msgstr "ਚਲਾਓ ਬਾਅਦ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Zoom and Alignment"
+msgstr "ਜ਼ੂਮ ਅਤੇ ਅਨੁਕੂਲਤਾ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "min %"
+msgstr "ਘੱਟੋ-ਘੱਟ %"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "max %"
+msgstr "ਵੱਧ ਤੋਂ ਵੱਧ %"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Default track preference"
+msgstr "ਮੂਲ ਟਰੈਕ ਪਸੰਦ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
+msgid "Open settings"
+msgstr "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC1"
+msgid "time(s)"
+msgstr "ਵਾਰ"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC2"
+msgid "Auto fit factor:"
+msgstr "ਆਟੋ ਫਿੱਟ ਗੁਣਕ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC4"
+msgid "Vertical Alignment:"
+msgstr "ਲੰਬਕਾਰੀ ਸੰਰਖਣ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC5"
+msgid "Volume step:"
+msgstr "ਵਾਲੀਅਮ ਵਾਧਾ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC6"
+msgid "Speed step:"
+msgstr "ਗਤੀ ਵਾਧਾ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
+msgid "Repeat mode:"
+msgstr "ਦੁਹਰਾਓ ਮੋਡ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC8"
+msgid "Subtitles:"
+msgstr "ਸਬ-ਟਾਈਟਲ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC9"
+msgid "Audio:"
+msgstr "ਆਡੀਓ:"
+
+msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC_BALANCE"
+msgid "Balance"
+msgstr "ਸੰਤੁਲਨ"
+
+msgctxt "IDD_PPAGEPLAYER"
+msgid "Player"
+msgstr "ਪਲੇਅਰ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK1"
+msgid "Keep history of recently opened files"
+msgstr "ਤਾਜ਼ਾ ਖੋਲ੍ਹੀਆਂ ਫ਼ਾਈਲਾਂ ਦਾ ਅਤੀਤ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK10"
+msgid "Disable \"Open Disc\" menu"
+msgstr "\"ਡਿਸਕ ਖੋਲ੍ਹੋ\" ਮੀਨੂ ਅਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
+msgid "Remember last Pan && Scan Zoom"
+msgstr "ਆਖਰੀ Pan && Scan ਜ਼ੂਮ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK13"
+msgid "Replace file name with title"
+msgstr "ਫ਼ਾਈਲ ਨਾਂ ਨੂੰ ਟਾਈਟਲ ਨਾਲ ਬਦਲੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK14"
+msgid "Enable cover-art support"
+msgstr "ਕਵਰ-ਆਰਟ ਸਹਾਇਤਾ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK2"
+msgid "Remember last playlist"
+msgstr "ਆਖਰੀ ਪਲੇਅਲਿਸਟ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK3"
+msgid "Tray icon"
+msgstr "ਟਰੇ ਆਈਕਾਨ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK6"
+msgid "Remember last window position"
+msgstr "ਆਖਰੀ ਵਿੰਡੋ ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
+msgid "Remember last window size"
+msgstr "ਆਖਰੀ ਵਿੰਡੋ ਆਕਾਰ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK8"
+msgid "Store settings in .ini file"
+msgstr "ਸੈਟਿੰਗਜ਼ .ini ਫ਼ਾਈਲ ਵਿੱਚ ਸਟੋਰ ਕਰੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_CHECK9"
+msgid "Process priority above normal"
+msgstr "ਸਧਾਰਨ ਤੋਂ ਉੱਪਰ ਪ੍ਰਕਿਰਿਆ ਤਰਜੀਹ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_DVD_POS"
+msgid "Remember DVD position"
+msgstr "DVD ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
+msgid "Remember File position"
+msgstr "ਫ਼ਾਈਲ ਸਥਿਤੀ ਯਾਦ ਰੱਖੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_RADIO1"
+msgid "Use the same player for each media file"
+msgstr "ਹਰੇਕ ਮੀਡਿਆ ਫਾਈਲ ਲਈ ਉਹੀ ਪਲੇਅਰ ਵਰਤੋਂ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
+msgid "Open a new player for each media file played"
+msgstr "ਹਰ ਮੀਡੀਆ ਫਾਈਲ ਚਲਾਉਣ ਲਈ ਨਵਾਂ ਪਲੇਅਰ ਖੋਲ੍ਹੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_RADIO3"
+msgid "Display full path"
+msgstr "ਪੂਰਾ ਪਾਥ ਦਿਖਾਓ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_RADIO4"
+msgid "File name only"
+msgstr "ਕੇਵਲ ਫ਼ਾਈਲ ਨਾਂ ਹੀ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_RADIO5"
+msgid "Don't prefix anything"
+msgstr "ਕੁਝ ਵੀ ਅੱਗੇ ਨਾ ਲਗਾਓ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
+msgid "Open options"
+msgstr "ਚੋਣਾਂ ਖੋਲ੍ਹੋ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
+msgid "Title bar"
+msgstr "ਟਾਈਟਲ ਪੱਟੀ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
+msgid "Other"
+msgstr "ਹੋਰ"
+
+msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
+msgid "History"
+msgstr "ਅਤੀਤ"
+
+msgctxt "IDD_PPAGESHADERS"
+msgid "Playback::Shaders"
+msgstr "ਚਲਾਓ::ਸ਼ੇਡਰ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON1"
+msgid "Add to pre-resize"
+msgstr "ਪ੍ਰੀ-ਰੀਸਾਈਜ਼ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
+msgid "Add shader file"
+msgstr "ਸ਼ੇਡਰ ਫ਼ਾਈਲ ਸ਼ਾਮਲ ਕਰੋ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON13"
+msgid "Remove"
+msgstr "ਹਟਾਓ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON2"
+msgid "Add to post-resize"
+msgstr "ਪੋਸਟ-ਰੀਸਾਈਜ਼ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON3"
+msgid "Load"
+msgstr "ਲੋਡ ਕਰੋ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON4"
+msgid "Save"
+msgstr "ਸਾਂਭੋ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_BUTTON5"
+msgid "Delete"
+msgstr "ਮਿਟਾਓ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
+msgid ""
+"Shaders contain special effects which can be added to the video rendering "
+"process."
+msgstr "ਸ਼ੇਡਰ ਲੇਬਲ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
+msgid "Shader presets"
+msgstr "ਸ਼ੇਡਰ ਪ੍ਰੀਸੈਟ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
+msgid "Active pre-resize shaders"
+msgstr "ਸਰਗਰਮ ਪ੍ਰੀ-ਰੀਸਾਈਜ਼ ਸ਼ੇਡਰ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
+msgid "Active post-resize shaders"
+msgstr "ਸਰਗਰਮ ਪੋਸਟ-ਰੀਸਾਈਜ਼ ਸ਼ੇਡਰ"
+
+msgctxt "IDD_PPAGESHADERS_IDC_STATIC5"
+msgid ""
+"MPC-VR does not support pre-resize shaders. It will run them after resize, "
+"before the post-resize shaders."
+msgstr ""
+"MPC-VR ਪ੍ਰੀ-ਰੀਸਾਈਜ਼ ਸ਼ੇਡਰ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ। ਇਹ ਪੋਸਟ-ਰੀਸਾਈਜ਼ ਸ਼ੇਡਰ ਵਜੋਂ ਲਾਗੂ "
+"ਕੀਤੇ ਜਾਣਗੇ।"
+
+msgctxt "IDD_PPAGESUBMISC"
+msgid "Subtitles::Misc"
+msgstr "ਸਬ-ਟਾਈਟਲ::ਫੁਟਕਲ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_BUTTON1"
+msgid "Reset"
+msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK1"
+msgid "Prefer forced and/or default subtitles tracks"
+msgstr "ਸਬਟਾਈਟਲ ਸਰਵਿਸ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
+msgid "Prefer external subtitles over embedded subtitles"
+msgstr "ਅਸਟਡ ਆਡੀਓ ਟਰੈਕ ਚੁਣੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
+msgid "Ignore embedded subtitles"
+msgstr "ਐਂਬੈਡਡ ਸਬਟਾਈਟਲ ਨਜ਼ਰਅੰਦਾਜ਼ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK4"
+msgid "Automatically search and download subtitles if none are found locally"
+msgstr "ਸਬਟਾਈਟਲ ਬਦਲੋ ਬਦਲ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK5"
+msgid ""
+"Prefer subtitles for hearing impaired (when indicated by subtitles provider)"
+msgstr "ਚਲਦੇ ਸਮੇਂ ਸਬਟਾਈਟਲ ਲੋਡ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_CHECK_AUTOSAVE_ONLINE_SUBTITLE"
+msgid ""
+"Automatically save downloaded subtitles to the first autoload path folder"
+msgstr "ਆਪਣੇ-ਆਪ ਔਨਲਾਈਨ ਸਬਟਾਈਟਲ ਸਾਂਭੋ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
+msgid "Autoload paths"
+msgstr "ਆਟੋਲੋਡ ਪਾਥ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
+msgid "Online subtitle search"
+msgstr "ਆਨਲਾਈਨ ਸਬਟਾਈਟਲ ਖੋਜ"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_STATIC1"
+msgid "Ignore files containing any of the following word(s):"
+msgstr "ਸਬਟਾਈਟਲ ਤਰਜੀਹੀ ਭਾਸ਼ਾਵਾਂ (ਲੋਕੇਲ ਕੋਡ ਵੱਖ ਕੀਤੇ;)"
+
+msgctxt "IDD_PPAGESUBMISC_IDC_STATIC2"
+msgid "Languages in order of preference:"
+msgstr "ਤਰਜੀਹ ਦੇ ਕ੍ਰਮ ਵਿੱਚ ਭਾਸ਼ਾਵਾਂ:"
+
+msgctxt "IDD_PPAGESUBSTYLE"
+msgid "Subtitles::Default Style"
+msgstr "ਸਬ-ਟਾਈਟਲ::ਡਿਫਾਲਟ ਸ਼ੈਲੀ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_BUTTON1"
 msgid "Font"
 msgstr "ਫ਼ੋਂਟ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC1"
-msgid "Spacing"
-msgstr ""
+msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK1"
+msgid "Link alpha channels"
+msgstr "ਅਲਫਾ ਚੈਨਲਾਂ ਨੂੰ ਜੋੜੋ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC2"
-msgid "Angle (z,°)"
-msgstr "ਕੋਣ (z,°)"
+msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK2"
+msgid "Use libass for SSA/ASS"
+msgstr "SSA/ASS ਲਈ libass ਦੀ ਵਰਤੋਂ ਕਰੋ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC3"
-msgid "Scale (x,%)"
-msgstr "ਸਕੇਲ (x,%)"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC4"
-msgid "Scale (y,%)"
-msgstr "ਸਕੇਲ (y,%)"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
-msgid "Border Style"
-msgstr ""
+msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK_RELATIVETO"
+msgid "Position subtitles relative to the video frame"
+msgstr "ਵੀਡੀਓ ਫਰੇਮ ਦੇ ਅਨੁਸਾਰ ਸਬਟਾਈਟਲ ਦੀ ਸਥਿਤੀ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_RADIO1"
 msgid "Outline"
@@ -943,43 +1491,23 @@ msgstr "ਖਾਕਾ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_RADIO2"
 msgid "Opaque box"
-msgstr ""
+msgstr "ਧੁੰਦਲਾ ਬਾਕਸ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC5"
-msgid "Width"
-msgstr "ਚੌੜਾਈ"
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
+msgid "Font"
+msgstr "ਫ਼ੋਂਟ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC6"
-msgid "Shadow"
-msgstr "ਛਾਂ"
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
+msgid "Border Style"
+msgstr "ਬਾਰਡਰ ਸਟਾਈਲ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Screen Alignment && Margins"
-msgstr "ਸਕਰੀਨ ਤਰਤੀਬ ਤੇ ਹਾਸ਼ੀਆ"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC7"
-msgid "Left"
-msgstr "ਖੱਬੇ"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC8"
-msgid "Right"
-msgstr "ਸੱਜੇ"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC9"
-msgid "Top"
-msgstr "ਉੱਤੇ"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC10"
-msgid "Bottom"
-msgstr "ਹੇਠਾਂ"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK_RELATIVETO"
-msgid "Position subtitles relative to the video frame"
-msgstr ""
+msgstr "ਸਕਰੀਨ ਤਰਤੀਬ && ਹਾਸ਼ੀਆ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Colors && Transparency"
-msgstr "ਰੰਗ ਤੇ ਪਾਰਦਰਸ਼ਤਾ"
+msgstr "ਰੰਗ && ਪਾਰਦਰਸ਼ਤਾ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "0%"
@@ -1005,423 +1533,163 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Shadow"
 msgstr "ਛਾਂ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK1"
-msgid "Link alpha channels"
-msgstr ""
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC1"
+msgid "Spacing"
+msgstr "ਫਾਸਲਾ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC10"
+msgid "Bottom"
+msgstr "ਹੇਠਾਂ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC2"
+msgid "Angle (z,°)"
+msgstr "ਕੋਣ (z,°)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC21"
 msgid "8-bit Character Set"
-msgstr ""
+msgstr "8-ਬਿਟ ਅੱਖਰ ਸੈੱਟ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
-msgstr ""
+msgstr "ਓਪਨਟਾਈਪ ਭਾਸ਼ਾ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC3"
+msgid "Scale (x,%)"
+msgstr "ਸਕੇਲ (x,%)"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC4"
+msgid "Scale (y,%)"
+msgstr "ਸਕੇਲ (y,%)"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC5"
+msgid "Width"
+msgstr "ਚੌੜਾਈ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC6"
+msgid "Shadow"
+msgstr "ਛਾਂ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC7"
+msgid "Left"
+msgstr "ਖੱਬੇ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC8"
+msgid "Right"
+msgstr "ਸੱਜੇ"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC9"
+msgid "Top"
+msgstr "ਉੱਤੇ"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
-msgstr ""
+msgstr "Libass ਵਿਕਲਪ"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK2"
-msgid "Use libass for SSA/ASS"
-msgstr ""
-
-msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
-msgid "Buttons"
-msgstr ""
-
-msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
-msgid "Click"
-msgstr ""
-
-msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
-msgid "Double click"
-msgstr ""
-
-msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
-msgid "Right click"
-msgstr ""
-
-msgctxt "IDD_PPAGEMOUSE_IDC_BUTTON2"
-msgid "Default"
-msgstr ""
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
-msgid ""
-"If you would like to use the stand-alone versions of these filters or "
-"another replacement, disable them here."
-msgstr ""
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
-msgid "Source Filters"
-msgstr "ਸਰੋਤ ਫਿਲਟਰ"
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
-msgid "Transform Filters"
-msgstr ""
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
-msgid "Internal LAV Filters settings"
-msgstr ""
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_SPLITTER_CONF"
-msgid "Splitter"
-msgstr "ਸਪਲਿੱਟਰ"
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_VIDEO_DEC_CONF"
-msgid "Video decoder"
-msgstr "ਵਿਡੀਓ ਡੀਕੋਡਰ"
-
-msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
-msgid "Audio decoder"
-msgstr "ਆਡੀਓ ਡਿਕੋਡਰ"
-
-msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
-msgid "Internal:"
-msgstr "ਅੰਦਰੂਨੀ:"
-
-msgctxt "IDD_PPAGELOGO_IDC_RADIO2"
-msgid "External:"
-msgstr "ਬਾਹਰੀ:"
-
-msgctxt "IDD_PPAGELOGO_IDC_CHECK1"
-msgid "Apply Monitor Color Profile"
-msgstr ""
-
-msgctxt "IDD_PPAGELOGO_IDC_BUTTON2"
-msgid "Browse..."
-msgstr "...ਝਲਕ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "DirectShow Video"
-msgstr "DirectShow ਵਿਡੀਓ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON1"
-msgid "Settings"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "DXVA"
-msgstr "DXVA"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
+msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles"
+msgstr "ਸਬਟਾਈਟਲ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK3"
+msgid "Override placement"
+msgstr "ਸਥਿਤੀ ਓਵਰਰਾਈਡ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_ALLOW_DROPPING_SUBPIC"
+msgid "Allow dropping some subpictures if the queue is running late"
+msgstr "ਸਬਟਾਈਟਲ ਫਰੇਮ ਡਰਾਪ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_NO_SUB_ANIM"
+msgid "Never animate the subtitles"
+msgstr "ਕਦੇ ਵੀ ਸਬਟਾਈਟਲ ਨੂੰ ਐਨੀਮੇਟ ਨਾ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_SUB_AR_COMPENSATION"
+msgid "Apply aspect ratio compensation for anamorphic videos"
+msgstr "ਐਨਾਮੋਰਫਿਕ ਵੀਡੀਓਜ਼ ਲਈ ਅਸਪੈਕਟ ਰੇਸ਼ੋ ਮੁਆਵਜ਼ਾ ਲਾਗੂ ਕਰੋ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid "Delay step"
+msgstr "ਦੇਰੀ ਵਾਧਾ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid "ms"
+msgstr "ਮਿ.ਸ."
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid "Texture settings (open the video again to see the changes)"
+msgstr "ਟੈਕਸਚਰ ਸੈਟਿੰਗਜ਼ (ਬਦਲਾਅ ਦੇਖਣ ਲਈ ਵੀਡੀਓ ਮੁੜ ਖੋਲ੍ਹੋ)"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid "Renderer Layout"
+msgstr "ਰੈਂਡਰਰ ਖਾਕਾ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid "Warning"
+msgstr "ਚੇਤਾਵਨੀ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
+msgid ""
+"If you override and enable fullscreen antialiasing somewhere at your "
+"videocard's settings, subtitles aren't going to look any better but it will "
+"surely eat your CPU."
 msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Screenshot"
-msgstr "ਸਕਰੀਨਸ਼ਾਟ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Shaders"
-msgstr "ਸ਼ੇਡਰ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Rotation"
-msgstr "ਘੁੰਮਾਉਣਾ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Audio Renderer"
-msgstr "ਆਡੀਓ ਰੈਂਡਰਰ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
-msgid "Settings"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Subtitle Renderer"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "VMR-9 (renderless) and EVR (CP) settings"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Surface:"
-msgstr "ਸਰਫੇਸ:"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
-msgid "Resizer:"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_D3D9DEVICE"
-msgid "Select D3D9 Render Device"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_RESETDEVICE"
-msgid "Reinitialize when changing display"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_FULLSCREEN_MONITOR_CHECK"
-msgid "D3D Fullscreen"
-msgstr "D3D ਪੂਰੀ-ਸਕਰੀਨ"
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_DSVMR9ALTERNATIVEVSYNC"
-msgid "Alternative VSync"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_DSVMR9LOADMIXER"
-msgid "VMR-9 Mixer Mode"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_EVR_BUFFERS_TXT"
-msgid "EVR Buffers:"
-msgstr ""
-
-msgctxt "IDD_PPAGEOUTPUT_IDC_CACHESHADERS"
-msgid "Cache compiled Shaders"
-msgstr ""
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK1"
-msgid "Listen on port:"
-msgstr "ਪੋਰਟ ਉੱਤੇ ਸੁਣੋ:"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC1"
-msgid "Launch in web browser..."
-msgstr "...ਵੈਬ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK3"
-msgid "Enable compression"
-msgstr "ਕੰਪਰੈਸ਼ਨ ਸਮਰੱਥ ਕਰੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK5"
-msgid "Allow access from localhost only"
-msgstr "ਕੇਵਲ ਲੋਕਲਹੋਸਟ ਤੋਂ ਹੀ ਪਹੁੰਚ ਸਮਰੱਥ ਕਰੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK6"
-msgid "Enable preview"
-msgstr "ਝਲਕ ਸਮਰੱਥ ਕਰੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK2"
-msgid "Print debug information"
-msgstr "ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਛਾਪੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK4"
-msgid "Serve pages from:"
-msgstr "ਇਸ ਤੋਂ ਸਫ਼ੇ ਪੇਸ਼ ਕਰੋ:"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_BUTTON1"
-msgid "Browse..."
-msgstr "...ਝਲਕ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_BUTTON2"
-msgid "Deploy..."
-msgstr "...ਲਾਗੂ ਕਰੋ"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC"
-msgid "Default page:"
-msgstr "ਡਿਫਾਲਟ ਸਫ਼ਾ:"
-
-msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC"
-msgid "CGI handlers: (.ext1=path1;.ext2=path2;...)"
-msgstr "CGI ਹੈਂਡਲਰ: (.ext1=path1;.ext2=path2;...)"
-
-msgctxt "IDD_SUBTITLEDL_DLG_CAPTION"
-msgid "Download subtitles"
-msgstr "ਸਬ-ਟਾਈਟਲ ਡਾਊਨਲੋਡ ਕਰੋ"
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDC_CHECK1"
-msgid "Replace currently loaded subtitles"
-msgstr ""
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDOK"
-msgid "Download"
-msgstr "ਡਾਊਨਲੋਡ ਕਰੋ"
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON1"
-msgid "Refresh"
-msgstr "ਤਾਜ਼ਾ ਕਰੋ"
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON2"
-msgid "Abort"
-msgstr "ਅਧੂਰਾ ਛੱਡੋ"
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON3"
-msgid "Options"
-msgstr "ਚੋਣਾਂ"
-
-msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON4"
-msgid "Search"
-msgstr "ਖੋਜੋ"
-
-msgctxt "IDD_FILEPROPRES_IDC_BUTTON1"
-msgid "Save As..."
-msgstr ""
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Color controls (for VMR-9, EVR and madVR)"
-msgstr ""
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Brightness"
-msgstr "ਚਮਕ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Contrast"
-msgstr "ਕਨਟਰਾਸਟ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Hue"
-msgstr "ਰੰਗਤ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Saturation"
-msgstr "ਸੰਤ੍ਰਿਪਤਾ"
-
-msgctxt "IDD_PPAGEMISC_IDC_RESET"
-msgid "Reset"
-msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Update check"
-msgstr "ਅੱਪਡੇਟ ਜਾਂਚ ਕਰੋ"
-
-msgctxt "IDD_PPAGEMISC_IDC_CHECK1"
-msgid "Enable automatic update check"
-msgstr "ਆਟੋਮੈਟਿਕ ਅੱਪਡੇਟ ਜਾਂਚ ਸਮਰੱਥ ਕਰੋ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC5"
-msgid "Check every:"
-msgstr "ਜਾਂਚ ਕਰੋ ਹਰੇਕ:"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC6"
-msgid "day(s)"
-msgstr "ਦਿਨ"
-
-msgctxt "IDD_PPAGEMISC_IDC_STATIC"
-msgid "Settings management"
-msgstr "ਸੈਟਿੰਗ ਪਰਬੰਧ"
-
-msgctxt "IDD_PPAGEMISC_IDC_RESET_SETTINGS"
-msgid "Reset"
-msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
-
-msgctxt "IDD_PPAGEMISC_IDC_EXPORT_SETTINGS"
-msgid "Export"
-msgstr "ਦਰਾਮਦ"
-
-msgctxt "IDD_PPAGEMISC_IDC_EXPORT_KEYS"
-msgid "Export keys"
-msgstr "ਸਵਿੱਚਾਂ ਬਰਾਮਦ ਕਰੋ"
-
-msgctxt "IDD_TUNER_SCAN_CAPTION"
-msgid "Tuner scan"
-msgstr "ਟਿਊਨਰ ਜਾਂਚ"
-
-msgctxt "IDD_TUNER_SCAN_ID_START"
-msgid "Start"
-msgstr "ਸ਼ੁਰੂ"
-
-msgctxt "IDD_TUNER_SCAN_IDCANCEL"
-msgid "Cancel"
-msgstr "ਰੱਦ ਕਰੋ"
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "Freq. Start"
-msgstr ""
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "Bandwidth"
-msgstr "ਬਰੈਂਡਵਿਡਥ"
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "Freq. End"
-msgstr ""
-
-msgctxt "IDD_TUNER_SCAN_IDC_CHECK_IGNORE_ENCRYPTED"
-msgid "Ignore encrypted channels"
-msgstr ""
-
-msgctxt "IDD_TUNER_SCAN_ID_SAVE"
-msgid "Save"
-msgstr "ਸੰਭਾਲੋ"
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "S"
-msgstr "S"
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "Q"
-msgstr "Q"
-
-msgctxt "IDD_TUNER_SCAN_IDC_CHECK_OFFSET"
-msgid "Use an offset"
-msgstr ""
-
-msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
-msgid "Symbol Rate"
-msgstr ""
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
-msgid "Default Device"
-msgstr "ਡਿਫਾਲਟ ਡਿਵਾਇਸ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_RADIO1"
-msgid "Analog"
-msgstr "ਐਨਾਲਾਗ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_RADIO2"
-msgid "Digital"
-msgstr "ਡਿਜ਼ੀਟਲ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
-msgid "Analog settings"
-msgstr "ਐਨਾਲਾਗ ਸੈਟਿੰਗਾਂ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC1"
-msgid "Video"
-msgstr "ਵਿਡੀਓ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC2"
-msgid "Audio"
-msgstr "ਆਡੀਓ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC3"
-msgid "Country"
-msgstr "ਦੇਸ਼"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
-msgid "Digital settings (BDA)"
-msgstr "ਡਿਜ਼ਿਟਲ ਸੈਟਿੰਗਾਂ (BDA)"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC4"
-msgid "Network Provider"
-msgstr "ਨੈਟਵਰਕ ਪਰਦਾਤਾ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC5"
-msgid "Tuner"
-msgstr "ਟਿਊਨਰ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_STATIC6"
-msgid "Receiver"
-msgstr "ਰਿਸੀਵਰ"
-
-msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST10"
-msgid "Channel switching approach:"
-msgstr ""
-
-msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
-msgid "Rebuild filter graph"
-msgstr ""
-
-msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST12"
-msgid "Stop filter graph"
-msgstr ""
-
-msgctxt "IDD_PPAGESYNC_IDC_SYNCVIDEO"
-msgid "Sync video to display"
-msgstr ""
+"ਜੇ ਤੁਸੀਂ ਆਪਣੇ ਵੀਡੀਓ ਕਾਰਡ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕਿਤੇ ਵੀ ਫੁੱਲਸਕਰੀਨ ਐਂਟੀਅਲਿਆਸਿੰਗ "
+"ਨੂੰ ਓਵਰਰਾਈਡ ਅਤੇ ਚਾਲੂ ਕਰਦੇ ਹੋ, ਤਾਂ ਸਬਟਾਈਟਲ ਬਿਹਤਰ ਨਹੀਂ ਲੱਗਣਗੇ ਪਰ ਇਹ ਤੁਹਾਡੇ "
+"ਸੀਪੀਯੂ ਨੂੰ ਜ਼ਰੂਰ ਖਾ ਜਾਵੇਗਾ।"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC1"
+msgid "Horizontal:"
+msgstr "ਲੇਟਵਾਂ:"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC2"
+msgid "%"
+msgstr "%"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC21"
+msgid "Maximum texture resolution:"
+msgstr "ਵੱਧ ਤੋਂ ਵੱਧ ਟੈਕਸਚਰ ਰੈਜ਼ੋਲਿਊਸ਼ਨ:"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC3"
+msgid "Vertical:"
+msgstr "ਖੜ੍ਹਵਾਂ:"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC4"
+msgid "%"
+msgstr "%"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC5"
+msgid "Render at"
+msgstr "ਰੈਂਡਰ 'ਤੇ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC6"
+msgid "% of the animation"
+msgstr "% ਐਨੀਮੇਸ਼ਨ ਦਾ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC7"
+msgid "Animate at"
+msgstr "ਐਨੀਮੇਟ 'ਤੇ"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC8"
+msgid "% of the video frame rate"
+msgstr "ਵੀਡੀਓ ਫਰੇਮ ਦਰ ਦਾ %"
+
+msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC9"
+msgid "Sub pictures to buffer:"
+msgstr "ਬਫਰ ਕਰਨ ਲਈ ਉਪ ਚਿੱਤਰ:"
+
+msgctxt "IDD_PPAGESYNC"
+msgid "Playback::Sync Renderer Settings"
+msgstr "ਚਲਾਓ::ਸਿੰਕ ਰੈਂਡਰਰ ਸੈਟਿੰਗਾਂ"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC1"
 msgid "Frequency adjustment:"
-msgstr ""
+msgstr "ਫ੍ਰੀਕਵੈਂਸੀ ਐਡਜਸਟਮੈਂਟ:"
 
-msgctxt "IDD_PPAGESYNC_IDC_SYNCDISPLAY"
-msgid "Sync display to video"
-msgstr ""
+msgctxt "IDD_PPAGESYNC_IDC_STATIC10"
+msgid "Changes take effect after the playback has been closed and restarted."
+msgstr "ਜਾਣਕਾਰੀ"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC2"
 msgid "Frequency adjustment:"
-msgstr ""
+msgstr "ਫ੍ਰੀਕਵੈਂਸੀ ਐਡਜਸਟਮੈਂਟ:"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC3"
 msgid "lines"
@@ -1431,13 +1699,9 @@ msgctxt "IDD_PPAGESYNC_IDC_STATIC4"
 msgid "columns"
 msgstr "ਕਾਲਮ"
 
-msgctxt "IDD_PPAGESYNC_IDC_SYNCNEAREST"
-msgid "Present at nearest VSync"
-msgstr ""
-
 msgctxt "IDD_PPAGESYNC_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr ""
+msgstr "ਟਾਰਗਟ ਸਿੰਕ ਓਫਸੈੱਟ:"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC6"
 msgid "ms"
@@ -1455,127 +1719,410 @@ msgctxt "IDD_PPAGESYNC_IDC_STATIC9"
 msgid "ms"
 msgstr "ਮਿ.ਸ."
 
-msgctxt "IDD_PPAGESYNC_IDC_STATIC10"
-msgid "Changes take effect after the playback has been closed and restarted."
-msgstr ""
+msgctxt "IDD_PPAGESYNC_IDC_SYNCDISPLAY"
+msgid "Sync display to video"
+msgstr "ਵਿਡੀਓ ਨਾਲ ਡਿਸਪਲੇ ਸਿੰਕ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
-msgid "Launch files in fullscreen"
-msgstr "ਫ਼ਾਈਲਾਂ ਪੂਰੀ ਸਕਰੀਨ ਉੱਤੇ ਚਲਾਓ"
+msgctxt "IDD_PPAGESYNC_IDC_SYNCNEAREST"
+msgid "Present at nearest VSync"
+msgstr "ਨਿਕਟਤਮ VSync 'ਤੇ ਪੇਸ਼ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
-msgid "Hide controls in fullscreen"
-msgstr "ਪੂਰੀ ਸਕਰੀਨ ਵਿੱਚ ਕੰਟਰੋਲ ਓਹਲੇ ਕਰੋ"
+msgctxt "IDD_PPAGESYNC_IDC_SYNCVIDEO"
+msgid "Sync video to display"
+msgstr "ਡਿਸਪਲੇ ਨਾਲ ਵਿਡੀਓ ਸਿੰਕ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
-msgid "ms"
-msgstr "ਮਿ.ਸ."
+msgctxt "IDD_PPAGETHEME"
+msgid "Player::User Interface"
+msgstr "ਪਲੇਅਰ::ਯੂਜ਼ਰ ਇੰਟਰਫੇਸ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK6"
-msgid "Hide docked panels"
-msgstr "ਡੌਕ ਕੀਤੇ ਪੈਨਲ ਓਹਲੇ ਕਰੋ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK1"
+msgid "Use Modern Theme"
+msgstr "ਮਾਡਰਨ ਥੀਮ ਵਰਤੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
-msgid "Exit fullscreen at the end of playback"
-msgstr "ਚਲਾਉਣਾ ਖਤਮ ਹੋਣ ਦੇ ਬਾਅਦ ਪੂਰੀ-ਸਕਰੀਨ ਨੂੰ ਛੱਡੋ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
+msgid "Hide Windowed Controls"
+msgstr "ਵਿੰਡੋਡ ਕੰਟਰੋਲ ਲੁਕਾਓ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
-msgid "Fullscreen monitor"
-msgstr "ਪੂਰੀ ਸਕਰੀਨ ਮਾਨੀਟਰ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
+msgid "Control via Windows UI (SMTC)"
+msgstr "Windows UI (SMTC) ਰਾਹੀਂ ਕੰਟਰੋਲ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK2"
-msgid "Use autochange fullscreen monitor mode"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_CHECK12"
+msgid "Audio Info"
+msgstr "ਆਡੀਓ ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON1"
-msgid "Add"
-msgstr "ਜੋੜੋ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK13"
+msgid "Display Current Time"
+msgstr "ਮੌਜੂਦਾ ਸਮਾਂ ਡਿਸਪਲੇ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON2"
-msgid "Del"
-msgstr "ਹਟਾਓ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
+msgid "Show time"
+msgstr "ਸਮਾਂ ਦਿਖਾਓ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON3"
-msgid "Up"
-msgstr "ਉੱਤੇ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK2"
+msgid "Show chapter marks on seekbar"
+msgstr "ਸੀਕਬਾਰ 'ਤੇ ਚੈਪਟਰ ਮਾਰਕ ਦਿਖਾਓ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON4"
-msgid "Down"
-msgstr "ਹੇਠਾਂ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK3"
+msgid "Track Language"
+msgstr "ਟਰੈਕ ਭਾਸ਼ਾ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK3"
-msgid "Apply default monitor mode on fullscreen exit"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_CHECK4"
+msgid "Video Info"
+msgstr "ਵਿਡੀਓ ਜਾਣਕਾਰੀ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_RESTORERESCHECK"
-msgid "Restore resolution on program exit"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
+msgid "FPS"
+msgstr "FPS"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
-msgid "Delay"
-msgstr "ਦੇਰੀ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK6"
+msgid "A-B Marks"
+msgstr "A-B ਨਿਸ਼ਾਨ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC2"
-msgid "s"
-msgstr "ਸ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
+msgid "Limit window proportions on resize"
+msgstr "ਰੀਸਾਈਜ਼ 'ਤੇ ਵਿੰਡੋ ਅਨੁਪਾਤ ਸੀਮਤ ਕਰੋ"
 
-msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK7"
-msgid "Allow separate control window"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
+msgid "Snap to desktop edges"
+msgstr "ਡੈਸਕਟਾਪ ਕਿਨਾਰਿਆਂ 'ਤੇ ਸਨੈਪ ਕਰੋ"
 
-msgctxt "IDD_NAVIGATION_DLG_IDC_NAVIGATION_INFO"
-msgid "Info"
-msgstr "ਜਾਣਕਾਰੀ"
+msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
+msgid "Use enhanced taskbar features"
+msgstr "ਵਧੀਆ ਟਾਸਕਬਾਰ ਫੀਚਰ ਵਰਤੋ"
 
-msgctxt "IDD_NAVIGATION_DLG_IDC_NAVIGATION_SCAN"
-msgid "Scan"
-msgstr "ਸਕੈਨ ਕਰੋ"
+msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
+msgid "Show video preview"
+msgstr "ਵਿਡੀਓ ਪ੍ਰੀਵਿਊ ਦਿਖਾਓ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK1"
-msgid "Prefer forced and/or default subtitles tracks"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_SHOW_OSD"
+msgid "Show OSD (requires restart)"
+msgstr "OSD ਦਿਖਾਓ (ਰੀਸਟਾਰਟ ਦੀ ਲੋੜ ਹੈ)"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
-msgid "Prefer external subtitles over embedded subtitles"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_STATIC"
+msgid "Window Behavior"
+msgstr "ਵਿੰਡੋ ਵਿਵਹਾਰ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
-msgid "Ignore embedded subtitles"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_STATIC"
+msgid "Windows Integration"
+msgstr "ਵਿੰਡੋਜ਼ ਇੰਟੀਗ੍ਰੇਸ਼ਨ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
-msgid "Autoload paths"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
+msgid "Theme"
+msgstr "ਥੀਮ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_BUTTON1"
-msgid "Reset"
-msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
+msgctxt "IDD_PPAGETHEME_IDC_STATIC10"
+msgid "Status Bar Elements"
+msgstr "ਸਥਿਤੀ ਬਾਰ ਤੱਤ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
-msgid "Online subtitle search"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "ਹੋਵਰ ਸਥਿਤੀ:"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK4"
-msgid "Automatically search and download subtitles if none are found locally"
-msgstr ""
+msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
+msgid "Modern Theme Color:"
+msgstr "ਆਧੁਨਿਕ ਥੀਮ ਰੰਗ:"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK5"
+msgctxt "IDD_PPAGETHEME_IDC_STATIC21"
+msgid "Language"
+msgstr "ਭਾਸ਼ਾ"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC22"
+msgid "Modern Seekbar height:"
+msgstr "ਆਧੁਨਿਕ ਸੀਕਬਾਰ ਉਚਾਈ:"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC23"
+msgid "Font size:"
+msgstr "ਫੌਂਟ ਸਾਈਜ਼:"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
+msgid "Seekbar"
+msgstr "ਸੀਕਬਾਰ"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC5"
+msgid "Language:"
+msgstr "ਭਾਸ਼ਾ:"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC6"
+msgid "Font:"
+msgstr "ਫੌਂਟ:"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
+msgid "Preview width (% of screen)"
+msgstr "ਪ੍ਰੀਵਿਊ ਚੌੜਾਈ (ਸਕਰੀਨ ਦੀ %)"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
+msgid "Seekbar Hover"
+msgstr "ਸੀਕਬਾਰ ਹੋਵਰ"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC9"
+msgid "On Screen Display (OSD)"
+msgstr "ਆਨ ਸਕਰੀਨ ਡਿਸਪਲੇ (OSD)"
+
+msgctxt "IDD_PPAGETOOLBAR"
+msgid "Player::Toolbar"
+msgstr "ਪਲੇਅਰ::ਟੂਲਬਾਰ"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT"
+msgid "Player::Toolbar Layout"
+msgstr "ਪਲੇਅਰ::ਟੂਲਬਾਰ ਲੇਆਉਟ"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
+msgid "<<"
+msgstr "<<"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
+msgid ">>"
+msgstr ">>"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
+msgid "^"
+msgstr "^"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
+msgid "v"
+msgstr "v"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Style"
+msgstr "ਟੂਲਬਾਰ ਸਟਾਈਲ"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Alignment:"
+msgstr "ਟੂਲਬਾਰ ਅਨੁਕੂਲਤਾ:"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Active Style:"
+msgstr "ਸਰਗਰਮ ਸਟਾਈਲ:"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 1"
+msgstr "ਕਸਟਮ ਬਟਨ 1"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Click"
+msgstr "ਕਲਿੱਕ"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Right click"
+msgstr "ਸੱਜਾ ਕਲਿੱਕ"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 2"
+msgstr "ਕਸਟਮ ਬਟਨ 2"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 3"
+msgstr "ਕਸਟਮ ਬਟਨ 3"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 4"
+msgstr "ਕਸਟਮ ਬਟਨ 4"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
+msgid "Toolbar Scale:"
+msgstr "ਟੂਲਬਾਰ ਸਕੇਲ:"
+
+msgctxt "IDD_PPAGETWEAKS"
+msgid "Tweaks"
+msgstr "ਟਵੀਕ"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_BUTTON1"
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_CHECK3"
+msgid "Auto-hide the mouse pointer during playback in windowed mode"
+msgstr "ਸਿਰਫ਼ ਯਾਦ ਰੱਖੋ ਜਦੋਂ ਬੰਦ ਹੋਵੇ"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_CHECK4"
+msgid "Display \"Now Playing\" information in Skype's mood message"
+msgstr "ਸਕਾਈਪ ਦੇ ਮੂਡ ਸੁਨੇਹੇ ਵਿੱਚ \"ਹੁਣ ਚਲ ਰਿਹਾ ਹੈ\" ਜਾਣਕਾਰੀ ਦਿਖਾਓ"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_CHECK6"
 msgid ""
-"Prefer subtitles for hearing impaired (when indicated by subtitles provider)"
-msgstr ""
+"Prevent minimizing the player when in fullscreen on a non default monitor"
+msgstr "ਸਕਰੀਨ ਪਰ੍ਹਾਂ ਦੇ ਬਾਹਰ ਇੱਕ ਕਿਨਾਰੇ ਤੇ ਯਾਦ ਨਾ ਰੱਖੋ"
 
-msgctxt "IDD_PPAGESUBMISC_IDC_STATIC1"
-msgid "Ignore files containing any of the following word(s):"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBMISC_IDC_STATIC2"
-msgid "Languages in order of preference:"
-msgstr ""
-
-msgctxt "IDD_PPAGESUBMISC_IDC_CHECK_AUTOSAVE_ONLINE_SUBTITLE"
+msgctxt "IDD_PPAGETWEAKS_IDC_CHECK7"
 msgid ""
-"Automatically save downloaded subtitles to the first autoload path folder"
+"Open previous/next file in folder on \"Skip back/forward\" when there is "
+"only one item in playlist"
 msgstr ""
+"ਜਦੋਂ ਪਲੇਅਲਿਸਟ ਵਿੱਚ ਸਿਰਫ ਇੱਕ ਆਈਟਮ ਹੁੰਦਾ ਹੈ, ਤਾਂ \"ਪਿੱਛੇ/ਅੱਗੇ ਛੱਡੋ\" 'ਤੇ ਫੋਲਡਰ"
+" ਵਿੱਚ ਪਿਛਲੀ/ਅਗਲੀ ਫਾਈਲ ਖੋਲ੍ਹ"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_CHECK_LCD"
+msgid "Enable Logitech LCD support (experimental)"
+msgstr "ਲੌਜੀਟੈਕ LCD ਸਹਾਇਤਾ ਚਾਲੂ ਕਰੋ (ਪ੍ਰਯੋਗਾਤਮਕ)"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_FASTSEEK_CHECK"
+msgid "Fast seek (on keyframe)"
+msgstr "ਤੇਜ਼ ਖੋਜ (ਕੀਫ਼ਰੇਮ 'ਤੇ)"
+
+msgctxt "IDD_PPAGETWEAKS_IDC_STATIC"
+msgid "Jump distances (small, medium, large in ms)"
+msgstr "ਵਿੰਡੋ ਸਥਿਤੀ"
+
+msgctxt "IDD_PPAGEWEBSERVER"
+msgid "Player::Web Interface"
+msgstr "ਪਲੇਅਰ::ਵੈਬ ਇੰਟਰਫੇਸ"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_BUTTON1"
+msgid "Browse..."
+msgstr "ਬ੍ਰਾਉਜ਼ ਕਰੋ..."
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_BUTTON2"
+msgid "Deploy..."
+msgstr "ਲਾਗੂ ਕਰੋ..."
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK1"
+msgid "Listen on port:"
+msgstr "ਪੋਰਟ ਉੱਤੇ ਸੁਣੋ:"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK2"
+msgid "Print debug information"
+msgstr "ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਛਾਪੋ"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK3"
+msgid "Enable compression"
+msgstr "ਕੰਪਰੈਸ਼ਨ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK4"
+msgid "Serve pages from:"
+msgstr "ਇਸ ਤੋਂ ਸਫ਼ੇ ਪੇਸ਼ ਕਰੋ:"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK5"
+msgid "Allow access from localhost only"
+msgstr "ਕੇਵਲ ਲੋਕਲਹੋਸਟ ਤੋਂ ਹੀ ਪਹੁੰਚ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK6"
+msgid "Enable preview"
+msgstr "ਝਲਕ ਸਮਰੱਥ ਕਰੋ"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC"
+msgid "Default page:"
+msgstr "ਡਿਫਾਲਟ ਸਫ਼ਾ:"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC"
+msgid "CGI handlers: (.ext1=path1;.ext2=path2;...)"
+msgstr "CGI ਹੈਂਡਲਰ: (.ext1=path1;.ext2=path2;...)"
+
+msgctxt "IDD_PPAGEWEBSERVER_IDC_STATIC1"
+msgid "Launch in web browser..."
+msgstr "ਵੈਬ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ..."
+
+msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
+msgid "Select Media from RAR"
+msgstr "RAR ਤੋਂ ਮੀਡੀਆ ਚੁਣੋ"
+
+msgctxt "IDD_RAR_ENTRY_SELECTOR_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+msgctxt "IDD_RAR_ENTRY_SELECTOR_IDOK"
+msgid "Select"
+msgstr "ਚੁਣੋ"
+
+msgctxt "IDD_SAVE_DLG_CAPTION"
+msgid "Saving..."
+msgstr "ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ..."
+
+msgctxt "IDD_SAVE_DLG_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+msgctxt "IDD_SELECTMEDIATYPE_CAPTION"
+msgid "Select Media Type"
+msgstr "ਮੀਡਿਆ ਕਿਸਮ ਚੁਣੋ"
+
+msgctxt "IDD_SELECTMEDIATYPE_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+msgctxt "IDD_SELECTMEDIATYPE_IDOK"
+msgid "OK"
+msgstr "ਠੀਕ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_CAPTION"
+msgid "Download subtitles"
+msgstr "ਸਬ-ਟਾਈਟਲ ਡਾਊਨਲੋਡ ਕਰੋ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON1"
+msgid "Refresh"
+msgstr "ਤਾਜ਼ਾ ਕਰੋ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON2"
+msgid "Abort"
+msgstr "ਅਧੂਰਾ ਛੱਡੋ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON3"
+msgid "Options"
+msgstr "ਵਿਕਲਪ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDC_BUTTON4"
+msgid "Search"
+msgstr "ਖੋਜੋ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDC_CHECK1"
+msgid "Replace currently loaded subtitles"
+msgstr "ਮੌਜੂਦਾ ਲੋਡ ਕੀਤੇ ਸਬਟਾਈਟਲ ਬਦਲੋ"
+
+msgctxt "IDD_SUBTITLEDL_DLG_IDOK"
+msgid "Download"
+msgstr "ਡਾਊਨਲੋਡ ਕਰੋ"
+
+msgctxt "IDD_TUNER_SCAN_CAPTION"
+msgid "Tuner scan"
+msgstr "ਟਿਊਨਰ ਜਾਂਚ"
+
+msgctxt "IDD_TUNER_SCAN_IDCANCEL"
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_CHECK_IGNORE_ENCRYPTED"
+msgid "Ignore encrypted channels"
+msgstr "ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਚੈਨਲ ਨਜ਼ਰਅੰਦਾਜ਼ ਕਰੋ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_CHECK_OFFSET"
+msgid "Use an offset"
+msgstr "ਇੱਕ ਓਫਸੈੱਟ ਦੀ ਵਰਤੋਂ ਕਰੋ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "Freq. Start"
+msgstr "ਫ੍ਰੀਕ. ਸ਼ੁਰੂ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "Bandwidth"
+msgstr "ਬਰੈਂਡਵਿਡਥ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "Freq. End"
+msgstr "ਫ੍ਰੀਕ. ਅੰਤ"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "S"
+msgstr "S"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "Q"
+msgstr "Q"
+
+msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
+msgid "Symbol Rate"
+msgstr "ਸੰਕੇਤ ਦਰ"
+
+msgctxt "IDD_TUNER_SCAN_ID_SAVE"
+msgid "Save"
+msgstr "ਸਾਂਭੋ"
+
+msgctxt "IDD_TUNER_SCAN_ID_START"
+msgid "Start"
+msgstr "ਸ਼ੁਰੂ"
 
 msgctxt "IDD_UPDATE_DIALOG_CAPTION"
 msgid "Update Checker"
@@ -1585,424 +2132,10 @@ msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_DL_BUTTON"
 msgid "&Download now"
 msgstr "ਹੁਣੇ ਡਾਊਨਲੋਡ ਕਰੋ(&D)"
 
+msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_IGNORE_BUTTON"
+msgid "&Ignore this update"
+msgstr "ਇਹ ਅੱਪਡੇਟ ਅਣਡਿੱਠਾ ਕਰੋ(&I)"
+
 msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_LATER_BUTTON"
 msgid "Remind me &later"
 msgstr "ਮੈਨੂੰ ਬਾਅਦ ਵਿੱਚ ਯਾਦ ਕਰਵਾਉ(&l)"
-
-msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_IGNORE_BUTTON"
-msgid "&Ignore this update"
-msgstr "ਇਹ ਅੱਪਡੇਟ ਅਣਡਿੱਠਾ ਕਰੋ(I)"
-
-msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
-msgid ""
-"Shaders contain special effects which can be added to the video rendering "
-"process."
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
-msgid "Add shader file"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON13"
-msgid "Remove"
-msgstr "ਹਟਾਓ"
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON1"
-msgid "Add to pre-resize"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON2"
-msgid "Add to post-resize"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
-msgid "Shader presets"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON3"
-msgid "Load"
-msgstr "ਲੋਡ ਕਰੋ"
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON4"
-msgid "Save"
-msgstr "ਸੰਭਾਲੋ"
-
-msgctxt "IDD_PPAGESHADERS_IDC_BUTTON5"
-msgid "Delete"
-msgstr "ਹਟਾਓ"
-
-msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
-msgid "Active pre-resize shaders"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
-msgid "Active post-resize shaders"
-msgstr ""
-
-msgctxt "IDD_PPAGESHADERS_IDC_STATIC5"
-msgid ""
-"MPC-VR does not support pre-resize shaders. It will run them after resize, "
-"before the post-resize shaders."
-msgstr ""
-
-msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
-msgid "Debug Shaders"
-msgstr ""
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
-msgid "PS 2.0"
-msgstr "PS 2.0"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO2"
-msgid "PS 2.0b"
-msgstr "PS 2.0b"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO3"
-msgid "PS 2.0a"
-msgstr "PS 2.0a"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
-msgid "PS 3.0"
-msgstr "PS 3.0"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC1"
-msgid "Debug Information"
-msgstr "ਡੀਬੱਗ ਜਾਣਕਾਰੀ"
-
-msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
-msgid "Advanced Settings, do not edit unless you know what you are doing."
-msgstr ""
-"ਤਕਨੀਕੀ ਸੈਟਿੰਗਾਂ, ਉਦੋਂ ਤੱਕ ਨਾ ਸੋਧੋ, ਜਦੋਂ ਤੱਕ ਕਿ ਤੁਸੀਂ ਜਾਣਦੇ ਨਹੀਂ ਹੋ ਕਿ ਤੁਸੀਂ "
-"ਕੀ ਕਰ ਰਹੇ ਹੋ।"
-
-msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
-msgid "True"
-msgstr "ਸਹੀ"
-
-msgctxt "IDD_PPAGEADVANCED_IDC_RADIO2"
-msgid "False"
-msgstr "ਗਲਤ"
-
-msgctxt "IDD_PPAGEADVANCED_IDC_BUTTON1"
-msgid "Default"
-msgstr "ਡਿਫਾਲਟ"
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK5"
-msgid "SaneAR Audio Renderer Enabled"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC5"
-msgid "Device"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC6"
-msgid "Options"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK1"
-msgid "Exclusive mode"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK4"
-msgid "Ignore system channel mixer (always ignored in exclusive WASAPI mode)"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
-msgid "Enable stereo crossfeed (for headphones)"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
-msgid "C. Moy"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON2"
-msgid "J. Meier"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC1"
-msgid "Cut-off:"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC3"
-msgid "Level:"
-msgstr "ਲੈਵਲ:"
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC7"
-msgid "Note"
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC8"
-msgid ""
-"To minimize audio distortion, it is recommended to keep player volume at "
-"around 85% when playing loud lossy-encoded content."
-msgstr ""
-
-msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
-msgid "MPC Audio Renderer Settings"
-msgstr ""
-
-msgctxt "IDD_CMD_LINE_HELP_CAPTION"
-msgid "Command line help"
-msgstr "ਕਮਾਂਡ ਲਾਈਨ ਮਦਦ"
-
-msgctxt "IDD_CMD_LINE_HELP_IDOK"
-msgid "OK"
-msgstr "ਠੀਕ ਹੈ"
-
-msgctxt "IDD_CRASH_REPORTER_CAPTION"
-msgid "Crash reporter"
-msgstr "ਕਰੈਸ਼ ਰਿਪੋਰਟਰ"
-
-msgctxt "IDD_CRASH_REPORTER_IDC_STATIC"
-msgid "We are sorry, it seems MPC-HC just crashed. :("
-msgstr "ਸਾਨੂੰ ਅਫਸੋਸ ਹੈ ਕਿ MPC-HC ਕਰੈਸ਼ ਹੋ ਗਿਆ ਹੈ। :("
-
-msgctxt "IDD_CRASH_REPORTER_IDC_CHECK1"
-msgid "Send a bug report to help us diagnose and fix the problem."
-msgstr ""
-
-msgctxt "IDD_CRASH_REPORTER_IDC_STATIC1"
-msgid "Optional information"
-msgstr "ਚੋਣਵੀਂ ਜਾਣਕਾਰੀ"
-
-msgctxt "IDD_CRASH_REPORTER_IDC_STATIC2"
-msgid "Email:"
-msgstr "ਈਮੇਲ:"
-
-msgctxt "IDD_CRASH_REPORTER_IDC_STATIC3"
-msgid ""
-"Your email address is optional and will only be used if the developers need "
-"to contact you for more information."
-msgstr ""
-
-msgctxt "IDD_CRASH_REPORTER_IDC_STATIC4"
-msgid "Problem description (use English only):"
-msgstr "ਸਮੱਸਿਆ ਦਾ ਵੇਰਵਾ (ਕੇਵਲ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ):"
-
-msgctxt "IDD_CRASH_REPORTER_IDC_BUTTON1"
-msgid "Restart MPC-HC"
-msgstr "MPC-HC ਮੁੜ-ਚਾਲੂ ਕਰੋ"
-
-msgctxt "IDD_CRASH_REPORTER_IDC_BUTTON2"
-msgid "Quit MPC-HC"
-msgstr "MPC-HC ਬੰਦ ਕਰੋ"
-
-msgctxt "IDD_PPAGEDPICALC_IDC_STATIC1"
-msgid "Groupbox"
-msgstr ""
-
-msgctxt "IDD_PPAGEDPICALC_IDC_STATIC2"
-msgid "Autoplay"
-msgstr ""
-
-msgctxt "IDD_ADDCOMMAND_DLG_CAPTION"
-msgid "Select command"
-msgstr ""
-
-msgctxt "IDD_ADDCOMMAND_DLG_IDC_STATIC"
-msgid "Filter:"
-msgstr ""
-
-msgctxt "IDD_ADDCOMMAND_DLG_IDOK"
-msgid "OK"
-msgstr ""
-
-msgctxt "IDD_ADDCOMMAND_DLG_IDCANCEL"
-msgid "Cancel"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
-msgid "Theme"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK1"
-msgid "Use Modern Theme"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
-msgid "Modern Theme Color:"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
-msgid "Seekbar"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC22"
-msgid "Modern Seekbar height:"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK2"
-msgid "Show chapter marks on seekbar"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
-msgid "Seekbar Hover"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
-msgid "Show video preview"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
-msgid "Show time"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
-msgid "Preview width (% of screen)"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC10"
-msgid "Status Bar Elements"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK3"
-msgid "Track Language"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK4"
-msgid "Video Info"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK12"
-msgid "Audio Info"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
-msgid "FPS"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK6"
-msgid "A-B Marks"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC9"
-msgid "On Screen Display (OSD)"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_SHOW_OSD"
-msgid "Show OSD (requires restart)"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC6"
-msgid "Font:"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC23"
-msgid "Font size:"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK13"
-msgid "Display Current Time"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC"
-msgid "Window Behavior"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
-msgid "Limit window proportions on resize"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
-msgid "Snap to desktop edges"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
-msgid "Hide Windowed Controls"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC"
-msgid "Windows Integration"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
-msgid "Use enhanced taskbar features"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
-msgid "Control via Windows UI (SMTC)"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC21"
-msgid "Language"
-msgstr ""
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC5"
-msgid "Language:"
-msgstr ""
-
-msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
-msgid "Select Media from RAR"
-msgstr ""
-
-msgctxt "IDD_RAR_ENTRY_SELECTOR_IDOK"
-msgid "Select"
-msgstr ""
-
-msgctxt "IDD_RAR_ENTRY_SELECTOR_IDCANCEL"
-msgid "Cancel"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Toolbar Style"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
-msgid "Toolbar Scale:"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Toolbar Alignment:"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Active Style:"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Custom Button 1"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Click"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Right click"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Custom Button 2"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Custom Button 3"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
-msgid "Custom Button 4"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
-msgid "Default"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
-msgid "<<"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
-msgid ">>"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
-msgid "^"
-msgstr ""
-
-msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
-msgid "v"
-msgstr ""
