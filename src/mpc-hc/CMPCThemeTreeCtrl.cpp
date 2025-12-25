@@ -77,7 +77,6 @@ BOOL CMPCThemeTreeCtrl::PreTranslateMessage(MSG* pMsg)
     if (AppNeedsThemedControls()) {
         if (!IsWindow(themedToolTip.m_hWnd)) {
             themedToolTip.Create(this, TTS_ALWAYSTIP);
-            themedToolTip.enableFlickerHelper();
         }
         if (IsWindow(themedToolTip.m_hWnd)) {
             themedToolTip.RelayEvent(pMsg);

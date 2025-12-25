@@ -105,7 +105,6 @@ void CMPCThemeListBox::PreSubclassWindow()
         if (nullptr == themedToolTip.m_hWnd) {
             themedToolTip.Create(this, TTS_ALWAYSTIP);
         }
-        themedToolTip.enableFlickerHelper();
     }
 }
 

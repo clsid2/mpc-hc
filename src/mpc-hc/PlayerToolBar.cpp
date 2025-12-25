@@ -397,7 +397,6 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     SetMute(AfxGetAppSettings().fMute);
 
     if (AppIsThemeLoaded()) {
-        themedToolTip.enableFlickerHelper(); //avoid flicker on button hover
         themedToolTip.Create(this, TTS_ALWAYSTIP);
         tb.SetToolTips(&themedToolTip);
     } else {
