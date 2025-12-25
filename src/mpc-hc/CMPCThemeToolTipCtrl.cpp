@@ -25,7 +25,7 @@ CMPCThemeToolTipCtrl::~CMPCThemeToolTipCtrl()
 void CMPCThemeToolTipCtrl::enableFlickerHelper()
 {
     if (IsAppThemed() && IsThemeActive() && !basicMode) { //in classic/basic mode, the helper gets wiped out by the fade, so we disable it
-        //this->useFlickerHelper = true;
+        this->useFlickerHelper = true;
     }
 }
 
@@ -141,7 +141,8 @@ void CMPCThemeToolTipCtrl::makeHelper()
 
     helper = DEBUG_NEW CMPCThemeToolTipCtrlHelper(this);
     //do it the long way since no menu for parent
-    helper->CreateEx(NULL, AfxRegisterWndClass(0), NULL, WS_POPUP | WS_DISABLED,
+    // Use NULL_BRUSH to prevent white background during tooltip fade animation
+    helper->CreateEx(NULL, AfxRegisterWndClass(0, 0, (HBRUSH)GetStockObject(NULL_BRUSH)), NULL, WS_POPUP | WS_DISABLED,
                      r.left, r.top, r.right - r.left, r.bottom - r.top,
                      GetParent()->GetSafeHwnd(), NULL, NULL);
     helper->Invalidate();
