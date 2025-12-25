@@ -22,6 +22,8 @@
 #include "SVGImage.h"
 #include "mplayerc.h"
 #include <atlimage.h>
+
+#pragma warning(disable: 4244)
 #define NANOSVG_IMPLEMENTATION
 #include <nanosvg/src/nanosvg.h>
 #define NANOSVGRAST_IMPLEMENTATION
