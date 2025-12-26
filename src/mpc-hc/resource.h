@@ -235,6 +235,7 @@
 #define ID_STREAM_SUB_PREV              955
 #define ID_STREAM_SUB_ONOFF             956
 #define ID_LEFTSEPARATOR                957
+#define ID_SUBTITLES_AUTOCOPY           958
 #define ID_AUDIOSHIFT_ONOFF             960
 #define ID_DVD_ANGLE_NEXT               961
 #define ID_DVD_ANGLE_PREV               962
@@ -888,6 +889,7 @@
 #define IDS_AG_PREV_AUDIO               32959
 #define IDS_AG_NEXT_SUBTITLE            32960
 #define IDS_AG_PREV_SUBTITLE            32961
+#define IDS_AG_AUTOCOPY_SUBTITLE        32964
 #define IDS_MPLAYERC_85                 32962
 #define IDS_MPLAYERC_86                 32963
 #define IDS_MPLAYERC_91                 32968

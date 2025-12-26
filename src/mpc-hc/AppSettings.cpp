@@ -180,6 +180,7 @@ CAppSettings::CAppSettings()
     , nAutoDownloadScoreSeries(0x18)
     , bAutoUploadSubtitles(false)
     , bPreferHearingImpairedSubtitles(false)
+    , bAutoCopySubtitleToClipboard(false)
     , bMPCTheme(true)
     , bWindows10DarkThemeActive(false)
     , bWindows10AccentColorsEnabled(false)
@@ -717,6 +718,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_STREAM_SUB_NEXT,                 'S', 0,                 IDS_AG_NEXT_SUBTITLE },
     { ID_STREAM_SUB_PREV,                 'S', FSHIFT,            IDS_AG_PREV_SUBTITLE },
     { ID_STREAM_SUB_ONOFF,                'W', 0,                 IDS_MPLAYERC_85 },
+    { ID_SUBTITLES_AUTOCOPY,                0, 0,                 IDS_AG_AUTOCOPY_SUBTITLE },
     { ID_SUBTITLES_SUBITEM_START + 2,       0, 0,                 IDS_MPLAYERC_86 },
     { ID_DVD_ANGLE_NEXT,                    0, 0,                 IDS_MPLAYERC_91 },
     { ID_DVD_ANGLE_PREV,                    0, 0,                 IDS_MPLAYERC_92 },
@@ -1045,6 +1047,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_AUTODOWNLOADSUBTITLESEXCLUDE, strAutoDownloadSubtitlesExclude);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOUPLOADSUBTITLES, bAutoUploadSubtitles);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PREFERHEARINGIMPAIREDSUBTITLES, bPreferHearingImpairedSubtitles);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOCOPYSUBTITLE, bAutoCopySubtitleToClipboard);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MPCTHEME, bMPCTheme);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNSEEKBARHEIGHT, iModernSeekbarHeight);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNTHEMEMODE, static_cast<int>(eModernThemeMode));
@@ -1873,6 +1876,7 @@ void CAppSettings::LoadSettings()
     strAutoDownloadSubtitlesExclude = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUTODOWNLOADSUBTITLESEXCLUDE);
     bAutoUploadSubtitles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOUPLOADSUBTITLES, FALSE);
     bPreferHearingImpairedSubtitles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PREFERHEARINGIMPAIREDSUBTITLES, FALSE);
+    bAutoCopySubtitleToClipboard = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOCOPYSUBTITLE, FALSE);
     bMPCTheme = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MPCTHEME, TRUE);
     if (IsWindows10OrGreater()) {
         CRegKey key;

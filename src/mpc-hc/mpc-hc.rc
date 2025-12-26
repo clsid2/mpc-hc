@@ -3369,17 +3369,18 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_AG_NEXT_SUBTITLE    "Next Subtitle Track"
-    IDS_AG_PREV_SUBTITLE    "Prev Subtitle Track"
-    IDS_MPLAYERC_85         "On/Off Subtitle"
-    IDS_MPLAYERC_86         "Reload Subtitles"
-    IDS_MPLAYERC_91         "Next Angle (DVD)"
-    IDS_MPLAYERC_92         "Prev Angle (DVD)"
-    IDS_MPLAYERC_93         "Next Audio Track (DVD)"
-    IDS_MPLAYERC_94         "Prev Audio Track (DVD)"
-    IDS_MPLAYERC_95         "Next Subtitle Track (DVD)"
-    IDS_MPLAYERC_96         "Prev Subtitle Track (DVD)"
-    IDS_MPLAYERC_97         "On/Off Subtitle (DVD)"
+    IDS_AG_NEXT_SUBTITLE     "Next Subtitle Track"
+    IDS_AG_PREV_SUBTITLE     "Prev Subtitle Track"
+    IDS_AG_AUTOCOPY_SUBTITLE "Auto-Copy Subtitle to Clipboard"
+    IDS_MPLAYERC_85          "On/Off Subtitle"
+    IDS_MPLAYERC_86          "Reload Subtitles"
+    IDS_MPLAYERC_91          "Next Angle (DVD)"
+    IDS_MPLAYERC_92          "Prev Angle (DVD)"
+    IDS_MPLAYERC_93          "Next Audio Track (DVD)"
+    IDS_MPLAYERC_94          "Prev Audio Track (DVD)"
+    IDS_MPLAYERC_95          "Next Subtitle Track (DVD)"
+    IDS_MPLAYERC_96          "Prev Subtitle Track (DVD)"
+    IDS_MPLAYERC_97          "On/Off Subtitle (DVD)"
     IDS_OSD_DISPLAY_CURRENT_TIME "OSD: Display Current Time"
 END
 

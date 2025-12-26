@@ -344,6 +344,10 @@ private:
     POSITION m_posFirstExtSub;
     SubtitleInput m_pCurrentSubInput;
 
+    // Auto-copy subtitle to clipboard tracking
+    int m_nLastCopiedSubSegment;
+    CStringW m_strLastCopiedSubText;
+
     // StatusBar message text parts
     CString currentAudioLang;
     CString currentSubLang;
@@ -933,6 +937,8 @@ public:
     afx_msg void OnStreamAudio(UINT nID);
     afx_msg void OnStreamSub(UINT nID);
     afx_msg void OnStreamSubOnOff();
+    afx_msg void OnSubtitlesAutoCopy();
+    afx_msg void OnUpdateSubtitlesAutoCopy(CCmdUI* pCmdUI);
     afx_msg void OnAudioShiftOnOff();
     afx_msg void OnDvdAngle(UINT nID);
     afx_msg void OnDvdAudio(UINT nID);
