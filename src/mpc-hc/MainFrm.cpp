@@ -2227,12 +2227,20 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                                             for (size_t i = 0; i < pSeg->subs.GetCount(); i++) {
                                                 int subIndex = pSeg->subs[i];
                                                 if (subIndex >= 0 && subIndex < (int)pRTS->GetCount()) {
+                                                    CStringW strLine = pRTS->GetStrW(subIndex, false);
+                                                    // Strip remaining HTML tags <...>
+                                                    int iStart, iEnd;
+                                                    while ((iStart = strLine.Find(L'<')) >= 0) {
+                                                        iEnd = strLine.Find(L'>', iStart);
+                                                        if (iEnd < 0) break;
+                                                        strLine.Delete(iStart, iEnd - iStart + 1);
+                                                    }
                                                     if (!strText.IsEmpty()) strText += L"\r\n";
-                                                    strText += pRTS->GetStrW(subIndex, false);
+                                                    strText += strLine;
                                                 }
                                             }
 
-                                            if (!strText.IsEmpty() && strText != m_strLastCopiedSubText) {
+                                            if (!strText.IsEmpty()) {
                                                 CClipboard clipboard(this);
                                                 VERIFY(clipboard.SetText(CString(strText)));
                                                 m_nLastCopiedSubSegment = iSegment;
