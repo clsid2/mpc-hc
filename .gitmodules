@@ -54,8 +54,7 @@
 	url = https://github.com/adah1972/libunibreak
 [submodule "src/thirdparty/stb"]
 	path = src/thirdparty/stb
-	url = https://github.com/adipose/stb.git
-	branch = patch-1
+	url = https://github.com/nothings/stb
 [submodule "src/thirdparty/ResizableLib/ResizableLib"]
 	path = src/thirdparty/ResizableLib/ResizableLib
 	url = https://github.com/ppescher/resizablelib
