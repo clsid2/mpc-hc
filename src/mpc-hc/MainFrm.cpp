@@ -2215,43 +2215,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 
                             m_wndStatusBar.SetStatusTimer(rtNow, rtDur, IsSubresyncBarVisible(), GetTimeFormat());
 
-                            if (AfxGetAppSettings().bAutoCopySubtitleToClipboard) { // Auto-copy subtitle to clipboard
-                                CAutoLock cAutoLock(&m_csSubLock);
-                                if (m_pCurrentSubInput.pSubStream) {
-                                    if (auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream)) {
-                                        int iSegment = -1;
-                                        const STSSegment* pSeg = pRTS->SearchSubs(rtNow, 25.0, &iSegment, nullptr);
-
-                                        if (pSeg && iSegment != m_nLastCopiedSubSegment) {
-                                            CStringW strText;
-                                            for (size_t i = 0; i < pSeg->subs.GetCount(); i++) {
-                                                int subIndex = pSeg->subs[i];
-                                                if (subIndex >= 0 && subIndex < (int)pRTS->GetCount()) {
-                                                    CStringW strLine = pRTS->GetStrW(subIndex, false);
-                                                    // Strip remaining HTML tags <...>
-                                                    int iStart, iEnd;
-                                                    while ((iStart = strLine.Find(L'<')) >= 0) {
-                                                        iEnd = strLine.Find(L'>', iStart);
-                                                        if (iEnd < 0) break;
-                                                        strLine.Delete(iStart, iEnd - iStart + 1);
-                                                    }
-                                                    if (!strText.IsEmpty()) strText += L"\r\n";
-                                                    strText += strLine;
-                                                }
-                                            }
-
-                                            if (!strText.IsEmpty()) {
-                                                CClipboard clipboard(this);
-                                                VERIFY(clipboard.SetText(CString(strText)));
-                                                m_nLastCopiedSubSegment = iSegment;
-                                                m_strLastCopiedSubText = strText;
-                                            }
-                                        } else if (!pSeg) {
-                                            m_nLastCopiedSubSegment = -1;
-                                        }
-                                    }
-                                }
-                            }
+                            CopyCurrentSubtitleToClipboard(rtNow);
                         }
                         break;
                     case PM_DVD:
@@ -4619,7 +4583,6 @@ void CMainFrame::OnSubtitlesAutoCopy()
     CAppSettings& s = AfxGetAppSettings();
     s.bAutoCopySubtitleToClipboard = !s.bAutoCopySubtitleToClipboard;
     m_nLastCopiedSubSegment = -1;
-    m_strLastCopiedSubText.Empty();
     m_OSD.DisplayMessage(OSD_TOPLEFT,
         ResStr(IDS_AG_AUTOCOPY_SUBTITLE) + (s.bAutoCopySubtitleToClipboard ? _T(" On") : _T(" Off")));
 }
@@ -6911,6 +6874,55 @@ void CMainFrame::SubtitlesSave(const TCHAR* directory, bool silent)
         auto subPath = pSubInput->pSubStream->GetPath();
         if (!subPath.IsEmpty()) {
             s.MRU.AddSubToCurrent(subPath);
+        }
+    }
+}
+
+void CMainFrame::CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow)
+{
+    if (!AfxGetAppSettings().bAutoCopySubtitleToClipboard) {
+        return;
+    }
+
+    CAutoLock cAutoLock(&m_csSubLock);
+    if (!m_pCurrentSubInput.pSubStream) {
+        return;
+    }
+
+    auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream);
+    if (!pRTS) {
+        return;
+    }
+
+    int iSegment = -1;
+    const STSSegment* pSeg = pRTS->SearchSubs(rtNow, 25.0, &iSegment, nullptr);
+    if (!pSeg) {
+        m_nLastCopiedSubSegment = -1;
+        return;
+    }
+
+    if (iSegment != m_nLastCopiedSubSegment) {
+        CStringW strText;
+        for (size_t i = 0; i < pSeg->subs.GetCount(); i++) {
+            int subIndex = pSeg->subs[i];
+            if (subIndex >= 0 && subIndex < (int)pRTS->GetCount()) {
+                CStringW strLine = pRTS->GetStrW(subIndex, false);
+                // Strip HTML tags <...>
+                int iStart, iEnd;
+                while ((iStart = strLine.Find(L'<')) >= 0) {
+                    iEnd = strLine.Find(L'>', iStart);
+                    if (iEnd < 0) break;
+                    strLine.Delete(iStart, iEnd - iStart + 1);
+                }
+                if (!strText.IsEmpty()) strText += L"\r\n";
+                strText += strLine;
+            }
+        }
+
+        if (!strText.IsEmpty()) {
+            CClipboard clipboard(this);
+            VERIFY(clipboard.SetText(CString(strText)));
+            m_nLastCopiedSubSegment = iSegment;
         }
     }
 }
@@ -16020,7 +16032,6 @@ void CMainFrame::CloseMediaPrivate()
     m_bUsingDXVA = false;
     m_audioTrackCount = 0;
     m_nLastCopiedSubSegment = -1;
-    m_strLastCopiedSubText.Empty();
     if (m_pDVBState) {
         m_pDVBState->Join();
         m_pDVBState = nullptr;
@@ -18066,7 +18077,6 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
 
     // Reset auto-copy subtitle tracking when subtitle stream changes
     m_nLastCopiedSubSegment = -1;
-    m_strLastCopiedSubText.Empty();
 
     {
         CAutoLock cAutoLock(&m_csSubLock);

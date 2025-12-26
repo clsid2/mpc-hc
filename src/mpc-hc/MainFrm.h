@@ -330,7 +330,7 @@ private:
 
     void SetVolumeBoost(UINT nAudioBoost);
     void SetBalance(int balance);
-	
+
 	// temp fonts loader
 	CFontInstaller m_FontInstaller;
 
@@ -346,7 +346,6 @@ private:
 
     // Auto-copy subtitle to clipboard tracking
     int m_nLastCopiedSubSegment;
-    CStringW m_strLastCopiedSubText;
 
     // StatusBar message text parts
     CString currentAudioLang;
@@ -742,7 +741,7 @@ public:
 
     // shaders
     void SetShaders(bool bSetPreResize = true, bool bSetPostResize = true);
-	
+
 	bool m_bToggleShader;
 	bool m_bToggleShaderScreenSpace;
 	std::list<ShaderC> m_ShaderCache;
@@ -1363,6 +1362,7 @@ protected:
     static BOOL AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text);
 
     void SubtitlesSave(const TCHAR* directory = nullptr, bool silent = false);
+    void CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow);
 
     void OnSizingFixWndToVideo(UINT nSide, LPRECT lpRect, bool bCtrl = false);
     void OnSizingSnapToScreen(UINT nSide, LPRECT lpRect, bool bCtrl = false);
@@ -1406,8 +1406,8 @@ public:
 
     /**
      * @brief Get title of file
-     * @param fTitleBarTextTitle 
-     * @return 
+     * @param fTitleBarTextTitle
+     * @return
     */
     CString getBestTitle(bool fTitleBarTextTitle = true);
     MediaTransControls m_media_trans_control;
