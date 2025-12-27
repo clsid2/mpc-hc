@@ -33,6 +33,7 @@ public:
     void GetMessageFont(LOGFONT* lf);
     bool GetNonClientMetrics(PNONCLIENTMETRICSW, bool& dpiCorrected);
     int GetSystemMetrics(int type);
+    static UINT GetDPIForOS();
     static UINT GetDPIForWindow(HWND wnd);
     static UINT GetDPIForMonitor(HMONITOR hMonitor);
     static UINT GetDPIForRect(const RECT* pRect);
