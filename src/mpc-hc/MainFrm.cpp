@@ -11223,7 +11223,7 @@ void CMainFrame::OnFavoritesQuickAddFavorite()
 
 void CMainFrame::OnFavoritesOrganize()
 {
-    m_wndFavoriteOrganizeDialog.ShowWindow(SW_SHOW);
+    m_wndFavoriteOrganizeDialog.ShowAndLoad();
 }
 
 void CMainFrame::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)

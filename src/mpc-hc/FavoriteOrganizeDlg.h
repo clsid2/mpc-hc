@@ -52,6 +52,7 @@ public:
     int minSizeTime = 0;
     bool m_bModified = false;
     void LoadList();
+    void ShowAndLoad();
     void AddItemToVisualList(int tabIndex, const CString& favoriteString);
 
 protected:
@@ -84,7 +85,6 @@ public:
     afx_msg void OnBnClickedApply();
     afx_msg void OnUpdateApplyBn(CCmdUI* pCmdUI);
     virtual void OnCancel();
-    afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
     afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
     afx_msg void OnLvnEndlabeleditList2(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnPlayFavorite(NMHDR* pNMHDR, LRESULT* pResult);

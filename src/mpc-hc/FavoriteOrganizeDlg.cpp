@@ -128,7 +128,6 @@ BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CMPCThemeModelessResizableDialog)
     ON_BN_CLICKED(IDOK, OnBnClickedOk)
     ON_BN_CLICKED(ID_APPLY_NOW, OnBnClickedApply)
     ON_UPDATE_COMMAND_UI(ID_APPLY_NOW, OnUpdateApplyBn)
-    ON_WM_SHOWWINDOW()
     ON_WM_ACTIVATE()
     ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST2, OnLvnEndlabeleditList2)
     ON_NOTIFY(NM_DBLCLK, IDC_LIST2, OnPlayFavorite)
@@ -182,6 +181,12 @@ void CFavoriteOrganizeDlg::LoadList() {
 
     SetupList(false);
     m_bModified = false;
+}
+
+void CFavoriteOrganizeDlg::ShowAndLoad()
+{
+    LoadList();
+    ShowWindow(SW_SHOW);
 }
 
 void CFavoriteOrganizeDlg::AddItemToVisualList(int tabIndex, const CString& favoriteString) {
@@ -544,16 +549,6 @@ void CFavoriteOrganizeDlg::OnCancel()
     }
 
     __super::OnCancel();
-}
-
-void CFavoriteOrganizeDlg::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-    __super::OnShowWindow(bShow, nStatus);
-
-    if (bShow) {
-        // Always reload data from settings when showing the dialog
-        LoadList();
-    }
 }
 
 void CFavoriteOrganizeDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
