@@ -439,7 +439,7 @@ private:
     bool m_fCustomGraph;
     bool m_fShockwaveGraph;
 
-    int m_iGraphID;
+    volatile int m_iGraphID;
 
     CComPtr<ISubClock> m_pSubClock;
 
@@ -644,7 +644,7 @@ protected:
     void LoadKeyFrames();
     std::vector<REFERENCE_TIME> m_kfs;
 
-    bool m_fOpeningAborted;
+    volatile bool m_fOpeningAborted;
     bool m_bWasSnapped;
 
 protected:
