@@ -38,7 +38,7 @@ LRESULT CMPCThemeStatic::ResizeSupport(WPARAM wParam, LPARAM lParam) {
 
 void CMPCThemeStatic::OnPaint()
 {
-    if (AppNeedsThemedControls() || isFileDialogChild) {
+    if (AppNeedsThemedControls()) {
         CPaintDC dc(this);
 
         CString sTitle;
@@ -99,10 +99,10 @@ void CMPCThemeStatic::OnPaint()
 
             dc.SetBkColor(CMPCTheme::WindowBGColor);
             if (isDisabled) {
-                dc.SetTextColor(isFileDialogChild ? CMPCTheme::W10DarkThemeTitlebarInactiveFGColor : CMPCTheme::ButtonDisabledFGColor);
+                dc.SetTextColor(CMPCTheme::ButtonDisabledFGColor);
                 dc.DrawTextW(sTitle, -1, &rectItem, uFormat);
             } else {
-                dc.SetTextColor(isFileDialogChild ? CMPCTheme::W10DarkThemeFileDialogInjectedTextColor : CMPCTheme::TextFGColor);
+                dc.SetTextColor(CMPCTheme::TextFGColor);
                 dc.DrawTextW(sTitle, -1, &rectItem, uFormat);
             }
             dc.SelectObject(pOldFont);
@@ -117,7 +117,7 @@ void CMPCThemeStatic::OnPaint()
 
 void CMPCThemeStatic::OnNcPaint()
 {
-    if (AppNeedsThemedControls() || isFileDialogChild) {
+    if (AppNeedsThemedControls()) {
         CDC* pDC = GetWindowDC();
 
         CRect rect;
@@ -143,7 +143,7 @@ void CMPCThemeStatic::OnNcPaint()
 
 void CMPCThemeStatic::OnEnable(BOOL bEnable)
 {
-    if (AppNeedsThemedControls() || isFileDialogChild) {
+    if (AppNeedsThemedControls()) {
         SetRedraw(FALSE);
         __super::OnEnable(bEnable);
         SetRedraw(TRUE);
@@ -163,7 +163,7 @@ void CMPCThemeStatic::OnEnable(BOOL bEnable)
 
 BOOL CMPCThemeStatic::OnEraseBkgnd(CDC* pDC)
 {
-    if (AppNeedsThemedControls() || isFileDialogChild) {
+    if (AppNeedsThemedControls()) {
         CRect r;
         GetClientRect(r);
         if (isFileDialogChild) {
