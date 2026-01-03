@@ -6,29 +6,19 @@
 
 IMPLEMENT_DYNAMIC(CMPCThemeListBox, CListBox)
 
-CMPCThemeListBox::CMPCThemeListBox()
+CMPCThemeListBox::CMPCThemeListBox() : CListBox(), CMPCThemeScrollBarRenderer()
 {
     themedToolTipCid = (UINT_PTR) - 1;
-    themedSBHelper = nullptr;
-    if (!CMPCThemeUtil::canUseWin10DarkTheme()) {
-        themedSBHelper = DEBUG_NEW CMPCThemeScrollBarHelper(this);
-    }
 }
 
 
 CMPCThemeListBox::~CMPCThemeListBox()
 {
-    if (nullptr != themedSBHelper) {
-        delete themedSBHelper;
-    }
 }
 
 BEGIN_MESSAGE_MAP(CMPCThemeListBox, CListBox)
     ON_WM_NCPAINT()
     ON_WM_MOUSEWHEEL()
-    ON_WM_TIMER()
-    ON_WM_VSCROLL()
-    ON_CONTROL_REFLECT_EX(LBN_SELCHANGE, &CMPCThemeListBox::OnLbnSelchange)
     ON_WM_MOUSEMOVE()
     ON_WM_SIZE()
 END_MESSAGE_MAP()
@@ -75,11 +65,7 @@ void CMPCThemeListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 void CMPCThemeListBox::OnNcPaint()
 {
     if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->themedNcPaintWithSB();
-        } else {
-            CMPCThemeScrollBarHelper::themedNcPaint(this, this);
-        }
+        HandleNcPaint(m_hWnd);
     } else {
         __super::OnNcPaint();
     }
@@ -91,6 +77,15 @@ BOOL CMPCThemeListBox::PreTranslateMessage(MSG* pMsg)
         themedToolTip.RelayEvent(pMsg);
     }
     return CListBox::PreTranslateMessage(pMsg);
+}
+
+LRESULT CMPCThemeListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (AppNeedsThemedControls()) {
+        CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
+    }
+    LRESULT result = __super::WindowProc(message, wParam, lParam);
+    return result;
 }
 
 void CMPCThemeListBox::PreSubclassWindow()
@@ -112,30 +107,10 @@ void CMPCThemeListBox::PreSubclassWindow()
 BOOL CMPCThemeListBox::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
     CListBox::OnMouseWheel(nFlags, zDelta, pt);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
     ScreenToClient(&pt);
     updateToolTip(pt);
     return TRUE;
 }
-
-void CMPCThemeListBox::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    CListBox::OnVScroll(nSBCode, nPos, pScrollBar);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-}
-
-BOOL CMPCThemeListBox::OnLbnSelchange()
-{
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-    return FALSE; //allow non-reflection handling
-}
-
 
 void CMPCThemeListBox::updateToolTip(CPoint point)
 {

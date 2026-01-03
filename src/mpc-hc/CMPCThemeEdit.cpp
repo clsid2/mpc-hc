@@ -7,32 +7,19 @@
 #include <memory>
 
 std::unique_ptr<CMPCThemeMenu> editMenu;
-CMPCThemeEdit::CMPCThemeEdit()
+CMPCThemeEdit::CMPCThemeEdit() : CEdit(), CMPCThemeScrollBarRenderer()
 {
     buddy = nullptr;
-    themedSBHelper = nullptr;
     isFileDialogChild = false;
-    //horizontal scrollbar broken for CEdit, we must theme ourselves
-    //    if (!CMPCThemeUtil::canUseWin10DarkTheme()()) {
-    themedSBHelper = DEBUG_NEW CMPCThemeScrollBarHelper(this);
-    //    }
 }
 
 CMPCThemeEdit::~CMPCThemeEdit()
 {
-    if (nullptr != themedSBHelper) {
-        delete themedSBHelper;
-    }
 }
 
 IMPLEMENT_DYNAMIC(CMPCThemeEdit, CEdit)
 BEGIN_MESSAGE_MAP(CMPCThemeEdit, CEdit)
     ON_WM_NCPAINT()
-    ON_WM_MOUSEWHEEL()
-    ON_WM_VSCROLL()
-    ON_WM_HSCROLL()
-    ON_WM_KEYDOWN()
-    ON_WM_WINDOWPOSCHANGED()
     ON_REGISTERED_MESSAGE(WMU_RESIZESUPPORT, ResizeSupport)
     ON_MESSAGE(WM_CONTEXTMENU, OnContextMenu)
     ON_WM_MEASUREITEM()
@@ -45,6 +32,15 @@ void CMPCThemeEdit::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemS
     }
 
     CEdit::OnMeasureItem(nIDCtl, lpMeasureItemStruct);
+}
+
+LRESULT CMPCThemeEdit::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (AppNeedsThemedControls()) {
+        CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
+    }
+    LRESULT result = __super::WindowProc(message, wParam, lParam);
+    return result;
 }
 
 //on Edit class, cbWndExtra allocates space for a pointer, which points to this data
@@ -312,15 +308,6 @@ LRESULT CMPCThemeEdit::ResizeSupport(WPARAM wParam, LPARAM lParam) {
     return FALSE;
 }
 
-void CMPCThemeEdit::OnWindowPosChanged(WINDOWPOS* lpwndpos) {
-    if (AppNeedsThemedControls()) {
-        if (themedSBHelper && IsScrollable()) {
-            themedSBHelper->OnWindowPosChanged();
-        }
-    }
-    return __super::OnWindowPosChanged(lpwndpos);
-}
-
 void CMPCThemeEdit::PreSubclassWindow()
 {
     if (AppIsThemeLoaded()) {
@@ -344,11 +331,7 @@ void CMPCThemeEdit::OnNcPaint()
 {
     if (AppNeedsThemedControls()) {
         if (IsScrollable()) {  //scrollable edit will be treated like a window, not a field
-            if (nullptr != themedSBHelper) {
-                themedSBHelper->themedNcPaintWithSB();
-            } else {
-                CMPCThemeScrollBarHelper::themedNcPaint(this, this);
-            }
+            HandleNcPaint(m_hWnd);
         } else {
             CWindowDC dc(this);
 
@@ -398,40 +381,5 @@ void CMPCThemeEdit::SetFixedWidthFont(CFont& f)
         }
     } else {
         SetFont(&f);
-    }
-}
-
-BOOL CMPCThemeEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
-{
-    __super::OnMouseWheel(nFlags, zDelta, pt);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-    ScreenToClient(&pt);
-    return TRUE;
-}
-
-void CMPCThemeEdit::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    __super::OnVScroll(nSBCode, nPos, pScrollBar);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-}
-
-void CMPCThemeEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    __super::OnHScroll(nSBCode, nPos, pScrollBar);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-}
-
-
-void CMPCThemeEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-    __super::OnKeyDown(nChar, nRepCnt, nFlags);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
     }
 }

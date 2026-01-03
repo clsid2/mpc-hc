@@ -6,24 +6,16 @@
 #undef SubclassWindow
 
 
-CMPCThemeTreeCtrl::CMPCThemeTreeCtrl():
-    themedSBHelper(nullptr),
+CMPCThemeTreeCtrl::CMPCThemeTreeCtrl() : CTreeCtrl(), CMPCThemeScrollBarRenderer(),
     themedToolTipCid((UINT_PTR) - 1)
 {
     if (AppNeedsThemedControls()) {
         m_brBkgnd.CreateSolidBrush(CMPCTheme::InlineEditBorderColor);
-        if (!CMPCThemeUtil::canUseWin10DarkTheme()) {
-            themedSBHelper = DEBUG_NEW CMPCThemeScrollBarHelper(this);
-        }
     }
-
 }
 
 CMPCThemeTreeCtrl::~CMPCThemeTreeCtrl()
 {
-    if (nullptr != themedSBHelper) {
-        delete themedSBHelper;
-    }
     m_brBkgnd.DeleteObject();
 }
 
@@ -67,8 +59,6 @@ BEGIN_MESSAGE_MAP(CMPCThemeTreeCtrl, CTreeCtrl)
     ON_WM_NCPAINT()
     ON_WM_MOUSEMOVE()
     ON_WM_MOUSEWHEEL()
-    ON_WM_VSCROLL()
-    ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 IMPLEMENT_DYNAMIC(CMPCThemeTreeCtrl, CTreeCtrl)
 
@@ -192,52 +182,26 @@ BOOL CMPCThemeTreeCtrl::OnEraseBkgnd(CDC* pDC)
 void CMPCThemeTreeCtrl::OnNcPaint()
 {
     if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->themedNcPaintWithSB();
-        } else {
-            CMPCThemeScrollBarHelper::themedNcPaint(this, this);
-        }
+        HandleNcPaint(m_hWnd);
     } else {
         __super::OnNcPaint();
     }
 }
 
-//no end scroll notification for treectrl, so handle mousewheel, v and h scrolls :-/
 BOOL CMPCThemeTreeCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
     BOOL ret = __super::OnMouseWheel(nFlags, zDelta, pt);
     if (AppNeedsThemedControls()) {
-        if (nullptr != themedSBHelper) {
-            themedSBHelper->updateScrollInfo();
-        }
         ScreenToClient(&pt);
         updateToolTip(pt);
     }
     return ret;
 }
 
-void CMPCThemeTreeCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    __super::OnVScroll(nSBCode, nPos, pScrollBar);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-}
-
-void CMPCThemeTreeCtrl::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    __super::OnHScroll(nSBCode, nPos, pScrollBar);
-    if (nullptr != themedSBHelper) {
-        themedSBHelper->updateScrollInfo();
-    }
-}
-
 LRESULT CMPCThemeTreeCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (AppNeedsThemedControls() && nullptr != themedSBHelper) {
-        if (themedSBHelper->WindowProc(this, message, wParam, lParam)) {
-            return 1;
-        }
+    if (AppNeedsThemedControls()) {
+        CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
     }
     return __super::WindowProc(message, wParam, lParam);
 }

@@ -1688,7 +1688,22 @@ static CMPCThemeScrollBarRenderer* GetScrollBarRenderer(HWND hWnd) {
 
     // Themed scrollbars require DWM composition (not available in classic mode)
     if (pWnd && AppNeedsThemedControls() && !CMPCThemeUtil::IsBasicMode()) {
-        return DYNAMIC_DOWNCAST(CMPCThemePlayerListCtrl, pWnd);
+        CMPCThemeScrollBarRenderer* pRenderer = DYNAMIC_DOWNCAST(CMPCThemePlayerListCtrl, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeEdit, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeListBox, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeTreeCtrl, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
     }
     return nullptr;
 }
