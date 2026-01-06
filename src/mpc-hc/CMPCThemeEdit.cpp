@@ -331,7 +331,11 @@ void CMPCThemeEdit::OnNcPaint()
 {
     if (AppNeedsThemedControls()) {
         if (IsScrollable()) {  //scrollable edit will be treated like a window, not a field
-            HandleNcPaint(m_hWnd);
+            if (IsThemeActive()) {
+                HandleNcPaint(m_hWnd);
+            } else {
+                __super::OnNcPaint();
+            }
         } else {
             CWindowDC dc(this);
 

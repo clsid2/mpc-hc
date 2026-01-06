@@ -397,7 +397,7 @@ void CMPCThemePlayerListCtrl::OnNcPaint() {
     if (AppNeedsThemedControls()) {
         HandleNcPaint(m_hWnd);
 
-        if (CMPCThemeUtil::IsBasicMode()) {
+        if (!IsThemeActive()) {
             CRect vScrollRect, hScrollRect;
             bool bHasVScroll, bHasHScroll;
             if (GetScrollBarRects(m_hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {

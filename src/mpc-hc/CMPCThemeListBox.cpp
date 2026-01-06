@@ -64,7 +64,7 @@ void CMPCThemeListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 void CMPCThemeListBox::OnNcPaint()
 {
-    if (AppNeedsThemedControls()) {
+    if (AppNeedsThemedControls() && IsThemeActive()) {
         HandleNcPaint(m_hWnd);
     } else {
         __super::OnNcPaint();
@@ -81,7 +81,7 @@ BOOL CMPCThemeListBox::PreTranslateMessage(MSG* pMsg)
 
 LRESULT CMPCThemeListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (AppNeedsThemedControls()) {
+    if (AppNeedsThemedControls() && IsThemeActive()) {
         CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
     }
     LRESULT result = __super::WindowProc(message, wParam, lParam);

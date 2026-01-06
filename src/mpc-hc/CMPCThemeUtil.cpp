@@ -1094,10 +1094,10 @@ bool CMPCThemeUtil::canUseWin10DarkTheme()
 
 bool CMPCThemeUtil::IsBasicMode()
 {
-    // Returns true if DWM composition is disabled (Windows 7 classic mode, etc.)
+    // Returns true if DWM composition is disabled (Windows 7 basic mode, not classic)
     BOOL bCompositionEnabled = FALSE;
     DwmIsCompositionEnabled(&bCompositionEnabled);
-    return !bCompositionEnabled;
+    return !bCompositionEnabled && IsThemeActive();
 }
 
 UINT CMPCThemeUtil::defaultLogo()
