@@ -838,4 +838,21 @@ void CMPCThemeScrollBarRenderer::HandleNcPaint(HWND hWnd) {
         SCROLLINFO si = { sizeof(SCROLLINFO), 0 };
         ::SetScrollInfo(hWnd, SB_HORZ, &si, true);
     }
+
+    if (!IsThemeActive()) {
+        if (GetScrollBarRects(hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
+            ::GetWindowRect(hWnd, wr);
+
+            if (bHasVScroll) {
+                HRGN hVScrollRgn = ::CreateRectRgn(wr.left + vScrollRect.left, wr.top + vScrollRect.top, wr.left + vScrollRect.right, wr.top + vScrollRect.bottom);
+                ::DefWindowProc(hWnd, WM_NCPAINT, (WPARAM)hVScrollRgn, 0);
+                ::DeleteObject(hVScrollRgn);
+            }
+            if (bHasHScroll) {
+                HRGN hHScrollRgn = ::CreateRectRgn(wr.left + hScrollRect.left, wr.top + hScrollRect.top, wr.left + hScrollRect.right, wr.top + hScrollRect.bottom);
+                ::DefWindowProc(hWnd, WM_NCPAINT, (WPARAM)hHScrollRgn, 0);
+                ::DeleteObject(hHScrollRgn);
+            }
+        }
+    }
 }

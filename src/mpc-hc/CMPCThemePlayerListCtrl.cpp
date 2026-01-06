@@ -396,26 +396,6 @@ void CMPCThemePlayerListCtrl::setCheckedColors(COLORREF checkedBG, COLORREF chec
 void CMPCThemePlayerListCtrl::OnNcPaint() {
     if (AppNeedsThemedControls()) {
         HandleNcPaint(m_hWnd);
-
-        if (!IsThemeActive()) {
-            CRect vScrollRect, hScrollRect;
-            bool bHasVScroll, bHasHScroll;
-            if (GetScrollBarRects(m_hWnd, vScrollRect, hScrollRect, bHasVScroll, bHasHScroll)) {
-                CRect wr;
-                ::GetWindowRect(m_hWnd, wr);
-
-                if (bHasVScroll) {
-                    HRGN hVScrollRgn = ::CreateRectRgn(wr.left + vScrollRect.left, wr.top + vScrollRect.top, wr.left + vScrollRect.right, wr.top + vScrollRect.bottom);
-                    ::DefWindowProc(m_hWnd, WM_NCPAINT, (WPARAM)hVScrollRgn, 0);
-                    ::DeleteObject(hVScrollRgn);
-                }
-                if (bHasHScroll) {
-                    HRGN hHScrollRgn = ::CreateRectRgn(wr.left + hScrollRect.left, wr.top + hScrollRect.top, wr.left + hScrollRect.right, wr.top + hScrollRect.bottom);
-                    ::DefWindowProc(m_hWnd, WM_NCPAINT, (WPARAM)hHScrollRgn, 0);
-                    ::DeleteObject(hHScrollRgn);
-                }
-            }
-        }
     } else {
         __super::OnNcPaint();
     }

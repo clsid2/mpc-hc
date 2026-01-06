@@ -64,7 +64,7 @@ void CMPCThemeListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 void CMPCThemeListBox::OnNcPaint()
 {
-    if (AppNeedsThemedControls() && IsThemeActive()) {
+    if (AppNeedsThemedControls()) {
         HandleNcPaint(m_hWnd);
     } else {
         __super::OnNcPaint();
