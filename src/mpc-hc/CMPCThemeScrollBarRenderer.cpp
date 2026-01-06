@@ -27,22 +27,24 @@ static bool ScreenToNcClient(HWND hWnd, CPoint& point) {
 }
 
 void CMPCThemeScrollBarRenderer::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    switch (message) {
-    case WM_NCMOUSEMOVE:
-        OnNcMouseMove(hWnd, wParam, lParam);
-        break;
-    case WM_NCLBUTTONDOWN:
-        OnNcLButtonDown(hWnd, wParam, lParam);
-        break;
-    case WM_NCLBUTTONDBLCLK:
-        OnNcLButtonDown(hWnd, wParam, lParam);
-        break;
-    case WM_NCLBUTTONUP:
-        OnNcLButtonUp(hWnd, wParam, lParam);
-        break;
-    case WM_NCMOUSELEAVE:
-        OnNcMouseLeave(hWnd);
-        break;
+    if (IsThemeActive()) {
+        switch (message) {
+        case WM_NCMOUSEMOVE:
+            OnNcMouseMove(hWnd, wParam, lParam);
+            break;
+        case WM_NCLBUTTONDOWN:
+            OnNcLButtonDown(hWnd, wParam, lParam);
+            break;
+        case WM_NCLBUTTONDBLCLK:
+            OnNcLButtonDown(hWnd, wParam, lParam);
+            break;
+        case WM_NCLBUTTONUP:
+            OnNcLButtonUp(hWnd, wParam, lParam);
+            break;
+        case WM_NCMOUSELEAVE:
+            OnNcMouseLeave(hWnd);
+            break;
+        }
     }
 }
 

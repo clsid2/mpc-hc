@@ -81,7 +81,7 @@ BOOL CMPCThemeListBox::PreTranslateMessage(MSG* pMsg)
 
 LRESULT CMPCThemeListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (AppNeedsThemedControls() && IsThemeActive()) {
+    if (AppNeedsThemedControls()) {
         CMPCThemeScrollBarRenderer::ProcessMessage(m_hWnd, message, wParam, lParam);
     }
     LRESULT result = __super::WindowProc(message, wParam, lParam);
