@@ -853,6 +853,13 @@ void CMPCThemeScrollBarRenderer::HandleNcPaint(HWND hWnd) {
                 ::DefWindowProc(hWnd, WM_NCPAINT, (WPARAM)hHScrollRgn, 0);
                 ::DeleteObject(hHScrollRgn);
             }
+            if (bHasVScroll && bHasHScroll) {
+                CRect cornerRect;
+                if (GetScrollBarCornerRect(hWnd, cornerRect)) {
+                    CWindowDC dcCorner(CWnd::FromHandle(hWnd));
+                    DrawScrollBarCorner(&dcCorner, hWnd, cornerRect);
+                }
+            }
         }
     }
 }
