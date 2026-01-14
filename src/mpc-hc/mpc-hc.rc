@@ -4031,7 +4031,7 @@ BEGIN
     IDS_CMD_CLOSE           "/close\t\tClose the player after playback (only works when used with /play)"
     IDS_CMD_SHUTDOWN        "/shutdown\tShutdown the operating system after playback"
     IDS_CMD_STANDBY         "/standby\t\tPut the operating system in standby mode after playback"
-    IDS_CMD_HIBERNATE       "/hibernate\t\tHibernate operating system after playback"
+    IDS_CMD_HIBERNATE       "/hibernate\tHibernate operating system after playback"
     IDS_CMD_LOGOFF          "/logoff\t\tLog off after playback"
     IDS_CMD_LOCK            "/lock\t\tLock workstation after playback"
     IDS_CMD_MONITOROFF      "/monitoroff\tTurn off the monitor after playback"
