@@ -30,6 +30,7 @@
 #include "CMPCThemeComboBox.h"
 #include "CMPCThemeSpinButtonCtrl.h"
 #include "CMPCThemePlayerListCtrl.h"
+#include "FloatEdit.h"
 
 class SettingsBase
 {
@@ -244,6 +245,7 @@ private:
     CFont m_fontBold;
     CMPCThemeComboBox m_comboBox;
     CMPCThemeSpinButtonCtrl m_spinButtonCtrl;
+    CMPCThemeDynamicEdit m_dynamicEdit;
 
     std::map<ADVANCED_SETTINGS, std::shared_ptr<SettingsBase>> m_hiddenOptions;
 

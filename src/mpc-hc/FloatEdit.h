@@ -68,3 +68,29 @@ public:
 public:
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
+
+// CDynamicEdit - Multi-mode edit control for PPageAdvanced
+
+class CMPCThemeDynamicEdit : public CMPCThemeEdit
+{
+public:
+    enum class Mode {
+        INT,      // Integer (supports negative)
+        STRING    // Free text
+    };
+
+private:
+    Mode m_mode = Mode::STRING;
+    std::pair<int, int> m_intRange = {INT_MIN, INT_MAX};
+
+public:
+    void SetMode(Mode mode);
+    void SetIntRange(int lower, int upper);
+    Mode GetMode() const { return m_mode; }
+    std::pair<int, int> GetIntRange() const { return m_intRange; }
+
+    DECLARE_DYNAMIC(CMPCThemeDynamicEdit)
+    DECLARE_MESSAGE_MAP()
+
+    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+};
