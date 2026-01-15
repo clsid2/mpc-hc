@@ -3960,7 +3960,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_CMD_PNS             "/pns ""name or values""\tSpecify Video Frame preset name to use or direct position and zoom values in format ""px,py,zx,zy"""
+    IDS_CMD_PNS             "/pns ""name""\tSpecify PnS Frame Adjust Preset to use (for example: /pns ""%s"")"
+    IDS_CMD_PNS_VALUES      "/pns ""px,py,zx,zy""\tSpecify direct position and zoom values in the format ""px,py,zx,zy"""
     IDS_CMD_ICONASSOC       "/iconsassoc\tReassociate format icons"
     IDS_CMD_NOFOCUS         "/nofocus\t\tOpen MPC-HC in background"
     IDS_CMD_WEBPORT         "/webport N\tStart web interface on specified port"

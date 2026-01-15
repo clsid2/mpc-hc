@@ -66,13 +66,24 @@ BOOL CmdLineHelpDlg::OnInitDialog()
         IDS_CMD_PLAYNEXT, IDS_CMD_FULLSCREEN, IDS_CMD_VIEWPRESET, IDS_CMD_MINIMIZED, IDS_CMD_NEW,
         IDS_CMD_ADD, IDS_CMD_RANDOMIZE, IDS_CMD_VOLUME, IDS_CMD_REGVID, IDS_CMD_REGAUD, IDS_CMD_REGPL,
         IDS_CMD_REGALL, IDS_CMD_UNREGALL, IDS_CMD_START, IDS_CMD_STARTPOS, IDS_CMD_AB_START, IDS_CMD_AB_END, IDS_CMD_FIXEDSIZE, IDS_CMD_MONITOR,
-        IDS_CMD_AUDIORENDERER, IDS_CMD_SHADERPRESET, IDS_CMD_PNS, IDS_CMD_ICONASSOC,
+        IDS_CMD_AUDIORENDERER, IDS_CMD_SHADERPRESET, IDS_CMD_PNS, IDS_CMD_PNS_VALUES, IDS_CMD_ICONASSOC,
         IDS_CMD_NOFOCUS, IDS_CMD_WEBPORT, IDS_CMD_DEBUG, IDS_CMD_NOCRASHREPORTER,
         IDS_CMD_SLAVE, IDS_CMD_HWGPU, IDS_CMD_RESET, IDS_CMD_MUTE, IDS_CMD_THUMBNAILS, IDS_CMD_HELP
     };
 
     for (const auto& cmdArg : cmdArgs) {
-        m_text.AppendFormat(_T("\n%s"), ResStr(cmdArg).GetString());
+        if (cmdArg == IDS_CMD_PNS) {
+            // Get the translated preset name from IDS_SCALE_16_9
+            CString presetStr = ResStr(IDS_SCALE_16_9);
+            int commaPos = presetStr.Find(',');
+            CString presetName = (commaPos != -1) ? presetStr.Left(commaPos) : presetStr;
+
+            CString cmdPnsStr;
+            cmdPnsStr.Format(ResStr(IDS_CMD_PNS), presetName.GetString());
+            m_text.AppendFormat(_T("\n%s"), cmdPnsStr.GetString());
+        } else {
+            m_text.AppendFormat(_T("\n%s"), ResStr(cmdArg).GetString());
+        }
     }
     m_text.Replace(_T("\n"), _T("\r\n"));
 
