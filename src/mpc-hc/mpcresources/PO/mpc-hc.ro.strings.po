@@ -1441,7 +1441,8 @@ msgstr "Oprit"
 
 msgctxt "IDS_CONTROLS_BUFFERING"
 msgid "Buffering... (%d%%)"
-msgstr "Se preîncarcă... (%d%%)"
+msgstr ""
+"Se încarcă din memoria tampon (Se bufferizează/Se tamponează)... (%d%%)"
 
 msgctxt "IDS_CONTROLS_CAPTURING"
 msgid "Capturing..."
