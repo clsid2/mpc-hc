@@ -1252,7 +1252,7 @@ msgstr "Organizează favoritele..."
 
 msgctxt "IDS_PLAYLIST_SHUFFLE"
 msgid "Sh&uffle"
-msgstr "Amestecă"
+msgstr "A&mestecă"
 
 msgctxt "IDS_PLAYLIST_SHOWFOLDER"
 msgid "Ope&n file location"
