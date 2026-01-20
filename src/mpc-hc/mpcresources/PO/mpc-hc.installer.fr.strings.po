@@ -25,7 +25,7 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"Vous allez installer [name] sur votre ordinateur.\n"
+"Vous allez installer [name] sur cet ordinateur.\n"
 "\n"
 "Il est recommandé de fermer toutes les autres applications avant de continuer."
 
