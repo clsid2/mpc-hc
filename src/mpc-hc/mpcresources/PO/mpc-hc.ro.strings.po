@@ -1256,7 +1256,7 @@ msgstr "Amestecă"
 
 msgctxt "IDS_PLAYLIST_SHOWFOLDER"
 msgid "Ope&n file location"
-msgstr "Deschide dosarul fișierului"
+msgstr "Deschide dosarul (folderul) fișierului"
 
 msgctxt "IDS_CONTROLS_CLOSING"
 msgid "Closing..."
