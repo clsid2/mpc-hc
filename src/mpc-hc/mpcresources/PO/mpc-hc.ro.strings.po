@@ -1260,7 +1260,7 @@ msgstr "Deschide dosarul fișierului"
 
 msgctxt "IDS_CONTROLS_CLOSING"
 msgid "Closing..."
-msgstr "Închidere..."
+msgstr "Se închide..."
 
 msgctxt "IDS_CONTROLS_PLAYING"
 msgid "Playing"
