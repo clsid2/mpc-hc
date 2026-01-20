@@ -1366,6 +1366,7 @@ public:
     enum UpdateControlTarget {
         UPDATE_VOLUME_STEP,
         UPDATE_LOGO,
+        UPDATE_MEDIA_ART,
         UPDATE_SKYPE,
         UPDATE_SEEKBAR_CHAPTERS,
         UPDATE_WINDOW_TITLE,

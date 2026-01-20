@@ -4163,7 +4163,7 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
 
     // Load cover-art
     if (m_fAudioOnly || HasDedicatedFSVideoWindow()) {
-        UpdateControlState(CMainFrame::UPDATE_LOGO);
+        UpdateControlState(CMainFrame::UPDATE_MEDIA_ART);
     }
 
     if (s.bOpenRecPanelWhenOpeningDevice) {
@@ -4422,7 +4422,7 @@ void CMainFrame::OnFilePostClosemedia(bool bNextIsQueued/* = false*/)
     m_HWAccelType = L"";
 
     if (!bNextIsQueued) {
-        UpdateControlState(CMainFrame::UPDATE_LOGO);
+        UpdateControlState(CMainFrame::UPDATE_MEDIA_ART);
         RecalcLayout();
     }
 
@@ -21688,6 +21688,11 @@ void CMainFrame::UpdateControlState(UpdateControlTarget target)
             m_wndToolBar.m_volctrl.SetPageSize(s.nVolumeStep);
             break;
         case UPDATE_LOGO:
+            if (!m_wndView.IsCustomImgLoaded()) {
+                ClearArtFromViews();
+            }
+            break;
+        case UPDATE_MEDIA_ART:
             if (GetLoadState() == MLS::LOADED && m_fAudioOnly && s.bEnableCoverArt) {
                 CString filename = m_wndPlaylistBar.GetCurFileName();
                 CString filename_no_ext;
@@ -21720,7 +21725,7 @@ void CMainFrame::UpdateControlState(UpdateControlTarget target)
                         LoadArtToViews(img);
                         m_currentCoverPath = filedir;
                         m_currentCoverAuthor = author;
-                    } else if (!m_wndView.IsCustomImgLoaded()) {
+                    } else if (PathUtils::IsURL(filename)) {
                         ClearArtFromViews();
                     }
                 }

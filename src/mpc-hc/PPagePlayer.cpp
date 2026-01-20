@@ -159,7 +159,7 @@ BOOL CPPagePlayer::OnApply()
     // There is no main frame when the option dialog is displayed stand-alone
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
         pMainFrame->ShowTrayIcon(s.fTrayIcon);
-        pMainFrame->UpdateControlState(CMainFrame::UPDATE_LOGO);
+        pMainFrame->UpdateControlState(CMainFrame::UPDATE_MEDIA_ART);
         pMainFrame->UpdateControlState(CMainFrame::UPDATE_WINDOW_TITLE);
     }
 
