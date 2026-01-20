@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Abdullah Almofleh <almofleh.abdullah@gmail.com>, 2020
+# Abdullah Almofleh <almofleh.abdullah@gmail.com>, 2024
+# Dr Ahmad, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2021-02-15 14:52:58+0000\n"
+"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Abdullah Almofleh <almofleh.abdullah@gmail.com>, 2020\n"
-"Language-Team: Arabic (https://www.transifex.com/mpchc/teams/106126/ar/)\n"
+"Last-Translator: Dr Ahmad, 2025\n"
+"Language-Team: Arabic (https://app.transifex.com/mpchc/teams/106126/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -36,7 +37,7 @@ msgstr "فتح DVD/BD..."
 
 msgctxt "ID_FILE_OPENDEVICE"
 msgid "Open De&vice..."
-msgstr "فتح الجهاز..."
+msgstr "فتح جهاز..."
 
 msgctxt "ID_FILE_OPENDIRECTORY"
 msgid "Open Dir&ectory..."
@@ -160,11 +161,11 @@ msgstr "ملء الشاشة"
 
 msgctxt "POPUP"
 msgid "&Zoom"
-msgstr "زوم"
+msgstr "تكبير"
 
 msgctxt "ID_VIEW_ZOOM_25"
 msgid "&25%"
-msgstr ""
+msgstr "&25%"
 
 msgctxt "ID_VIEW_ZOOM_50"
 msgid "&50%"
@@ -184,7 +185,7 @@ msgstr "احتواء تلقائي"
 
 msgctxt "POPUP"
 msgid "R&enderer Settings"
-msgstr "إعدادات المصيير (Renderer)"
+msgstr "إعدادات العارض"
 
 msgctxt "ID_VIEW_TEARING_TEST"
 msgid "&Tearing Test"
@@ -440,7 +441,7 @@ msgstr "تصحيح فرق النسبة الباعية للشاشة/سطح الم
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
-msgstr ""
+msgstr "ضبط الإطار"
 
 msgctxt "ID_VIEW_INCSIZE"
 msgid "&Increase Size"
@@ -476,11 +477,11 @@ msgstr "تحريك لليسار"
 
 msgctxt "ID_PANSCAN_MOVEUP"
 msgid "Move &Up"
-msgstr "تحريك للاعلي"
+msgstr "تحريك لأعلى"
 
 msgctxt "ID_PANSCAN_MOVEDOWN"
 msgid "Move &Down"
-msgstr "تحريك للأسفل"
+msgstr "تحريك لأسفل"
 
 msgctxt "ID_PANSCAN_CENTER"
 msgid "Cen&ter"
@@ -488,19 +489,19 @@ msgstr "توسيط"
 
 msgctxt "ID_PANSCAN_ROTATEZM"
 msgid "Rotate Cloc&kwise"
-msgstr ""
+msgstr "تدوير باتجاه عقارب الساعة"
 
 msgctxt "ID_PANSCAN_ROTATEZ270"
 msgid "Rotate Counter-Clock&wise"
-msgstr ""
+msgstr "تدوير بعكس عقارب الساعة"
 
 msgctxt "ID_PANSCAN_ROTATEXM"
 msgid "&Flip Vertically"
-msgstr ""
+msgstr "القلب عموديًا"
 
 msgctxt "ID_PANSCAN_ROTATEYM"
 msgid "&Mirror"
-msgstr ""
+msgstr "&انعكاس"
 
 msgctxt "ID_VIEW_RESET"
 msgid "Re&set"
@@ -512,7 +513,7 @@ msgstr "في المقدمة"
 
 msgctxt "ID_ONTOP_DEFAULT"
 msgid "&Default"
-msgstr "الإفتراضي"
+msgstr "افتراضي"
 
 msgctxt "ID_ONTOP_ALWAYS"
 msgid "&Always"
@@ -564,91 +565,91 @@ msgstr "قائمة التشغيل"
 
 msgctxt "ID_PLAY_REPEAT_AB"
 msgid "A-B (&Reset)"
-msgstr ""
+msgstr "A-B (&Reset)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_A"
 msgid "A-B (Mark &A)"
-msgstr ""
+msgstr "A-B (Mark &A)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_B"
 msgid "A-B (Mark &B)"
-msgstr ""
+msgstr "A-B (Mark &B)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
-msgstr ""
+msgstr "معدل التشغيل"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_025"
 msgid "0.25 x"
-msgstr ""
+msgstr "0.25 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_050"
 msgid "0.50 x"
-msgstr ""
+msgstr "0.50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_075"
 msgid "0.75 x"
-msgstr ""
+msgstr "0.75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_090"
 msgid "0.90 x"
-msgstr ""
+msgstr "0.90 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_100"
 msgid "1.00 x"
-msgstr ""
+msgstr "1.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_110"
 msgid "1.10 x"
-msgstr ""
+msgstr "1.10 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_125"
 msgid "1.25 x"
-msgstr ""
+msgstr "1.25 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_150"
 msgid "1.50 x"
-msgstr ""
+msgstr "1.50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_175"
 msgid "1.75 x"
-msgstr ""
+msgstr "1.75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_200"
 msgid "2.00 x"
-msgstr ""
+msgstr "2.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_300"
 msgid "3.00 x"
-msgstr ""
+msgstr "3.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_400"
 msgid "4.00 x"
-msgstr ""
+msgstr "4.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_600"
 msgid "6.00 x"
-msgstr ""
+msgstr "6.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_800"
 msgid "8.00 x"
-msgstr ""
+msgstr "8.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr ""
+msgstr "23.976 fps"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
-msgstr ""
+msgstr "24 fps"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS25"
 msgid "25 fps"
-msgstr ""
+msgstr "25 fps"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr ""
+msgstr "59.94 fps"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"

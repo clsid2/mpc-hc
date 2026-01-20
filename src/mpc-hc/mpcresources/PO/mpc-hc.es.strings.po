@@ -7,14 +7,14 @@
 # Astro_Corp, 2020
 # Enmanuel Jaco <enmanuelgiron2001@gmail.com>, 2022
 # Leandro Botella Penalva, 2024
-# Alex Covarrubias, 2025
+# Alex Covarrubias, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
+"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Alex Covarrubias, 2025\n"
+"Last-Translator: Alex Covarrubias, 2026\n"
 "Language-Team: Spanish (https://app.transifex.com/mpchc/teams/106126/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4685,15 +4685,15 @@ msgstr ""
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
-msgstr ""
+msgstr "Izquierda"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
-msgstr ""
+msgstr "Centro"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
-msgstr ""
+msgstr "Derecha"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
@@ -5093,7 +5093,7 @@ msgstr "Pista de Subtítulos"
 
 msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
 msgid "Do you want to save changes to your favorites?"
-msgstr ""
+msgstr "¿Quiere salvar los cambios en sus Favoritos?"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"

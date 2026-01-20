@@ -9,13 +9,14 @@
 # CyanVesper <SharpNight93@gmail.com>, 2024
 # lychichem <leichixian@outlook.com>, 2025
 # YuanHao Du, 2025
+# KaiHuaDou, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-09-18 18:34:29+0000\n"
+"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: YuanHao Du, 2025\n"
+"Last-Translator: KaiHuaDou, 2026\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -168,7 +169,7 @@ msgid ""
 "If the rendering target is left undefined, SSA/ASS subtitles will be "
 "rendered relative to the video frame while all other text subtitles will be "
 "rendered relative to the window."
-msgstr "如果渲染目标没有被定义，SSA/ASS字幕会以视频帧为参照渲染，而其他文本字幕则会以窗口为参照。"
+msgstr "若未指定渲染目标，SSA/ASS字幕将相对于视频帧渲染，其他文本字幕将相对于窗口渲染。"
 
 msgctxt "IDS_PLAYLOOPMODE_PLAYLIST"
 msgid "Repeat Mode: Playlist"
@@ -200,19 +201,19 @@ msgstr "只有当切换不同视频类型时"
 
 msgctxt "IDS_PPAGE_CAPTURE_FG2"
 msgid "Always (default)"
-msgstr "一直(默认)"
+msgstr "始终 (默认)"
 
 msgctxt "IDS_PPAGE_CAPTURE_FGDESC0"
 msgid ""
 "Not supported by some devices. Two video decoders always present in the "
 "filter graph."
-msgstr "不支持某些设备。在滤镜图表中总是会出现两个视频解码器。"
+msgstr "部分设备不支持。滤镜图中将始终包含两个视频解码器。"
 
 msgctxt "IDS_PPAGE_CAPTURE_FGDESC1"
 msgid ""
 "Fast except when switching between different video streams. Only one video "
 "decoder present in the filter graph."
-msgstr "在不同视频流之间切换以外情况下的最快方式。只会在滤镜图表中出现一个视频解码器。"
+msgstr "除切换视频流外，速度均很快。滤镜图中仅包含一个视频解码器。"
 
 msgctxt "IDS_PPAGE_CAPTURE_SFG0"
 msgid "Never if possible (fastest, but not supported by most filters)"
@@ -220,7 +221,7 @@ msgstr "如果可能不要使用 (最快,不支持大多数滤镜)"
 
 msgctxt "IDS_PPAGE_CAPTURE_SFG1"
 msgid "Only when switching different video types"
-msgstr "只有当切换不同视频类型时"
+msgstr "仅当切换不同视频类型时"
 
 msgctxt "IDS_PPAGE_CAPTURE_SFG2"
 msgid "Always (may be required by some devices)"
@@ -228,7 +229,7 @@ msgstr "总是 (某些设备可能需要)"
 
 msgctxt "IDS_INFOBAR_PARENTAL_RATING"
 msgid "Parental rating"
-msgstr "父母指导评级"
+msgstr "家长分级"
 
 msgctxt "IDS_PARENTAL_RATING"
 msgid "%d+"
@@ -1590,7 +1591,7 @@ msgstr "在窗口模式下也可以隐藏控制栏和面板。"
 msgctxt "IDS_PPAGEADVANCED_BLOCK_VSFILTER"
 msgid ""
 "Prevent external subtitle renderer to be loaded when internal is in use."
-msgstr "当使用内置字幕渲染器时防止外置字幕渲染器加载。"
+msgstr "内部字幕渲染器启用时阻止外部字幕渲染器加载"
 
 msgctxt "IDS_PPAGEADVANCED_COL_NAME"
 msgid "Name"
@@ -4516,15 +4517,15 @@ msgstr "/shaderpreset \"Pr\"\t启动时使用着色器预设“Pr”"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
-msgstr ""
+msgstr "左"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_CENTER"
 msgid "Center"
-msgstr ""
+msgstr "中"
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
-msgstr ""
+msgstr "右"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
@@ -4887,7 +4888,7 @@ msgstr "字幕轨"
 
 msgctxt "IDS_FAVORITES_UNSAVED_CHANGES"
 msgid "Do you want to save changes to your favorites?"
-msgstr ""
+msgstr "您要保存对收藏夹的修改吗？"
 
 msgctxt "IDS_AG_EXIT_FULLSCREEN"
 msgid "Exit Fullscreen"

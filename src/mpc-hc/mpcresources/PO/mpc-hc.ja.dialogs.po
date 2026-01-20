@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # O SA, 2021
 # Sonozaki Shion <mskt01a@gmail.com>, 2021
-# ever_green, 2025
+# ever_green, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-12-14 16:16:34+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: ever_green, 2025\n"
+"Last-Translator: ever_green, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -78,7 +78,7 @@ msgstr "開始"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
 msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr "内蔵の音声切り替えフィルターを有効にする (再起動が必要)"
+msgstr "内蔵オーディオ スイッチャー フィルターを有効にする (再起動が必要)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
@@ -160,7 +160,7 @@ msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
-msgstr "インターネットまたはコンピューター上の再生したい動画や音声ファイルのアドレスを入力してください。"
+msgstr "インターネット上またはお使いのコンピューター上にある映画や音声ファイルのアドレスを入力すると、プレーヤーが開きます。"
 
 msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid "Open:"
@@ -196,7 +196,7 @@ msgstr "バージョン情報"
 
 msgctxt "IDD_ABOUTBOX_IDC_AUTHORS_LINK"
 msgid "Copyright 2002-2026 clsid2 and others"
-msgstr "著作権 2002-2026 clsid2 および他の貢献者"
+msgstr "著作権 2002-2026 clsid2 ほか貢献者"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
@@ -545,7 +545,7 @@ msgstr "% で表示する"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC7"
 msgid "Animate at"
-msgstr "動画のフレーム レートの"
+msgstr "ビデオのフレーム レートの"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC8"
 msgid "% of the video frame rate"
@@ -561,7 +561,7 @@ msgstr "レンダラーのレイアウト"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_SUB_AR_COMPENSATION"
 msgid "Apply aspect ratio compensation for anamorphic videos"
-msgstr "アナモルフィック映像に縦横比の補正を適用する"
+msgstr "アナモルフィック動画にアスペクト比補正を適用する"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
 msgid "Warning"
@@ -633,7 +633,7 @@ msgstr "DVD"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK3"
 msgid "Audio CD"
-msgstr "音楽 CD"
+msgstr "オーディオ CD"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_STATIC"
 msgid "Jump distances (small, medium, large in ms)"
@@ -728,7 +728,7 @@ msgstr "メディアの長さ:"
 
 msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
 msgid "Video size:"
-msgstr "映像サイズ:"
+msgstr "ビデオのサイズ:"
 
 msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
 msgid "Created:"
@@ -983,7 +983,7 @@ msgstr "下"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK_RELATIVETO"
 msgid "Position subtitles relative to the video frame"
-msgstr "映像フレームを基準に字幕を配置する"
+msgstr "ビデオ フレームを基準に字幕を配置する"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Colors && Transparency"
@@ -1077,11 +1077,11 @@ msgstr "スプリッター"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_VIDEO_DEC_CONF"
 msgid "Video decoder"
-msgstr "映像デコーダー"
+msgstr "ビデオ デコーダー"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
 msgid "Audio decoder"
-msgstr "音声デコーダー"
+msgstr "オーディオ デコーダー"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
 msgid "Internal:"
@@ -1129,7 +1129,7 @@ msgstr "回転"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
-msgstr "音声レンダラー"
+msgstr "オーディオ レンダラー"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
 msgid "Settings"
@@ -1417,7 +1417,7 @@ msgstr "フィルター グラフを停止"
 
 msgctxt "IDD_PPAGESYNC_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "映像をディスプレイに同期する"
+msgstr "ビデオをディスプレイに同期する"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC1"
 msgid "Frequency adjustment:"
@@ -1425,7 +1425,7 @@ msgstr "周波数調整:"
 
 msgctxt "IDD_PPAGESYNC_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "ディスプレイを映像に同期する"
+msgstr "ディスプレイをビデオに同期する"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC2"
 msgid "Frequency adjustment:"
@@ -1741,8 +1741,7 @@ msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC8"
 msgid ""
 "To minimize audio distortion, it is recommended to keep player volume at "
 "around 85% when playing loud lossy-encoded content."
-msgstr ""
-"音声の歪みを最小限に抑えるために、大音量の非可逆エンコードされたコンテンツを再生する場合は、プレーヤーの音量を約 85% に維持することを推奨します。"
+msgstr "大音量の非可逆圧縮コンテンツを再生する場合、音声の歪みを最小限に抑えるため、プレイヤーの音量は約 85% に保つことを推奨します。"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
 msgid "MPC Audio Renderer Settings"
@@ -1780,7 +1779,7 @@ msgctxt "IDD_CRASH_REPORTER_IDC_STATIC3"
 msgid ""
 "Your email address is optional and will only be used if the developers need "
 "to contact you for more information."
-msgstr "メールアドレスの入力は任意です。開発者が追加情報の確認を行う場合にのみ使用されます。"
+msgstr "メール アドレスの入力は任意です。開発者が追加の情報を確認する必要がある場合にのみ使用されます。"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC4"
 msgid "Problem description (use English only):"
@@ -1852,7 +1851,7 @@ msgstr "ホバー位置:"
 
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
-msgstr "映像プレビューを表示する"
+msgstr "ビデオ プレビューを表示する"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
@@ -1872,11 +1871,11 @@ msgstr "トラック言語"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK4"
 msgid "Video Info"
-msgstr "映像情報"
+msgstr "ビデオ情報"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK12"
 msgid "Audio Info"
-msgstr "音声情報"
+msgstr "オーディオ情報"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
 msgid "FPS"

@@ -6,13 +6,14 @@
 # lifegpc <g1710431395@gmail.com>, 2020
 # CyanVesper <SharpNight93@gmail.com>, 2023
 # YuanHao Du, 2025
+# KaiHuaDou, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: YuanHao Du, 2025\n"
+"Last-Translator: KaiHuaDou, 2026\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -102,7 +103,7 @@ msgstr "查看(&V)"
 
 msgctxt "ID_VIEW_CAPTIONMENU"
 msgid "Caption&&Menu"
-msgstr "标题与菜单"
+msgstr "标题与菜单(&M)"
 
 msgctxt "ID_VIEW_SEEKER"
 msgid "See&k Bar"
@@ -246,7 +247,7 @@ msgstr "半浮点处理(&H)"
 
 msgctxt "ID_VIEW_DISABLEDESKTOPCOMPOSITION"
 msgid "Disable desktop composition (&Aero)"
-msgstr "关闭桌面合成 (&Aero)"
+msgstr "禁用桌面合成 (&Aero)"
 
 msgctxt "ID_VIEW_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time &Correction"
@@ -346,15 +347,15 @@ msgstr "GPU 控制(&G)"
 
 msgctxt "ID_VIEW_FLUSHGPU_BEFOREVSYNC"
 msgid "Flush GPU &before VSync"
-msgstr "在垂直同步前刷新 GPU(&B)"
+msgstr "在垂直同步前清空 GPU(&B)"
 
 msgctxt "ID_VIEW_FLUSHGPU_AFTERPRESENT"
 msgid "Flush GPU &after Present"
-msgstr "在呈现后刷新 GPU(&A)"
+msgstr "在呈现后清空 GPU(&A)"
 
 msgctxt "ID_VIEW_FLUSHGPU_WAIT"
 msgid "&Wait for flushes"
-msgstr "等待刷新(&W)"
+msgstr "等待刷新完成(&W)"
 
 msgctxt "POPUP"
 msgid "R&eset"
@@ -374,7 +375,7 @@ msgstr "视频画面(&F)"
 
 msgctxt "ID_VIEW_VF_HALF"
 msgid "&Half Size"
-msgstr "半数尺寸(&H)"
+msgstr "半尺寸(&H)"
 
 msgctxt "ID_VIEW_VF_NORMAL"
 msgid "&Normal Size"
@@ -406,11 +407,11 @@ msgstr "缩放以填满窗口(&O)"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
-msgstr "高宽比(&A)"
+msgstr "纵横比(&A)"
 
 msgctxt "ID_ASPECTRATIO_DAR"
 msgid "&Default (DAR)"
-msgstr "默认 (DAR)(&D)"
+msgstr "默认(&DAR)"
 
 msgctxt "ID_ASPECTRATIO_4_3"
 msgid "&4:3"
@@ -434,11 +435,11 @@ msgstr "1&85:100"
 
 msgctxt "ID_ASPECTRATIO_SAR"
 msgid "Assume &square pixels (SAR)"
-msgstr "猜测是方形像素 (SAR)(&S)"
+msgstr "假定是方形像素 (&SAR)"
 
 msgctxt "ID_VIEW_VF_COMPMONDESKARDIFF"
 msgid "&Correct Monitor/Desktop AR Diff"
-msgstr "纠正显示器/桌面高宽比差异(&C)"
+msgstr "校正显示器/桌面纵横比差异(&C)"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
@@ -510,7 +511,7 @@ msgstr "重置(&S)"
 
 msgctxt "POPUP"
 msgid "On &Top"
-msgstr "前端显示(&T)"
+msgstr "置顶(&T)"
 
 msgctxt "ID_ONTOP_DEFAULT"
 msgid "&Default"
@@ -570,11 +571,11 @@ msgstr "重置A-B循环(&R)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_A"
 msgid "A-B (Mark &A)"
-msgstr "标记A点(&A)"
+msgstr "标记&A点"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_B"
 msgid "A-B (Mark &B)"
-msgstr "标记B点(&B)"
+msgstr "标记&B点"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
@@ -638,7 +639,7 @@ msgstr "8.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr "23.976 fps"
+msgstr "23.976 帧/秒"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
@@ -650,7 +651,7 @@ msgstr "25 帧/秒"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr "59.94 fps"
+msgstr "59.94 帧/秒"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"

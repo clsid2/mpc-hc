@@ -9,13 +9,14 @@
 # CyanVesper <SharpNight93@gmail.com>, 2024
 # lychichem <leichixian@outlook.com>, 2025
 # YuanHao Du, 2025
+# KaiHuaDou, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-09-28 15:03:20+0000\n"
+"POT-Creation-Date: 2025-12-14 16:16:34+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: YuanHao Du, 2025\n"
+"Last-Translator: KaiHuaDou, 2026\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -81,11 +82,11 @@ msgstr "录制"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
 msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr "开启内建的音频切换滤镜 (需要重新启动)"
+msgstr "启用内置音频切换滤镜 (需要重新启动)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
-msgstr "规格化"
+msgstr "归一化"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC4"
 msgid "Max amplification:"
@@ -97,7 +98,7 @@ msgstr "%"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK6"
 msgid "Regain volume"
-msgstr "重新定义音量"
+msgstr "恢复音量"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
 msgid "Boost:"
@@ -121,7 +122,7 @@ msgstr "输入声道:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM3"
 msgid "Hold shift for immediate changes when clicking something"
-msgstr "当点击任意项目时按下 shift 键可使其立即生效"
+msgstr "按住 Shift 键点击可立即生效"
 
 msgctxt "IDD_GOTO_DLG_CAPTION"
 msgid "Go To..."
@@ -163,7 +164,7 @@ msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
-msgstr "请先输入声音或电影文件的地址 (在 Internet 或您的计算机中) 随后播放器将会为您打开它。"
+msgstr "输入视频/音频文件地址（网络或本地），播放器将自动播放。"
 
 msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid "Open:"
@@ -191,7 +192,7 @@ msgstr "取消"
 
 msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
 msgid "Add to playlist without opening"
-msgstr "添加到播放列表但不要打开"
+msgstr "仅添加到播放列表"
 
 msgctxt "IDD_ABOUTBOX_CAPTION"
 msgid "About"
@@ -204,7 +205,7 @@ msgstr "版权所有 2002-2026 clsid2 和其他开发者"
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
 "This program is freeware and released under the GNU General Public License."
-msgstr "此程序是遵守 GNU 通用公众授权协议发布的自由软件。"
+msgstr "本程序为遵循 GNU 通用公共许可证发布的自由软件。"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "English translation made by MPC-HC Team"
@@ -212,7 +213,7 @@ msgstr "简体中文翻译由Transifex上的志愿者维护"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Build information"
-msgstr "编译信息"
+msgstr "构建信息"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Version:"
@@ -220,7 +221,7 @@ msgstr "版本:"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Build date:"
-msgstr "编译日期:"
+msgstr "构建日期:"
 
 msgctxt "IDD_ABOUTBOX_IDC_LAVFILTERS_VERSION"
 msgid "Not used"
@@ -810,11 +811,11 @@ msgstr "确定"
 
 msgctxt "IDD_FAVORGANIZE_IDCANCEL"
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 msgctxt "IDD_FAVORGANIZE_ID_APPLY_NOW"
 msgid "Apply"
-msgstr ""
+msgstr "应用"
 
 msgctxt "IDD_PNSPRESET_DLG_CAPTION"
 msgid "PnS Frame Adjust Presets"
@@ -1956,15 +1957,15 @@ msgstr "工具栏样式"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
 msgid "Toolbar Scale:"
-msgstr "工具栏尺寸"
+msgstr "工具栏尺寸: "
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Alignment:"
-msgstr ""
+msgstr "工具栏对齐: "
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr "活动样式"
+msgstr "活动样式: "
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"

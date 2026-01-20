@@ -570,11 +570,11 @@ msgstr "A-B (&Resetează)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_A"
 msgid "A-B (Mark &A)"
-msgstr "A-B (Marchează &A)"
+msgstr "A-B (Marchează &A-ul)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_B"
 msgid "A-B (Mark &B)"
-msgstr "A-B (Marchează &B)"
+msgstr "A-B (Marchează &B-ul)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
