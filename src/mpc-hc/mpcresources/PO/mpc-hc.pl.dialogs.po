@@ -714,7 +714,7 @@ msgstr "Dodaj typ mediów..."
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON6"
 msgid "Add Sub Type..."
-msgstr "Dodaj typ napisów..."
+msgstr "Dodaj typ napisów…"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON7"
 msgid "Delete"
