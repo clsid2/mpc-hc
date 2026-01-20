@@ -1441,7 +1441,7 @@ msgstr "Oprit"
 
 msgctxt "IDS_CONTROLS_BUFFERING"
 msgid "Buffering... (%d%%)"
-msgstr "Preîncărcare... (%d%%)"
+msgstr "Se preîncarcă... (%d%%)"
 
 msgctxt "IDS_CONTROLS_CAPTURING"
 msgid "Capturing..."
