@@ -76,7 +76,7 @@ msgstr "Pour l'utilisateur actuel uniquement"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
-msgstr "Autres tâches :"
+msgstr "Autres tâches :"
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"
