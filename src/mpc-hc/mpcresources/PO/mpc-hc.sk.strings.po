@@ -4136,7 +4136,7 @@ msgstr "Pripravené..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
-"/pns \"nazov\"\tZadajte prednastavenie prispôsobenia PnS snímky (napríklad: "
+"/pns \"nazov\"\tZadať prednastavenie prispôsobenia PnS snímky (napríklad: "
 "/pns \"%s\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
