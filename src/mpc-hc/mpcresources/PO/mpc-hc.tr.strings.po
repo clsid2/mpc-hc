@@ -5,14 +5,14 @@
 # Ali Kömesöğütlü <byzlo685@gmail.com>, 2020
 # MPC HC <adiposegithub@gmail.com>, 2022
 # Sinan H., 2024
-# Mücahid Aksel <mucahidaksel@gmail.com>, 2025
+# Mücahid Aksel <mucahidaksel@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2025\n"
+"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2026\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4143,12 +4143,16 @@ msgstr "Hazır..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
+"/pns \"Ad\"\tKullanılacak Kare uyarlama PnS Ön Ayar Adını belirtin (örneğin:"
+" /pns “%s”)"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
 msgstr ""
+"/pns \"px,py,zx,zy\"\tDoğrudan konum ve yakınlaştırma değerlerini "
+"“Kx,Ky,Yx,Yy” biçiminde rakamla belirtin"
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
