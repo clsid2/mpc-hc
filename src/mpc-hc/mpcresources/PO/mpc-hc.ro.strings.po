@@ -1445,7 +1445,7 @@ msgstr "Preîncărcare... (%d%%)"
 
 msgctxt "IDS_CONTROLS_CAPTURING"
 msgid "Capturing..."
-msgstr "Capturare..."
+msgstr "Se capturează..."
 
 msgctxt "IDS_CONTROLS_OPENING"
 msgid "Opening..."
