@@ -714,7 +714,7 @@ msgstr "Dodaj typ mediów..."
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON6"
 msgid "Add Sub Type..."
-msgstr "Dodaj podtyp..."
+msgstr "Dodaj typ napisów..."
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON7"
 msgid "Delete"
@@ -830,7 +830,7 @@ msgstr "Zastosuj"
 
 msgctxt "IDD_PNSPRESET_DLG_CAPTION"
 msgid "PnS Frame Adjust Presets"
-msgstr "Predefiniowane ustawienia ramki"
+msgstr "Presety dopasowania klatki PnS"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON2"
 msgid "New"
