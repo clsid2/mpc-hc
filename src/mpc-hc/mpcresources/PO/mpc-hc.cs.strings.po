@@ -4389,7 +4389,7 @@ msgstr "/standby\t\tPo přehrání přepne systém do úsporného režimu"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\tPo skončení přehrávání přejde operační systém do hibernace"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

@@ -4302,7 +4302,7 @@ msgstr "/standby\t\t播放結束後進入待命模式"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\t播放結束後將系統休眠"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

@@ -4369,7 +4369,7 @@ msgstr "/standby\t\tStavi operativni sustav u način mirovanja nakon reprodukcij
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\tHiberniraj operativni sustav nakon reprodukcije"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

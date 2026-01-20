@@ -4393,7 +4393,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\tMenjeda sistem operasi setelah pemutaran"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

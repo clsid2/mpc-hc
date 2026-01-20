@@ -4448,7 +4448,7 @@ msgstr "/standby\t\tPune sistemul de operare în modul de repaus după redare"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\tPune pe hibernare sistemul de operare după redare"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

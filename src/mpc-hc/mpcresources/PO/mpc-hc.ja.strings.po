@@ -4323,7 +4323,7 @@ msgstr "/standby\t\t再生終了後に OS をスタンバイ モードにする"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\t再生終了後に OS を休止状態にする"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

@@ -4391,7 +4391,7 @@ msgstr "/standby\t\tĐặt hệ thống vào chế độ chờ sau khi phát xon
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/ngủ đông\tChuyển máy tính sang tình trạng ngủ đông sau khi phát xong"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

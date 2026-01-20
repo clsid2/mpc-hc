@@ -4320,7 +4320,7 @@ msgstr "/standby\t\t재생 후, 대기 모드로 전환"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\t재생 후, 절전 모드"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
