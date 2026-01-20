@@ -20,6 +20,7 @@ CMPCThemeEdit::~CMPCThemeEdit()
 IMPLEMENT_DYNAMIC(CMPCThemeEdit, CEdit)
 BEGIN_MESSAGE_MAP(CMPCThemeEdit, CEdit)
     ON_WM_NCPAINT()
+    ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(WMU_RESIZESUPPORT, ResizeSupport)
     ON_MESSAGE(WM_CONTEXTMENU, OnContextMenu)
     ON_WM_MEASUREITEM()
@@ -354,11 +355,6 @@ void CMPCThemeEdit::OnNcPaint()
                 brush.DeleteObject();
             }
 
-            //added code to draw the inner rect for the border.  we shrunk the draw rect for border spacing earlier
-            //normally, the bg of the dialog is sufficient, but in the case of ResizableDialog, it clips the anchored
-            //windows, which leaves unpainted area just inside our border
-            rect.DeflateRect(1, 1);
-            CMPCThemeUtil::drawParentDialogBGClr(this, &dc, rect, false);
 
             if (nullptr != buddy) {
                 buddy->Invalidate();
@@ -367,6 +363,27 @@ void CMPCThemeEdit::OnNcPaint()
 
     } else {
         __super::OnNcPaint();
+    }
+}
+
+BOOL CMPCThemeEdit::OnEraseBkgnd(CDC* pDC)
+{
+    if (AppNeedsThemedControls() && !IsScrollable()) {
+        // Do default erase background
+        BOOL result = Default();
+
+        // added code to draw the inner rect for the border.  we shrunk the draw rect for border spacing earlier
+        // normally, the bg of the dialog is sufficient, but in the case of ResizableDialog, it clips the anchored
+        // windows, which leaves unpainted area just inside our border
+        // This was previously in OnNcPaint but caused it to paint over selection highlights
+        CRect rect;
+        GetClientRect(&rect);
+        rect.InflateRect(1, 1);  // Expand to get the 1px gap around client area
+        CMPCThemeUtil::drawParentDialogBGClr(this, pDC, rect, false);
+
+        return result;
+    } else {
+        return __super::OnEraseBkgnd(pDC);
     }
 }
 

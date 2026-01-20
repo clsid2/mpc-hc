@@ -26,6 +26,7 @@ protected:
 
     afx_msg LRESULT ResizeSupport(WPARAM wParam, LPARAM lParam);
     afx_msg void OnNcPaint();
+    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 public:
     afx_msg LRESULT OnContextMenu(WPARAM wParam, LPARAM lParam);
     afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
