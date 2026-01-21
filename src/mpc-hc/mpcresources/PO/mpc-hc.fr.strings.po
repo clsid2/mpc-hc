@@ -3695,7 +3695,7 @@ msgstr "Valeurs optimales rétablies"
 
 msgctxt "IDS_OSD_RS_D3D_FS_GUI_SUPP_ON"
 msgid "D3D Fullscreen GUI Support: On"
-msgstr "Support de l'interface en plein écran D3D : Activé"
+msgstr "Support de l'interface en plein écran D3D : activé"
 
 msgctxt "IDS_OSD_RS_D3D_FS_GUI_SUPP_OFF"
 msgid "D3D Fullscreen GUI Support: Off"
