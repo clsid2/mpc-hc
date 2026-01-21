@@ -1753,7 +1753,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Activer l'intercommunication stéréo (pour casques audio)"
+msgstr "Activer le mixage stéréo (pour casques audio)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
 msgid "C. Moy"
