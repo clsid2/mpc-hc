@@ -1991,11 +1991,11 @@ msgstr "Correction des codes horaire des images : désactivée"
 
 msgctxt "IDS_OSD_RS_TARGET_VSYNC_OFFSET"
 msgid "Target VSync Offset: %.1f"
-msgstr "Décalage de synchronisation cible : %.1f"
+msgstr "Décalage de synchronisation cible : %.1f"
 
 msgctxt "IDS_OSD_RS_VSYNC_OFFSET"
 msgid "VSync Offset: %d"
-msgstr "Décalage de synchronisation verticale : %d"
+msgstr "Décalage de synchronisation verticale : %d"
 
 msgctxt "IDS_OSD_SPEED"
 msgid "Speed: %.2lfx"
