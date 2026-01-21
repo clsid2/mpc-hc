@@ -1096,7 +1096,7 @@ msgstr "Basé sur RARFileSource, ne supporte pas les archives compressées"
 
 msgctxt "IDS_INTERNAL_LAVF"
 msgid "Uses LAV Filters"
-msgstr "Utilise LAV Filters"
+msgstr "Utilise les filtres LAV"
 
 msgctxt "IDS_INTERNAL_LAVF_WMV"
 msgid ""
