@@ -720,7 +720,7 @@ msgstr "Ajouter un type"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON6"
 msgid "Add Sub Type..."
-msgstr "Créer un sous-type"
+msgstr "Créer un sous-type..."
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON7"
 msgid "Delete"
@@ -913,7 +913,7 @@ msgstr "Fermer"
 
 msgctxt "IDD_SAVE_DLG_CAPTION"
 msgid "Saving..."
-msgstr "Sauvegarde..."
+msgstr "Enregistrement..."
 
 msgctxt "IDD_SAVE_DLG_IDCANCEL"
 msgid "Cancel"
