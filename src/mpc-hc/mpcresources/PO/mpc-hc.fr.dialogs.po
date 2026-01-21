@@ -1197,7 +1197,7 @@ msgstr "Tampons EVR :"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Mettre en cache les Shaders compilés"
+msgstr "Mettre en cache les effets vidéo compilés"
 
 msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK1"
 msgid "Listen on port:"
