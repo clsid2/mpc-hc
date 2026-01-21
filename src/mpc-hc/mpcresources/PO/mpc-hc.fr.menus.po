@@ -189,7 +189,7 @@ msgstr "Options de &rendu"
 
 msgctxt "ID_VIEW_TEARING_TEST"
 msgid "&Tearing Test"
-msgstr "Test de &tearing"
+msgstr "Test de &Tearing"
 
 msgctxt "ID_VIEW_DISPLAY_RENDERER_STATS"
 msgid "&Display Statistics"
