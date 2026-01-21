@@ -1047,7 +1047,7 @@ msgstr "Aucun fichier multimédia n'a été trouvé dans l'archive"
 
 msgctxt "IDS_RFS_COMPRESSED"
 msgid "Compressed files are not supported"
-msgstr "Les fichiers compressés ne sont pas supportés"
+msgstr "Les fichiers compressés ne sont pas pris en charge"
 
 msgctxt "IDS_RFS_ENCRYPTED"
 msgid "Encrypted files are not supported"
