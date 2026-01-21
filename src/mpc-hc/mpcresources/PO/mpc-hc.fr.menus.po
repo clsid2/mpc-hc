@@ -405,7 +405,7 @@ msgstr "Ajuster à l'&extérieur de la fenêtre"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
-msgstr "&Ratio d'affichage"
+msgstr "Ratio d'&aspect"
 
 msgctxt "ID_ASPECTRATIO_DAR"
 msgid "&Default (DAR)"
