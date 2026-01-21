@@ -337,7 +337,7 @@ msgstr "Impossible d'ajouter le filtre de capture audio au graphe."
 
 msgctxt "IDS_CAPTURE_ERROR_DEVICE"
 msgid "Could not open capture device."
-msgstr "Impossible d'ouvrir le périphérique de capture."
+msgstr "Impossible d'ouvrir le périphérique de capture"
 
 msgctxt "IDS_INVALID_PARAMS_ERROR"
 msgid "Can't open, invalid input parameters"
