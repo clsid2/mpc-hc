@@ -4054,7 +4054,7 @@ msgstr "Teinte : %s°"
 
 msgctxt "IDS_OSD_SATURATION"
 msgid "Saturation: %s"
-msgstr "Saturation : %s"
+msgstr "Saturation : %s"
 
 msgctxt "IDS_OSD_RESET_COLOR"
 msgid "Color settings restored"
