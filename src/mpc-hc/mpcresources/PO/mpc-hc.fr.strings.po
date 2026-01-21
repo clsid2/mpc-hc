@@ -665,7 +665,7 @@ msgstr "Nouvelle version de la bibliothèque d'icônes"
 
 msgctxt "IDS_ICONS_REASSOC_DLG_INSTR"
 msgid "Do you want to reassociate the icons?"
-msgstr "Voulez-vous réassocier les icônes ?"
+msgstr "Faut-il réassocier les icônes ?"
 
 msgctxt "IDS_ICONS_REASSOC_DLG_CONTENT"
 msgid ""
