@@ -4963,7 +4963,7 @@ msgstr "Partagé"
 
 msgctxt "IDS_ARS_BITEXACT_OUTPUT"
 msgid "Allow bit-exact output"
-msgstr "Autoriser la sortie bit-exacte"
+msgstr "Autoriser la sortie exacte à l'octet près"
 
 msgctxt "IDS_ARS_SYSTEM_LAYOUT_CHANNELS"
 msgid "Use system layout channels"
