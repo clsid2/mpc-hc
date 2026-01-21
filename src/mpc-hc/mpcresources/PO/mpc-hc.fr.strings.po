@@ -3719,7 +3719,7 @@ msgstr "Forcer l'entrée RGB 10 bits : non"
 
 msgctxt "IDS_OSD_RS_FULL_FP_PROCESS_ON"
 msgid "Full Floating Point Processing: On"
-msgstr "Traitement en virgule flottante 32 bits : Activé"
+msgstr "Traitement en virgule flottante 32 bits : activé"
 
 msgctxt "IDS_OSD_RS_FULL_FP_PROCESS_OFF"
 msgid "Full Floating Point Processing: Off"
