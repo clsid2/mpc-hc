@@ -1470,7 +1470,7 @@ msgstr "&Recharger"
 
 msgctxt "IDS_SUBTITLES_HIDE"
 msgid "&Hide Subtitles"
-msgstr "Cac&her les sous-titres"
+msgstr "Mas&quer les sous-titres"
 
 msgctxt "IDS_PANSCAN_EDIT"
 msgid "&Edit..."
