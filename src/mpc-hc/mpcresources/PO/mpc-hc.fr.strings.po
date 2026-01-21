@@ -4259,7 +4259,7 @@ msgstr "Fichier de sous-titres déjà existant."
 
 msgctxt "IDS_SUBUL_DLG_UPLOADING"
 msgid "Uploading subtitles, please wait..."
-msgstr "Envoi des sous-titres en cours, veuillez patienter..."
+msgstr "Téléversement des sous-titres en cours..."
 
 msgctxt "IDS_SUBUL_DLG_UPLOADED"
 msgid "Upload finished."
