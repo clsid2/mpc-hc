@@ -3996,7 +3996,7 @@ msgstr "Le format de temps correct est [-]hh:mm:ss.ms (e.g. 01:23:45.678)."
 
 msgctxt "IDS_EXTERNAL_FILTERS_ERROR_MT"
 msgid "This type is already in the list!"
-msgstr "Ce type est déjà présent dans la liste !"
+msgstr "Ce type est déjà présent dans la liste !"
 
 msgctxt "IDS_WEBSERVER_ERROR_TEST"
 msgid "You need to apply the new settings before testing them."
