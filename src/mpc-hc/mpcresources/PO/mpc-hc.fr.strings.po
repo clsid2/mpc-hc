@@ -3801,7 +3801,7 @@ msgid ""
 msgstr ""
 "Impossible de vérifier les mises à jour.\n"
 "\n"
-"Vérifiez votre connexion à Internet ou réessayez plus tard."
+"Vérifier la connexion à Internet ou réessayer plus tard."
 
 msgctxt "IDS_UPDATE_CLOSE"
 msgid "&Close"
