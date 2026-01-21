@@ -2723,7 +2723,7 @@ msgstr ", libre : %I64d Mo"
 
 msgctxt "IDS_MAINFRM_42"
 msgid ", Free V/A Buffers: %03d/%03d"
-msgstr ", Tampons V/A libres : %03d/%03d"
+msgstr ", tampons V/A libres : %03d/%03d"
 
 msgctxt "IDS_AG_ERROR"
 msgid "Error"
