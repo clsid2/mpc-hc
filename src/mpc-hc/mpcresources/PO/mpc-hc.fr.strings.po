@@ -3779,7 +3779,7 @@ msgid ""
 "\n"
 "The latest stable version is v%s."
 msgstr ""
-"Votre version actuelle est la v%s.\n"
+"La version actuelle est la v%s.\n"
 "\n"
 "La dernière version stable est la v%s."
 
