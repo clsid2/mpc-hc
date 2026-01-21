@@ -2460,7 +2460,7 @@ msgstr "Piste de sous-titre précédente"
 
 msgctxt "IDS_MPLAYERC_85"
 msgid "On/Off Subtitle"
-msgstr "Activer/désactiver les sous-titres"
+msgstr "Activer/Désactiver les sous-titres"
 
 msgctxt "IDS_MPLAYERC_86"
 msgid "Reload Subtitles"
