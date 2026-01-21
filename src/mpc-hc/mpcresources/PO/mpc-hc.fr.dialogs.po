@@ -1963,7 +1963,7 @@ msgstr "Aimanter sur les bords du bureau"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
 msgid "Hide Windowed Controls"
-msgstr "Cacher les contrôles fenêtrés"
+msgstr "Masquer les contrôles fenêtrés"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Windows Integration"
