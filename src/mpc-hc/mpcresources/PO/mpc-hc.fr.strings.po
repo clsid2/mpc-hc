@@ -3587,7 +3587,7 @@ msgstr "Gestion des couleurs : activée"
 
 msgctxt "IDS_OSD_RS_COLOR_MANAGEMENT_OFF"
 msgid "Color Management: Off"
-msgstr "Gestion des couleurs : Désactivée"
+msgstr "Gestion des couleurs : désactivée"
 
 msgctxt "IDS_OSD_RS_INPUT_TYPE_AUTO"
 msgid "Input Type: Auto-Detect"
