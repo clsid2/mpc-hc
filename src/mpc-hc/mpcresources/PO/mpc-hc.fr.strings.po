@@ -97,7 +97,7 @@ msgstr "A-B"
 
 msgctxt "IDS_PLAYLOOPMODE_AB_MARK_A"
 msgid "A-B Repeat: Mark A Position"
-msgstr "A-B répétition: placer le repère A"
+msgstr "A-B répétition : placer le repère A"
 
 msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
