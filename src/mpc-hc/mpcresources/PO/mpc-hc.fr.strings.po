@@ -1971,7 +1971,7 @@ msgstr "Ne jamais afficher"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOWMOVED"
 msgid "Show when moving the cursor, hide after:"
-msgstr "Afficher lors d'un déplacement de la souris, cacher après :"
+msgstr "Afficher lors d'un déplacement de la souris, masquer après :"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
