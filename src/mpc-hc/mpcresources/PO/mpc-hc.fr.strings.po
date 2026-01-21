@@ -4271,7 +4271,7 @@ msgstr "Téléversement abandonné."
 
 msgctxt "IDS_SUBUL_DLG_FAILED"
 msgid "Upload failed."
-msgstr "Échec de l'envoi."
+msgstr "Échec du téléversement."
 
 msgctxt "IDS_SUBMENU_DOWNLOAD"
 msgid "Download && Open"
