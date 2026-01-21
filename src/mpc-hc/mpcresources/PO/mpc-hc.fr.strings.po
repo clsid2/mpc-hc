@@ -2887,7 +2887,7 @@ msgstr "Pause"
 
 msgctxt "IDS_AG_TOGGLE_CAPTION"
 msgid "Toggle Caption&Menu"
-msgstr "Afficher le titre et le menu"
+msgstr "Afficher/Masquer le titre et le menu"
 
 msgctxt "IDS_AG_TOGGLE_SEEKER"
 msgid "Toggle Seekbar"
