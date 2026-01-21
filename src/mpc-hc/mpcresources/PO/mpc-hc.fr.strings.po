@@ -2771,7 +2771,7 @@ msgstr "Impossible d'obtenir la résolution de la vidéo"
 
 msgctxt "IDS_OUT_OF_MEMORY"
 msgid "Out of memory, go buy some more!"
-msgstr "Pas assez de mémoire, allez en acheter plus !"
+msgstr "Pas assez de mémoire !"
 
 msgctxt "IDS_THUMBNAILS_INVALID_FORMAT"
 msgid "Invalid image format, cannot create thumbnails out of %d bpp dibs."
