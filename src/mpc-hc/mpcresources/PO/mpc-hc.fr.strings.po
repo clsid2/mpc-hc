@@ -1751,7 +1751,7 @@ msgstr ""
 
 msgctxt "IDS_HOTKEY_NOT_DEFINED"
 msgid "<not defined>"
-msgstr "<non défini>"
+msgstr "<not defined>"
 
 msgctxt "IDS_NAVIGATION_WATCH"
 msgid "Watch"
