@@ -3151,7 +3151,7 @@ msgstr "Mise en page"
 
 msgctxt "IDS_THUMB_PIXELS"
 msgid "Pixels:"
-msgstr "Pixels :"
+msgstr "Pixels :"
 
 msgctxt "IDS_TEXTFILE_ENC"
 msgid "Encoding:"
