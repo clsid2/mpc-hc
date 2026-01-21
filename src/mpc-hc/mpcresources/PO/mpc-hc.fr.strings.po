@@ -481,7 +481,7 @@ msgstr "Réorganiser par &nom"
 
 msgctxt "IDS_PLAYLIST_SORTBYPATH"
 msgid "Sort by &path"
-msgstr "Réorganiser par &répertoire"
+msgstr "Réorganiser par &chemin"
 
 msgctxt "IDS_PLAYLIST_RANDOMIZE"
 msgid "R&andomize"
