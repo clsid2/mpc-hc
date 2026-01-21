@@ -3555,7 +3555,7 @@ msgstr "Synchronisation verticale précise : activée"
 
 msgctxt "IDS_OSD_RS_ACCURATE_VSYNC_OFF"
 msgid "Accurate VSync: Off"
-msgstr "Synchronisation verticale précise : Désactivée"
+msgstr "Synchronisation verticale précise : désactivée"
 
 msgctxt "IDS_OSD_RS_SYNC_TO_DISPLAY_ON"
 msgid "Synchronize Video to Display: On"
