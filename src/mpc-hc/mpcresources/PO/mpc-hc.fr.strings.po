@@ -2963,8 +2963,7 @@ msgstr "Son"
 
 msgctxt "IDS_MAINFRM_114"
 msgid "%s was not found, please insert media containing this file."
-msgstr ""
-"%s n'a pas été trouvé, veuillez insérer le média contenant ce fichier."
+msgstr "%s n'a pas été trouvé, merci d'insérer le média contenant ce fichier."
 
 msgctxt "IDS_AG_ABORTED"
 msgid "Aborted"
