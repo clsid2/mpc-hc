@@ -219,7 +219,8 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_CAPTURE_SFG0"
 msgid "Never if possible (fastest, but not supported by most filters)"
-msgstr "Jamais si possible (le plus rapide mais le plus souvent non supporté)"
+msgstr ""
+"Jamais si possible (le plus rapide mais le plus souvent non pris en charge)"
 
 msgctxt "IDS_PPAGE_CAPTURE_SFG1"
 msgid "Only when switching different video types"
