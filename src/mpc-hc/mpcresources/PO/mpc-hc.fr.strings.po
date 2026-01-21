@@ -2739,7 +2739,7 @@ msgstr "Sous-titres : %s"
 
 msgctxt "IDS_MAINFRM_46"
 msgid "Select the path for the DVD/BD:"
-msgstr "Sélectionnez un répertoire pour le DVD/BD :"
+msgstr "Sélectionner un chemin pour le DVD/BD :"
 
 msgctxt "IDS_SUB_LOADED_SUCCESS"
 msgid " loaded successfully"
