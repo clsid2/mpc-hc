@@ -2488,7 +2488,7 @@ msgstr "Piste de sous-titres suivante (DVD)"
 
 msgctxt "IDS_MPLAYERC_96"
 msgid "Prev Subtitle Track (DVD)"
-msgstr "Piste de sous-titre précédente (DVD)"
+msgstr "Piste de sous-titres précédente (DVD)"
 
 msgctxt "IDS_MPLAYERC_97"
 msgid "On/Off Subtitle (DVD)"
