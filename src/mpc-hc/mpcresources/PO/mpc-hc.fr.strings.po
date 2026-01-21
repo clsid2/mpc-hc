@@ -3711,7 +3711,7 @@ msgstr "Sortie RGB 10 bits : désactivée"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_ON"
 msgid "Force 10-bit RGB Input: On"
-msgstr "Forcer l'entrée RGB 10 bits : Oui"
+msgstr "Forcer l'entrée RGB 10 bits : oui"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_OFF"
 msgid "Force 10-bit RGB Input: Off"
