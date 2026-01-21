@@ -2867,7 +2867,7 @@ msgstr "Amplification : +%u%%"
 
 msgctxt "IDS_BALANCE_OSD"
 msgid "Balance: %s"
-msgstr "Balance : %s"
+msgstr "Balance : %s"
 
 msgctxt "IDS_FULLSCREENMONITOR_CURRENT"
 msgid "Current"
