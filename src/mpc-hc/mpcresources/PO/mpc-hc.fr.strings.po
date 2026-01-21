@@ -609,7 +609,7 @@ msgstr "Filtres externes"
 
 msgctxt "IDD_PPAGESHADERS"
 msgid "Playback::Shaders"
-msgstr "Lecture::Effets"
+msgstr "Lecture::Effets vidéo"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
