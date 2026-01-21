@@ -2436,7 +2436,7 @@ msgstr "Menu du lecteur (complet)"
 
 msgctxt "IDS_AG_FILTERS_MENU"
 msgid "Filters Menu"
-msgstr "Afficher le menu \"Filtres\""
+msgstr "Afficher le menu « Filtres »"
 
 msgctxt "IDS_AG_OPTIONS"
 msgid "Options"
