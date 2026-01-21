@@ -4243,7 +4243,7 @@ msgstr "Envoi en cours..."
 
 msgctxt "IDS_SUBUL_DLG_STATUS_UPLOADED"
 msgid "Subtitles uploaded successfully."
-msgstr "Sous-titres envoyés avec succès."
+msgstr "Sous-titres téléversés avec succès."
 
 msgctxt "IDS_SUBUL_DLG_STATUS_FAILED"
 msgid "Subtitles upload failed."
