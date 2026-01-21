@@ -4307,7 +4307,7 @@ msgstr "Erreur : la connexion Internet n'a pas pu être établie."
 
 msgctxt "IDS_SUB_CREDENTIALS_TITLE"
 msgid "Enter website credentials"
-msgstr "Entrez les identifiants du site"
+msgstr "Saisir les identifiants du site"
 
 msgctxt "IDS_SUB_CREDENTIALS_MSG"
 msgid "Enter your credentials to connect to: "
