@@ -2682,7 +2682,7 @@ msgstr "Titre : %02d/%02d"
 msgctxt "IDS_REALVIDEO_INCOMPATIBLE"
 msgid "Filename contains unsupported characters (use only A-Z, 0-9)"
 msgstr ""
-"Le nom du fichier contiens des caractères interdits (n'utilisez que A-Z, "
+"Le nom du fichier contient des caractères interdits (n'utiliser que A-Z, "
 "0-9)"
 
 msgctxt "IDS_THUMB_ROWNUMBER"
