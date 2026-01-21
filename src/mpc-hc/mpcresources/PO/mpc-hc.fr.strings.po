@@ -1562,7 +1562,7 @@ msgstr "Impossible d'activer les effets postredimensionnement"
 
 msgctxt "IDS_MAINFRM_BOTH_SHADERS_FAILED"
 msgid "Failed to set both pre-resize and post-resize shaders"
-msgstr "Impossible d'activer les effets pré et post redimensionnement"
+msgstr "Impossible d'activer les effets pré- et postredimensionnement"
 
 msgctxt "IDS_DEBUGSHADERS_FIRSTRUN_MSG"
 msgid ""
