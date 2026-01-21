@@ -1790,7 +1790,7 @@ msgstr "Réglages du moteur de rendu audio MPC"
 
 msgctxt "IDD_CMD_LINE_HELP_CAPTION"
 msgid "Command line help"
-msgstr "Paramètres de la ligne de commandes"
+msgstr "Options de la ligne de commandes"
 
 msgctxt "IDD_CMD_LINE_HELP_IDOK"
 msgid "OK"
