@@ -3607,7 +3607,7 @@ msgstr "Type d'entrée : définition standard PAL"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_BRIGHT"
 msgid "Ambient Light: Bright (2.2 Gamma)"
-msgstr "Luminosité ambiante : Claire (2.2 Gamma)"
+msgstr "Luminosité ambiante : claire (gamma 2,2)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DIM"
 msgid "Ambient Light: Dim (2.35 Gamma)"
