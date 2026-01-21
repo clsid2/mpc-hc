@@ -2719,7 +2719,7 @@ msgstr ", libre : %I64d ko"
 
 msgctxt "IDS_MAINFRM_41"
 msgid ", Free: %I64d MB"
-msgstr ", Libre : %I64d Mo"
+msgstr ", libre : %I64d Mo"
 
 msgctxt "IDS_MAINFRM_42"
 msgid ", Free V/A Buffers: %03d/%03d"
