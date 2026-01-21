@@ -4909,7 +4909,7 @@ msgid ""
 "Use automatic generated captions from Youtube. Note: this can cause a small "
 "delay when loading the stream."
 msgstr ""
-"Utiliser les sous-titres générés automatiquement par Youtube. Note: cela "
+"Utiliser les sous-titres générés automatiquement par Youtube. Note : cela "
 "peut occasionner un léger délai lors du chargement du flux."
 
 msgctxt "IDS_PPAGEADVANCED_USE_SMTC"
