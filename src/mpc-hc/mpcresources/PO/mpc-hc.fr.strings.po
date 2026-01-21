@@ -1374,7 +1374,7 @@ msgstr "Faut-il vraiment effacer la liste des fichiers récents ?"
 
 msgctxt "IDS_AG_EDL_SAVE"
 msgid "EDL save"
-msgstr "Éditeur de liste d'édition : Sauvegarder"
+msgstr "Éditeur de liste d'édition : Enregistrer"
 
 msgctxt "IDS_AG_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time Correction"
@@ -1586,7 +1586,7 @@ msgstr ""
 
 msgctxt "IDS_OSD_SHADERS_PRESET"
 msgid "Shader preset: %s"
-msgstr "Présélection d'effets vidéo : %s"
+msgstr "Présélection d'effets vidéo : %s"
 
 msgctxt "IDS_AG_SHADERS_PRESET_NEXT"
 msgid "Next Shader Preset"
