@@ -1374,7 +1374,7 @@ msgstr "Faut-il vraiment effacer la liste des fichiers récents ?"
 
 msgctxt "IDS_AG_EDL_SAVE"
 msgid "EDL save"
-msgstr "Éditeur de liste d'édition : Enregistrer"
+msgstr "Éditeur de liste d'édition : enregistrer"
 
 msgctxt "IDS_AG_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time Correction"
