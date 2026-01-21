@@ -4999,7 +4999,7 @@ msgstr "Périphérique:"
 
 msgctxt "IDS_ARS_MODE"
 msgid "Mode:"
-msgstr "Mode:"
+msgstr "Mode :"
 
 msgctxt "IDS_ARS_INPUT"
 msgid "Input"
