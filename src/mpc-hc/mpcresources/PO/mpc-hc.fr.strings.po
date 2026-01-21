@@ -3703,7 +3703,7 @@ msgstr "Support de l'interface en plein écran D3D : désactivé"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_OUT_ON"
 msgid "10-bit RGB Output: On"
-msgstr "Sortie RGB 10 bits : Activée"
+msgstr "Sortie RGB 10 bits : activée"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_OUT_OFF"
 msgid "10-bit RGB Output: Off"
