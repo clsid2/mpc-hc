@@ -2320,7 +2320,7 @@ msgstr "Délai invalide"
 
 msgctxt "IDS_UPDATE_DELAY_ERROR_MSG"
 msgid "Please enter a number between 1 and 365."
-msgstr "Veuillez entrer un nombre entre 1 et 365."
+msgstr "Saisir un nombre entre 1 et 365."
 
 msgctxt "IDS_AG_PNS_CENTER"
 msgid "Video Frame Center"
