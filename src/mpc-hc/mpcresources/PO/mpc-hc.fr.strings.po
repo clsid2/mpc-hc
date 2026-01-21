@@ -1987,7 +1987,7 @@ msgstr "Correction des codes horaire des images : activée"
 
 msgctxt "IDS_OSD_RS_FT_CORRECTION_OFF"
 msgid "Frame Time Correction: Off"
-msgstr "Correction des codes horaire des images : Désactivée"
+msgstr "Correction des codes horaire des images : désactivée"
 
 msgctxt "IDS_OSD_RS_TARGET_VSYNC_OFFSET"
 msgid "Target VSync Offset: %.1f"
