@@ -3659,7 +3659,7 @@ msgstr "Attendre le vidage GPU : oui"
 
 msgctxt "IDS_OSD_RS_WAIT_OFF"
 msgid "Wait for GPU Flush: Off"
-msgstr "Attendre le vidage GPU : Non"
+msgstr "Attendre le vidage GPU : non"
 
 msgctxt "IDS_OSD_RS_D3D_FULLSCREEN_ON"
 msgid "D3D Fullscreen: On"
