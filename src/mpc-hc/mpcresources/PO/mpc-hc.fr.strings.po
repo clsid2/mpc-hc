@@ -4005,7 +4005,7 @@ msgstr ""
 
 msgctxt "IDS_AFTERPLAYBACK_EXIT"
 msgid "After Playback: Exit"
-msgstr "En fin de lecture : Quitter le programme"
+msgstr "En fin de lecture : quitter le programme"
 
 msgctxt "IDS_AFTERPLAYBACK_STANDBY"
 msgid "After Playback: Stand By"
