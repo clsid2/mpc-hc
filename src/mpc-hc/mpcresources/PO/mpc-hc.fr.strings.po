@@ -2668,7 +2668,7 @@ msgid ""
 "\n"
 "Do you really want to activate this option?"
 msgstr ""
-"Cette option est conçue pour éviter le tearing (déchirement de l'image). Cependant elle empêche MPC-HC d'afficher les menus contextuels et les boîtes de dialogue pendant la lecture.\n"
+"Cette option est conçue pour éviter le Tearing (déchirement de l'image). Cependant elle empêche MPC-HC d'afficher les menus contextuels et les boîtes de dialogue pendant la lecture.\n"
 "\n"
 "Êtes-vous vraiment sûr de vouloir activer cette option ?"
 
