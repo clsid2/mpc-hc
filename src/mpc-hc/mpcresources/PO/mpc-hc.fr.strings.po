@@ -4701,7 +4701,7 @@ msgstr "OK"
 
 msgctxt "IDS_MOUSE_CLICK_MIDDLE"
 msgid "Middle click"
-msgstr "Clic central"
+msgstr "Clic milieu"
 
 msgctxt "IDS_MOUSE_CLICK_X1"
 msgid "X1 click"
