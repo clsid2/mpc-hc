@@ -4784,7 +4784,7 @@ msgstr "Activer les effets vidéo pré-redimensionnement"
 
 msgctxt "IDS_POSTSIZE_SHADERS_ENABLED"
 msgid "Post-Resize Pixel Shaders: on"
-msgstr "Effets vidéo post-redimensionnement: activés"
+msgstr "Effets vidéo postredimensionnement : activés"
 
 msgctxt "IDS_POSTSIZE_SHADERS_DISABLED"
 msgid "Post-Resize Pixel Shaders: off"
