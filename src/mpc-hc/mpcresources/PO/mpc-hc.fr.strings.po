@@ -4660,7 +4660,7 @@ msgid ""
 "/audiorenderer N\tStart using audiorenderer N, where N starts from 1 (see "
 "\"Output\" settings)"
 msgstr ""
-"/audiorenderer N\tUtiliser le moteur de rendu audio N, où N commence à 1\n"
+"/audiorenderer N\tUtilise le moteur de rendu audio N, où N commence à 1\n"
 "\t\t(cf. \"Sortie audio\" dans les options)"
 
 msgctxt "IDS_CMD_SHADERPRESET"
