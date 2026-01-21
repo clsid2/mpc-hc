@@ -5113,7 +5113,7 @@ msgstr "Désactiver la répétition"
 
 msgctxt "IDS_SHUFFLE_ON"
 msgid "Shuffle: On"
-msgstr "Lecture aléatoire: activée"
+msgstr "Lecture aléatoire : activée"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
