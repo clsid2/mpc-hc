@@ -141,7 +141,7 @@ msgstr "&Navigation"
 
 msgctxt "POPUP"
 msgid "&Presets..."
-msgstr "&Présélections..."
+msgstr "&Présélection"
 
 msgctxt "ID_VIEW_PRESETS_MINIMAL"
 msgid "&Minimal"
