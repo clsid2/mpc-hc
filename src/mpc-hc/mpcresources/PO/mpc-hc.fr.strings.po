@@ -3707,7 +3707,7 @@ msgstr "Sortie RGB 10 bits : activée"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_OUT_OFF"
 msgid "10-bit RGB Output: Off"
-msgstr "Sortie RGB 10 bits : Désactivée"
+msgstr "Sortie RGB 10 bits : désactivée"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_ON"
 msgid "Force 10-bit RGB Input: On"
