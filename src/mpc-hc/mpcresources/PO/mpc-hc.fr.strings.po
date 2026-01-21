@@ -4037,7 +4037,7 @@ msgstr "En fin de lecture : lire le fichier suivant du dossier"
 
 msgctxt "IDS_AFTERPLAYBACK_DONOTHING"
 msgid "After Playback: Do nothing"
-msgstr "En fin de lecture : Ne rien faire"
+msgstr "En fin de lecture : ne rien faire"
 
 msgctxt "IDS_OSD_BRIGHTNESS"
 msgid "Brightness: %s"
