@@ -1654,7 +1654,7 @@ msgstr "Saisir les identifiants du serveur"
 
 msgctxt "IDS_CREDENTIALS_CONNECT"
 msgid "Enter your credentials to connect"
-msgstr "Entrez vos identifiants pour vous connecter"
+msgstr "Saisir vos identifiants pour se connecter"
 
 msgctxt "IDS_SUB_SAVE_EXTERNAL_STYLE_FILE"
 msgid "Save custom style"
