@@ -3543,7 +3543,7 @@ msgstr "Ratio d'aspect"
 
 msgctxt "IDS_OSD_RS_VSYNC_ON"
 msgid "VSync: On"
-msgstr "Synchronisation verticale : Activée"
+msgstr "Synchronisation verticale : activée"
 
 msgctxt "IDS_OSD_RS_VSYNC_OFF"
 msgid "VSync: Off"
