@@ -5011,7 +5011,7 @@ msgstr "Sortie"
 
 msgctxt "IDS_ARS_FORMAT"
 msgid "Format:"
-msgstr "Format:"
+msgstr "Format :"
 
 msgctxt "IDS_ARS_SAMPLERATE"
 msgid "Sample rate:"
