@@ -3027,7 +3027,7 @@ msgstr "Format inconnu"
 
 msgctxt "IDS_MAINFRM_138"
 msgid "Sub shift: %ld ms"
-msgstr "Décalage des sous-titres : %ld ms"
+msgstr "Décalage des sous-titres : %ld ms"
 
 msgctxt "IDS_VOLUME_BOOST_INC"
 msgid "Volume boost increase"
