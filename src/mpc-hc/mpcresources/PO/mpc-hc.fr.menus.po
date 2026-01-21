@@ -381,7 +381,7 @@ msgstr "&100 %"
 
 msgctxt "ID_VIEW_VF_DOUBLE"
 msgid "&Double Size"
-msgstr "&200%"
+msgstr "&200 %"
 
 msgctxt "ID_VIEW_VF_STRETCH"
 msgid "&Stretch To Window"
