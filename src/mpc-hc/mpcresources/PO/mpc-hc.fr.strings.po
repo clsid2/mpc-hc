@@ -2126,7 +2126,7 @@ msgstr "Fichier précédent"
 
 msgctxt "IDS_MPLAYERC_99"
 msgid "Toggle Direct3D fullscreen"
-msgstr "Activer/désactiver le mode plein écran Direct3D"
+msgstr "Activer/Désactiver le mode plein écran Direct3D"
 
 msgctxt "IDS_MPLAYERC_100"
 msgid "Goto Prev Subtitle"
