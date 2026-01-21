@@ -3327,7 +3327,7 @@ msgstr "Ajuster à l'extérieur de la fenêtre"
 
 msgctxt "IDS_AUDIO_STREAM"
 msgid "Audio: %s"
-msgstr "Audio : %s"
+msgstr "Audio : %s"
 
 msgctxt "IDS_AG_REOPEN"
 msgid "Reopen File"
