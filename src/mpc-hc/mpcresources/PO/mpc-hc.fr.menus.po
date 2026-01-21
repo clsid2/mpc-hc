@@ -4,13 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Cyril Provence <ywa78408@eveav.com>, 2025
+# tmtisfree <tmtisfree@free.fr>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Cyril Provence <ywa78408@eveav.com>, 2025\n"
+"Last-Translator: tmtisfree <tmtisfree@free.fr>, 2026\n"
 "Language-Team: French (https://app.transifex.com/mpchc/teams/106126/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -84,7 +85,7 @@ msgstr "&Télécharger des sous-titres..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "&Propriétés"
+msgstr "&Propriétés..."
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
