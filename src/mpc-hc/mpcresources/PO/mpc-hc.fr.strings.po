@@ -1366,7 +1366,7 @@ msgstr "Éditeur de liste d'édition : nouveau clip"
 
 msgctxt "IDS_RECENT_FILES_CLEAR"
 msgid "&Clear list"
-msgstr "&Vider la liste"
+msgstr "E&ffacer la liste"
 
 msgctxt "IDS_RECENT_FILES_QUESTION"
 msgid "Are you sure that you want to delete recent files list?"
