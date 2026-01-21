@@ -2639,7 +2639,7 @@ msgstr "DVD : échec de la protection anti-copie"
 
 msgctxt "IDS_MAINFRM_18"
 msgid "DVD: Invalid DVD 1.x Disc"
-msgstr "DVD : disque 1.x invalide"
+msgstr "DVD : disque 1.x invalide"
 
 msgctxt "IDS_MAINFRM_19"
 msgid "DVD: Invalid Disc Region"
