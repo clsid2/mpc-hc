@@ -2266,7 +2266,7 @@ msgstr "Analyse de la liste en cours..."
 
 msgctxt "IDS_SUBDL_DLG_NOT_FOUND"
 msgid "No subtitles found."
-msgstr "Aucuns sous-titres trouvés."
+msgstr "Aucun sous-titres trouvé."
 
 msgctxt "IDS_SUBDL_DLG_SUBS_AVAIL"
 msgid "%d subtitle(s) available."
