@@ -1824,7 +1824,7 @@ msgid ""
 "Enter a positive value if the audio is early, a negative value if it is "
 "late."
 msgstr ""
-"Entrez une valeur positive si le son est en avance sur l'image, une valeur "
+"Saisir une valeur positive si le son est en avance sur l'image, une valeur "
 "négative s'il est en retard."
 
 msgctxt "IDS_WEBUI_DISABLED_PREVIEW_MSG"
