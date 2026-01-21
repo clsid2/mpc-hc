@@ -183,7 +183,7 @@ msgstr "Répéter indéfiniment : activé"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_OFF"
 msgid "Repeat Forever: Off"
-msgstr "Répéter indéfiniment : désactivé"
+msgstr "Répéter en boucle : désactivé"
 
 msgctxt "IDS_PLAYLOOP_FOREVER"
 msgid "Repeat Forever"
