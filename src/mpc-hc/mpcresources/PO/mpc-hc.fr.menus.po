@@ -805,7 +805,7 @@ msgstr "Télécharger des &barres d'outils personnalisées..."
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"
-msgstr "&Donations"
+msgstr "&Donations..."
 
 msgctxt "ID_HELP_ABOUT"
 msgid "&About..."
