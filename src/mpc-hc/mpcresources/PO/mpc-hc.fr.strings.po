@@ -1362,7 +1362,7 @@ msgstr "Activer/désactiver le décalage audio"
 
 msgctxt "IDS_AG_EDL_NEW_CLIP"
 msgid "EDL new clip"
-msgstr "Éditeur de liste d'édition : Nouvelle portion"
+msgstr "Éditeur de liste d'édition : nouveau clip"
 
 msgctxt "IDS_RECENT_FILES_CLEAR"
 msgid "&Clear list"
