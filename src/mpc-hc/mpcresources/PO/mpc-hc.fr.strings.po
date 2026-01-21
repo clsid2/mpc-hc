@@ -4009,7 +4009,7 @@ msgstr "En fin de lecture : quitter le programme"
 
 msgctxt "IDS_AFTERPLAYBACK_STANDBY"
 msgid "After Playback: Stand By"
-msgstr "En fin de lecture : Mettre en veille"
+msgstr "En fin de lecture : mettre en veille"
 
 msgctxt "IDS_AFTERPLAYBACK_HIBERNATE"
 msgid "After Playback: Hibernate"
@@ -4021,7 +4021,7 @@ msgstr "En fin de lecture : Arrêter l'ordinateur"
 
 msgctxt "IDS_AFTERPLAYBACK_LOGOFF"
 msgid "After Playback: Log Off"
-msgstr "En fin de lecture : Fermer la session"
+msgstr "En fin de lecture : fermer la session"
 
 msgctxt "IDS_AFTERPLAYBACK_LOCK"
 msgid "After Playback: Lock"
