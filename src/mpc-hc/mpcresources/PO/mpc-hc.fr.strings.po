@@ -4129,7 +4129,7 @@ msgstr "Abandon de la recherche de sous-titres."
 
 msgctxt "IDS_SUBDL_DLG_FOUND"
 msgid "Online subtitles search completed, %d subtitles found."
-msgstr "Recherche de sous-titres terminée, %d sous-titres trouvés."
+msgstr "Recherche de sous-titres terminée, %d sous-titres trouvé(s)."
 
 msgctxt "IDS_SUBDL_DLG_NOTFOUND"
 msgid "Online subtitles search completed, no subtitles found."
