@@ -2396,31 +2396,31 @@ msgstr "Menu DVD chapitrage"
 
 msgctxt "IDS_AG_DVD_MENU_LEFT"
 msgid "DVD Menu Left"
-msgstr "Menu DVD : gauche"
+msgstr "Menu DVD : gauche"
 
 msgctxt "IDS_MPLAYERC_70"
 msgid "DVD Menu Right"
-msgstr "Menu DVD : droite"
+msgstr "Menu DVD : droite"
 
 msgctxt "IDS_AG_DVD_MENU_UP"
 msgid "DVD Menu Up"
-msgstr "Menu DVD : haut"
+msgstr "Menu DVD : haut"
 
 msgctxt "IDS_AG_DVD_MENU_DOWN"
 msgid "DVD Menu Down"
-msgstr "Menu DVD : bas"
+msgstr "Menu DVD : bas"
 
 msgctxt "IDS_MPLAYERC_73"
 msgid "DVD Menu Activate"
-msgstr "Menu DVD : activer"
+msgstr "Menu DVD : activer"
 
 msgctxt "IDS_AG_DVD_MENU_BACK"
 msgid "DVD Menu Back"
-msgstr "Menu DVD : retour"
+msgstr "Menu DVD : retour"
 
 msgctxt "IDS_MPLAYERC_75"
 msgid "DVD Menu Leave"
-msgstr "Menu DVD : quitter"
+msgstr "Menu DVD : quitter"
 
 msgctxt "IDS_AG_BOSS_KEY"
 msgid "Boss key"
