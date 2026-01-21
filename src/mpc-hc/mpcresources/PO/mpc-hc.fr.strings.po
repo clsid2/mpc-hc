@@ -2631,7 +2631,7 @@ msgstr "Titre %u"
 
 msgctxt "IDS_MAINFRM_16"
 msgid "DVD: Unexpected error"
-msgstr "DVD : erreur inattendue"
+msgstr "DVD : erreur inattendue"
 
 msgctxt "IDS_MAINFRM_17"
 msgid "DVD: Copy-Protect Fail"
