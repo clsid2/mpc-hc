@@ -3611,7 +3611,7 @@ msgstr "Luminosité ambiante : claire (gamma 2,2)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DIM"
 msgid "Ambient Light: Dim (2.35 Gamma)"
-msgstr "Luminosité ambiante : Moyenne (2.35 Gamma)"
+msgstr "Luminosité ambiante : moyenne (gamma 2,35)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DARK"
 msgid "Ambient Light: Dark (2.4 Gamma)"
