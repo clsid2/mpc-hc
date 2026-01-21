@@ -2424,7 +2424,7 @@ msgstr "Menu DVD : quitter"
 
 msgctxt "IDS_AG_BOSS_KEY"
 msgid "Boss key"
-msgstr "\"Boss key\""
+msgstr "Clé boss"
 
 msgctxt "IDS_MPLAYERC_77"
 msgid "Player Menu"
