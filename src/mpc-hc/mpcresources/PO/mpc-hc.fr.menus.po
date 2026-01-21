@@ -789,7 +789,7 @@ msgstr "&Aide"
 
 msgctxt "ID_HELP_HOMEPAGE"
 msgid "&Home Page"
-msgstr "&Site web de MPC-HC"
+msgstr "&Site Web de MPC-HC..."
 
 msgctxt "ID_HELP_CHECKFORUPDATE"
 msgid "Check for &updates"
