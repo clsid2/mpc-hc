@@ -4316,7 +4316,7 @@ msgstr "Entrez vos identifiants pour vous connecter à :"
 
 msgctxt "IDS_ASPECT_RATIO_SAR"
 msgid "Aspect Ratio: Assume square pixels (SAR)"
-msgstr "Ratio d'affichage : supposer des pixels carrés (SAR)"
+msgstr "Ratio d'aspect : supposer des pixels carrés (SAR)"
 
 msgctxt "IDS_SUBDL_DLG_DOWNLOADED"
 msgid "Downloaded [%s] \"%s\""
