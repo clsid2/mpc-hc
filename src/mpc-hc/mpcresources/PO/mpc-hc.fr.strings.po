@@ -1081,7 +1081,7 @@ msgstr ""
 msgctxt "IDC_CACHESHADERS"
 msgid "Stores compiled shaders in local AppData to speed up load time."
 msgstr ""
-"Stocke les shaders compilés dans le dossier AppData pour accélérer leur "
+"Stocke les Shaders compilés dans le dossier AppData pour accélérer leur "
 "chargement."
 
 msgctxt "IDS_SRC_VTS"
