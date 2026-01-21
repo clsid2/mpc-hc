@@ -4745,7 +4745,7 @@ msgstr "&Continuer"
 
 msgctxt "IDS_AG_TOGGLE_DEFAULT_SUBTITLE_STYLE"
 msgid "Toggle Override Default Style"
-msgstr "Activer/désactiver l'écrasement du style par défaut"
+msgstr "Activer l'écrasement du style par défaut"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
