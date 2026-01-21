@@ -4033,7 +4033,7 @@ msgstr "En fin de lecture : éteindre l'écran"
 
 msgctxt "IDS_AFTERPLAYBACK_PLAYNEXT"
 msgid "After Playback: Play next file in the folder"
-msgstr "En fin de lecture : lire le fichier suivant dans le répertoire"
+msgstr "En fin de lecture : lire le fichier suivant du dossier"
 
 msgctxt "IDS_AFTERPLAYBACK_DONOTHING"
 msgid "After Playback: Do nothing"
