@@ -3083,7 +3083,7 @@ msgstr "Afficher la barre de capture"
 
 msgctxt "IDS_AG_TOGGLE_DEBUGSHADERS"
 msgid "Toggle Debug Shaders"
-msgstr "Activer/Désactiver le débogage des effets vidéo"
+msgstr "Activer le débogage des effets vidéo"
 
 msgctxt "IDS_AG_ZOOM_50"
 msgid "Zoom 50%"
