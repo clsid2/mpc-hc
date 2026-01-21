@@ -4276,7 +4276,7 @@ msgstr "Échec de l'envoi."
 
 msgctxt "IDS_SUBMENU_DOWNLOAD"
 msgid "Download && Open"
-msgstr "Télécharger et charger"
+msgstr "Télécharger et ouvrir"
 
 msgctxt "IDS_SUBMENU_SETUP"
 msgid "Setup"
