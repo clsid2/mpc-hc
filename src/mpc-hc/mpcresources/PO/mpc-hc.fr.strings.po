@@ -1650,7 +1650,7 @@ msgstr "&Copier la liste des filtres dans le presse-papiers"
 
 msgctxt "IDS_CREDENTIALS_SERVER"
 msgid "Enter server credentials"
-msgstr "Entrez les identifiants du serveur"
+msgstr "Saisir les identifiants du serveur"
 
 msgctxt "IDS_CREDENTIALS_CONNECT"
 msgid "Enter your credentials to connect"
