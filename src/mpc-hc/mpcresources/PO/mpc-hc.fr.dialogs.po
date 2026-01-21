@@ -118,8 +118,7 @@ msgstr "canaux en entrée :"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM3"
 msgid "Hold shift for immediate changes when clicking something"
-msgstr ""
-"Maintenir la touche Maj. en cliquant pour que la modification soit immédiate"
+msgstr "Maintenir la touche Maj. en cliquant pour une modification immédiate"
 
 msgctxt "IDD_GOTO_DLG_CAPTION"
 msgid "Go To..."
