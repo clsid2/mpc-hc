@@ -801,7 +801,7 @@ msgstr "Options de la ligne de &commande..."
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Télécharger des &barres d'outils personnalisées"
+msgstr "Télécharger des &barres d'outils personnalisées..."
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"
