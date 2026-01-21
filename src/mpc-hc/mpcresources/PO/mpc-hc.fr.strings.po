@@ -2687,7 +2687,7 @@ msgstr ""
 
 msgctxt "IDS_THUMB_ROWNUMBER"
 msgid "Rows:"
-msgstr "Lignes :"
+msgstr "Lignes :"
 
 msgctxt "IDS_THUMB_COLNUMBER"
 msgid "Columns:"
