@@ -175,7 +175,7 @@ msgstr "Mode de répétition : liste de lecture"
 
 msgctxt "IDS_PLAYLOOPMODE_FILE"
 msgid "Repeat Mode: File"
-msgstr "Mode de répétition : fichier"
+msgstr "Mode de répétition : fichier"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_ON"
 msgid "Repeat Forever: On"
