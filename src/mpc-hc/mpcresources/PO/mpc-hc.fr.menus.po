@@ -101,7 +101,7 @@ msgstr "&Affichage"
 
 msgctxt "ID_VIEW_CAPTIONMENU"
 msgid "Caption&&Menu"
-msgstr "Titre && Menu"
+msgstr "Titre et menu"
 
 msgctxt "ID_VIEW_SEEKER"
 msgid "See&k Bar"
