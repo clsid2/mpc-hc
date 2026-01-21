@@ -4902,7 +4902,7 @@ msgstr ""
 "Préférence de langue(s) pour le chargement des flux de sous-titre extraits par Youtube-DL.\n"
 "Si laissé vide, aucun flux de sous-titre n'est chargé.\n"
 "Utiliser les codes de langue à deux lettres définis par l'ISO639-1.\n"
-"Exemple: fr en de es"
+"Exemple : fr en de es"
 
 msgctxt "IDS_PPAGEADVANCED_USE_AUTOMATIC_CAPTIONS"
 msgid ""
