@@ -2568,7 +2568,7 @@ msgstr "Débit d'images"
 
 msgctxt "IDS_MAINFRM_6"
 msgid "drawn: %d, dropped: %d"
-msgstr "affichées : %d, perdues : %d"
+msgstr "affichées : %d, perdues : %d"
 
 msgctxt "IDS_AG_FRAMES"
 msgid "Frames"
