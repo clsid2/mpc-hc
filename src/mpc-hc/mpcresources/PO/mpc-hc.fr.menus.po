@@ -809,4 +809,4 @@ msgstr "&Donations..."
 
 msgctxt "ID_HELP_ABOUT"
 msgid "&About..."
-msgstr "&A propos de MPC-HC..."
+msgstr "&À propos..."
