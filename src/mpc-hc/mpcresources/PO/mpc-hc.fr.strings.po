@@ -3651,7 +3651,7 @@ msgstr "Vidage du GPU après la présentation : activé"
 
 msgctxt "IDS_OSD_RS_FLUSH_AFT_PRES_OFF"
 msgid "Flush GPU after Present: Off"
-msgstr "Vidage du GPU après la présentation : Désactivé"
+msgstr "Vidage du GPU après la présentation : désactivé"
 
 msgctxt "IDS_OSD_RS_WAIT_ON"
 msgid "Wait for GPU Flush: On"
