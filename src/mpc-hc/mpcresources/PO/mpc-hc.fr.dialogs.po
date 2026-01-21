@@ -1675,7 +1675,7 @@ msgstr "Supprimer"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active pre-resize shaders"
-msgstr "Effets préredimensionnement actifs"
+msgstr "Effets pré-redimensionnement actifs"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active post-resize shaders"
