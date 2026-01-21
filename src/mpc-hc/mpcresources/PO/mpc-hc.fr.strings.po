@@ -5053,7 +5053,7 @@ msgstr "Par défaut"
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"
-msgstr "/thumbnails\tCréer des miniatures"
+msgstr "/thumbnails\tCrée des miniatures"
 
 msgctxt "IDS_CUSTOM_ACTION1"
 msgid "Custom Action 1"
