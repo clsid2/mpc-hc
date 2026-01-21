@@ -2670,7 +2670,7 @@ msgid ""
 msgstr ""
 "Cette option est conçue pour éviter le Tearing (déchirement de l'image). Cependant elle empêche MPC-HC d'afficher les menus contextuels et les boîtes de dialogue pendant la lecture.\n"
 "\n"
-"Êtes-vous vraiment sûr de vouloir activer cette option ?"
+"Faut-il vraiment activer cette option ?"
 
 msgctxt "IDS_MAINFRM_139"
 msgid "Sub delay: %ld ms"
