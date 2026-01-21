@@ -1023,7 +1023,7 @@ msgid ""
 msgstr ""
 "Pour afficher une ressource embarquée dans le navigateur, il faut activer l'interface Web.\n"
 "\n"
-"Utiliser le bouton « Enregistrer sous... » pour uniquement sauvegarder la ressource."
+"Utiliser le bouton « Enregistrer sous » pour uniquement sauvegarder la ressource."
 
 msgctxt "IDS_SUBTITLES_DOWNLOAD"
 msgid "Download Subtitles..."
