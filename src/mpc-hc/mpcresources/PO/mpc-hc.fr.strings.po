@@ -2691,7 +2691,7 @@ msgstr "Lignes :"
 
 msgctxt "IDS_THUMB_COLNUMBER"
 msgid "Columns:"
-msgstr "Colonnes :"
+msgstr "Colonnes :"
 
 msgctxt "IDS_THUMB_IMAGE_WIDTH"
 msgid "Image width"
