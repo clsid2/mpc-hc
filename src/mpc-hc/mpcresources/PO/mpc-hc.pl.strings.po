@@ -4142,7 +4142,7 @@ msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
 "/pns \"nazwa\"\t Określa preset dopasowania klatki PnS do użycia (np.: /pns "
-"\"1 %s \")"
+"\"%s \")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
