@@ -3771,7 +3771,7 @@ msgid ""
 "You are already using the latest stable version."
 msgstr ""
 "\n"
-"Vous utilisez déjà la dernière version stable."
+"La dernière version stable est déjà installée."
 
 msgctxt "IDS_USING_NEWER_VERSION"
 msgid ""
