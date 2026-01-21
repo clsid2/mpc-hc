@@ -3579,7 +3579,7 @@ msgstr "Présenter à la synchronisation verticale la plus proche : oui"
 
 msgctxt "IDS_OSD_RS_PRESENT_NEAREST_OFF"
 msgid "Present at Nearest VSync: Off"
-msgstr "Présenter à la synchronisation verticale la plus proche : Non"
+msgstr "Présenter à la synchronisation verticale la plus proche : non"
 
 msgctxt "IDS_OSD_RS_COLOR_MANAGEMENT_ON"
 msgid "Color Management: On"
