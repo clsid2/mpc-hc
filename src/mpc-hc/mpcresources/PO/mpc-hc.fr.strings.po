@@ -445,7 +445,7 @@ msgstr ""
 
 msgctxt "IDS_DVD_NAV_ALL_PINS_ERROR"
 msgid "Failed to render all pins of the DVD Navigator filter"
-msgstr "Impossible de traiter les connexions du filtre de navigation DVD."
+msgstr "Impossible de traiter les connexions du filtre de navigation DVD"
 
 msgctxt "IDS_PLAYLIST_OPEN"
 msgid "&Open"
