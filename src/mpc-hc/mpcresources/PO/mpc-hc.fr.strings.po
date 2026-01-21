@@ -3825,7 +3825,7 @@ msgstr "Répartition personnalisée des canaux : activée"
 
 msgctxt "IDS_OSD_CUSTOM_CH_MAPPING_OFF"
 msgid "Custom channel mapping: Off"
-msgstr "Répartition personnalisée des canaux : Désactivée"
+msgstr "Répartition personnalisée des canaux : désactivée"
 
 msgctxt "IDS_NORMALIZE"
 msgid "Toggle normalization"
