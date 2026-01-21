@@ -5036,7 +5036,7 @@ msgid ""
 "Otherwise, the format specified in the system settings will be used."
 msgstr ""
 "Si possible, l'audio sera envoyé dans son format d'origine.\n"
-"Autrement, le format spécifié dans les réglages systèmes sera utilisé."
+"Autrement, le format spécifié dans les réglages système sera utilisé."
 
 msgctxt "IDS_ARS_TIP_ALT_CHECK_FORMAT"
 msgid "The renderer will try to initialize the device skipping some checks."
