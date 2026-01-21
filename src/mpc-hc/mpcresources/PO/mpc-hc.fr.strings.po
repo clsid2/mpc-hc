@@ -3091,7 +3091,7 @@ msgstr "Zoom 50 %"
 
 msgctxt "IDS_AG_ZOOM_100"
 msgid "Zoom 100%"
-msgstr "Zoom 100%"
+msgstr "Zoom 100 %"
 
 msgctxt "IDS_AG_ZOOM_200"
 msgid "Zoom 200%"
