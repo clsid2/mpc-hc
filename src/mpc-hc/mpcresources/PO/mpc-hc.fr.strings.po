@@ -2927,7 +2927,7 @@ msgstr "Type de fichier inconnu"
 
 msgctxt "IDS_MAINFRM_92"
 msgid "Unsupported stream"
-msgstr "Flux non supporté"
+msgstr "Flux non pris en charge"
 
 msgctxt "IDS_MAINFRM_93"
 msgid "Cannot find DVD directory"
