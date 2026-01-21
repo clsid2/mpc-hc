@@ -4251,7 +4251,7 @@ msgstr "Échec du téléversement des sous-titres."
 
 msgctxt "IDS_SUBUL_DLG_STATUS_ABORTED"
 msgid "Subtitles upload aborted."
-msgstr "Abandon de l'envoi des sous-titres."
+msgstr "Abandon du téléversement des sous-titres."
 
 msgctxt "IDS_SUBUL_DLG_STATUS_ALREADYEXISTS"
 msgid "Subtitles already exist."
