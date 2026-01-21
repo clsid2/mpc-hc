@@ -4971,7 +4971,7 @@ msgstr "Utiliser la disposition des canaux du système"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
-msgstr "Périphérique audio:"
+msgstr "Périphérique audio :"
 
 msgctxt "IDS_ARS_RELEASE_DEVICE_IDLE"
 msgid "Release device when idle"
