@@ -1694,7 +1694,7 @@ msgstr ""
 msgctxt "IDS_PPAGEADVANCED_FILE_POS_LONGER"
 msgid "Remember file position only for files longer than N minutes."
 msgstr ""
-"Sauvegarder la position uniquement dans les fichiers ayant une durée "
+"Enregistrer la position uniquement dans les fichiers ayant une durée "
 "supérieure à N minutes."
 
 msgctxt "IDS_PPAGEADVANCED_FILE_POS_AUDIO"
