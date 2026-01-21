@@ -4323,7 +4323,7 @@ msgstr "Téléchargé [%s] \"%s\""
 
 msgctxt "IDS_SUBUL_DLG_TITLE"
 msgid "Upload subtitles"
-msgstr "Envoyer des sous-titres"
+msgstr "Téléverser des sous-titres"
 
 msgctxt "IDS_SUBUL_DLG_CONFIRM"
 msgid "Are you sure you want to upload the subtitle file \"%s\"?"
