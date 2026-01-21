@@ -2456,7 +2456,7 @@ msgstr "Piste de sous-titres suivante"
 
 msgctxt "IDS_AG_PREV_SUBTITLE"
 msgid "Prev Subtitle Track"
-msgstr "Piste de sous-titre précédente"
+msgstr "Piste de sous-titres précédente"
 
 msgctxt "IDS_MPLAYERC_85"
 msgid "On/Off Subtitle"
