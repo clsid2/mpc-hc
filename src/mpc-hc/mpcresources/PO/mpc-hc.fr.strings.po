@@ -4331,7 +4331,7 @@ msgstr "Faut-il vraiment téléverser le fichier de sous-titres « %s » ?"
 
 msgctxt "IDS_SUBPP_DLG_FETCHING_LANGUAGES"
 msgid "Fetching supported languages..."
-msgstr "Chargement de la liste des langages supportés..."
+msgstr "Chargement de la liste des langages pris en charge..."
 
 msgctxt "IDS_SUB_CREDENTIALS_ERROR"
 msgid ""
