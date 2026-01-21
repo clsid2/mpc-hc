@@ -1573,7 +1573,7 @@ msgstr "Préférer les pistes de sous-titres externes à celles internes"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
 msgid "Ignore embedded subtitles"
-msgstr "Ignorer les pistes de sous-titres internes"
+msgstr "Ignorer les pistes intégrées de sous-titres"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
 msgid "Autoload paths"
