@@ -3715,7 +3715,7 @@ msgstr "Forcer l'entrée RGB 10 bits : oui"
 
 msgctxt "IDS_OSD_RS_10BIT_RBG_IN_OFF"
 msgid "Force 10-bit RGB Input: Off"
-msgstr "Forcer l'entrée RGB 10 bits : Non"
+msgstr "Forcer l'entrée RGB 10 bits : non"
 
 msgctxt "IDS_OSD_RS_FULL_FP_PROCESS_ON"
 msgid "Full Floating Point Processing: On"
