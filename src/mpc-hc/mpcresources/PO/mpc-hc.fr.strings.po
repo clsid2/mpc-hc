@@ -4267,7 +4267,7 @@ msgstr "Téléversement terminé."
 
 msgctxt "IDS_SUBUL_DLG_ABORTED"
 msgid "Upload aborted."
-msgstr "Envoi abandonné."
+msgstr "Téléversement abandonné."
 
 msgctxt "IDS_SUBUL_DLG_FAILED"
 msgid "Upload failed."
