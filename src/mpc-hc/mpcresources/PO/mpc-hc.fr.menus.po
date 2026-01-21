@@ -165,7 +165,7 @@ msgstr "&Zoom"
 
 msgctxt "ID_VIEW_ZOOM_25"
 msgid "&25%"
-msgstr "&25%"
+msgstr "&25 %"
 
 msgctxt "ID_VIEW_ZOOM_50"
 msgid "&50%"
