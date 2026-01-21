@@ -2651,7 +2651,7 @@ msgstr "DVD : niveau parental insuffisant"
 
 msgctxt "IDS_MAINFRM_21"
 msgid "DVD: Macrovision Fail"
-msgstr "DVD : échec de la protection anti-copie Macrovision"
+msgstr "DVD : échec de la protection anti-copie Macrovision"
 
 msgctxt "IDS_MAINFRM_22"
 msgid "DVD: Incompatible System And Decoder Regions"
