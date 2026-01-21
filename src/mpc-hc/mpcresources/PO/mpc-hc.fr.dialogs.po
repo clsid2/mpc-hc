@@ -1361,7 +1361,7 @@ msgstr "Ignorer les chaînes cryptées"
 
 msgctxt "IDD_TUNER_SCAN_ID_SAVE"
 msgid "Save"
-msgstr "Sauvegarder"
+msgstr "Enregistrer"
 
 msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
 msgid "S"
