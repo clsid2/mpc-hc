@@ -1495,7 +1495,7 @@ msgstr "Lancer en mode plein écran"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
 msgid "Hide controls in fullscreen"
-msgstr "Cacher les contrôles en plein écran"
+msgstr "Masquer les contrôles en plein écran"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC1"
 msgid "ms"
@@ -1503,7 +1503,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK6"
 msgid "Hide docked panels"
-msgstr "Cacher les panneaux ancrés"
+msgstr "Masquer les panneaux ancrés"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
 msgid "Exit fullscreen at the end of playback"
