@@ -4029,7 +4029,7 @@ msgstr "En fin de lecture : Verrouiller la session"
 
 msgctxt "IDS_AFTERPLAYBACK_MONITOROFF"
 msgid "After Playback: Turn off the monitor"
-msgstr "En fin de lecture : Éteindre l'écran"
+msgstr "En fin de lecture : éteindre l'écran"
 
 msgctxt "IDS_AFTERPLAYBACK_PLAYNEXT"
 msgid "After Playback: Play next file in the folder"
