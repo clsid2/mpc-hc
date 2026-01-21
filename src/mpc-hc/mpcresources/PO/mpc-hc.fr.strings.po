@@ -133,7 +133,7 @@ msgstr "Décalage de synchronisation"
 
 msgctxt "IDS_STATSBAR_SYNC_OFFSET_FORMAT"
 msgid "avg: %d ms, dev: %d ms"
-msgstr "moyenne : %d ms, écart : %d ms"
+msgstr "moyen : %d ms, écart : %d ms"
 
 msgctxt "IDS_STATSBAR_JITTER"
 msgid "Jitter"
