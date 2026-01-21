@@ -4263,7 +4263,7 @@ msgstr "Téléversement des sous-titres en cours..."
 
 msgctxt "IDS_SUBUL_DLG_UPLOADED"
 msgid "Upload finished."
-msgstr "Envoi terminé."
+msgstr "Téléversement terminé."
 
 msgctxt "IDS_SUBUL_DLG_ABORTED"
 msgid "Upload aborted."
