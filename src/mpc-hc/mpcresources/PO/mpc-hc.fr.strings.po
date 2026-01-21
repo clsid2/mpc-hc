@@ -1983,7 +1983,7 @@ msgstr "Impossible d'activer les effets pré-redimensionnement"
 
 msgctxt "IDS_OSD_RS_FT_CORRECTION_ON"
 msgid "Frame Time Correction: On"
-msgstr "Correction des codes horaire des images : Activée"
+msgstr "Correction des codes horaire des images : activée"
 
 msgctxt "IDS_OSD_RS_FT_CORRECTION_OFF"
 msgid "Frame Time Correction: Off"
