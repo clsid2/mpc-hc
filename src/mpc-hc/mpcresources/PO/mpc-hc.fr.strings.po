@@ -1700,7 +1700,7 @@ msgstr ""
 msgctxt "IDS_PPAGEADVANCED_FILE_POS_AUDIO"
 msgid "Remember file position also for audio files."
 msgstr ""
-"Sauvegarder également la position dans le fichier pour les fichiers audios."
+"Enregistrer également la position dans le fichier pour les fichiers audio."
 
 msgctxt "IDS_AFTER_PLAYBACK_DO_NOTHING"
 msgid "Do Nothing"
