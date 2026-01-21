@@ -1087,7 +1087,7 @@ msgstr ""
 msgctxt "IDS_SRC_VTS"
 msgid "Open VTS_xx_0.ifo to load VTS_xx_x.vob files in one piece"
 msgstr ""
-"Ouvrez \"VTS_xx_0.ifo\" pour lire les fichiers \"VTS_xx_x.vob\" d'un seul "
+"Ouvrir « VTS_xx_0.ifo » pour lire les fichiers « VTS_xx_x.vob » d'un seul "
 "tenant"
 
 msgctxt "IDS_SRC_RFS"
