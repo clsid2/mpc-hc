@@ -1686,7 +1686,7 @@ msgid ""
 "MPC-VR does not support pre-resize shaders. It will run them after resize, "
 "before the post-resize shaders."
 msgstr ""
-"MPC-VR ne prend pas en charge les effets préredimensionnement, et les "
+"MPC-VR ne prend pas en charge les effets pré-redimensionnement, et les "
 "appliquera après redimensionnement, avant les effets postredimensionnement."
 
 msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
