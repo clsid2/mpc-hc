@@ -276,7 +276,7 @@ msgstr "Barre de navigation"
 
 msgctxt "IDS_SUBRESYNC_CAPTION"
 msgid "Subresync"
-msgstr "Resynchr. sous-titres"
+msgstr "Resync. sous-titres"
 
 msgctxt "IDS_SUBRESYNC_CLN_TIME"
 msgid "Time"
