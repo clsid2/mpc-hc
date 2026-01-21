@@ -3047,7 +3047,7 @@ msgstr "Amplification du volume maximale"
 
 msgctxt "IDS_USAGE"
 msgid "Usage: mpc-hc.exe \"pathname\" [switches]"
-msgstr "Utilisation : mpc-hc.exe \"chemin du fichier\" [options]"
+msgstr "Utilisation : mpc-hc.exe \"chemin_du_fichier\" [options]"
 
 msgctxt "IDS_UNKNOWN_SWITCH"
 msgid ""
