@@ -2821,7 +2821,7 @@ msgstr "Ratio d'aspect : par défaut (DAR)"
 
 msgctxt "IDS_MAINFRM_70"
 msgid "Audio delay: %I64d ms"
-msgstr "Décalage audio : %I64d ms"
+msgstr "Décalage audio : %I64d ms"
 
 msgctxt "IDS_AG_CHAPTER"
 msgid "Chapter %d"
