@@ -4013,7 +4013,7 @@ msgstr "En fin de lecture : Mettre en veille"
 
 msgctxt "IDS_AFTERPLAYBACK_HIBERNATE"
 msgid "After Playback: Hibernate"
-msgstr "En fin de lecture : mettre en veille prolongée"
+msgstr "En fin de lecture : mettre en veille prolongée"
 
 msgctxt "IDS_AFTERPLAYBACK_SHUTDOWN"
 msgid "After Playback: Shutdown"
