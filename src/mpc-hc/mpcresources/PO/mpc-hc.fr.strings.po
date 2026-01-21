@@ -3619,7 +3619,7 @@ msgstr "Luminosité ambiante : sombre (gamma 2,4)"
 
 msgctxt "IDS_OSD_RS_REND_INTENT_PERCEPT"
 msgid "Rendering Intent: Perceptual"
-msgstr "Intention de rendu : Perceptuelle"
+msgstr "Intention de rendu : perceptuelle"
 
 msgctxt "IDS_OSD_RS_REND_INTENT_RELATIVE"
 msgid "Rendering Intent: Relative Colorimetric"
