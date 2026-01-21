@@ -2779,7 +2779,7 @@ msgstr "Format d'image invalide, impossible de créer des vignettes %d bpp."
 
 msgctxt "IDS_THUMBNAILS_INFO_FILESIZE"
 msgid "File Size: %s (%s bytes)\\N"
-msgstr "Taille de fichier : %s (%s octets)\\N"
+msgstr "Taille de fichier : %s (%s octets)\\N"
 
 msgctxt "IDS_THUMBNAILS_INFO_HEADER"
 msgid ""
