@@ -1434,7 +1434,7 @@ msgstr "Zoom écran ultra-large,%.3f,%.3f,%.3f,%.3f"
 
 msgctxt "IDS_PLAYLIST_HIDEFS"
 msgid "&Hide on Fullscreen"
-msgstr "Cac&her la liste de lecture en plein écran"
+msgstr "Mas&quer la liste de lecture en plein écran"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
