@@ -709,7 +709,7 @@ msgstr "&Ne rien faire"
 
 msgctxt "ID_AFTERPLAYBACK_PLAYNEXT"
 msgid "Play &next file in the folder"
-msgstr "Lire le fichier &suivant dans le répertoire"
+msgstr "Lire le fichier &suivant dans le dossier"
 
 msgctxt "ID_AFTERPLAYBACK_MONITOROFF"
 msgid "Turn off the &monitor"
