@@ -1813,7 +1813,7 @@ msgstr "En fin de lecture : rembobiner le fichier"
 
 msgctxt "IDS_AFTERPLAYBACK_CLOSE"
 msgid "After Playback: Close"
-msgstr "En fin de lecture : Fermer le fichier"
+msgstr "En fin de lecture : fermer le fichier"
 
 msgctxt "IDS_FRAME_INIT_FAILED"
 msgid "MPC-HC encountered a problem during initialization."
