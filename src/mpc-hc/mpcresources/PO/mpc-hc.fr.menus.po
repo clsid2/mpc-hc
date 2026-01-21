@@ -797,7 +797,7 @@ msgstr "Vérifier les &mises à jour..."
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"
-msgstr "Options de la ligne de &commande"
+msgstr "Options de la ligne de &commande..."
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
