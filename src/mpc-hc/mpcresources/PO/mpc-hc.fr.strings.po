@@ -206,7 +206,7 @@ msgid ""
 "Not supported by some devices. Two video decoders always present in the "
 "filter graph."
 msgstr ""
-"Non supporté par certains tuners. Deux décodeurs vidéo sont toujours "
+"Non pris en charge par certains tuners. Deux décodeurs vidéo sont toujours "
 "présents dans le graphe."
 
 msgctxt "IDS_PPAGE_CAPTURE_FGDESC1"
