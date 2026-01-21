@@ -2556,7 +2556,7 @@ msgstr "Focus perdu au bénéfice de : %s - %s"
 
 msgctxt "IDS_AG_SUBTITLES_SAVED"
 msgid "Subtitles saved"
-msgstr "Sous-titres sauvegardés"
+msgstr "Sous-titres enregistrés"
 
 msgctxt "IDS_MAINFRM_4"
 msgid "Cannot save subtitles"
