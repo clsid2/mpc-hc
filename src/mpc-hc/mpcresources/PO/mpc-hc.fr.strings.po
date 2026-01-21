@@ -1598,7 +1598,7 @@ msgstr "Présélection d'effets vidéo précédente"
 
 msgctxt "IDS_STRING_COLON"
 msgid "%s:"
-msgstr "%s :"
+msgstr "%s :"
 
 msgctxt "IDS_RECORD_START"
 msgid "Record"
