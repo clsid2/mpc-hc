@@ -4227,7 +4227,7 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_FS_CLN_AUDIO_DELAY"
 msgid "Audio Delay (ms)"
-msgstr "Décalage Audi (ms)"
+msgstr "Décalage audio (ms)"
 
 msgctxt "IDS_SUBMENU_COPYURL"
 msgid "Copy URL"
