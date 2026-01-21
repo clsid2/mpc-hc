@@ -3671,7 +3671,7 @@ msgstr "Plein écran D3D : Désactivé"
 
 msgctxt "IDS_OSD_RS_NO_DESKTOP_COMP_ON"
 msgid "Disable desktop composition: On"
-msgstr "Désactiver Aéro pendant la lecture : Oui"
+msgstr "Désactiver Aéro pendant la lecture : oui"
 
 msgctxt "IDS_OSD_RS_NO_DESKTOP_COMP_OFF"
 msgid "Disable desktop composition: Off"
