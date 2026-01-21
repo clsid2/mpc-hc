@@ -2304,11 +2304,11 @@ msgstr "Zoom automatique (si trop grand)"
 
 msgctxt "IDS_OSD_ZOOM_AUTO_LARGER"
 msgid "Zoom: Auto (Larger Only)"
-msgstr "Zoom : Automatique (si trop grand)"
+msgstr "Zoom : automatique (si trop grand)"
 
 msgctxt "IDS_TOOLTIP_EXPLORE_TO_FILE"
 msgid "Double click to open file location"
-msgstr "Double-cliquez pour ouvrir le dossier contenant le fichier"
+msgstr "Double-cliquer pour ouvrir le dossier contenant le fichier"
 
 msgctxt "IDS_TOOLTIP_REMAINING_TIME"
 msgid "Toggle between elapsed and remaining time"
