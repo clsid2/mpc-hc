@@ -1298,7 +1298,7 @@ msgid ""
 " may vary)"
 msgstr ""
 "Charger la durée du contenu lors de son ajout à la liste de lecture (utilise"
-" MediaInfo et le résultat peut s'écarter)"
+" MediaInfo et le résultat peut varier)"
 
 msgctxt "IDS_TIMER_SHOW_PERCENTAGE"
 msgid "Show percentage"
