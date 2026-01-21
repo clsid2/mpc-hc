@@ -2520,7 +2520,7 @@ msgstr "Fréquence"
 
 msgctxt "IDS_DVB_CHANNEL_ENCRYPTION"
 msgid "Encrypted"
-msgstr "Cryptée"
+msgstr "Chiffré(e)"
 
 msgctxt "IDS_YES"
 msgid "Yes"
