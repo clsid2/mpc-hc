@@ -89,7 +89,7 @@ msgstr "DVD"
 
 msgctxt "IDS_PLAYLOOPMODE_AB"
 msgid "A-B Repeat: Reset Positions"
-msgstr "A-B répétition: réinitialiser les repères"
+msgstr "A-B répétition : réinitialiser les repères"
 
 msgctxt "IDS_PLAY_LOOPMODE_AB"
 msgid "A-B"
