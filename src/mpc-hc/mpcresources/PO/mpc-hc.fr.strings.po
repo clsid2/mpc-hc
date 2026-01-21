@@ -783,7 +783,7 @@ msgstr "Lecteur::Logo"
 
 msgctxt "IDD_PPAGETHEME"
 msgid "Player::User Interface"
-msgstr "Lecteur::Interface Utilisateur"
+msgstr "Lecteur::Interface utilisateur"
 
 msgctxt "IDD_PPAGEOUTPUT"
 msgid "Playback::Output"
