@@ -1386,7 +1386,7 @@ msgstr "Afficher l'éditeur de liste d'édition"
 
 msgctxt "IDS_AG_EDL_IN"
 msgid "EDL set In"
-msgstr "Éditeur de liste d'édition : Fixer le point d'entrée"
+msgstr "Éditeur de liste d'édition : fixer le point d'entrée"
 
 msgctxt "IDS_AG_EDL_OUT"
 msgid "EDL set Out"
