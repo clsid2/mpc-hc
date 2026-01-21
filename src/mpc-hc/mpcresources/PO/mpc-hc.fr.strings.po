@@ -1865,7 +1865,7 @@ msgstr "Enregistrer l'image (auto)"
 
 msgctxt "IDS_OSD_IMAGE_SAVED"
 msgid "Image saved successfully"
-msgstr "Image sauvegardée avec succès"
+msgstr "Image enregistrée avec succès"
 
 msgctxt "IDS_AG_LOAD_SUBTITLES"
 msgid "Load Subtitles..."
