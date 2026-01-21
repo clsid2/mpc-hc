@@ -4983,7 +4983,7 @@ msgstr "Activer l'alimentation croisée stéréo (pour les écouteurs)"
 
 msgctxt "IDS_ARS_DEVICE_PERIOD"
 msgid "Device buffer:"
-msgstr "Tampon du périphérique:"
+msgstr "Tampon du périphérique :"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Do not check format support"
