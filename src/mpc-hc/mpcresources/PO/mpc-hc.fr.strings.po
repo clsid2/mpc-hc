@@ -1051,7 +1051,7 @@ msgstr "Les fichiers compressés ne sont pas pris en charge"
 
 msgctxt "IDS_RFS_ENCRYPTED"
 msgid "Encrypted files are not supported"
-msgstr "Les fichiers cryptés ne sont pas pris en charge"
+msgstr "Les fichiers chiffrés ne sont pas pris en charge"
 
 msgctxt "IDS_RFS_MISSING_VOLS"
 msgid "Couldn't find all archive volumes"
