@@ -4049,7 +4049,7 @@ msgstr "Contraste : %s"
 
 msgctxt "IDS_OSD_HUE"
 msgid "Hue: %s°"
-msgstr "Teinte : %s°"
+msgstr "Teinte : %s°"
 
 msgctxt "IDS_OSD_SATURATION"
 msgid "Saturation: %s"
