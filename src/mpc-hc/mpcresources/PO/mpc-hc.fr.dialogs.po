@@ -1577,7 +1577,7 @@ msgstr "Ignorer les pistes de sous-titres internes"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
 msgid "Autoload paths"
-msgstr "Chemins à utiliser pour le chargement automatique"
+msgstr "Chemins à utiliser pour l'auto-chargement"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_BUTTON1"
 msgid "Reset"
