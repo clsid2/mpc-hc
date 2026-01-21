@@ -1783,7 +1783,7 @@ msgstr "Aucune information n'est disponible"
 
 msgctxt "IDS_MEDIAINFO_ANALYSIS_IN_PROGRESS"
 msgid "Please wait, analysis in progress..."
-msgstr "Veuillez patienter, l'analyse est en cours..."
+msgstr "Analyse en cours..."
 
 msgctxt "IDS_ASPECT_RATIO_FMT"
 msgid "AR %d:%d"
