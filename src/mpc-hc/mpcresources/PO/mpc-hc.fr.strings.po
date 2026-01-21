@@ -2735,7 +2735,7 @@ msgstr "Sous-titres : aucun"
 
 msgctxt "IDS_SUBTITLE_STREAM"
 msgid "Subtitle: %s"
-msgstr "Sous-titre : %s"
+msgstr "Sous-titres : %s"
 
 msgctxt "IDS_MAINFRM_46"
 msgid "Select the path for the DVD/BD:"
