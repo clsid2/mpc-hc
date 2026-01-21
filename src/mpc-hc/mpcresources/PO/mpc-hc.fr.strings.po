@@ -3914,7 +3914,7 @@ msgstr "L'analyse du débit d'images entré a échoué !"
 msgctxt "IDS_FRAME_STEP_ERROR_RENDERER"
 msgid "Cannot frame-step, try a different video renderer."
 msgstr ""
-"Impossible d'utiliser le déplacement image par image, réessayez avec un "
+"Impossible d'utiliser le déplacement image par image, réessayer avec un "
 "autre moteur de rendu vidéo."
 
 msgctxt "IDS_SCREENSHOT_ERROR_SHOCKWAVE"
