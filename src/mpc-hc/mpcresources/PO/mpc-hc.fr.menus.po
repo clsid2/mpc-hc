@@ -293,7 +293,7 @@ msgstr "&Moyenne (gamma 2,35)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DARK"
 msgid "D&ark (2.4 Gamma)"
-msgstr "&Sombre (2.4 Gamma)"
+msgstr "&Sombre (gamma 2,4)"
 
 msgctxt "POPUP"
 msgid "&Rendering Intent"
