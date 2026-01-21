@@ -2552,7 +2552,7 @@ msgstr "Format"
 
 msgctxt "IDS_MAINFRM_2"
 msgid "Focus lost to: %s - %s"
-msgstr "Focus perdu au bénéfice de : %s - %s"
+msgstr "Focus perdu au bénéfice de : %s - %s"
 
 msgctxt "IDS_AG_SUBTITLES_SAVED"
 msgid "Subtitles saved"
