@@ -793,7 +793,7 @@ msgstr "&Site web de MPC-HC"
 
 msgctxt "ID_HELP_CHECKFORUPDATE"
 msgid "Check for &updates"
-msgstr "Vérifier les &mises à jour"
+msgstr "Vérifier les &mises à jour..."
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"
