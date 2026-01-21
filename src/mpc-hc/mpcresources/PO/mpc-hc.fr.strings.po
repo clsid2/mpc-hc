@@ -4979,7 +4979,7 @@ msgstr "Libérer le périphérique quand inactif"
 
 msgctxt "IDS_ARS_CROSSFEED"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Activer l'alimentation croisée stéréo (pour les écouteurs)"
+msgstr "Activer le mixage stéréo (pour les écouteurs)"
 
 msgctxt "IDS_ARS_DEVICE_PERIOD"
 msgid "Device buffer:"
