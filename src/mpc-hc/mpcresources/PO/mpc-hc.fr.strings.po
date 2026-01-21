@@ -4326,7 +4326,7 @@ msgstr "Envoyer des sous-titres"
 
 msgctxt "IDS_SUBUL_DLG_CONFIRM"
 msgid "Are you sure you want to upload the subtitle file \"%s\"?"
-msgstr "Êtes-vous sûr de vouloir envoyer le fichier de sous-titres \"%s\" ?"
+msgstr "Faut-il vraiment téléverser le fichier de sous-titres « %s » ?"
 
 msgctxt "IDS_SUBPP_DLG_FETCHING_LANGUAGES"
 msgid "Fetching supported languages..."
