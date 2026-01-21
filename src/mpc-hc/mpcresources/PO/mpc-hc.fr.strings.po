@@ -3199,7 +3199,7 @@ msgstr "&Activer tous les filtres"
 
 msgctxt "IDS_LOGO_AUTHOR"
 msgid "Author unknown. Contact us if you made this logo!"
-msgstr "Auteur inconnu. Contactez nous si vous avez créé ce logo !"
+msgstr "Auteur inconnu. Contactez-nous si vous avez créé ce logo !"
 
 msgctxt "IDS_NO_MORE_MEDIA"
 msgid "No more media in the current folder."
