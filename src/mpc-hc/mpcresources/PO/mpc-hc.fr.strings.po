@@ -2703,7 +2703,7 @@ msgstr "Proportion de l'image"
 
 msgctxt "IDS_MAINFRM_37"
 msgid ", Total: %ld, Dropped: %ld"
-msgstr ", Totales : %ld, Perdues : %ld"
+msgstr ", totales : %ld, perdues : %ld"
 
 msgctxt "IDS_MAINFRM_38"
 msgid ", Size: %I64d KB"
