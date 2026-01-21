@@ -2138,11 +2138,11 @@ msgstr "Sous-titre suivant"
 
 msgctxt "IDS_MPLAYERC_102"
 msgid "Subresync: shift -100ms"
-msgstr "Sous-resynchronisation: décalage -100ms"
+msgstr "Sous-resynchronisation : décalage -100ms"
 
 msgctxt "IDS_MPLAYERC_103"
 msgid "Subresync: shift +100ms"
-msgstr "Sous-resynchronisation: décalage +100ms"
+msgstr "Sous-resynchronisation : décalage +100ms"
 
 msgctxt "IDS_AG_SEEKSET"
 msgid "Jump to Beginning"
@@ -2150,7 +2150,7 @@ msgstr "Revenir au début"
 
 msgctxt "IDS_OSD_SHOW_FILENAME"
 msgid "OSD: Show File Name"
-msgstr "OSD : Afficher le nom de fichier"
+msgstr "OSD : afficher le nom de fichier"
 
 msgctxt "IDS_PLAY_DVD"
 msgid "Play DVD"
@@ -2162,11 +2162,11 @@ msgstr "Lecture Blu-ray"
 
 msgctxt "IDS_OSD_DISPLAY_RENDERER_STATS"
 msgid "OSD: Display Renderer Statistics"
-msgstr "OSD : Afficher les statistiques du moteur de rendu"
+msgstr "OSD : afficher les statistiques du moteur de rendu"
 
 msgctxt "IDS_OSD_RESET_RENDERER_STATS"
 msgid "OSD: Reset Renderer Statistics"
-msgstr "OSD : Réinitialiser les statistiques du moteur de rendu"
+msgstr "OSD : réinitialiser les statistiques du moteur de rendu"
 
 msgctxt "IDD_PPAGESUBMISC"
 msgid "Subtitles::Misc"
@@ -2174,7 +2174,7 @@ msgstr "Sous-titres::Divers"
 
 msgctxt "IDS_VIEW_BORDERLESS"
 msgid "Hide &borders"
-msgstr "Cacher les &bordures"
+msgstr "Masquer les &bordures"
 
 msgctxt "IDS_VIEW_FRAMEONLY"
 msgid "Fra&me Only"
