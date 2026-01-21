@@ -3837,7 +3837,7 @@ msgstr "Normalisation : activée"
 
 msgctxt "IDS_OSD_NORMALIZE_OFF"
 msgid "Normalization: Off"
-msgstr "Normalisation : Désactivée"
+msgstr "Normalisation : désactivée"
 
 msgctxt "IDS_REGAIN_VOLUME"
 msgid "Toggle regain volume"
