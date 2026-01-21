@@ -4665,7 +4665,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_SHADERPRESET"
 msgid "/shaderpreset \"Pr\"\tStart using \"Pr\" shader preset"
-msgstr "/shaderpreset \"Pr\"\tUtiliser la présélection d'effets vidéo \"Pr\""
+msgstr "/shaderpreset \"Pr\"\tUtilise la présélection d'effets vidéo \"Pr\""
 
 msgctxt "IDS_TOOLBAR_ALIGNMENT_LEFT"
 msgid "Left"
