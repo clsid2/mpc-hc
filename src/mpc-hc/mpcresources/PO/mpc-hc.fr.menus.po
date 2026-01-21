@@ -377,7 +377,7 @@ msgstr "&50 %"
 
 msgctxt "ID_VIEW_VF_NORMAL"
 msgid "&Normal Size"
-msgstr "&100%"
+msgstr "&100 %"
 
 msgctxt "ID_VIEW_VF_DOUBLE"
 msgid "&Double Size"
