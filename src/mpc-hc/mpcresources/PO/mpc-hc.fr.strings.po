@@ -4140,7 +4140,7 @@ msgstr "Télécharger des sous-titres"
 
 msgctxt "IDS_SUBDL_DLG_SEARCHING"
 msgid "Searching for subtitles online, please wait..."
-msgstr "Recherche de sous-titres en cours, veuillez patienter..."
+msgstr "Recherche de sous-titres en cours..."
 
 msgctxt "IDS_SUBDL_DLG_ABORTING"
 msgid "Online subtitles search aborting..."
