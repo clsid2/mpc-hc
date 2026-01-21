@@ -1075,7 +1075,8 @@ msgstr "Recherche des chaînes"
 
 msgctxt "IDS_SUBTITLES_ERROR"
 msgid "Subtitles are not loaded or unsupported renderer."
-msgstr "Aucune piste de sous-titres chargée ou moteur de rendu non supporté."
+msgstr ""
+"Aucune piste de sous-titres chargée ou moteur de rendu non pris en charge."
 
 msgctxt "IDC_CACHESHADERS"
 msgid "Stores compiled shaders in local AppData to speed up load time."
