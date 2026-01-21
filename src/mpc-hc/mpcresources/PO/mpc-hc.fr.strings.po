@@ -5117,4 +5117,4 @@ msgstr "Lecture aléatoire : activée"
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
-msgstr "Lecture aléatoire: désactivée"
+msgstr "Lecture aléatoire : désactivée"
