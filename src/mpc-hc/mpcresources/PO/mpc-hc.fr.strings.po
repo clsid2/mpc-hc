@@ -3095,7 +3095,7 @@ msgstr "Zoom 100 %"
 
 msgctxt "IDS_AG_ZOOM_200"
 msgid "Zoom 200%"
-msgstr "Zoom 200%"
+msgstr "Zoom 200 %"
 
 msgctxt "IDS_AG_NEXT_AR_PRESET"
 msgid "Next AR Preset"
