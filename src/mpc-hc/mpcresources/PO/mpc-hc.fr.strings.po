@@ -2284,15 +2284,15 @@ msgstr ""
 
 msgctxt "IDS_ZOOM_50"
 msgid "50%"
-msgstr "50%"
+msgstr "50 %"
 
 msgctxt "IDS_ZOOM_100"
 msgid "100%"
-msgstr "100%"
+msgstr "100 %"
 
 msgctxt "IDS_ZOOM_200"
 msgid "200%"
-msgstr "200%"
+msgstr "200 %"
 
 msgctxt "IDS_ZOOM_AUTOFIT"
 msgid "Auto Fit"
