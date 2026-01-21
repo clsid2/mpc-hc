@@ -1569,7 +1569,7 @@ msgstr "Préférer les pistes de sous-titres forcées et/ou par défaut"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
 msgid "Prefer external subtitles over embedded subtitles"
-msgstr "Préférer les pistes de sous-titres externes à celles internes"
+msgstr "Préférer les pistes de sous-titres externes à celles intégrées"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
 msgid "Ignore embedded subtitles"
