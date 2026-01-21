@@ -3675,7 +3675,7 @@ msgstr "Désactiver Aéro pendant la lecture : Oui"
 
 msgctxt "IDS_OSD_RS_NO_DESKTOP_COMP_OFF"
 msgid "Disable desktop composition: Off"
-msgstr "Désactiver Aéro pendant la lecture : Non"
+msgstr "Désactiver Aéro pendant la lecture : non"
 
 msgctxt "IDS_OSD_RS_ALT_VSYNC_ON"
 msgid "Alternative VSync: On"
