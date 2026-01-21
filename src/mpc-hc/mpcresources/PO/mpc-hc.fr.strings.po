@@ -3099,7 +3099,7 @@ msgstr "Zoom 200 %"
 
 msgctxt "IDS_AG_NEXT_AR_PRESET"
 msgid "Next AR Preset"
-msgstr "Présélection d'aspect ratio suivante"
+msgstr "Présélection de ratio d'aspect suivante"
 
 msgctxt "IDS_AG_VIDFRM_STRETCH"
 msgid "Video Frame Stretch"
