@@ -289,7 +289,7 @@ msgstr "&Claire (gamma 2.2)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DIM"
 msgid "&Dim (2.35 Gamma)"
-msgstr "&Moyenne (2.35 Gamma)"
+msgstr "&Moyenne (gamma 2,35)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DARK"
 msgid "D&ark (2.4 Gamma)"
