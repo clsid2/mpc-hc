@@ -2452,7 +2452,7 @@ msgstr "Piste audio précédente"
 
 msgctxt "IDS_AG_NEXT_SUBTITLE"
 msgid "Next Subtitle Track"
-msgstr "Piste de sous-titre suivante"
+msgstr "Piste de sous-titres suivante"
 
 msgctxt "IDS_AG_PREV_SUBTITLE"
 msgid "Prev Subtitle Track"
