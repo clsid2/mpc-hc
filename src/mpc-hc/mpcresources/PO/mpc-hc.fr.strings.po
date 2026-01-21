@@ -3155,11 +3155,11 @@ msgstr "Pixels :"
 
 msgctxt "IDS_TEXTFILE_ENC"
 msgid "Encoding:"
-msgstr "Encodage :"
+msgstr "Encodage :"
 
 msgctxt "IDS_AG_ZOOM_25"
 msgid "Zoom 25%"
-msgstr "Zoom 25%"
+msgstr "Zoom 25 %"
 
 msgctxt "IDS_AG_MOUSE_MODIFIER"
 msgid "Mouse Modifier"
