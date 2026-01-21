@@ -4017,7 +4017,7 @@ msgstr "En fin de lecture : mettre en veille prolongée"
 
 msgctxt "IDS_AFTERPLAYBACK_SHUTDOWN"
 msgid "After Playback: Shutdown"
-msgstr "En fin de lecture : Arrêter l'ordinateur"
+msgstr "En fin de lecture : arrêter l'ordinateur"
 
 msgctxt "IDS_AFTERPLAYBACK_LOGOFF"
 msgid "After Playback: Log Off"
