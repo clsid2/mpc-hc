@@ -2496,7 +2496,7 @@ msgstr "Activer/Désactiver les sous-titres (DVD)"
 
 msgctxt "IDS_OSD_DISPLAY_CURRENT_TIME"
 msgid "OSD: Display Current Time"
-msgstr "OSD : Afficher l'indicateur de temps"
+msgstr "OSD : afficher l'indicateur de temps"
 
 msgctxt "IDS_PPAGEWEBSERVER_0"
 msgid "Select the directory"
