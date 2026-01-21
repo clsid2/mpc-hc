@@ -2643,11 +2643,11 @@ msgstr "DVD : disque 1.x invalide"
 
 msgctxt "IDS_MAINFRM_19"
 msgid "DVD: Invalid Disc Region"
-msgstr "DVD : région invalide"
+msgstr "DVD : région invalide"
 
 msgctxt "IDS_MAINFRM_20"
 msgid "DVD: Low Parental Level"
-msgstr "DVD : niveau parental insuffisant"
+msgstr "DVD : niveau parental insuffisant"
 
 msgctxt "IDS_MAINFRM_21"
 msgid "DVD: Macrovision Fail"
