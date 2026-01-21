@@ -2731,7 +2731,7 @@ msgstr "Erreur"
 
 msgctxt "IDS_SUBTITLE_STREAM_OFF"
 msgid "Subtitle: off"
-msgstr "Sous-titre : aucun"
+msgstr "Sous-titres : aucun"
 
 msgctxt "IDS_SUBTITLE_STREAM"
 msgid "Subtitle: %s"
