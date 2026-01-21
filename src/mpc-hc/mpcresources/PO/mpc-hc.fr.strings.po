@@ -4304,7 +4304,7 @@ msgstr "Langues"
 
 msgctxt "IDS_SUBPP_DLG_LANGUAGES_ERROR"
 msgid "ERROR: Internet connection could not be established."
-msgstr "Erreur : La connexion Internet n'a pas pu être établie."
+msgstr "Erreur : la connexion Internet n'a pas pu être établie."
 
 msgctxt "IDS_SUB_CREDENTIALS_TITLE"
 msgid "Enter website credentials"
