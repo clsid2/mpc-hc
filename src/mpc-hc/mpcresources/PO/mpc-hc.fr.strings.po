@@ -3575,7 +3575,7 @@ msgstr "Synchroniser l'affichage à la vidéo : non"
 
 msgctxt "IDS_OSD_RS_PRESENT_NEAREST_ON"
 msgid "Present at Nearest VSync: On"
-msgstr "Présenter à la synchronisation verticale la plus proche : Oui"
+msgstr "Présenter à la synchronisation verticale la plus proche : oui"
 
 msgctxt "IDS_OSD_RS_PRESENT_NEAREST_OFF"
 msgid "Present at Nearest VSync: Off"
