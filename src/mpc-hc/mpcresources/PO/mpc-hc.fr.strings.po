@@ -645,7 +645,7 @@ msgstr "Lecture::Capture"
 
 msgctxt "IDD_PPAGESYNC"
 msgid "Playback::Sync Renderer Settings"
-msgstr "Lecture::Paramètres Sync Renderer"
+msgstr "Lecture::Moteur de rendu Sync"
 
 msgctxt "IDD_PPAGEFULLSCREEN"
 msgid "Playback::Fullscreen"
