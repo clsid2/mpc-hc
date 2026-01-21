@@ -1975,7 +1975,7 @@ msgstr "Afficher lors d'un déplacement de la souris, masquer après :"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
-msgstr "Afficher lors du survol des contrôles, cacher après :"
+msgstr "Afficher lors du survol des contrôles, masquer après :"
 
 msgctxt "IDS_MAINFRM_PRE_SHADERS_FAILED"
 msgid "Failed to set pre-resize shaders"
