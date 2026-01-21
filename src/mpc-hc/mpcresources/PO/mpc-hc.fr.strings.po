@@ -3935,7 +3935,7 @@ msgstr ""
 
 msgctxt "IDS_MB_SHOW_EDL_EDITOR"
 msgid "Do you want to activate the EDL editor?"
-msgstr "Souhaitez-vous activer l'éditeur de liste d'édition ?"
+msgstr "Faut-il activer l'éditeur de liste d'édition ?"
 
 msgctxt "IDS_CAPTURE_ERROR"
 msgid "Capture Error"
