@@ -840,7 +840,7 @@ msgid ""
 msgstr ""
 "Identique au VMR-9 (fenêtré), mais avec le plugin Présentation/Allocation de"
 " MPC-HC pour les sous-titres. La duplication vidéo Overlay est susceptible "
-"de fonctionner. L'espace de couleurs \"couleurs vraies\" est recommandé."
+"de fonctionner. L'espace de couleurs « couleurs vraies » est recommandé."
 
 msgctxt "IDC_DSDXR"
 msgid ""
