@@ -3849,7 +3849,7 @@ msgstr "Restauration adaptative de l'amplification : activée"
 
 msgctxt "IDS_OSD_REGAIN_VOLUME_OFF"
 msgid "Regain volume: Off"
-msgstr "Restauration adaptative de l'amplification : Désactivée"
+msgstr "Restauration adaptative de l'amplification : désactivée"
 
 msgctxt "IDS_SIZE_UNIT_BYTES"
 msgid "bytes"
