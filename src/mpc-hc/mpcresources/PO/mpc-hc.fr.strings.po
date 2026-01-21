@@ -1845,7 +1845,7 @@ msgstr ""
 
 msgctxt "IDS_SUBTITLE_RENDERER_INTERNAL"
 msgid "Internal Subtitle Renderer"
-msgstr "Moteur de rendu des sous-titres interne"
+msgstr "Moteur de rendu interne des sous-titres"
 
 msgctxt "IDS_AG_OPEN_DEVICE"
 msgid "Open Device"
