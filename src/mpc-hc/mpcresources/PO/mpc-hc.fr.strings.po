@@ -4772,7 +4772,7 @@ msgstr ""
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"
 msgid "Pre-Resize Pixel Shaders: on"
-msgstr "Effets vidéo pré-redimensionnement: activés"
+msgstr "Effets vidéo pré-redimensionnement : activés"
 
 msgctxt "IDS_PRESIZE_SHADERS_DISABLED"
 msgid "Pre-Resize Pixel Shaders: off"
