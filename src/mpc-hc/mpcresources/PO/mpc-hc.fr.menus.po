@@ -373,7 +373,7 @@ msgstr "Fenêtre &vidéo"
 
 msgctxt "ID_VIEW_VF_HALF"
 msgid "&Half Size"
-msgstr "&50%"
+msgstr "&50 %"
 
 msgctxt "ID_VIEW_VF_NORMAL"
 msgid "&Normal Size"
