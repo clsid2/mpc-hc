@@ -3131,7 +3131,7 @@ msgstr "Au-dessous de la barre de défilement"
 
 msgctxt "IDS_VIDEO_STREAM"
 msgid "Video: %s"
-msgstr "Vidéo : %s"
+msgstr "Vidéo : %s"
 
 msgctxt "IDS_APPLY"
 msgid "Apply"
