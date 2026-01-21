@@ -2797,7 +2797,7 @@ msgid ""
 msgstr ""
 "Impossible de créer le fichier, les miniatures seraient trop petites.\n"
 "\n"
-"Essayez de réduire le nombre de miniatures ou d'augmenter la taille totale."
+"Essayer de réduire le nombre de miniatures ou d'augmenter la taille totale."
 
 msgctxt "IDS_CANNOT_LOAD_SUB"
 msgid ""
