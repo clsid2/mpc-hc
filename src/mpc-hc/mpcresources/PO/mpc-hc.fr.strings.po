@@ -3628,7 +3628,7 @@ msgstr "Intention de rendu : Colorimétrique relative"
 
 msgctxt "IDS_OSD_RS_REND_INTENT_SATUR"
 msgid "Rendering Intent: Saturation"
-msgstr "Intention de rendu : Saturation"
+msgstr "Intention de rendu : saturation"
 
 msgctxt "IDS_OSD_RS_REND_INTENT_ABSOLUTE"
 msgid "Rendering Intent: Absolute Colorimetric"
