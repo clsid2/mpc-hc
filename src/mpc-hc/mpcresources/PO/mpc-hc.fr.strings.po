@@ -2875,7 +2875,7 @@ msgstr "Actuel"
 
 msgctxt "IDS_MAINFRM_DIR_TITLE"
 msgid "Select Directory"
-msgstr "Sélectionnez un répertoire"
+msgstr "Sélectionner un répertoire"
 
 msgctxt "IDS_MAINFRM_DIR_CHECK"
 msgid "Include subdirectories"
