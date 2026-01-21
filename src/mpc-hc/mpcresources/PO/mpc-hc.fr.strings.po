@@ -2855,7 +2855,7 @@ msgstr "Impossible de lire le fichier"
 
 msgctxt "IDS_AG_CHAPTER2"
 msgid "Chapter: "
-msgstr "Chapitre : "
+msgstr "Chapitre : "
 
 msgctxt "IDS_VOLUME_OSD"
 msgid "Vol: %d%%"
