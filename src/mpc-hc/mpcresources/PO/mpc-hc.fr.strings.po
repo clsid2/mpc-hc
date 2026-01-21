@@ -4041,11 +4041,11 @@ msgstr "En fin de lecture : ne rien faire"
 
 msgctxt "IDS_OSD_BRIGHTNESS"
 msgid "Brightness: %s"
-msgstr "Luminosité : %s"
+msgstr "Luminosité : %s"
 
 msgctxt "IDS_OSD_CONTRAST"
 msgid "Contrast: %s"
-msgstr "Contraste : %s"
+msgstr "Contraste : %s"
 
 msgctxt "IDS_OSD_HUE"
 msgid "Hue: %s°"
