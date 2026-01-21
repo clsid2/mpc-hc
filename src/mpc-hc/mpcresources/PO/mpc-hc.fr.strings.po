@@ -4852,7 +4852,7 @@ msgid ""
 "Use libass (instead of standard renderer) for SRT subtitles. NOT "
 "recommended."
 msgstr ""
-"Utiliser libass (à la place du moteur de rendu par défaut) pour les sous-"
+"Utiliser Libass (à la place du moteur de rendu par défaut) pour les sous-"
 "titres SRT. Pas recommandé."
 
 msgctxt "IDS_PPAGEADVANCED_OPEN_REC_PANEL_WHEN_OPENING_DEVICE"
