@@ -4353,7 +4353,7 @@ msgid ""
 "For example, type: \"private dir\\videos|work\\\"."
 msgstr ""
 "La recherche et le téléchargement automatique seront déactivés pour tous les fichiers multimédias dont le chemin contient un des motifs entrés ici.\n"
-"Par exemple, entrez : \"dossier privé\\vidéos|travail\"."
+"Par ex., saisir : \"dossier privé\\vidéos|travail\"."
 
 msgctxt "IDS_CMD_PATHNAME"
 msgid ""
