@@ -3833,7 +3833,7 @@ msgstr "Activer la normalisation du volume"
 
 msgctxt "IDS_OSD_NORMALIZE_ON"
 msgid "Normalization: On"
-msgstr "Normalisation : Activée"
+msgstr "Normalisation : activée"
 
 msgctxt "IDS_OSD_NORMALIZE_OFF"
 msgid "Normalization: Off"
