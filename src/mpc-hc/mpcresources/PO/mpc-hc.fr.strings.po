@@ -3615,7 +3615,7 @@ msgstr "Luminosité ambiante : moyenne (gamma 2,35)"
 
 msgctxt "IDS_OSD_RS_AMBIENT_LIGHT_DARK"
 msgid "Ambient Light: Dark (2.4 Gamma)"
-msgstr "Luminosité ambiante : Sombre (2.4 Gamma)"
+msgstr "Luminosité ambiante : sombre (gamma 2,4)"
 
 msgctxt "IDS_OSD_RS_REND_INTENT_PERCEPT"
 msgid "Rendering Intent: Perceptual"
