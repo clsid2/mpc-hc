@@ -541,7 +541,7 @@ msgstr "Options"
 
 msgctxt "IDS_SHADERS_SELECT"
 msgid "&Select Shaders..."
-msgstr "&Sélectionner les effets..."
+msgstr "&Sélectionner les effets vidéo..."
 
 msgctxt "IDS_SHADERS_DEBUG"
 msgid "&Debug Shaders..."
