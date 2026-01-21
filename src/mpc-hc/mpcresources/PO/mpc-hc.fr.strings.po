@@ -3599,7 +3599,7 @@ msgstr "Type d'entrée : haute Définition"
 
 msgctxt "IDS_OSD_RS_INPUT_TYPE_SD_NTSC"
 msgid "Input Type: SDTV NTSC"
-msgstr "Type d'entrée : Définition standard NTSC"
+msgstr "Type d'entrée : définition standard NTSC"
 
 msgctxt "IDS_OSD_RS_INPUT_TYPE_SD_PAL"
 msgid "Input Type: SDTV PAL"
