@@ -3901,7 +3901,7 @@ msgstr "Impossible de créer le démultiplexeur."
 
 msgctxt "IDS_GOTO_ERROR_PARSING_TIME"
 msgid "Error parsing the entered time!"
-msgstr "L'analyse de la position entrée a échoué !"
+msgstr "L'analyse de la position entrée a échoué !"
 
 msgctxt "IDS_GOTO_ERROR_PARSING_TEXT"
 msgid "Error parsing the entered text!"
