@@ -2895,7 +2895,7 @@ msgstr "Afficher/Masquer la barre de défilement"
 
 msgctxt "IDS_AG_TOGGLE_CONTROLS"
 msgid "Toggle Controls"
-msgstr "Afficher/Masquer la barre de contrôles"
+msgstr "Afficher la barre de contrôles"
 
 msgctxt "IDS_MAINFRM_84"
 msgid "Invalid file name"
