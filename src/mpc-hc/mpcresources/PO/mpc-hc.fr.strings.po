@@ -1999,7 +1999,7 @@ msgstr "Décalage de synchronisation verticale : %d"
 
 msgctxt "IDS_OSD_SPEED"
 msgid "Speed: %.2lfx"
-msgstr "Vitesse de lecture : %.2lfx"
+msgstr "Vitesse de lecture : %.2lfx"
 
 msgctxt "IDS_OSD_THUMBS_SAVED"
 msgid "Thumbnails saved successfully"
