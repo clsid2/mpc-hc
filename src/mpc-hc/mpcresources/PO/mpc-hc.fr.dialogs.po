@@ -1665,7 +1665,7 @@ msgstr "Charger"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON4"
 msgid "Save"
-msgstr "Sauvegarder"
+msgstr "Enregistrer"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON5"
 msgid "Delete"
