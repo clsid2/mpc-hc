@@ -3727,7 +3727,7 @@ msgstr "Traitement en virgule flottante 32 bits : Désactivé"
 
 msgctxt "IDS_OSD_RS_HALF_FP_PROCESS_ON"
 msgid "Half Floating Point Processing: On"
-msgstr "Traitement en virgule flottante 16 bits : Activé"
+msgstr "Traitement en virgule flottante 16 bits : activé"
 
 msgctxt "IDS_OSD_RS_HALF_FP_PROCESS_OFF"
 msgid "Half Floating Point Processing: Off"
