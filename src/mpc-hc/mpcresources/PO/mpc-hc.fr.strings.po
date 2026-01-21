@@ -4768,7 +4768,7 @@ msgid ""
 "Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
 msgstr ""
 "Conserver l'extension du fichier vidéo dans le nom de fichier des captures "
-"d'écran (ex: file.mkv.png)"
+"d'écran (par ex. : file.mkv.png)"
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"
 msgid "Pre-Resize Pixel Shaders: on"
