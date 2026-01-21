@@ -171,7 +171,7 @@ msgstr ""
 
 msgctxt "IDS_PLAYLOOPMODE_PLAYLIST"
 msgid "Repeat Mode: Playlist"
-msgstr "Mode de répétition : liste de lecture"
+msgstr "Mode de répétition : liste de lecture"
 
 msgctxt "IDS_PLAYLOOPMODE_FILE"
 msgid "Repeat Mode: File"
