@@ -2560,7 +2560,7 @@ msgstr "Sous-titres sauvegardés"
 
 msgctxt "IDS_MAINFRM_4"
 msgid "Cannot save subtitles"
-msgstr "Impossible de sauvegarder les sous-titres"
+msgstr "Impossible d'enregistrer les sous-titres"
 
 msgctxt "IDS_AG_FRAMERATE"
 msgid "Frame rate"
