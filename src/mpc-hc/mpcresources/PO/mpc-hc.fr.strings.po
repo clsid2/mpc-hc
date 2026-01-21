@@ -2891,7 +2891,7 @@ msgstr "Afficher/Masquer le titre et le menu"
 
 msgctxt "IDS_AG_TOGGLE_SEEKER"
 msgid "Toggle Seekbar"
-msgstr "Afficher/Masquer la barre de défilement"
+msgstr "Afficher la barre de défilement"
 
 msgctxt "IDS_AG_TOGGLE_CONTROLS"
 msgid "Toggle Controls"
