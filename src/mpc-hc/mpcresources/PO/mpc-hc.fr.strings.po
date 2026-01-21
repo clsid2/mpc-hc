@@ -2655,7 +2655,7 @@ msgstr "DVD : échec de la protection anti-copie Macrovision"
 
 msgctxt "IDS_MAINFRM_22"
 msgid "DVD: Incompatible System And Decoder Regions"
-msgstr "DVD : régions du système et du décodeur incompatibles"
+msgstr "DVD : régions du système et du décodeur incompatibles"
 
 msgctxt "IDS_MAINFRM_23"
 msgid "DVD: Incompatible Disc And Decoder Regions"
