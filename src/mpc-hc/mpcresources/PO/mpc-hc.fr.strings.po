@@ -1370,7 +1370,7 @@ msgstr "&Vider la liste"
 
 msgctxt "IDS_RECENT_FILES_QUESTION"
 msgid "Are you sure that you want to delete recent files list?"
-msgstr "Êtes-vous sûr de vouloir vider la liste des fichiers récents ?"
+msgstr "Faut-il vraiment vider la liste des fichiers récents ?"
 
 msgctxt "IDS_AG_EDL_SAVE"
 msgid "EDL save"
