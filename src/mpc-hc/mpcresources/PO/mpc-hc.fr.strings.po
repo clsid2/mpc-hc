@@ -3635,7 +3635,7 @@ msgstr "Intention de rendu : Colorimétrique absolue"
 
 msgctxt "IDS_OSD_RS_OUTPUT_RANGE"
 msgid "Output Range: %s"
-msgstr "Plage de sortie : %s"
+msgstr "Plage de sortie : %s"
 
 msgctxt "IDS_OSD_RS_FLUSH_BEF_VSYNC_ON"
 msgid "Flush GPU before VSync: On"
