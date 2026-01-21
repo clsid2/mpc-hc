@@ -1558,7 +1558,7 @@ msgstr "Lancer un DVD/BD"
 
 msgctxt "IDS_MAINFRM_POST_SHADERS_FAILED"
 msgid "Failed to set post-resize shaders"
-msgstr "Impossible d'activer les effets post-redimensionnement"
+msgstr "Impossible d'activer les effets postredimensionnement"
 
 msgctxt "IDS_MAINFRM_BOTH_SHADERS_FAILED"
 msgid "Failed to set both pre-resize and post-resize shaders"
