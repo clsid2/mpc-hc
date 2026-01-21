@@ -3683,7 +3683,7 @@ msgstr "Synchronisation verticale alternative : activée"
 
 msgctxt "IDS_OSD_RS_ALT_VSYNC_OFF"
 msgid "Alternative VSync: Off"
-msgstr "Synchronisation verticale alternative : Désactivée"
+msgstr "Synchronisation verticale alternative : désactivée"
 
 msgctxt "IDS_OSD_RS_RESET_DEFAULT"
 msgid "Renderer settings reset to default"
