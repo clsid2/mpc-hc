@@ -2813,7 +2813,7 @@ msgstr "Fichiers de sous-titre"
 
 msgctxt "IDS_MAINFRM_68"
 msgid "Aspect Ratio: %ld:%ld"
-msgstr "Proportions : %ld:%ld"
+msgstr "Ratio d'aspect : %ld:%ld"
 
 msgctxt "IDS_MAINFRM_69"
 msgid "Aspect Ratio: Default (DAR)"
