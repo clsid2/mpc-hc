@@ -531,7 +531,7 @@ msgstr "Paramètres de texture (réouvrir la vidéo pour voir les modifications)
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC9"
 msgid "Sub pictures to buffer:"
-msgstr "Nombre de sous-titres à précharger :"
+msgstr "Nombre de sous-images à mettre en tampon :"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC21"
 msgid "Maximum texture resolution:"
