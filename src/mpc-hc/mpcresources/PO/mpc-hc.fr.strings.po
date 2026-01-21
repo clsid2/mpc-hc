@@ -4311,7 +4311,7 @@ msgstr "Saisir les identifiants du site"
 
 msgctxt "IDS_SUB_CREDENTIALS_MSG"
 msgid "Enter your credentials to connect to: "
-msgstr "Entrez vos identifiants pour vous connecter à :"
+msgstr "Saisir les identifiants pour se connecter à :"
 
 msgctxt "IDS_ASPECT_RATIO_SAR"
 msgid "Aspect Ratio: Assume square pixels (SAR)"
