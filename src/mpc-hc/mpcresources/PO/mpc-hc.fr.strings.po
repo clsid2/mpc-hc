@@ -3909,7 +3909,7 @@ msgstr "L'analyse du texte entré a échoué !"
 
 msgctxt "IDS_GOTO_ERROR_PARSING_FPS"
 msgid "Error parsing the entered frame rate!"
-msgstr "L'analyse du débit d'images entré a échoué !"
+msgstr "L'analyse du débit d'images entré a échoué !"
 
 msgctxt "IDS_FRAME_STEP_ERROR_RENDERER"
 msgid "Cannot frame-step, try a different video renderer."
