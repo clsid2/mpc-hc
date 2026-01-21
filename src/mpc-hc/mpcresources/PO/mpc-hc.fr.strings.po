@@ -5028,7 +5028,7 @@ msgstr "Méthode WASAPI :"
 
 msgctxt "IDS_ARS_DUMMY_CHANNELS"
 msgid "Don't fill channels when upmixing"
-msgstr "Ne pas remplir les canaux lors du mixage élévateur"
+msgstr "Ne pas utiliser les canaux en surmixage"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
