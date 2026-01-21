@@ -59,7 +59,7 @@ msgid ""
 msgstr ""
 "Cette version de MPC-HC nécessite un CPU avec prise en charge des instructions SSE2.\n"
 "\n"
-"Ce processeur ne supporte pas cette fonctionnalité."
+"Ce processeur ne prend pas en charge cette fonctionnalité."
 
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"
