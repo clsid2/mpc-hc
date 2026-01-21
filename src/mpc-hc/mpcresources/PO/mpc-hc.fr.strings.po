@@ -681,7 +681,7 @@ msgstr "Moteur de rendu Overlay Mixer"
 
 msgctxt "IDS_ZOOM_25"
 msgid "25%"
-msgstr "25%"
+msgstr "25 %"
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR9WINDOWED"
 msgid "Video Mixing Renderer 9 (windowed)"
