@@ -3639,7 +3639,7 @@ msgstr "Plage de sortie : %s"
 
 msgctxt "IDS_OSD_RS_FLUSH_BEF_VSYNC_ON"
 msgid "Flush GPU before VSync: On"
-msgstr "Vidage du GPU avant la synchronisation verticale : Activé"
+msgstr "Vidage du GPU avant la synchronisation verticale : activé"
 
 msgctxt "IDS_OSD_RS_FLUSH_BEF_VSYNC_OFF"
 msgid "Flush GPU before VSync: Off"
