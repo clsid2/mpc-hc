@@ -2270,7 +2270,7 @@ msgstr "Aucun sous-titre trouvé."
 
 msgctxt "IDS_SUBDL_DLG_SUBS_AVAIL"
 msgid "%d subtitle(s) available."
-msgstr "%d sous-titre(s) disponible(s)."
+msgstr "%d sous-titres disponible(s)."
 
 msgctxt "IDS_UPDATE_CONFIG_AUTO_CHECK"
 msgid ""
