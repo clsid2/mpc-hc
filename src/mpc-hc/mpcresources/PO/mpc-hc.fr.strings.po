@@ -3647,7 +3647,7 @@ msgstr "Vidage du GPU avant la synchronisation verticale : désactivé"
 
 msgctxt "IDS_OSD_RS_FLUSH_AFT_PRES_ON"
 msgid "Flush GPU after Present: On"
-msgstr "Vidage du GPU après la présentation : Activé"
+msgstr "Vidage du GPU après la présentation : activé"
 
 msgctxt "IDS_OSD_RS_FLUSH_AFT_PRES_OFF"
 msgid "Flush GPU after Present: Off"
