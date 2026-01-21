@@ -120,6 +120,12 @@ private:
 
     CCritSec m_plEditLock;
 
+    CEdit m_filterEdit;
+    CString m_filterText;
+    int m_filterHeight;
+
+    void ApplyFilterToList();
+
 public:
     CPlayerPlaylistBar(CMainFrame* pMainFrame);
     virtual ~CPlayerPlaylistBar();
@@ -207,4 +213,5 @@ public:
     afx_msg void OnXButtonDown(UINT nFlags, UINT nButton, CPoint point);
     afx_msg void OnXButtonUp(UINT nFlags, UINT nButton, CPoint point);
     afx_msg void OnXButtonDblClk(UINT nFlags, UINT nButton, CPoint point);
+    afx_msg void OnEndChangePlaylistFilterEdit();
 };

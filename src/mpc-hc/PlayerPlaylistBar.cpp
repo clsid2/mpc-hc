@@ -94,6 +94,15 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
     m_fakeImageList.Create(1, 16, ILC_COLOR4, 10, 10);
     m_list.SetImageList(&m_fakeImageList, LVSIL_SMALL);
 
+    m_filterEdit.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, CRect(0, 0, 200, 23), this, IDC_PLAYLIST_FILTER_EDIT);
+
+    CFont* pFont = GetFont();
+    if (pFont) {
+        m_filterEdit.SetFont(pFont);
+    }
+
+    m_filterHeight = 20;
+
     m_dropTarget.Register(this);
 
 	createdWindow = true;
@@ -1697,6 +1706,7 @@ BEGIN_MESSAGE_MAP(CPlayerPlaylistBar, CMPCThemePlayerBar)
     ON_WM_SIZE()
     ON_NOTIFY(LVN_KEYDOWN, IDC_PLAYLIST, OnLvnKeyDown)
     ON_NOTIFY(NM_DBLCLK, IDC_PLAYLIST, OnNMDblclkList)
+    ON_EN_CHANGE(IDC_PLAYLIST_FILTER_EDIT, OnEndChangePlaylistFilterEdit)
     //ON_NOTIFY(NM_CUSTOMDRAW, IDC_PLAYLIST, OnCustomdrawList)
     ON_WM_MEASUREITEM()
     ON_WM_DRAWITEM()
@@ -1726,6 +1736,9 @@ void CPlayerPlaylistBar::ScaleFont()
     m_font.DeleteObject();
     if (m_font.CreateFontIndirect(&lf)) {
         m_list.SetFont(&m_font);
+        if (::IsWindow(m_filterEdit.m_hWnd)) {
+            m_filterEdit.SetFont(&m_font);
+        }
     }
 
     CDC* pDC = m_list.GetDC();
@@ -1759,11 +1772,28 @@ void CPlayerPlaylistBar::ResizeListColumn()
         GetClientRect(r);
         r.DeflateRect(2, 2);
 
+        int margin = m_pMainFrame->m_dpi.ScaleX(3);
+        int spacing = m_pMainFrame->m_dpi.ScaleY(4);
+
+        CRect editRect = r;
+
+        editRect.DeflateRect(margin, margin);
+        editRect.bottom = editRect.top + m_filterHeight;
+
+        if (::IsWindow(m_filterEdit.m_hWnd)) {
+            ::SetWindowPos(m_filterEdit.m_hWnd, HWND_TOP,
+                editRect.left, editRect.top, editRect.Width(), editRect.Height(),
+                SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+
+        CRect listRect = r;
+        listRect.top = editRect.bottom + spacing;
+
         m_list.SetRedraw(FALSE);
         m_list.SetColumnWidth(COL_NAME, 0);
         m_list.SetRedraw(TRUE);
 
-        m_list.MoveWindow(r, FALSE);
+        m_list.MoveWindow(listRect, FALSE);
         m_list.GetClientRect(r);
 
         m_list.SetRedraw(FALSE);
@@ -1786,6 +1816,19 @@ void CPlayerPlaylistBar::OnSize(UINT nType, int cx, int cy)
     __super::OnSize(nType, cx, cy);
 
     ResizeListColumn();
+
+    if (::IsWindow(m_filterEdit.m_hWnd)) {
+        int margin = 5;
+
+        m_filterEdit.SetWindowPos(
+            NULL,
+            margin,
+            margin,
+            cx - 2 * margin,
+            m_filterHeight,
+            SWP_NOZORDER | SWP_SHOWWINDOW
+        );
+    }
 }
 
 void CPlayerPlaylistBar::OnLvnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
@@ -2642,4 +2685,103 @@ void CPlayerPlaylistBar::OnXButtonUp(UINT nFlags, UINT nButton, CPoint point)
 void CPlayerPlaylistBar::OnXButtonDblClk(UINT nFlags, UINT nButton, CPoint point)
 {
     OnXButtonDown(nFlags, nButton, point);
+}
+
+void CPlayerPlaylistBar::OnEndChangePlaylistFilterEdit()
+{
+    CString text;
+    if (::IsWindow(m_filterEdit.m_hWnd)) {
+        m_filterEdit.GetWindowText(text);
+    }
+
+    text.Trim();
+    if (text != m_filterText) {
+        m_filterText = text;
+        ApplyFilterToList();
+    }
+}
+
+void CPlayerPlaylistBar::ApplyFilterToList()
+{
+    CAutoLock pledit(&m_plEditLock);
+
+    CString filterText = m_filterText;
+    filterText.Trim();
+    filterText.MakeLower();
+
+    if (filterText.IsEmpty()) {
+        SetupList();
+        ResizeListColumn();
+
+        POSITION selectedPosition = m_pl.GetPos();
+        if (selectedPosition) {
+            EnsureVisible(selectedPosition);
+            int index = FindItem(selectedPosition);
+            if (index >= 0) {
+                m_list.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
+            }
+        }
+        return;
+    }
+
+    m_list.SetRedraw(FALSE);
+    m_list.DeleteAllItems();
+
+    POSITION pos = m_pl.GetHeadPosition();
+    int i = 0;
+
+    while (pos) {
+        POSITION cur = pos;
+        CPlaylistItem& item = m_pl.GetAt(cur);
+
+        bool match = false;
+        CString itemLabel = item.GetLabel(0);
+        CString lowerLabel = itemLabel;
+        lowerLabel.MakeLower();
+
+        if (lowerLabel.Find(filterText) != -1) {
+            match = true;
+        }
+        else {
+            POSITION fpos = item.m_fns.GetHeadPosition();
+            while (fpos && !match) {
+                CString fn = item.m_fns.GetNext(fpos);
+                CString fnLower = fn;
+                fnLower.MakeLower();
+                if (fnLower.Find(filterText) != -1) {
+                    match = true;
+                    break;
+                }
+            }
+            if (!match && item.m_bYoutubeDL && !item.m_ydlSourceURL.IsEmpty()) {
+                CString ydl = item.m_ydlSourceURL;
+                ydl.MakeLower();
+                if (ydl.Find(filterText) != -1) {
+                    match = true;
+                }
+            }
+        }
+
+        if (match) {
+            int inserted = m_list.InsertItem(i, item.GetLabel());
+            m_list.SetItemData(inserted, (DWORD_PTR)cur);
+            m_list.SetItemText(inserted, COL_TIME, item.GetLabel(1));
+            i++;
+        }
+
+        m_pl.GetNext(pos);
+    }
+
+    m_list.SetRedraw(TRUE);
+    ResizeListColumn();
+    m_list.RedrawWindow(nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+
+    POSITION sel = m_pl.GetPos();
+    if (sel) {
+        int selIdx = FindItem(sel);
+        if (selIdx >= 0) {
+            m_list.SetItemState(selIdx, LVIS_SELECTED, LVIS_SELECTED);
+            EnsureVisible(sel);
+        }
+    }
 }

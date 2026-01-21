@@ -529,6 +529,7 @@
 #define IDC_STATUSBAR                   12139
 #define IDC_PPAGECAPTURE_DESC1          12140
 #define IDC_DSMPCVR                     12141
+#define IDC_PLAYLIST_FILTER_EDIT        12142
 #define IDS_SRC_VTS                     14002
 #define IDS_SRC_RFS                     14003
 #define IDS_INTERNAL_LAVF               14004
