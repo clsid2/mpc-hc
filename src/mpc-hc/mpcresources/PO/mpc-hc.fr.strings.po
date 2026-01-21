@@ -1666,7 +1666,7 @@ msgstr "Éducation/Science/Sujets factuels"
 
 msgctxt "IDS_PPAGEADVANCED_HIDE_WINDOWED"
 msgid "Hides controls and panels also in windowed mode."
-msgstr "Cacher les contrôles et les panneaux en mode fenêtré."
+msgstr "Masquer les contrôles et les panneaux en mode fenêtré."
 
 msgctxt "IDS_PPAGEADVANCED_BLOCK_VSFILTER"
 msgid ""
