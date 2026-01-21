@@ -451,7 +451,7 @@ msgstr "Zoom auto :"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC2"
 msgid "Auto fit factor:"
-msgstr "Facteur de zoom auto. :"
+msgstr "Facteur de zoom auto :"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "min %"
