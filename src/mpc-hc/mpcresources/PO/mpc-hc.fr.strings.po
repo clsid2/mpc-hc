@@ -5016,7 +5016,7 @@ msgstr "Format :"
 
 msgctxt "IDS_ARS_SAMPLERATE"
 msgid "Sample rate:"
-msgstr "Fréquence d'échantillonnage:"
+msgstr "Fréquence d'échantillonnage :"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels:"
