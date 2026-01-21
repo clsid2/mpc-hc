@@ -1390,7 +1390,7 @@ msgstr "Éditeur de liste d'édition : fixer le point d'entrée"
 
 msgctxt "IDS_AG_EDL_OUT"
 msgid "EDL set Out"
-msgstr "Éditeur de liste d'édition : Fixer le point de sortie"
+msgstr "Éditeur de liste d'édition : fixer le point de sortie"
 
 msgctxt "IDS_AG_PNS_ROTATEX_M"
 msgid "Video Frame Rotate X-"
