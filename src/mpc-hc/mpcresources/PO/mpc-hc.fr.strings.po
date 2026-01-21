@@ -3905,7 +3905,7 @@ msgstr "L'analyse de la position entrée a échoué !"
 
 msgctxt "IDS_GOTO_ERROR_PARSING_TEXT"
 msgid "Error parsing the entered text!"
-msgstr "L'analyse du texte entré a échoué !"
+msgstr "L'analyse du texte entré a échoué !"
 
 msgctxt "IDS_GOTO_ERROR_PARSING_FPS"
 msgid "Error parsing the entered frame rate!"
