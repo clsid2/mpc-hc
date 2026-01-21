@@ -2580,7 +2580,7 @@ msgstr "Mémoires tampons"
 
 msgctxt "IDS_MAINFRM_9"
 msgid "Volume: %02lu/%02lu, Title: %02lu/%02lu, Chapter: %02lu/%02lu"
-msgstr "Volume : %02lu/%02lu, Titre : %02lu/%02lu, Chapitre : %02lu/%02lu"
+msgstr "Volume : %02lu/%02lu, titre : %02lu/%02lu, chapitre : %02lu/%02lu"
 
 msgctxt "IDS_MAINFRM_10"
 msgid "Angle: %02lu/%02lu, %lux%lu %lu Hz %lu:%lu"
