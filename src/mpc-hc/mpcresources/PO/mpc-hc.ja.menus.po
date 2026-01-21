@@ -385,7 +385,7 @@ msgstr "2 倍のサイズ(&D)"
 
 msgctxt "ID_VIEW_VF_STRETCH"
 msgid "&Stretch To Window"
-msgstr "ウィンドウの大きさに合わせる(&S)"
+msgstr "ウィンドウに合わせる(&S)"
 
 msgctxt "ID_VIEW_VF_FROMINSIDE"
 msgid "Touch Window From &Inside"
