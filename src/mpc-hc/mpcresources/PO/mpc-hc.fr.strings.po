@@ -2673,7 +2673,7 @@ msgstr ""
 
 msgctxt "IDS_MAINFRM_139"
 msgid "Sub delay: %ld ms"
-msgstr "Décalage des sous-titres : %ld ms"
+msgstr "Décalage des sous-titres : %ld ms"
 
 msgctxt "IDS_AG_TITLE2"
 msgid "Title: %02d/%02d"
