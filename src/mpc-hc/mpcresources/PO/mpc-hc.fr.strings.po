@@ -2699,7 +2699,7 @@ msgstr "Largeur de l'image"
 
 msgctxt "IDS_AG_ASPECT_RATIO"
 msgid "Aspect Ratio"
-msgstr "Proportion de l'image"
+msgstr "Ratio d'aspect"
 
 msgctxt "IDS_MAINFRM_37"
 msgid ", Total: %ld, Dropped: %ld"
