@@ -3523,7 +3523,7 @@ msgstr "Liste de lecture"
 
 msgctxt "IDS_MFMT_BDPLS"
 msgid "Blu-ray playlist"
-msgstr "Playlist Blu-Ray"
+msgstr "Liste de lecture Blu-ray"
 
 msgctxt "IDS_MFMT_RAR"
 msgid "RAR Archive"
