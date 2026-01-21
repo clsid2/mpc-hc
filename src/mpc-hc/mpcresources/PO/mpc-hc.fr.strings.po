@@ -1031,7 +1031,7 @@ msgstr "Télécharger des sous-titres..."
 
 msgctxt "IDS_SUBFILE_DELAY"
 msgid "Delay (ms):"
-msgstr "Décalage (ms) :"
+msgstr "Décalage (ms) :"
 
 msgctxt "IDS_SPEEDSTEP_AUTO"
 msgid "Auto"
