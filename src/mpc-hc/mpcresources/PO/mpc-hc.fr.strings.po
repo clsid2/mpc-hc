@@ -2186,7 +2186,7 @@ msgstr "Afficher le &titre et le menu"
 
 msgctxt "IDS_VIEW_HIDEMENU"
 msgid "Hide &Menu"
-msgstr "Cacher le &menu"
+msgstr "Masquer le &menu"
 
 msgctxt "IDD_PPAGEADVANCED"
 msgid "Advanced"
