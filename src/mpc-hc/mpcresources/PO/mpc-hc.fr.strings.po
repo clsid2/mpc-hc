@@ -3591,7 +3591,7 @@ msgstr "Gestion des couleurs : désactivée"
 
 msgctxt "IDS_OSD_RS_INPUT_TYPE_AUTO"
 msgid "Input Type: Auto-Detect"
-msgstr "Type d'entrée : Détection automatique"
+msgstr "Type d'entrée : détection automatique"
 
 msgctxt "IDS_OSD_RS_INPUT_TYPE_HDTV"
 msgid "Input Type: HDTV"
