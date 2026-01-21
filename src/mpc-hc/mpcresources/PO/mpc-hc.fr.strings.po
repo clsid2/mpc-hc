@@ -415,7 +415,7 @@ msgstr "De (IPS)"
 
 msgctxt "IDS_PPAGE_FS_CLN_TO_FPS"
 msgid "To (FPS)"
-msgstr "A (IPS)"
+msgstr "À (IPS)"
 
 msgctxt "IDS_PPAGE_FS_CLN_DISPLAY_MODE"
 msgid "Display mode (Hz)"
