@@ -1009,7 +1009,7 @@ msgstr "Couleurs et transparence"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "0%"
-msgstr "0%"
+msgstr "0 %"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "100%"
