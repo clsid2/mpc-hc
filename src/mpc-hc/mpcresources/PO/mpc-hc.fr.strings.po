@@ -5020,7 +5020,7 @@ msgstr "Fréquence d'échantillonnage:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels:"
-msgstr "Canaux:"
+msgstr "Canaux :"
 
 msgctxt "IDS_ARS_WASAPI_METHOD"
 msgid "WASAPI method:"
