@@ -4025,7 +4025,7 @@ msgstr "En fin de lecture : fermer la session"
 
 msgctxt "IDS_AFTERPLAYBACK_LOCK"
 msgid "After Playback: Lock"
-msgstr "En fin de lecture : Verrouiller la session"
+msgstr "En fin de lecture : verrouiller la session"
 
 msgctxt "IDS_AFTERPLAYBACK_MONITOROFF"
 msgid "After Playback: Turn off the monitor"
