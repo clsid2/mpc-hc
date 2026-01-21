@@ -1779,7 +1779,7 @@ msgid ""
 "around 85% when playing loud lossy-encoded content."
 msgstr ""
 "Pour minimiser la distorsion, il est recommandé de régler le volume audio du"
-" lecteur autour de 85 % lors de la lecture de contenu encodé avec perte "
+" lecteur autour de 85 % lors de la lecture de contenu encodé avec perte "
 "possédant un volume sonore élevé."
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
