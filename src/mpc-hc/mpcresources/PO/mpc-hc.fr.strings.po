@@ -179,7 +179,7 @@ msgstr "Mode de répétition : fichier"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_ON"
 msgid "Repeat Forever: On"
-msgstr "Répéter indéfiniment : activé"
+msgstr "Répéter en boucle : activé"
 
 msgctxt "IDS_PLAYLOOP_FOREVER_OFF"
 msgid "Repeat Forever: Off"
