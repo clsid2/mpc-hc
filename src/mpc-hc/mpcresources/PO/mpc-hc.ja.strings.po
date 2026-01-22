@@ -3211,7 +3211,7 @@ msgstr "すべてのビデオ デコーダーを無効にする"
 
 msgctxt "IDS_STRETCH_TO_WINDOW"
 msgid "Stretch To Window"
-msgstr "ウィンドウに合わせる"
+msgstr "ウィンドウに合わせて表示"
 
 msgctxt "IDS_TOUCH_WINDOW_FROM_INSIDE"
 msgid "Touch Window From Inside"
