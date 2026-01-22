@@ -3007,7 +3007,7 @@ msgstr "次の縦横比のプリセット"
 
 msgctxt "IDS_AG_VIDFRM_STRETCH"
 msgid "Video Frame Stretch"
-msgstr "ビデオ フレーム: 合わせる"
+msgstr "ビデオ フレーム: 合わせて表示"
 
 msgctxt "IDS_AG_VIDFRM_INSIDE"
 msgid "Video Frame Inside"
