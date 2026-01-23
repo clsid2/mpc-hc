@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hack茶ん, 2026\n"
 "Language-Team: Korean (https://app.transifex.com/mpchc/teams/106126/ko/)\n"
@@ -4051,13 +4051,13 @@ msgstr "준비 완료..."
 
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
-msgstr ""
+msgstr "/pns “이름”\t사용할 PnS 프레임 조정 사전 설정을 지정 (예 : /pns “%s”)"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
-msgstr ""
+msgstr "/pns \"px,py,zx,zy\"직접 위치 및 확대/축소 값을 \"px,py,zx,zy\" 형식으로 지정"
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4320,7 +4320,7 @@ msgstr "/standby\t\t재생 후, 대기 모드로 전환"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr "/hibernate\t재생 후, 절전 모드"
+msgstr "/hibernate\t재생 후 운영 체제를 최대 절전 모드로 전환"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
