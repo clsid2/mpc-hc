@@ -196,7 +196,7 @@ msgstr "關於"
 
 msgctxt "IDD_ABOUTBOX_IDC_AUTHORS_LINK"
 msgid "Copyright 2002-2026 clsid2 and others"
-msgstr "著作權所有 2002-2026 clsid2 等人"
+msgstr "著作權所有 2002-2026 clsid2 與其他貢獻者"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
