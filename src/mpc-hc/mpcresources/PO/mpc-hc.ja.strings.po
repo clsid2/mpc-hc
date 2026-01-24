@@ -4520,7 +4520,7 @@ msgctxt "IDS_CMD_FIXEDSIZE"
 msgid ""
 "/fixedsize w,h[,x,y]\tSet a fixed window size; optionally specificy upper-"
 "left window position"
-msgstr "/fixedsize w,h[,x,y]\tウィンドウ サイズを固定して、必要に応じて左上のウィンドウ位置を指定する"
+msgstr "/fixedsize w,h[,x,y]\t固定のウィンドウ サイズを設定し、必要に応じて左上位置を指定する"
 
 msgctxt "IDS_CMD_MONITOR"
 msgid "/monitor N\tStart player on monitor N, where N starts from 1"
