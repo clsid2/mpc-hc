@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Peter Chen <petercpg@gmail.com>, 2026\n"
 "Language-Team: Chinese (Taiwan) (https://app.transifex.com/mpchc/teams/106126/zh_TW/)\n"
@@ -4034,13 +4034,13 @@ msgstr "準備…"
 
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
-msgstr ""
+msgstr "/pns \"名稱\"\t指定要使用的平移掃描畫框調整預設值名稱（例如：/pns \"%s\"）"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
-msgstr ""
+msgstr "/pns \"px,py,zx,zy\"\t使用 \"px,py,zx,zy\" 格式指定位置與縮放比例值"
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4302,7 +4302,7 @@ msgstr "/standby\t\t播放結束後進入待命模式"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr "/hibernate\t播放結束後將系統休眠"
+msgstr "/hibernate\t播放結束後進入休眠模式"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
