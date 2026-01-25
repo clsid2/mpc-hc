@@ -193,7 +193,7 @@ msgstr "OK"
 
 msgctxt "IDD_OPEN_DLG_IDCANCEL"
 msgid "Cancel"
-msgstr "Anulare"
+msgstr "Anulează"
 
 msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
 msgid "Add to playlist without opening"
