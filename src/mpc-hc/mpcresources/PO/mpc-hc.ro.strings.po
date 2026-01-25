@@ -4749,7 +4749,7 @@ msgstr "Acțiune"
 
 msgctxt "IDS_MOUSE_COMMAND"
 msgid "Command"
-msgstr "Comandă"
+msgstr "Comanda"
 
 msgctxt "IDS_MOUSE_RIGHT_BUTTON"
 msgid "Right button"
