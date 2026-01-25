@@ -90,7 +90,7 @@ msgstr "DVD-uri"
 
 msgctxt "IDS_PLAYLOOPMODE_AB"
 msgid "A-B Repeat: Reset Positions"
-msgstr "Repetare A-B: Resetează pozițiile"
+msgstr "Repetă A-B: Resetează pozițiile"
 
 msgctxt "IDS_PLAY_LOOPMODE_AB"
 msgid "A-B"
