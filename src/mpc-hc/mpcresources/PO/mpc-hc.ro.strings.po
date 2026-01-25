@@ -4788,7 +4788,7 @@ msgstr ""
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"
 msgid "Pre-Resize Pixel Shaders: on"
-msgstr "Preredimensionează nuanțatoarele (shaderele) de pixeli: pornit"
+msgstr "Preredimensionarea nuanțatoarelor (shaderelor) de pixeli: pornită"
 
 msgctxt "IDS_PRESIZE_SHADERS_DISABLED"
 msgid "Pre-Resize Pixel Shaders: off"
