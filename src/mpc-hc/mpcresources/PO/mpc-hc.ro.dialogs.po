@@ -2002,7 +2002,7 @@ msgstr "Selectează"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_IDCANCEL"
 msgid "Cancel"
-msgstr "Anulare"
+msgstr "Anulează"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Style"
