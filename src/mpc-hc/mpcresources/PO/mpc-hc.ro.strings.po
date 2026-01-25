@@ -4784,7 +4784,7 @@ msgid ""
 "Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
 msgstr ""
 "Păstrează extensia fișierului video ca parte a numelor de fișiere "
-"instantanee (de ex., fișier.mkv.png)"
+"instantanee (de exemplu, fișier.mkv.png)"
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"
 msgid "Pre-Resize Pixel Shaders: on"
