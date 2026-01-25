@@ -4697,7 +4697,7 @@ msgstr "Dreapta"
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"
-msgstr "Anulare"
+msgstr "Anulează"
 
 msgctxt "IDS_MESSAGEBOX_ABORT"
 msgid "&Abort"
