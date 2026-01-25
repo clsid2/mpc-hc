@@ -3053,7 +3053,7 @@ msgid ""
 "Unrecognized switch(es) found in command line string: \n"
 "\n"
 msgstr ""
-"Comutator nerecunoscut (Comutatoare nerecunoscute) găsit(e) în șirul liniei de comandă: \n"
+"Un comutator nerecunoscut a fost găsit (Comutatoare nerecunoscute au fost găsite) în șirul liniei de comandă: \n"
 "\n"
 
 msgctxt "IDS_AG_TOGGLE_INFO"
