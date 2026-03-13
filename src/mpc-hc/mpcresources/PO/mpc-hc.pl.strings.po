@@ -5080,3 +5080,7 @@ msgstr "Odtwarzanie losowe: Włączone"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Odtwarzanie losowe: Wyłączone"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Wszelkie prawa zastrzeżone, 2002-%s; clsid2 i inni"

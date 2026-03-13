@@ -177,7 +177,7 @@ FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
     ICON            "",IDR_MAINFRAME,14,10,48,48
     LTEXT           "",IDC_STATIC1,60,8,199,8
-    CONTROL         "Copyright 2002-2026 clsid2 and others",IDC_AUTHORS_LINK,
+    CONTROL         "",IDC_AUTHORS_LINK,
                     "SysLink",WS_TABSTOP,60,20,200,8
     CONTROL         "",IDC_HOMEPAGE_LINK,"SysLink",WS_TABSTOP,60,32,200,8
     LTEXT           "This program is freeware and released under the GNU General Public License.",IDC_STATIC,7,46,246,18
@@ -4244,6 +4244,12 @@ BEGIN
     IDS_AG_DISABLE_REPEAT   "Disable Repeat"
     IDS_SHUFFLE_ON          "Shuffle: On"
     IDS_SHUFFLE_OFF         "Shuffle: Off"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ABOUT_COPYRIGHT     "Copyright 2002-%s clsid2 and others"
+    IDS_ABOUT_COPYRIGHT_YEAR "2026"
 END
 
 #endif    // English (United States) resources

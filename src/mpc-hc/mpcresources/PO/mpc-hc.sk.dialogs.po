@@ -198,10 +198,6 @@ msgctxt "IDD_ABOUTBOX_CAPTION"
 msgid "About"
 msgstr "O programe"
 
-msgctxt "IDD_ABOUTBOX_IDC_AUTHORS_LINK"
-msgid "Copyright 2002-2026 clsid2 and others"
-msgstr "Copyright 2002-2026 clsid2 a iní"
-
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
 "This program is freeware and released under the GNU General Public License."

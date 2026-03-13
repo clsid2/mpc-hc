@@ -5054,3 +5054,7 @@ msgstr "Перемешивание: включено"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Перемешивание: выключено"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Copyright 2002-%s clsid2 и другие"

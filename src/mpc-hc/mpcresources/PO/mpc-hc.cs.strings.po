@@ -5046,3 +5046,7 @@ msgstr "Náhodné přehrávání: Zapnuto"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Náhodné přehrávání: Vypnuto"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Autorská práva 2002-%s clsid2 a další"

@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-01-28 16:20:56+0000\n"
+"POT-Creation-Date: 2026-03-13 22:50:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4784,4 +4784,8 @@ msgstr ""
 
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
+msgstr ""
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
 msgstr ""

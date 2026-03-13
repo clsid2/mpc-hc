@@ -5080,3 +5080,7 @@ msgstr "Véletlenszerű lejátszás: Be"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Véletlenszerű lejátszás: Ki"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Copyright 2002-%s clsid2 és mások"

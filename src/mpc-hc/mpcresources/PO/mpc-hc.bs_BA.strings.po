@@ -4954,3 +4954,7 @@ msgstr ""
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr ""
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Autorska prava 2002-%s clsid2 i ostali"
