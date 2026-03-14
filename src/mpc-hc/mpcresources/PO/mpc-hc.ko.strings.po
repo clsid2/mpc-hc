@@ -4948,4 +4948,4 @@ msgstr "섞기 : 끔"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr ""
+msgstr "© 2002-%s clsid2 등"
