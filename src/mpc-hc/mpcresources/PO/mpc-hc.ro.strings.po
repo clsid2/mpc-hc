@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
 # Mac Balls, 2022
-# Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2026
+# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
+"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2026\n"
+"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4352,6 +4352,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Nu s-a putut conecta la opensubtitles.com cu numele de utilizator „%1”.\n"
+"\n"
+"Numele de utilizator sau parola sunt incorecte.\n"
+"\n"
+"Nu folosi contul de pe vechiul site web .org."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -5128,4 +5133,4 @@ msgstr "Amestecare: Dezactivată"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Drepturi de autor 2002-%s clsid2 și alții"
+msgstr ""

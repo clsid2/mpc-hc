@@ -3,10 +3,10 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
+# Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Dawid Lyceus <lyceus666@gmail.com>, 2020
 # Orzełek, 2020
 # Rudolph RD, 2020
-# Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Krzysztof, 2024
 # MPC-HC Developer, 2025
 # Mirosław Żylewicz, 2025
@@ -15,7 +15,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
+"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Łukasz Janik, 2026\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
@@ -4320,6 +4320,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Nie udało się zalogować do opensubtitles.com przy użyciu nazwy użytkownika „%1”.\n"
+"\n"
+"Nieprawidłowa nazwa użytkownika lub hasło.\n"
+"\n"
+"Nie używaj konta ze starej strony .org."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -5083,4 +5088,4 @@ msgstr "Odtwarzanie losowe: Wyłączone"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Wszelkie prawa zastrzeżone, 2002-%s; clsid2 i inni"
+msgstr ""

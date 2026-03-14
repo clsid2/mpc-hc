@@ -4897,4 +4897,4 @@ msgstr ""
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "حقوق النشر محفوظة © 2002- %s لـ clsid2 وغيرهم"
+msgstr ""
