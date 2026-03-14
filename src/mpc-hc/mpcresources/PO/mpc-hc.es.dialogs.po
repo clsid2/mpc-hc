@@ -133,7 +133,7 @@ msgid ""
 "Enter a timecode using the format [hh:]mm:ss.ms to jump to a specified time."
 " You do not need to enter the separators explicitly."
 msgstr ""
-"Escriba una marca de tiempo en formato [hh]:mm:ss:ms para saltar a ese "
+"Escriba una marca de tiempo en formato [hh]:mm:ss.ms para saltar a ese "
 "instante. No es necesario escribir los separadores."
 
 msgctxt "IDD_GOTO_DLG_IDC_STATIC"
