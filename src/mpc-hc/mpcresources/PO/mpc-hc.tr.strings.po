@@ -5088,4 +5088,4 @@ msgstr "Karıştırma: Kapalı"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Telif hakkı 2002-%s clsid2 ve diğerlerine aittir."
+msgstr ""

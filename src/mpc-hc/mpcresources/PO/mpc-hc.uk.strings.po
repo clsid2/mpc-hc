@@ -5040,4 +5040,4 @@ msgstr ""
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Copyright 2002-%s clsid2 та інші"
+msgstr ""

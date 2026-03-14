@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # Симеон Цветков <sicvetkov@uni-sofia.bg>, 2020
-# Андрей Станков <astankov84@gmail.com>, 2025
+# Андрей Станков <astankov84@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Андрей Станков <astankov84@gmail.com>, 2025\n"
+"Last-Translator: Андрей Станков <astankov84@gmail.com>, 2026\n"
 "Language-Team: Bulgarian (https://app.transifex.com/mpchc/teams/106126/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4133,12 +4133,16 @@ msgstr "Готов..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
+"/pns \"име\"\tЗадаване на PnS Frame Adjust Preset да се ползва (например: "
+"/pns \"%s\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
 msgstr ""
+"/pns \"px,py,zx,zy\"\tЗадаване на позиция и настройки за увеличение във "
+"формат \"px,py,zx,zy\""
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4308,6 +4312,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Невъзможно влизане ве opensubtitles.com с потребителско име \"%1\".\n"
+"\n"
+"Потреебителското име или паролата са грешни.\n"
+"\n"
+"Не ползвайте акаунт от стария .org сайт."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4404,7 +4413,7 @@ msgstr "/standby\t\tПоставя компютъра в режим стендб
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr "/hibernate\tПоставя компютъра в режим на хибернация след изпълнение"
+msgstr "/hibernate\tЗаспиване на компютъра след края на изпълнението"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -5067,4 +5076,4 @@ msgstr "Разбъркване: Изкл."
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Авторски права 2002-%s clsid2 и други"
+msgstr ""

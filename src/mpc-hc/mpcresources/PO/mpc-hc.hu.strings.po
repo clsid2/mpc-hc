@@ -8,14 +8,14 @@
 # Speeder, 2022
 # Péter Patkós, 2024
 # Evin, 2024
-# Hevesi J. <hevesi2010@gmail.com>, 2025
+# Hevesi J. <hevesi2010@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2025\n"
+"Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4148,12 +4148,16 @@ msgstr "Kész..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
+"/pns \"name\"\tAdja meg a használandó PnS keretbeállítási előbeállítást "
+"(például:: /pns \"%s\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
 msgstr ""
+"/pns \"px,py,zx,zy\"\tAdja meg a közvetlen pozíció és zoom értékeket "
+"\"px,py,zx,zy\" formátumban."
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4323,6 +4327,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Nem sikerült bejelentkezni az opensubtitles.com webhelyre \"%1\" felhasználónévvel..\n"
+"\n"
+"A felhasználónév vagy a jelszó hibás.\n"
+"\n"
+"Ne használja a régi .org webhelyről származó fiókot!"
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4421,7 +4430,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\tHibernate operating system after playback"
-msgstr "/hibernate\tA lejátszás után az operációs rendszer hibernálása"
+msgstr "/hibernate\tOperációs rendszer hibernálása lejátszás után"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -5083,4 +5092,4 @@ msgstr "Véletlenszerű lejátszás: Ki"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Copyright 2002-%s clsid2 és mások"
+msgstr ""
