@@ -580,20 +580,20 @@ msgid "Increase subtitle text size"
 msgstr "Augmenta la mida del text dels subtítols"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Reproducció"
+msgid "Playback::General"
+msgstr "Reproducció::General"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Reproductor"
+msgid "Player::General"
+msgstr "Reproductor::General"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Reproducció::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Subtítols"
+msgid "Subtitles::General"
+msgstr "Subtítols::General"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -775,8 +775,8 @@ msgid "Subtitles::Default Style"
 msgstr "Subtítols::Estil per defecte"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Filtres interns"
+msgid "Internal Filters::General"
+msgstr "Filtres interns::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

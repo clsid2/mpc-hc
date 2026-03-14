@@ -128,6 +128,8 @@ private:
 
     CMPCThemeTreeCtrl* CreatePageTreeObject();
     virtual void SetTreeCtrlTheme(CTreeCtrl* ctrl);
+    static bool IsParentOnlyNode(CTreeCtrl* pTree, HTREEITEM hItem);
+
 public:
     CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd, UINT idPage = 0);
     CPPageSheet();
@@ -146,6 +148,7 @@ protected:
 
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnApply();
+    afx_msg void OnPageTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
     LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
     virtual TreePropSheet::CPropPageFrame* CreatePageFrame();

@@ -571,20 +571,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Įrašo peržiūra"
+msgid "Playback::General"
+msgstr "Įrašo peržiūra::General"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Grotuvas"
+msgid "Player::General"
+msgstr "Grotuvas::General"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Įrašo peržiūra::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Subtitrai"
+msgid "Subtitles::General"
+msgstr "Subtitrai::General"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -766,8 +766,8 @@ msgid "Subtitles::Default Style"
 msgstr "Subtitrai::Numatytas stilius"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Vidiniai filtrai"
+msgid "Internal Filters::General"
+msgstr "Vidiniai filtrai::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr "Aumentar o tamanho do texto da legenda"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Reprodução"
+msgid "Playback::General"
+msgstr "Reprodução::General"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Reprodutor"
+msgid "Player::General"
+msgstr "Reprodutor::General"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Reprodução::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Legendas"
+msgid "Subtitles::General"
+msgstr "Legendas::General"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -772,8 +772,8 @@ msgid "Subtitles::Default Style"
 msgstr "Legendas::Estilo por defeito"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Filtros internos"
+msgid "Internal Filters::General"
+msgstr "Filtros internos::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
