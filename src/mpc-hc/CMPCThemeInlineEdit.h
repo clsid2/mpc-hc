@@ -12,9 +12,11 @@ public:
     afx_msg void OnNcPaint();
     afx_msg HBRUSH CtlColor(CDC* /*pDC*/, UINT /*nCtlColor*/);
     afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+    afx_msg void OnKillFocus(CWnd* pNewWnd);
 private:
     int overrideX, overrideMaxWidth;
     bool offsetEnabled;
+    bool m_bEndingEdit;
 public:
     afx_msg void OnPaint();
 };
