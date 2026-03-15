@@ -578,11 +578,11 @@ msgstr "Αυξήστε το μέγεθος του κειμένου των υπό
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Αναπαραγωγή::General"
+msgstr "Αναπαραγωγή::Γενικά"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Αναπαραγωγός::General"
+msgstr "Αναπαραγωγός::Γενικά"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -590,7 +590,7 @@ msgstr "Αναπαραγωγή::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Υπότιτλοι::General"
+msgstr "Υπότιτλοι::Γενικά"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -773,7 +773,7 @@ msgstr "Υπότιτλοι::Προεπιλεγμένο στυλ"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Εσωτερικά φίλτρα::General"
+msgstr "Εσωτερικά φίλτρα::Γενικά"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

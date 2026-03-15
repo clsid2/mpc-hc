@@ -578,11 +578,11 @@ msgstr "Aumenta dimensione sottotitoli"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Riproduzione::General"
+msgstr "Riproduzione::Generale"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Lettore::General"
+msgstr "Lettore::Generale"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -590,7 +590,7 @@ msgstr "Riproduzione::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Sottotitoli::General"
+msgstr "Sottotitoli::Generale"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -776,7 +776,7 @@ msgstr "Sottotitoli::Stile Predefinito"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Filtri Interni::General"
+msgstr "Filtri Interni::Generale"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

@@ -573,11 +573,11 @@ msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Reprodukcija::General"
+msgstr "Reprodukcija::Općenito"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Izvođač::General"
+msgstr "Izvođač::Općenito"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -585,7 +585,7 @@ msgstr "Reprodukcija::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Titlovi::General"
+msgstr "Titlovi::Općenito"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,7 +768,7 @@ msgstr "Titlovi::Zadani stil"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Interni filtri::General"
+msgstr "Interni filtri::Općenito"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

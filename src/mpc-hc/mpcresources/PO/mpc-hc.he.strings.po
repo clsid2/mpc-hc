@@ -566,11 +566,11 @@ msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "ניגון::General"
+msgstr "ניגון::כללי"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "נגן::General"
+msgstr "נגן::כללי"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -578,7 +578,7 @@ msgstr "ניגון::די.וי.די"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "כתוביות::General"
+msgstr "כתוביות::כללי"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -761,7 +761,7 @@ msgstr "כתוביות::סגנון ברירת מחדל"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "פילטרים פנימיים::General"
+msgstr "פילטרים פנימיים::כללי"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

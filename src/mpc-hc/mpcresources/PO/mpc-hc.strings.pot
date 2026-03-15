@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-01-28 16:20:56+0000\n"
+"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -556,11 +556,11 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
+msgid "Playback::General"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
+msgid "Player::General"
 msgstr ""
 
 msgctxt "IDD_PPAGEDVD"
@@ -568,7 +568,7 @@ msgid "Playback::DVD"
 msgstr ""
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
+msgid "Subtitles::General"
 msgstr ""
 
 msgctxt "IDD_PPAGEFORMATS"
@@ -747,7 +747,7 @@ msgid "Subtitles::Default Style"
 msgstr ""
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
+msgid "Internal Filters::General"
 msgstr ""
 
 msgctxt "IDD_PPAGELOGO"

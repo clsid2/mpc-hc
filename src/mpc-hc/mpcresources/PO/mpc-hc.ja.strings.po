@@ -568,11 +568,11 @@ msgstr "字幕の文字サイズを拡大"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "再生::General"
+msgstr "再生::一般"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "プレーヤー::General"
+msgstr "プレーヤー::一般"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -580,7 +580,7 @@ msgstr "再生::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "字幕::General"
+msgstr "字幕::一般"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -766,7 +766,7 @@ msgstr "字幕::既定のスタイル"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "内部フィルター::General"
+msgstr "内部フィルター::一般"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

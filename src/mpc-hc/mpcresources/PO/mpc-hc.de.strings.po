@@ -579,11 +579,11 @@ msgstr "Untertiteltext vergrößern"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Wiedergabe::General"
+msgstr "Wiedergabe::Allgemein"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Programm::General"
+msgstr "Programm::Allgemein"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -591,7 +591,7 @@ msgstr "Wiedergabe::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Untertitel::General"
+msgstr "Untertitel::Allgemein"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -778,7 +778,7 @@ msgstr "Untertitel::Standard-Style"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Interne Filter::General"
+msgstr "Interne Filter::Allgemein"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

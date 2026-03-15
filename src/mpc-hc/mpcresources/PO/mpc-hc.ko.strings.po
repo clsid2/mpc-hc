@@ -567,11 +567,11 @@ msgstr "자막 글자 크기 확대"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "재생::General"
+msgstr "재생::일반"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "재생기::General"
+msgstr "재생기::일반"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -579,7 +579,7 @@ msgstr "재생::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "자막::General"
+msgstr "자막::일반"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -765,7 +765,7 @@ msgstr "자막::기본 스타일"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "내장 필터::General"
+msgstr "내장 필터::일반"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

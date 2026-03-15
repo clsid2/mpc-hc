@@ -581,11 +581,11 @@ msgstr "Zwiększ rozmiar tekstu napisu"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Odtwarzanie::General"
+msgstr "Odtwarzanie::Ogólne"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Program::General"
+msgstr "Program::Ogólne"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -593,7 +593,7 @@ msgstr "Odtwarzanie::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Napisy::General"
+msgstr "Napisy::Ogólne"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -779,7 +779,7 @@ msgstr "Napisy::Domyślny styl"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Filtry wewnętrzne::General"
+msgstr "Filtry wewnętrzne::Ogólne"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
