@@ -4913,3 +4913,7 @@ msgstr "隨機播放：開啟"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "隨機播放：關閉"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "著作權所有 2002-%s clsid2 與其他貢獻者"

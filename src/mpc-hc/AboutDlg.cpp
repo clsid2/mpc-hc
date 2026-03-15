@@ -72,6 +72,10 @@ BOOL CAboutDlg::OnInitDialog()
 
     m_homepage.Format(_T("<a>%s</a>"), WEBSITE_URL);
 
+    CString copyright;
+    copyright.Format(ResStr(IDS_ABOUT_COPYRIGHT), ResStr(IDS_ABOUT_COPYRIGHT_YEAR).GetString());
+    SetDlgItemText(IDC_AUTHORS_LINK, copyright);
+
     m_strBuildNumber = VersionInfo::GetFullVersionString();
 
     m_LAVFilters.Format(IDS_STRING_COLON, _T("LAV Filters"));

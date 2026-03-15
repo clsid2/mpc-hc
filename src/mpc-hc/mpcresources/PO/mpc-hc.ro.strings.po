@@ -5125,3 +5125,7 @@ msgstr "Amestecare: Activată"
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Amestecare: Dezactivată"
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Drepturi de autor 2002-%s clsid2 și alții"

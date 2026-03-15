@@ -5028,3 +5028,7 @@ msgstr ""
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr ""
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Bản quyền 2002-%s clsid2 và những người khác"

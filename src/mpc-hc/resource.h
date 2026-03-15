@@ -1799,6 +1799,8 @@
 #define IDS_AUDIOS                      57728
 #define IDS_SUBTITLES                   57729
 #define IDS_FAVORITES_UNSAVED_CHANGES   57730
+#define IDS_ABOUT_COPYRIGHT             57731
+#define IDS_ABOUT_COPYRIGHT_YEAR        57732
 
 // Next default values for new objects
 // 

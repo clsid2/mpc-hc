@@ -5064,3 +5064,7 @@ msgstr "Разбъркване: Вкл."
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr "Разбъркване: Изкл."
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Авторски права 2002-%s clsid2 и други"

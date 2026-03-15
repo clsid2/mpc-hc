@@ -5084,3 +5084,7 @@ msgstr ""
 msgctxt "IDS_SHUFFLE_OFF"
 msgid "Shuffle: Off"
 msgstr ""
+
+msgctxt "IDS_ABOUT_COPYRIGHT"
+msgid "Copyright 2002-%s clsid2 and others"
+msgstr "Πνευματικά δικαιώματα 2002-%s clsid2 και άλλοι"
