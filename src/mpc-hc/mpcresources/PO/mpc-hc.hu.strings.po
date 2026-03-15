@@ -576,20 +576,20 @@ msgid "Increase subtitle text size"
 msgstr "Felirat méretének növelése"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Lejátszás"
+msgid "Playback::General"
+msgstr "Lejátszás::Általános"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Lejátszó"
+msgid "Player::General"
+msgstr "Lejátszó::Általános"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Lejátszás::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Feliratok"
+msgid "Subtitles::General"
+msgstr "Feliratok::Általános"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -774,8 +774,8 @@ msgid "Subtitles::Default Style"
 msgstr "Feliratok::Alapstílus"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Belső szűrők"
+msgid "Internal Filters::General"
+msgstr "Belső szűrők::Általános"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

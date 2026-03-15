@@ -2758,10 +2758,10 @@ END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGEPLAYBACK       "Playback"
-    IDD_PPAGEPLAYER         "Player"
+    IDD_PPAGEPLAYBACK       "Playback::General"
+    IDD_PPAGEPLAYER         "Player::General"
     IDD_PPAGEDVD            "Playback::DVD"
-    IDD_PPAGESUBTITLES      "Subtitles"
+    IDD_PPAGESUBTITLES      "Subtitles::General"
     IDD_PPAGEFORMATS        "Player::Formats"
     IDD_PPAGETWEAKS         "Tweaks"
     IDD_PPAGEAUDIOSWITCHER  "Internal Filters::Audio Switcher"
@@ -2826,7 +2826,7 @@ BEGIN
     IDD_PPAGEACCELTBL       "Player::Keys"
     IDD_PPAGEMOUSE          "Player::Mouse"
     IDD_PPAGESUBSTYLE       "Subtitles::Default Style"
-    IDD_PPAGEINTERNALFILTERS "Internal Filters"
+    IDD_PPAGEINTERNALFILTERS "Internal Filters::General"
     IDD_PPAGELOGO           "Player::Logo"
     IDD_PPAGETHEME          "Player::User Interface"
     IDD_PPAGEOUTPUT         "Playback::Output"

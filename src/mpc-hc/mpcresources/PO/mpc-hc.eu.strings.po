@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Irakurketa"
+msgid "Playback::General"
+msgstr "Irakurketa::Orokorra"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Irakurgailua"
+msgid "Player::General"
+msgstr "Irakurgailua::Orokorra"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr ""
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Azpidatziak"
+msgid "Subtitles::General"
+msgstr "Azpidatziak::Orokorra"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,8 +768,8 @@ msgid "Subtitles::Default Style"
 msgstr "Azpidatziak::Berezko Estiloa"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Barneko Iragazkiak"
+msgid "Internal Filters::General"
+msgstr "Barneko Iragazkiak::Orokorra"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

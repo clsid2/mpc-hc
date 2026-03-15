@@ -572,20 +572,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Playback"
+msgid "Playback::General"
+msgstr "Playback::General"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Player"
+msgid "Player::General"
+msgstr "Player::General"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr ""
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Subtitles"
+msgid "Subtitles::General"
+msgstr "Subtitles::General"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -767,8 +767,8 @@ msgid "Subtitles::Default Style"
 msgstr "Subtitles::Default Style"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Internal Filters"
+msgid "Internal Filters::General"
+msgstr "Internal Filters::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

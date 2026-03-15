@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "প্লেব্যাক"
+msgid "Playback::General"
+msgstr "প্লেব্যাক::সাধারণ"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "প্লেয়ার"
+msgid "Player::General"
+msgstr "প্লেয়ার::সাধারণ"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "প্লেব্যাক::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "সাবটাইটেল"
+msgid "Subtitles::General"
+msgstr "সাবটাইটেল::সাধারণ"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,8 +768,8 @@ msgid "Subtitles::Default Style"
 msgstr "সাবটাইটেল::ডিফল্ট ধরনরীতি"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "আভ্যন্তরীণ ফিল্টারসমূহ"
+msgid "Internal Filters::General"
+msgstr "আভ্যন্তরীণ ফিল্টারসমূহ::সাধারণ"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

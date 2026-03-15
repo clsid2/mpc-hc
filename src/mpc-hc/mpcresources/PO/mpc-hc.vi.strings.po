@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr "Tăng cỡ chữ phụ đề"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Phát lại"
+msgid "Playback::General"
+msgstr "Phát lại::Chung"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Trình phát"
+msgid "Player::General"
+msgstr "Trình phát::Chung"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Phát::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Phụ đề"
+msgid "Subtitles::General"
+msgstr "Phụ đề::Chung"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,8 +768,8 @@ msgid "Subtitles::Default Style"
 msgstr "Phụ đề::Dạng mặc định"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Bộ lọc trong"
+msgid "Internal Filters::General"
+msgstr "Bộ lọc trong::Chung"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

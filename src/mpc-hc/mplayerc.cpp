@@ -2219,7 +2219,11 @@ BOOL CMPlayerCApp::InitInstance()
     m_s->UpdateSettings();  // update settings
 
     #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
-    if (!m_s->bEnableCrashReporter) {
+    if (m_s->bEnableCrashReporter) {
+        if (!CrashReporter::IsEnabled()) { // failed
+            m_s->bEnableCrashReporter = false;
+        }
+    } else {
         DisableCrashReporter();
     }
     #endif

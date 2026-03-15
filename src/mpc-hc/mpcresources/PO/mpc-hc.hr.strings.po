@@ -572,20 +572,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Reprodukcija"
+msgid "Playback::General"
+msgstr "Reprodukcija::Općenito"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Izvođač"
+msgid "Player::General"
+msgstr "Izvođač::Općenito"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Reprodukcija::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Titlovi"
+msgid "Subtitles::General"
+msgstr "Titlovi::Općenito"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -767,8 +767,8 @@ msgid "Subtitles::Default Style"
 msgstr "Titlovi::Zadani stil"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Interni filtri"
+msgid "Internal Filters::General"
+msgstr "Interni filtri::Općenito"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

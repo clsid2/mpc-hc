@@ -574,20 +574,20 @@ msgid "Increase subtitle text size"
 msgstr "Tingkatkan ukuran teks subtitle"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Pemutaran"
+msgid "Playback::General"
+msgstr "Pemutaran::Umum"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Pemutar"
+msgid "Player::General"
+msgstr "Pemutar::Umum"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Pemutaran::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Subtitel"
+msgid "Subtitles::General"
+msgstr "Subtitel::Umum"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -769,8 +769,8 @@ msgid "Subtitles::Default Style"
 msgstr "Subtitel::Gaya Bawaan"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Filter Internal"
+msgid "Internal Filters::General"
+msgstr "Filter Internal::Umum"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

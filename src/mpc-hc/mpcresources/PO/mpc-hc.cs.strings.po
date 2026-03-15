@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr "Zvětšit velikost textu titulků"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Přehrávání"
+msgid "Playback::General"
+msgstr "Přehrávání::Obecné"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Přehrávač"
+msgid "Player::General"
+msgstr "Přehrávač::Obecné"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Přehrávání::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Titulky"
+msgid "Subtitles::General"
+msgstr "Titulky::Obecné"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -771,8 +771,8 @@ msgid "Subtitles::Default Style"
 msgstr "Titulky::Výchozí styl"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Interní filtry"
+msgid "Internal Filters::General"
+msgstr "Interní filtry::Obecné"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

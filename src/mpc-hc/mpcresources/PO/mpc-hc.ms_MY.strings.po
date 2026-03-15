@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Main Balik"
+msgid "Playback::General"
+msgstr "Main Balik::Am"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Pemain"
+msgid "Player::General"
+msgstr "Pemain::Am"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr ""
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Sarikata"
+msgid "Subtitles::General"
+msgstr "Sarikata::Am"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,8 +768,8 @@ msgid "Subtitles::Default Style"
 msgstr "Sarikata::Gaya Lalai"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Penapis Dalaman"
+msgid "Internal Filters::General"
+msgstr "Penapis Dalaman::Am"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

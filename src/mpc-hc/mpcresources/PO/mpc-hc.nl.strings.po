@@ -576,20 +576,20 @@ msgid "Increase subtitle text size"
 msgstr "Tekstgrootte ondertitel vergroten"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Afspelen"
+msgid "Playback::General"
+msgstr "Afspelen::Algemeen"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Speler"
+msgid "Player::General"
+msgstr "Speler::Algemeen"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Afspelen::DVD en Blu-ray"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Ondertiteling"
+msgid "Subtitles::General"
+msgstr "Ondertiteling::Algemeen"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -774,8 +774,8 @@ msgid "Subtitles::Default Style"
 msgstr "Ondertiteling::Vormgeving"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Interne filters"
+msgid "Internal Filters::General"
+msgstr "Interne filters::Algemeen"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

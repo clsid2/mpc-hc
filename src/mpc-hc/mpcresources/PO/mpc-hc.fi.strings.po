@@ -570,20 +570,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Toisto"
+msgid "Playback::General"
+msgstr "Toisto::Yleiset"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Soitin"
+msgid "Player::General"
+msgstr "Soitin::Yleiset"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Toisto::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Tekstitykset"
+msgid "Subtitles::General"
+msgstr "Tekstitykset::Yleiset"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -765,8 +765,8 @@ msgid "Subtitles::Default Style"
 msgstr "Tekstitykset::Oletustyyli"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Sisäiset suotimet"
+msgid "Internal Filters::General"
+msgstr "Sisäiset suotimet::Yleiset"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

@@ -2755,7 +2755,8 @@ LRESULT CMainFrame::OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam)
         TRACE(L"Dropping pending OpenCurPlaylist message\n");
     }
 
-    OpenCurPlaylistItem();
+    bool reopen = (wParam == 1);
+    OpenCurPlaylistItem(0, reopen);
 
     return S_OK;
 }
@@ -5438,7 +5439,7 @@ void CMainFrame::OnFileReopen()
         reloadABRepeat = abRepeat;
     }
 
-    OpenCurPlaylistItem(0, true);
+    PostMessage(WM_MPC_OPENCURPLAYLIST, 1, 0);
 }
 
 DROPEFFECT CMainFrame::OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)

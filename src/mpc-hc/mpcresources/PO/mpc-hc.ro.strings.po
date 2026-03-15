@@ -576,20 +576,20 @@ msgid "Increase subtitle text size"
 msgstr "Crește dimensiunea textului subtitrărilor"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Redare"
+msgid "Playback::General"
+msgstr "Redare::General"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Player"
+msgid "Player::General"
+msgstr "Player::General"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Redare::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Subtitrări"
+msgid "Subtitles::General"
+msgstr "Subtitrări::General"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -774,8 +774,8 @@ msgid "Subtitles::Default Style"
 msgstr "Subtitrări::Stil implicit"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Filtre interne"
+msgid "Internal Filters::General"
+msgstr "Filtre interne::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

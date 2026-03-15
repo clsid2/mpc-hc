@@ -577,20 +577,20 @@ msgid "Increase subtitle text size"
 msgstr "Αυξήστε το μέγεθος του κειμένου των υπότιτλων"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Αναπαραγωγή"
+msgid "Playback::General"
+msgstr "Αναπαραγωγή::Γενικά"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Αναπαραγωγός"
+msgid "Player::General"
+msgstr "Αναπαραγωγός::Γενικά"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Αναπαραγωγή::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Υπότιτλοι"
+msgid "Subtitles::General"
+msgstr "Υπότιτλοι::Γενικά"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -772,8 +772,8 @@ msgid "Subtitles::Default Style"
 msgstr "Υπότιτλοι::Προεπιλεγμένο στυλ"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Εσωτερικά φίλτρα"
+msgid "Internal Filters::General"
+msgstr "Εσωτερικά φίλτρα::Γενικά"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

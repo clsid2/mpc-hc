@@ -565,20 +565,20 @@ msgid "Increase subtitle text size"
 msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "ניגון"
+msgid "Playback::General"
+msgstr "ניגון::כללי"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "נגן"
+msgid "Player::General"
+msgstr "נגן::כללי"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "ניגון::די.וי.די"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "כתוביות"
+msgid "Subtitles::General"
+msgstr "כתוביות::כללי"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -760,8 +760,8 @@ msgid "Subtitles::Default Style"
 msgstr "כתוביות::סגנון ברירת מחדל"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "פילטרים פנימיים"
+msgid "Internal Filters::General"
+msgstr "פילטרים פנימיים::כללי"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

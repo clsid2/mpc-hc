@@ -573,20 +573,20 @@ msgid "Increase subtitle text size"
 msgstr "Збільшити розмір тексту субтитрів"
 
 msgctxt "IDD_PPAGEPLAYBACK"
-msgid "Playback"
-msgstr "Відтворення"
+msgid "Playback::General"
+msgstr "Відтворення::Загальні"
 
 msgctxt "IDD_PPAGEPLAYER"
-msgid "Player"
-msgstr "Програвач"
+msgid "Player::General"
+msgstr "Програвач::Загальні"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
 msgstr "Відтворення::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
-msgid "Subtitles"
-msgstr "Субтитри"
+msgid "Subtitles::General"
+msgstr "Субтитри::Загальні"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -768,8 +768,8 @@ msgid "Subtitles::Default Style"
 msgstr "Субтитри::Стандартний стиль"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
-msgid "Internal Filters"
-msgstr "Вбудовані фільтри"
+msgid "Internal Filters::General"
+msgstr "Вбудовані фільтри::Загальні"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
