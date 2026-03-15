@@ -566,11 +566,11 @@ msgstr "放大字幕大小"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "播放::常规"
+msgstr "播放::一般"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "播放器::常规"
+msgstr "播放器::一般"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -578,7 +578,7 @@ msgstr "播放::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "字幕::常规"
+msgstr "字幕::一般"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -764,7 +764,7 @@ msgstr "字幕::預設樣式"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "內建篩選器::常规"
+msgstr "內建篩選器::一般"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
