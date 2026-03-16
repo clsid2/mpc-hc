@@ -15,7 +15,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
+"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Łukasz Janik, 2026\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
@@ -585,7 +585,7 @@ msgstr "Odtwarzanie::Ogólne"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Program::Ogólne"
+msgstr "Odtwarzacz::Ogólne"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
