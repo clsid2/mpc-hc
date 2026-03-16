@@ -574,11 +574,11 @@ msgstr "Tăng cỡ chữ phụ đề"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Phát lại::Chung"
+msgstr "Phát lại::Tổng quát"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Trình phát::Chung"
+msgstr "Trình phát::Tổng quát"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -586,7 +586,7 @@ msgstr "Phát::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Phụ đề::Chung"
+msgstr "Phụ đề::Tổng quát"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -769,7 +769,7 @@ msgstr "Phụ đề::Dạng mặc định"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Bộ lọc trong::Chung"
+msgstr "Bộ lọc trong::Tổng quát"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"

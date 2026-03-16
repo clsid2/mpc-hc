@@ -574,11 +574,11 @@ msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Main Balik::Am"
+msgstr "Main Balik::Umum"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Pemain::Am"
+msgstr "Pemain::Umum"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -586,7 +586,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Sarikata::Am"
+msgstr "Sarikata::Umum"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -769,7 +769,7 @@ msgstr "Sarikata::Gaya Lalai"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Penapis Dalaman::Am"
+msgstr "Penapis Dalaman::Umum"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
