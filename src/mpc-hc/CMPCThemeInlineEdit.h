@@ -8,6 +8,7 @@ public:
     virtual ~CMPCThemeInlineEdit();
     CBrush m_brBkgnd;
     void setOverridePos(int x, int maxWidth);
+    void suppressEndEdit() { m_bEndingEdit = true; }
     DECLARE_MESSAGE_MAP()
     afx_msg void OnNcPaint();
     afx_msg HBRUSH CtlColor(CDC* /*pDC*/, UINT /*nCtlColor*/);

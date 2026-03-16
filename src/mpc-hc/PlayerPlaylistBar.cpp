@@ -129,11 +129,13 @@ BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
                         m_list.RedrawItems(editItem, editItem);
                     }
                 }
+                m_edit.suppressEndEdit();
                 m_edit.DestroyWindow();
                 m_list.SetFocus();
                 return TRUE;
             }
             if (pMsg->wParam == VK_ESCAPE) {
+                m_edit.suppressEndEdit();
                 m_edit.DestroyWindow();
                 m_list.SetFocus();
                 return TRUE;
@@ -153,6 +155,7 @@ BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
                     m_list.RedrawItems(editItem, editItem);
                 }
             }
+            m_edit.suppressEndEdit();
             m_edit.DestroyWindow();
         }
     }
@@ -2695,6 +2698,7 @@ void CPlayerPlaylistBar::TriggerInlineEdit(int nItem)
                 m_pl.GetAt(editPos).m_label = text;
             }
         }
+        m_edit.suppressEndEdit();
         m_edit.DestroyWindow();
     }
 
