@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
+"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Felipefpl, 2026\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/mpchc/teams/106126/pt_BR/)\n"
@@ -576,7 +576,7 @@ msgstr "Aumentar o tamanho do texto da legenda"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Playback::Geral"
+msgstr "Reprodução::Geral"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"

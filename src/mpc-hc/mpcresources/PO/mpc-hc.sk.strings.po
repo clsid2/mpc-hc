@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
+"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Marián Hikaník, 2026\n"
 "Language-Team: Slovak (https://app.transifex.com/mpchc/teams/106126/sk/)\n"
@@ -573,11 +573,11 @@ msgstr "Zväčšiť veľkosť textu titulkov"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Prehrávanie::Všeobecné"
+msgstr "Prehrávanie::Všeobecne"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Prehrávač::Všeobecné"
+msgstr "Prehrávač::Všeobecne"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -585,7 +585,7 @@ msgstr "Prehrávanie::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Titulky::Všeobecné"
+msgstr "Titulky::Všeobecne"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -771,7 +771,7 @@ msgstr "Titulky::Predvolený štýl"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Interné filtre::Všeobecné"
+msgstr "Interné filtre::Všeobecne"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
