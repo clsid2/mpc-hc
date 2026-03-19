@@ -4,14 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
-# Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025
+# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Andrei-Valentin Miloiu <miloiuandrei@gmail.com>, 2025\n"
+"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -85,7 +85,7 @@ msgstr "&Descarcă subtitrări..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "Pr&oprietăți"
+msgstr "&Proprietăți"
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
