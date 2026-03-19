@@ -85,7 +85,7 @@ msgstr "&Descarcă subtitrări..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "&Proprietăți"
+msgstr "P&roprietăți"
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
