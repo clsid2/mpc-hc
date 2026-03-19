@@ -3198,7 +3198,8 @@ msgstr "Activ&ează toate filtrele"
 
 msgctxt "IDS_LOGO_AUTHOR"
 msgid "Author unknown. Contact us if you made this logo!"
-msgstr "Autor necunoscut. Dacă ai făcut acest logo, contactează-ne!"
+msgstr ""
+"Autor necunoscut. Dacă ai făcut acest logo (această siglă), contactează-ne!"
 
 msgctxt "IDS_NO_MORE_MEDIA"
 msgid "No more media in the current folder."
