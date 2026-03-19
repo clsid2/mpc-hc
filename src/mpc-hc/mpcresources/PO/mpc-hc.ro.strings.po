@@ -779,7 +779,7 @@ msgstr "Filtre interne::General"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
-msgstr "Player::Siglă"
+msgstr "Player::Siglă (Logo)"
 
 msgctxt "IDD_PPAGETHEME"
 msgid "Player::User Interface"
