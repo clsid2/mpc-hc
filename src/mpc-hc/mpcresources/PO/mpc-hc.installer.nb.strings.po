@@ -34,7 +34,7 @@ msgstr "[name] krever Windows Vista eller nyere for å kjøre."
 
 msgctxt "CustomMessages_comp_mpciconlib"
 msgid "Icon Library"
-msgstr "Ikonsbibliotek"
+msgstr "Ikonbibliotek"
 
 msgctxt "CustomMessages_comp_mpcresources"
 msgid "Translations"
