@@ -29,7 +29,6 @@
 #include "Playlist.h"
 #include "DropTarget.h"
 #include "../Subtitles/TextFile.h"
-#include "CMPCThemeInlineEdit.h"
 #include "YoutubeDL.h"
 #include "AppSettings.h"
 
@@ -54,7 +53,6 @@ private:
     enum { COL_NAME, COL_TIME };
 
     CMainFrame* m_pMainFrame;
-    CMPCThemeInlineEdit m_edit;
     int inlineEditXpos;
 
     CFont m_font;
@@ -74,6 +72,7 @@ private:
 
     int m_nTimeColWidth;
     void ResizeListColumn();
+    void RefreshItem(POSITION pos);
 
     CPlaylistItem* GetCur();
 
@@ -102,7 +101,6 @@ private:
     POSITION FindPos(int i);
     void RebuildPosMap();
     void InvalidatePlayingItem(POSITION oldPos, POSITION newPos);
-    void TriggerInlineEdit(int nItem);
     std::unordered_map<POSITION, int> m_posToIndex;
     std::vector<POSITION> m_indexToPos;
     POSITION m_insertingPos;
@@ -211,7 +209,6 @@ public:
     afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint point);
     afx_msg void OnLvnGetDispInfoList(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult);
-    afx_msg void OnLvnDolabeleditList(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnXButtonDown(UINT nFlags, UINT nButton, CPoint point);
     afx_msg void OnXButtonUp(UINT nFlags, UINT nButton, CPoint point);

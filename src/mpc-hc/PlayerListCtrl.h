@@ -24,6 +24,7 @@
 #include "WinHotkeyCtrl.h"
 #include "CMPCThemeComboBox.h"
 #include "CMPCThemePlayerListCtrl.h"
+#include "CMPCThemeInlineEdit.h"
 
 #define LVN_DOLABELEDIT (LVN_FIRST+1)
 
@@ -140,6 +141,35 @@ public:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 };
 
+// CMPCThemeInPlaceEdit — themed inline edit for virtual (LVS_OWNERDATA) list controls.
+// CPlayerListCtrl creates and owns instances. The edit notifies the list ctrl via a
+// back-reference pointer and self-destructs in OnNcDestroy (same as CInPlaceEdit).
+
+class CMPCThemeInPlaceEdit : public CMPCThemeInlineEdit
+{
+protected:
+    int m_iItem;
+    int m_iSubItem;
+    CString m_sInitText;
+    CMPCThemeInPlaceEdit** m_ppSelf; // nulled on destruction so owner's pointer clears
+    BOOL m_bESC;
+
+public:
+    CMPCThemeInPlaceEdit(int iItem, int iSubItem, CString sInitText, CMPCThemeInPlaceEdit** ppSelf);
+    virtual ~CMPCThemeInPlaceEdit();
+
+protected:
+    virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+    DECLARE_MESSAGE_MAP()
+
+public:
+    afx_msg void OnKillFocus(CWnd* pNewWnd);
+    afx_msg void OnNcDestroy();
+    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+};
+
 // CPlayerListCtrl
 
 class CPlayerListCtrl : public CMPCThemePlayerListCtrl
@@ -153,7 +183,10 @@ private:
     CRect inPlaceControlRect;
     UINT_PTR m_nTimerID;
 
+    CMPCThemeInPlaceEdit* m_pVirtualEdit; // active virtual-list inline edit, or nullptr
+
     bool PrepareInPlaceControl(int nRow, int nCol, CRect& rect);
+    void StartVirtualEditLabel(int nItem, int nSubItem);
 
 public:
     CPlayerListCtrl(int tStartEditingDelay = 500);
@@ -163,6 +196,17 @@ public:
     CImageList* CreateDragImageEx(LPPOINT lpPoint);
 
     int GetBottomIndex() const;
+
+    // Returns the active virtual-list inline edit, or nullptr if none is open.
+    // Valid during and after LVN_BEGINLABELEDIT; caller may adjust rect/font.
+    CMPCThemeInPlaceEdit* GetVirtualEditCtrl() const { return m_pVirtualEdit; }
+
+    // Positions the active virtual-list inline edit. xOffset shifts the left edge
+    // (e.g. to clear a sequence number drawn before the label); maxWidth caps the
+    // right edge. Call from LVN_BEGINLABELEDIT before returning *pResult = 1.
+    void AdjustVirtualEditPos(int xOffset, int maxWidth = -1);
+
+    static LRESULT SendLabelEditNotify(CWnd* pList, UINT code, int nItem, int nSubItem, LPCTSTR pszText = nullptr);
 
     CWinHotkeyCtrl* ShowInPlaceWinHotkey(int nItem, int nCol);
     CEdit* ShowInPlaceEdit(int nItem, int nCol);
@@ -180,6 +224,7 @@ protected:
     DECLARE_MESSAGE_MAP()
 
 public:
+    afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
@@ -201,4 +246,5 @@ public:
     afx_msg void OnXButtonDblClk(UINT nFlags, UINT nButton, CPoint point);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg BOOL OnLvnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg LRESULT OnLvmEditLabel(WPARAM wParam, LPARAM lParam);
 };

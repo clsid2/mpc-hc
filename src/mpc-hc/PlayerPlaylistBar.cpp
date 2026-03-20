@@ -114,52 +114,6 @@ BOOL CPlayerPlaylistBar::PreCreateWindow(CREATESTRUCT& cs)
 
 BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
 {
-    // Handle inline edit control events
-    if (::IsWindow(m_edit.m_hWnd)) {
-        if (pMsg->hwnd == m_edit.m_hWnd && pMsg->message == WM_KEYDOWN) {
-            if (pMsg->wParam == VK_RETURN) {
-                CString text;
-                m_edit.GetWindowText(text);
-                int editItem = m_list.GetSelectionMark();
-                if (editItem >= 0) {
-                    POSITION pos = FindPos(editItem);
-                    if (pos) {
-                        text.Trim();
-                        m_pl.GetAt(pos).m_label = text;
-                        m_list.RedrawItems(editItem, editItem);
-                    }
-                }
-                m_edit.suppressEndEdit();
-                m_edit.DestroyWindow();
-                m_list.SetFocus();
-                return TRUE;
-            }
-            if (pMsg->wParam == VK_ESCAPE) {
-                m_edit.suppressEndEdit();
-                m_edit.DestroyWindow();
-                m_list.SetFocus();
-                return TRUE;
-            }
-        }
-        // Clicking anywhere outside the edit commits and closes it
-        if ((pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_RBUTTONDOWN ||
-             pMsg->message == WM_MBUTTONDOWN) && pMsg->hwnd != m_edit.m_hWnd) {
-            CString text;
-            m_edit.GetWindowText(text);
-            int editItem = m_list.GetSelectionMark();
-            if (editItem >= 0) {
-                POSITION pos = FindPos(editItem);
-                if (pos) {
-                    text.Trim();
-                    m_pl.GetAt(pos).m_label = text;
-                    m_list.RedrawItems(editItem, editItem);
-                }
-            }
-            m_edit.suppressEndEdit();
-            m_edit.DestroyWindow();
-        }
-    }
-
     if (IsWindow(pMsg->hwnd) && IsVisible() && pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST) {
         if (GetKeyState(VK_MENU) & 0x8000) {
             if (TranslateAccelerator(m_pMainFrame->GetSafeHwnd(), m_pMainFrame->GetDefaultAccelerator(), pMsg)) {
@@ -234,10 +188,7 @@ void CPlayerPlaylistBar::LoadDuration(POSITION pos) {
                             int duration = std::stoi(info);
                             if (duration > 0) {
                                 pli.m_duration = duration * 10000LL;
-                                int idx = FindItem(pos);
-                                if (idx >= 0) {
-                                    m_list.RedrawItems(idx, idx);
-                                }
+                                RefreshItem(pos);
                             }
                         } catch (...) {
                         }
@@ -1114,6 +1065,14 @@ void CPlayerPlaylistBar::Refresh()
     ResizeListColumn();
 }
 
+void CPlayerPlaylistBar::RefreshItem(POSITION pos)
+{
+    int idx = FindItem(pos);
+    if (idx >= 0) {
+        m_list.RedrawItems(idx, idx);
+    }
+}
+
 void CPlayerPlaylistBar::PlayListChanged() {
     AfxGetAppSettings().externalPlayListPath = L"";
 }
@@ -1264,8 +1223,7 @@ void CPlayerPlaylistBar::Append(CStringW vdn, CStringW adn, int vinput, int vcha
 void CPlayerPlaylistBar::SetupList()
 {
     RebuildPosMap();
-    m_list.SetItemCountEx((int)m_pl.GetCount(), LVSICF_NOINVALIDATEALL);
-    m_list.Invalidate();
+    m_list.SetItemCountEx((int)m_pl.GetCount(), 0);
 }
 
 void CPlayerPlaylistBar::UpdateList()
@@ -1318,16 +1276,10 @@ void CPlayerPlaylistBar::InvalidatePlayingItem(POSITION oldPos, POSITION newPos)
 {
     // Only repaint the old and new "now playing" items instead of updating all items
     if (oldPos) {
-        int i = FindItem(oldPos);
-        if (i >= 0) {
-            m_list.RedrawItems(i, i);
-        }
+        RefreshItem(oldPos);
     }
     if (newPos && newPos != oldPos) {
-        int i = FindItem(newPos);
-        if (i >= 0) {
-            m_list.RedrawItems(i, i);
-        }
+        RefreshItem(newPos);
     }
     m_list.UpdateWindow();
 }
@@ -1502,8 +1454,7 @@ void CPlayerPlaylistBar::SetCurValid(bool fValid)
     if (pos) {
         m_pl.GetAt(pos).m_fInvalid = !fValid;
         if (!fValid) {
-            int i = FindItem(pos);
-            m_list.RedrawItems(i, i);
+            RefreshItem(pos);
         }
     }
 }
@@ -1515,10 +1466,7 @@ void CPlayerPlaylistBar::SetCurLabel(CString label)
         auto pi = m_pl.GetAt(pos);
         pi.m_label = label;
         m_pl.SetAt(pos, pi);
-        int idx = FindItem(pos);
-        if (idx >= 0) {
-            m_list.RedrawItems(idx, idx);
-        }
+        RefreshItem(pos);
     }
 }
 
@@ -1528,10 +1476,7 @@ void CPlayerPlaylistBar::SetCurTime(REFERENCE_TIME rt)
     if (pos) {
         CPlaylistItem& pli = m_pl.GetAt(pos);
         pli.m_duration = rt;
-        int idx = FindItem(pos);
-        if (idx >= 0) {
-            m_list.RedrawItems(idx, idx);
-        }
+        RefreshItem(pos);
     }
 }
 
@@ -1548,10 +1493,7 @@ void CPlayerPlaylistBar::UpdateLabel(CString in) {
         CPlaylistItem& m = m_pl.GetAt(pos);
         m.m_label = in;
         m_pl.SetAt(m_pl.GetPos(), m);
-        int idx = FindItem(pos);
-        if (idx >= 0) {
-            m_list.RedrawItems(idx, idx);
-        }
+        RefreshItem(pos);
     }
 }
 
@@ -1796,7 +1738,6 @@ BEGIN_MESSAGE_MAP(CPlayerPlaylistBar, CMPCThemePlayerBar)
     ON_WM_CONTEXTMENU()
     ON_NOTIFY(LVN_GETDISPINFO, IDC_PLAYLIST, OnLvnGetDispInfoList)
     ON_NOTIFY(LVN_BEGINLABELEDIT, IDC_PLAYLIST, OnLvnBeginlabeleditList)
-    ON_NOTIFY(LVN_DOLABELEDIT, IDC_PLAYLIST, OnLvnDolabeleditList)
     ON_NOTIFY(LVN_ENDLABELEDIT, IDC_PLAYLIST, OnLvnEndlabeleditList)
     ON_WM_XBUTTONDOWN()
     ON_WM_XBUTTONUP()
@@ -1844,11 +1785,9 @@ void CPlayerPlaylistBar::EventCallback(MpcEvent ev)
 void CPlayerPlaylistBar::ResizeListColumn()
 {
     if (::IsWindow(m_list.m_hWnd)) {
-        // Close any active inline edit before resizing
-        if (::IsWindow(m_edit.m_hWnd)) {
-            NMHDR hdr = {};
-            LRESULT result = 0;
-            OnLvnEndlabeleditList(&hdr, &result);
+        // Commit any active inline edit before resizing
+        if (m_list.GetVirtualEditCtrl()) {
+            m_list.SetFocus();
         }
 
         CRect r;
@@ -2122,7 +2061,9 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
         filesize = pDC->GetTextExtent(file);
     }
 
-    if (!::IsWindow(m_edit.m_hWnd) || !itemSelected) { //if inline edit is active, and this is the selected item, don't draw filename (visually distracting while editing)
+    CWnd* pFocused = GetFocus();
+    bool inlineEditActive = pFocused && pFocused != &m_list && m_list.IsChild(pFocused);
+    if (!inlineEditActive || !itemSelected) { //if inline edit is active, and this is the selected item, don't draw filename (visually distracting while editing)
         pDC->SetTextColor(textColor);
         pDC->SetBkColor(bgColor);
         pDC->TextOut(rcItem.left + dpi3 + numWidth.cx, (rcItem.top + rcItem.bottom - filesize.cy) / 2, file);
@@ -2674,53 +2615,6 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     }
 }
 
-void CPlayerPlaylistBar::TriggerInlineEdit(int nItem)
-{
-    if (nItem < 0) {
-        return;
-    }
-    POSITION pos = FindPos(nItem);
-    if (!pos) {
-        return;
-    }
-    CPlaylistItem& pli = m_pl.GetAt(pos);
-
-    // Dismiss any existing edit
-    if (::IsWindow(m_edit.m_hWnd)) {
-        // Commit current edit first
-        CString text;
-        m_edit.GetWindowText(text);
-        int editItem = m_list.GetSelectionMark();
-        if (editItem >= 0) {
-            POSITION editPos = FindPos(editItem);
-            if (editPos) {
-                text.Trim();
-                m_pl.GetAt(editPos).m_label = text;
-            }
-        }
-        m_edit.suppressEndEdit();
-        m_edit.DestroyWindow();
-    }
-
-    CRect r;
-    m_list.GetItemRect(nItem, &r, LVIR_BOUNDS);
-
-    // Create an edit control manually
-    CString currentLabel = pli.GetLabel(0);
-    r.left += inlineEditXpos;
-    int maxW = pli.inlineEditMaxWidth;
-    if (maxW > 0 && r.left + maxW < r.right) {
-        r.right = r.left + maxW;
-    }
-
-    m_edit.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, r, &m_list, 0);
-    m_edit.SetFont(m_list.GetFont());
-    m_edit.SetWindowText(currentLabel);
-    m_edit.SetSel(0, -1);
-    m_edit.SetFocus();
-    m_edit.setOverridePos(inlineEditXpos, maxW);
-}
-
 void CPlayerPlaylistBar::OnLvnGetDispInfoList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
@@ -2742,35 +2636,25 @@ void CPlayerPlaylistBar::OnLvnGetDispInfoList(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    // CPlayerListCtrl sends this to ask "is editing allowed?"
-    // Return 1 to allow, which permits CPlayerListCtrl to proceed to LVN_DOLABELEDIT
-    *pResult = 1;
-}
-
-void CPlayerPlaylistBar::OnLvnDolabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
-{
-    // CPlayerListCtrl sends this after the editing delay to trigger the actual edit
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
-    TriggerInlineEdit(pDispInfo->item.iItem);
-    *pResult = 0;
+    POSITION pos = FindPos(pDispInfo->item.iItem);
+    int maxW = pos ? m_pl.GetAt(pos).inlineEditMaxWidth : -1;
+    m_list.AdjustVirtualEditPos(inlineEditXpos, maxW);
+    *pResult = 1; // allow editing
 }
 
 void CPlayerPlaylistBar::OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    // Commit edit if the edit control is still active
-    if (::IsWindow(m_edit.m_hWnd)) {
-        CString text;
-        m_edit.GetWindowText(text);
-        int editItem = m_list.GetSelectionMark();
-        if (editItem >= 0) {
-            POSITION pos = FindPos(editItem);
-            if (pos) {
-                text.Trim();
-                m_pl.GetAt(pos).m_label = text;
-                m_list.RedrawItems(editItem, editItem);
-            }
+    NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+    // pszText is nullptr when the edit was cancelled (ESC)
+    if (pDispInfo->item.pszText != nullptr) {
+        POSITION pos = FindPos(pDispInfo->item.iItem);
+        if (pos) {
+            CString text(pDispInfo->item.pszText);
+            text.Trim();
+            m_pl.GetAt(pos).m_label = text;
+            RefreshItem(pos);
         }
-        m_edit.DestroyWindow();
     }
     *pResult = 0;
 }

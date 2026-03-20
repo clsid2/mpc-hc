@@ -7,7 +7,6 @@ CMPCThemeInlineEdit::CMPCThemeInlineEdit():
     overrideX(0)
     ,overrideMaxWidth(-1)
     ,offsetEnabled(false)
-    ,m_bEndingEdit(false)
 {
     m_brBkgnd.CreateSolidBrush(CMPCTheme::ContentBGColor);
 }
@@ -21,12 +20,10 @@ void CMPCThemeInlineEdit::setOverridePos(int x, int maxWidth) {
     overrideX = x;
     overrideMaxWidth = maxWidth;
     offsetEnabled = true;
-    m_bEndingEdit = false;
 }
 BEGIN_MESSAGE_MAP(CMPCThemeInlineEdit, CEdit)
     ON_WM_CTLCOLOR_REFLECT()
     ON_WM_WINDOWPOSCHANGED()
-    ON_WM_KILLFOCUS()
     ON_WM_PAINT()
 END_MESSAGE_MAP()
 
@@ -49,22 +46,6 @@ void CMPCThemeInlineEdit::OnWindowPosChanged(WINDOWPOS* lpwndpos) {
         SetWindowPos(nullptr, overrideX, lpwndpos->y, lpwndpos->cx, lpwndpos->cy, SWP_NOZORDER);
     }
     CEdit::OnWindowPosChanged(lpwndpos);
-}
-
-void CMPCThemeInlineEdit::OnKillFocus(CWnd* pNewWnd) {
-    CEdit::OnKillFocus(pNewWnd);
-    if (!m_bEndingEdit) {
-        m_bEndingEdit = true;
-        CWnd* pList = GetParent();
-        CWnd* pOwner = pList ? pList->GetParent() : nullptr;
-        if (pList && pOwner) {
-            NMLVDISPINFO di = {};
-            di.hdr.hwndFrom = pList->GetSafeHwnd();
-            di.hdr.idFrom = pList->GetDlgCtrlID();
-            di.hdr.code = LVN_ENDLABELEDIT;
-            pOwner->SendMessage(WM_NOTIFY, di.hdr.idFrom, (LPARAM)&di);
-        }
-    }
 }
 
 void CMPCThemeInlineEdit::OnPaint() {
