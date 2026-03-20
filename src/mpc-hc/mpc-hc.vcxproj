@@ -123,6 +123,18 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Lite')) and '$(Platform)'=='x64'">
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)Lang" if exist "$(SolutionDir)bin\mpc-hc_x64\Lang" mklink /J "$(OutDir)Lang" "$(SolutionDir)bin\mpc-hc_x64\Lang"
+if not exist "$(OutDir)LAVFilters64" if exist "$(SolutionDir)bin\mpc-hc_x64\LAVFilters64" mklink /J "$(OutDir)LAVFilters64" "$(SolutionDir)bin\mpc-hc_x64\LAVFilters64"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Lite')) and '$(Platform)'=='Win32'">
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)Lang" if exist "$(SolutionDir)bin\mpc-hc_x86\Lang" mklink /J "$(OutDir)Lang" "$(SolutionDir)bin\mpc-hc_x86\Lang"
+if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFilters" mklink /J "$(OutDir)LAVFilters" "$(SolutionDir)bin\mpc-hc_x86\LAVFilters"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="!$(Configuration.Contains('Lite'))">
     <Link>
       <AdditionalDependencies>RARFileSource.res;%(AdditionalDependencies)</AdditionalDependencies>
