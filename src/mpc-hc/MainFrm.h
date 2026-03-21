@@ -860,6 +860,7 @@ public:
     afx_msg int OnNcCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnDestroy();
+    afx_msg LRESULT OnLAVPropPageCallback(WPARAM wParam, LPARAM lParam);
 
     afx_msg LRESULT OnTaskBarRestart(WPARAM, LPARAM);
     afx_msg LRESULT OnNotifyIcon(WPARAM, LPARAM);

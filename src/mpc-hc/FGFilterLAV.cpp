@@ -204,7 +204,17 @@ HRESULT CFGFilterLAV::PropertyPageCallback(IBaseFilter* pBF)
 {
     CheckPointer(pBF, E_POINTER);
 
-    CComPropertySheet ps(IDS_PROPSHEET_PROPERTIES, AfxGetMyApp()->GetMainWnd());
+    // If called from a non-main thread (e.g. LAV tray icon callback), marshal
+    // to the main thread via PostMessage so the property sheet runs there.
+    // This avoids a cross-thread SendMessage deadlock in NotifyFloatingWindows.
+    CWnd* pMainWnd = AfxGetMyApp()->GetMainWnd();
+    if (pMainWnd && ::GetCurrentThreadId() != ::GetWindowThreadProcessId(pMainWnd->m_hWnd, nullptr)) {
+        pBF->AddRef();
+        pMainWnd->PostMessage(WM_LAV_PROPPAGE_CALLBACK, 0, reinterpret_cast<LPARAM>(pBF));
+        return S_OK;
+    }
+
+    CComPropertySheet ps(IDS_PROPSHEET_PROPERTIES, pMainWnd);
 
     // Find out which internal filter we are opening the property page for
     CFGFilterLAV::LAVFILTER_TYPE LAVFilterType = CFGFilterLAV::INVALID;

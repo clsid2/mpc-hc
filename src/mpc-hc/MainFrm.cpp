@@ -254,6 +254,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_WM_CREATE()
     ON_WM_DESTROY()
     ON_WM_CLOSE()
+    ON_MESSAGE(WM_LAV_PROPPAGE_CALLBACK, OnLAVPropPageCallback)
     ON_WM_MEASUREITEM()
 
     ON_MESSAGE(WM_MPCVR_SWITCH_FULLSCREEN, OnMPCVRSwitchFullscreen)
@@ -1217,6 +1218,17 @@ void CMainFrame::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStru
     }
 
     CFrameWnd::OnMeasureItem(nIDCtl, lpMeasureItemStruct);
+}
+
+
+LRESULT CMainFrame::OnLAVPropPageCallback(WPARAM, LPARAM lParam)
+{
+    CComPtr<IBaseFilter> pBF;
+    pBF.Attach(reinterpret_cast<IBaseFilter*>(lParam)); // takes the AddRef from PostMessage
+    if (pBF) {
+        CFGFilterLAV::PropertyPageCallback(pBF);
+    }
+    return 0;
 }
 
 void CMainFrame::OnDestroy()
