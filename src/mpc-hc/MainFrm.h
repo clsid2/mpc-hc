@@ -861,6 +861,7 @@ public:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnDestroy();
     afx_msg LRESULT OnLAVPropPageCallback(WPARAM wParam, LPARAM lParam);
+    bool m_bLAVPropPageOpen = false;
 
     afx_msg LRESULT OnTaskBarRestart(WPARAM, LPARAM);
     afx_msg LRESULT OnNotifyIcon(WPARAM, LPARAM);

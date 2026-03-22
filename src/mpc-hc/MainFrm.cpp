@@ -1225,8 +1225,10 @@ LRESULT CMainFrame::OnLAVPropPageCallback(WPARAM, LPARAM lParam)
 {
     CComPtr<IBaseFilter> pBF;
     pBF.Attach(reinterpret_cast<IBaseFilter*>(lParam)); // takes the AddRef from PostMessage
-    if (pBF) {
+    if (pBF && !m_bLAVPropPageOpen) {
+        m_bLAVPropPageOpen = true;
         CFGFilterLAV::PropertyPageCallback(pBF);
+        m_bLAVPropPageOpen = false;
     }
     return 0;
 }
