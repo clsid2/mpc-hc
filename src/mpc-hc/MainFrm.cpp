@@ -8343,6 +8343,11 @@ void CMainFrame::OnViewModifySize(UINT nID) {
         return;
     }
 
+    // For audio-only without custom cover art (logo or nothing), zoom is a no-op.
+    if (m_fAudioOnly && !m_wndView.IsCustomImgLoaded()) {
+        return;
+    }
+
     enum resizeMethod {
         autoChoose
         , byHeight
@@ -8363,16 +8368,26 @@ void CMainFrame::OnViewModifySize(UINT nID) {
 
     CRect videoRect;
     videoRect = m_pVideoWnd->GetVideoRect();
-    if (videoRect.Width() == 0) { // logo or coverart
-        videoRect = rect;
+    if (videoRect.Width() == 0) {
+        if (m_fAudioOnly) {
+            m_wndView.GetWindowRect(&videoRect); // art display area in screen coords
+        } else {
+            videoRect = rect;
+        }
     }
     double videoRectRatio = double(videoRect.Height()) / double(videoRect.Width());
     bool previouslyProportional = IsNearlyEqual(videoRectRatio, videoRatio, 0.01);
+    // When shrinking a non-proportional window, treat the current window shape as the
+    // content ratio so both dimensions shrink together rather than only bars reducing.
+    if (mult < 0 && !previouslyProportional) {
+        videoRatio = videoRectRatio;
+        previouslyProportional = true;
+    }
 
     CRect workRect, maxRect;
     GetWorkAreaRect(workRect);
     maxRect = GetZoomWindowRect(CSize(INT_MAX, INT_MAX), true);
-    
+
     CSize targetSize;
     CRect zoomRect;
 
@@ -8381,14 +8396,22 @@ void CMainFrame::OnViewModifySize(UINT nID) {
         int newHeight = videoRect.Height();
 
         if (useMethod == autoChoose) {
-            if (double(videoRect.Height()) / videoRect.Width() + 0.01f < videoRatio) { //wider than aspect ratio, so use height instead
+            bool bPickByHeight;
+            if (previouslyProportional) {
+                // No bars (or shrinking, handled above): step by the largest dimension.
+                bPickByHeight = videoRect.Height() > videoRect.Width();
+            } else {
+                // Bars present, growing: step toward filling them.
+                // Pillarboxed (view wider than content AR) → byHeight fills side bars
+                // Letterboxed (view taller than content AR) → byWidth fills top/bottom bars
+                bPickByHeight = videoRectRatio + 0.01 < videoRatio;
+            }
+            if (bPickByHeight) {
                 useMethod = byHeight;
-                int growPixels = int(.02f * workRect.Height());
-                newHeight = videoRect.Height() + growPixels * mult;
+                newHeight = videoRect.Height() + m_dpi.ScaleY(16) * mult;
             } else {
                 useMethod = byWidth;
-                int growPixels = int(.02f * workRect.Width());
-                newWidth = std::max(videoRect.Width() + growPixels * mult, minWidth);
+                newWidth = std::max(videoRect.Width() + m_dpi.ScaleX(16) * mult, minWidth);
             }
         } else if (useMethod == byHeight) {
             newHeight = forceDimension.cy + videoRect.Height() - rect.Height();
@@ -8421,23 +8444,30 @@ void CMainFrame::OnViewModifySize(UINT nID) {
     zoomRect = calculateZoomWindowRect();
 
     CRect newRect, work;
-    newRect = CRect(rect.TopLeft(), targetSize); //this will be our default
+    newRect = zoomRect; //this will be our default (always constrained to work area)
 
     //if old rect was constrained to a single monitor, we zoom incrementally
     if (GetWorkAreaRect(work) && work.PtInRect(rect.TopLeft()) && work.PtInRect(rect.BottomRight()-CSize(1,1))
         && ((zoomRect.Height() != rect.Height() && usedMethod == byHeight) || (zoomRect.Width() != rect.Width() && usedMethod == byWidth))) {
 
         if (zoomRect.Width() != targetSize.cx && zoomRect.Width() == maxRect.Width()) { //we appear to have been constrained by Screen Width
-            if (maxRect.Width() != rect.Width()) { //if it wasn't already filling the monitor horizonally, we will do that now
+            if (maxRect.Width() != rect.Width() && maxRect.Width() - rect.Width() <= m_dpi.ScaleX(32)) { //snap to fill only if we were already close to the edge
                 newRect = calculateZoomWindowRect(byWidth, maxRect.Size());
             }
         } else if (zoomRect.Height() != targetSize.cy && zoomRect.Height() == maxRect.Height()) { //we appear to have been constrained by Screen Height
-            if (maxRect.Height() != rect.Height()) { //if it wasn't already filling the monitor vertically, we will do that now
+            if (maxRect.Height() != rect.Height() && maxRect.Height() - rect.Height() <= m_dpi.ScaleY(32)) { //snap to fill only if we were already close to the edge
                 newRect = calculateZoomWindowRect(byHeight, maxRect.Size());
             }
         } else {
             newRect = zoomRect;
         }
+    }
+
+    // Step 5: if the result fills the entire work area, switch to maximized state
+    // instead of a floating window that merely covers the same pixels.
+    if (newRect == maxRect) {
+        ShowWindow(SW_MAXIMIZE);
+        return;
     }
 
     MoveWindow(newRect);
