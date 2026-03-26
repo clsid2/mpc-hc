@@ -232,6 +232,7 @@ public:
     afx_msg void OnTimer(UINT_PTR nIDEvent);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
     afx_msg void OnLvnMarqueeBegin(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg BOOL OnLvnBegindrag(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnLvnInsertitem(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnLvnDeleteitem(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnEnChangeEdit1();

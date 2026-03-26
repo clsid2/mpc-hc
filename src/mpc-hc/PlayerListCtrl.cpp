@@ -960,6 +960,7 @@ BEGIN_MESSAGE_MAP(CPlayerListCtrl, CMPCThemePlayerListCtrl)
     ON_WM_TIMER()
     ON_WM_LBUTTONDBLCLK()
     ON_NOTIFY_REFLECT(LVN_MARQUEEBEGIN, OnLvnMarqueeBegin)
+    ON_NOTIFY_REFLECT_EX(LVN_BEGINDRAG, OnLvnBegindrag)
     ON_NOTIFY_REFLECT(LVN_INSERTITEM, OnLvnInsertitem)
     ON_NOTIFY_REFLECT(LVN_DELETEITEM, OnLvnDeleteitem)
     ON_EN_CHANGE(IDC_EDIT1, OnEnChangeEdit1)
@@ -1113,6 +1114,17 @@ void CPlayerListCtrl::OnLvnMarqueeBegin(NMHDR* pNMHDR, LRESULT* pResult)
     LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
     UNREFERENCED_PARAMETER(pNMLV);
     *pResult = 1;
+}
+
+BOOL CPlayerListCtrl::OnLvnBegindrag(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    if (m_nTimerID) {
+        KillTimer(m_nTimerID);
+        m_nTimerID = 0;
+    }
+    m_nItemClicked = -1;
+    *pResult = 0;
+    return FALSE; // let parent handle the drag
 }
 
 void CPlayerListCtrl::OnLvnInsertitem(NMHDR* pNMHDR, LRESULT* pResult)
