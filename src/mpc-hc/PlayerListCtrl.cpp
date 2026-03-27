@@ -1065,11 +1065,7 @@ void CPlayerListCtrl::OnLButtonDown(UINT nFlags, CPoint point)
     } else if (m_nItemClicked == m_nItemClickedNow /*&& m_nSubItemClicked == m_nSubItemClickedNow*/) {
         m_nSubItemClicked = m_nSubItemClickedNow;
 
-        if (m_tStartEditingDelay > 0) {
-            m_nTimerID = SetTimer(1, m_tStartEditingDelay, nullptr);
-        } else {
-            SendMessage(LVM_EDITLABEL, m_nItemClicked, 0);
-        }
+        m_nTimerID = SetTimer(1, std::max((UINT)m_tStartEditingDelay, GetDoubleClickTime()), nullptr);
     } else {
         m_nItemClicked = m_nItemClickedNow;
         m_nSubItemClicked = m_nSubItemClickedNow;
@@ -1105,6 +1101,7 @@ void CPlayerListCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
         KillTimer(m_nTimerID);
         m_nTimerID = 0;
     }
+    m_nItemClicked = -1;
 
     CListCtrl::OnLButtonDblClk(nFlags, point);
 }
