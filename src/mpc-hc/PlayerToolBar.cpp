@@ -406,6 +406,32 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     return TRUE;
 }
 
+bool CPlayerToolBar::IsValidButtonLayout(const std::vector<int>& buttons, int layoutRevision) {
+    // Revision 0: [leftsep, <3 skipped>, ...movable..., dummysep, volume] — min 5 entries
+    // Revision 1+: [leftsep, ...movable..., dummysep, volume]             — min 6 entries
+    if (layoutRevision == 0 && buttons.size() < 5) return false;
+    if (layoutRevision >= 1 && buttons.size() < 6) return false;
+
+    // For revision 0, play/pause/stop are always prepended and must not appear in the saved sequence.
+    // Seed the duplicate-check set with them so they count as already-seen.
+    std::set<int> seen;
+    if (layoutRevision == 0) {
+        seen = {ID_PLAY_PLAY, ID_PLAY_PAUSE, ID_PLAY_STOP};
+    }
+
+    int start = (layoutRevision == 0) ? 3 : 1;
+    int end   = (int)buttons.size() - 2;
+
+    for (int i = start; i < end; i++) {
+        int id = buttons[i];
+        if (!supportedSvgButtons.count(id)) return false;  // unknown button
+        if (seen.count(id)) return false;                  // duplicate
+        seen.insert(id);
+    }
+
+    return true;
+}
+
 void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
     CToolBarCtrl& tb = GetToolBarCtrl();
 
@@ -420,40 +446,30 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
     int layoutRevision = 0;
 
     if (loadSavedLayout) {
-        layoutRevision = AfxGetMyApp()->GetProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", -1);
-        if (layoutRevision >= 0) {
-            buttons = AfxGetMyApp()->GetProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence");
-        }
+        buttons = AfxGetMyApp()->GetProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence");
+        layoutRevision = AfxGetMyApp()->GetProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", 0);
     }
 
     addButton(ID_LEFTSEPARATOR);
 
-    if (layoutRevision == 0 && buttons.size() >= 5) {
+    if (layoutRevision == 0 && IsValidButtonLayout(buttons, 0)) {
         // Revision 0: play/pause/stop were locked at front, not in saved layout
         addButton(ID_PLAY_PLAY);
         addButton(ID_PLAY_PAUSE);
         addButton(ID_PLAY_STOP);
-        std::set<int> added = {ID_PLAY_PLAY, ID_PLAY_PAUSE, ID_PLAY_STOP};
         // Load remaining buttons (skip first 3, stop before last 2 which are dummy separator and volume)
         for (int i = 3; i < (int)buttons.size() - 2; i++) {
-            if (supportedSvgButtons.count(buttons[i]) && !added.count(buttons[i])) {
-                auto& btn = supportedSvgButtons[buttons[i]];
-                if (!btn.positionLocked) {
-                    added.insert(buttons[i]);
-                    addButton(buttons[i]);
-                }
+            auto& btn = supportedSvgButtons[buttons[i]];
+            if (!btn.positionLocked) {
+                addButton(buttons[i]);
             }
         }
-    } else if (layoutRevision >= 1 && buttons.size() >= 6) {
-        // Revision 1: all movable buttons saved (skip first=left separator, skip last 2=dummy separator and volume)
-        std::set<int> added;
+    } else if (layoutRevision >= 1 && IsValidButtonLayout(buttons, layoutRevision)) {
+        // Revision 1+: all movable buttons saved (skip first=left separator, skip last 2=dummy separator and volume)
         for (int i = 1; i < (int)buttons.size() - 2; i++) {
-            if (supportedSvgButtons.count(buttons[i]) && !added.count(buttons[i])) {
-                auto& btn = supportedSvgButtons[buttons[i]];
-                if (!btn.positionLocked) {
-                    added.insert(buttons[i]);
-                    addButton(buttons[i]);
-                }
+            auto& btn = supportedSvgButtons[buttons[i]];
+            if (!btn.positionLocked) {
+                addButton(buttons[i]);
             }
         }
     } else {

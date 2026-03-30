@@ -78,6 +78,7 @@ private:
     };
 
     static std::map<WORD, svgButtonInfo> supportedSvgButtons;
+    static bool IsValidButtonLayout(const std::vector<int>& buttons, int layoutRevision);
 public:
     CPlayerToolBar(CMainFrame* pMainFrame);
     virtual ~CPlayerToolBar();
