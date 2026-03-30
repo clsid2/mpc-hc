@@ -420,8 +420,10 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
     int layoutRevision = 0;
 
     if (loadSavedLayout) {
-        buttons = AfxGetMyApp()->GetProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence");
-        layoutRevision = AfxGetMyApp()->GetProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", 0);
+        layoutRevision = AfxGetMyApp()->GetProfileInt(IDS_R_PLAYERTOOLBAR, L"ButtonLayoutRevision", -1);
+        if (layoutRevision >= 0) {
+            buttons = AfxGetMyApp()->GetProfileVectorInt(IDS_R_PLAYERTOOLBAR, L"ButtonSequence");
+        }
     }
 
     addButton(ID_LEFTSEPARATOR);
@@ -431,21 +433,25 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
         addButton(ID_PLAY_PLAY);
         addButton(ID_PLAY_PAUSE);
         addButton(ID_PLAY_STOP);
+        std::set<int> added = {ID_PLAY_PLAY, ID_PLAY_PAUSE, ID_PLAY_STOP};
         // Load remaining buttons (skip first 3, stop before last 2 which are dummy separator and volume)
-        for (int i = 3; i < buttons.size() - 2; i++) {
-            if (supportedSvgButtons.count(buttons[i])) {
+        for (int i = 3; i < (int)buttons.size() - 2; i++) {
+            if (supportedSvgButtons.count(buttons[i]) && !added.count(buttons[i])) {
                 auto& btn = supportedSvgButtons[buttons[i]];
                 if (!btn.positionLocked) {
+                    added.insert(buttons[i]);
                     addButton(buttons[i]);
                 }
             }
         }
     } else if (layoutRevision >= 1 && buttons.size() >= 6) {
         // Revision 1: all movable buttons saved (skip first=left separator, skip last 2=dummy separator and volume)
-        for (int i = 1; i < buttons.size() - 2; i++) {
-            if (supportedSvgButtons.count(buttons[i])) {
+        std::set<int> added;
+        for (int i = 1; i < (int)buttons.size() - 2; i++) {
+            if (supportedSvgButtons.count(buttons[i]) && !added.count(buttons[i])) {
                 auto& btn = supportedSvgButtons[buttons[i]];
                 if (!btn.positionLocked) {
+                    added.insert(buttons[i]);
                     addButton(buttons[i]);
                 }
             }
