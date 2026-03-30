@@ -1224,6 +1224,22 @@ void CPlayerPlaylistBar::SetupList()
 {
     RebuildPosMap();
     m_list.SetItemCountEx((int)m_pl.GetCount(), 0);
+    m_list.Invalidate();
+}
+
+void CPlayerPlaylistBar::SyncSelectionToPos(POSITION pos)
+{
+    if (!pos) {
+        return;
+    }
+    int idx = FindItem(pos);
+    if (idx < 0) {
+        return;
+    }
+    m_list.SetItemState(-1, 0, LVIS_SELECTED | LVIS_FOCUSED);
+    m_list.SetItemState(idx, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+    m_list.SetSelectionMark(idx);
+    m_list.EnsureVisible(idx, TRUE);
 }
 
 void CPlayerPlaylistBar::UpdateList()
@@ -1482,8 +1498,10 @@ void CPlayerPlaylistBar::SetCurTime(REFERENCE_TIME rt)
 
 void CPlayerPlaylistBar::Randomize()
 {
+    POSITION selPos = FindPos(m_list.GetSelectionMark());
     m_pl.Randomize();
     SetupList();
+    SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
     SavePlaylist();
 }
 
@@ -2450,21 +2468,30 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             }
             SavePlaylist();
             break;
-        case M_SORTBYID:
+        case M_SORTBYID: {
+            POSITION selPos = FindPos(m_list.GetSelectionMark());
             m_pl.SortById();
             SetupList();
+            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
             SavePlaylist();
             break;
-        case M_SORTBYNAME:
+        }
+        case M_SORTBYNAME: {
+            POSITION selPos = FindPos(m_list.GetSelectionMark());
             m_pl.SortByName();
             SetupList();
+            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
             SavePlaylist();
             break;
-        case M_SORTBYPATH:
+        }
+        case M_SORTBYPATH: {
+            POSITION selPos = FindPos(m_list.GetSelectionMark());
             m_pl.SortByPath();
             SetupList();
+            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
             SavePlaylist();
             break;
+        }
         case M_RANDOMIZE:
             Randomize();
             break;

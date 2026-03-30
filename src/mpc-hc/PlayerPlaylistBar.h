@@ -95,6 +95,7 @@ private:
     bool ParseCUESheet(CString fn);
     
     void SetupList();
+    void SyncSelectionToPos(POSITION pos);
     void UpdateList();
     void EnsureVisible(POSITION pos);
     int FindItem(const POSITION pos) const;
