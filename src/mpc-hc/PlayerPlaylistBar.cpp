@@ -1857,7 +1857,7 @@ void CPlayerPlaylistBar::OnLvnKeyDown(NMHDR* pNMHDR, LRESULT* pResult)
             m_list.Invalidate();
 
             if (m_list.GetItemCount() > 0) {
-                int sel = (selected < m_list.GetItemCount()) ? selected : 0;
+                int sel = (selected < m_list.GetItemCount()) ? selected : m_list.GetItemCount() - 1;
                 m_list.SetItemState(sel, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
                 m_list.SetSelectionMark(sel);
             }
