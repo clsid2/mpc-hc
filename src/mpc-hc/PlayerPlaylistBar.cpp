@@ -2434,6 +2434,7 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     //adipose: note this will bypass CPlayerBar::OnEnterMenuLoop, so we set m_bHasActivePopup directly here
     int nID = (int)m.TrackPopupMenu(TPM_LEFTBUTTON | TPM_RETURNCMD, point.x, point.y, m_pMainFrame);
     m_bHasActivePopup = false;
+    m_list.SetFocus();
     switch (nID) {
         case M_OPEN:
             m_pl.SetPos(pos);
