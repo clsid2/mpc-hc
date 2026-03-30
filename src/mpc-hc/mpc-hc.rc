@@ -2721,6 +2721,7 @@ BEGIN
     IDS_PLAYLIST_SORTBYPATH "Sort by &path"
     IDS_PLAYLIST_RANDOMIZE  "R&andomize"
     IDS_PLAYLIST_RESTORE    "R&estore"
+    IDS_PLAYLIST_SORT       "&Sort"
     IDS_SUBRESYNC_SEPARATOR "&Separator"
     IDS_SUBRESYNC_DELETE    "&Delete"
     IDS_SUBRESYNC_DUPLICATE "D&uplicate"

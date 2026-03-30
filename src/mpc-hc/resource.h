@@ -1803,6 +1803,7 @@
 #define IDS_FAVORITES_UNSAVED_CHANGES   57730
 #define IDS_ABOUT_COPYRIGHT             57731
 #define IDS_ABOUT_COPYRIGHT_YEAR        57732
+#define IDS_PLAYLIST_SORT               57733
 
 // Next default values for new objects
 // 
