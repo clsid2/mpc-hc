@@ -1,74 +1,107 @@
-"""Tests for DISA STIG compliance validation."""
+"""Tests for DISA STIG (Security Technical Implementation Guide) validation."""
+
+import sys
+from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from compliance.disa_stig import STIGValidator
 
 
 @pytest.fixture
 def validator():
+    """Return a fresh STIGValidator with no pre-loaded rules."""
     return STIGValidator()
 
 
-@pytest.fixture
-def compliant_device():
-    return {
-        "device_type": "dsp",
-        "manufacturer": "Biamp",
-        "model": "TesiraFORTE-AVB-VT4",
-        "firmware_version": "4.12.0",
+def _make_device(overrides: dict | None = None) -> dict:
+    """Build a device dict with sensible defaults, then apply overrides."""
+    device = {
+        "id": "test-device",
+        "manufacturer": "Crestron",
+        "model": "DM-NVX-350",
         "network_config": {
             "default_credentials_changed": True,
             "encryption_enabled": True,
-            "unused_ports_disabled": True,
+            "open_ports": [443, 22],
+            "required_ports": [443, 22],
+            "firmware_date": "2026-01-15",
             "snmp_version": "v3",
-            "audit_logging_enabled": True,
+            "syslog_enabled": True,
         },
     }
+    if overrides:
+        device["network_config"].update(overrides)
+    return device
 
 
-@pytest.fixture
-def non_compliant_device():
-    return {
-        "device_type": "controller",
-        "manufacturer": "Generic",
-        "model": "CTL-100",
-        "firmware_version": "1.0.0",
-        "network_config": {
-            "default_credentials_changed": False,
-            "encryption_enabled": False,
-            "unused_ports_disabled": False,
-            "snmp_version": "v2c",
-            "audit_logging_enabled": False,
-        },
-    }
+class TestDefaultCredentialsCat1Fail:
+    """Device with default creds fails CAT_I."""
+
+    def test_default_credentials_cat1_fail(self, validator):
+        device = _make_device({"default_credentials_changed": False})
+        results = validator.validate_device(device)
+        cred_check = next(r for r in results if "Default Credentials" in r.check_name)
+        assert cred_check.passed is False
+        assert cred_check.severity == "critical"
+        assert "CAT_I" in cred_check.message
 
 
-class TestSTIGValidator:
-    def test_default_credentials_cat1_fail(self, validator, non_compliant_device):
-        results = validator._check_common_stig_rules(non_compliant_device)
-        cred_checks = [r for r in results if "credential" in r.message.lower()]
-        assert any(not r.passed for r in cred_checks), "Default credentials should fail"
-        assert any(r.severity == "critical" for r in cred_checks), "Should be critical"
+class TestEncryptionRequiredCat1:
+    """Device without encryption fails CAT_I."""
 
-    def test_encryption_required_cat1(self, validator, non_compliant_device):
-        results = validator._check_common_stig_rules(non_compliant_device)
-        enc_checks = [r for r in results if "encrypt" in r.message.lower()]
-        assert any(not r.passed for r in enc_checks), "Missing encryption should fail"
-        assert any(r.severity == "critical" for r in enc_checks), "Should be critical"
+    def test_encryption_required_cat1(self, validator):
+        device = _make_device({"encryption_enabled": False})
+        results = validator.validate_device(device)
+        enc_check = next(r for r in results if "Encryption" in r.check_name)
+        assert enc_check.passed is False
+        assert enc_check.severity == "critical"
+        assert "CAT_I" in enc_check.message
 
-    def test_snmp_v3_required(self, validator, non_compliant_device):
-        results = validator._check_common_stig_rules(non_compliant_device)
-        snmp_checks = [r for r in results if "snmp" in r.message.lower()]
-        assert any(not r.passed for r in snmp_checks), "SNMP v2c should fail"
 
-    def test_compliant_device_passes(self, validator, compliant_device):
-        results = validator._check_common_stig_rules(compliant_device)
+class TestSnmpV3Required:
+    """SNMPv1/v2c fails CAT_II."""
+
+    def test_snmpv1_fails(self, validator):
+        device = _make_device({"snmp_version": "v1"})
+        results = validator.validate_device(device)
+        snmp_check = next(r for r in results if "SNMP" in r.check_name)
+        assert snmp_check.passed is False
+        assert "v3" in snmp_check.message.lower() or "CAT_II" in snmp_check.message
+
+    def test_snmpv2c_fails(self, validator):
+        device = _make_device({"snmp_version": "v2c"})
+        results = validator.validate_device(device)
+        snmp_check = next(r for r in results if "SNMP" in r.check_name)
+        assert snmp_check.passed is False
+
+    def test_snmpv3_passes(self, validator):
+        device = _make_device({"snmp_version": "v3"})
+        results = validator.validate_device(device)
+        snmp_check = next(r for r in results if "SNMP" in r.check_name)
+        assert snmp_check.passed is True
+
+
+class TestCompliantDevicePasses:
+    """Fully hardened device passes all checks."""
+
+    def test_compliant_device_passes(self, validator):
+        device = _make_device()  # All defaults are compliant
+        results = validator.validate_device(device)
         assert all(r.passed for r in results), (
-            f"Compliant device should pass all, failures: "
-            f"{[r.check_name for r in results if not r.passed]}"
+            f"Expected all checks to pass but got failures: "
+            f"{[r.message for r in results if not r.passed]}"
         )
 
-    def test_audit_logging_required(self, validator, non_compliant_device):
-        results = validator._check_common_stig_rules(non_compliant_device)
-        log_checks = [r for r in results if "log" in r.message.lower() or "audit" in r.message.lower()]
-        assert any(not r.passed for r in log_checks), "Missing audit logging should fail"
+
+class TestAuditLoggingRequired:
+    """Device without syslog gets CAT_III warning."""
+
+    def test_audit_logging_required(self, validator):
+        device = _make_device({"syslog_enabled": False})
+        results = validator.validate_device(device)
+        syslog_check = next(r for r in results if "Syslog" in r.check_name or "Audit" in r.check_name)
+        assert syslog_check.passed is False
+        assert "CAT_III" in syslog_check.message
