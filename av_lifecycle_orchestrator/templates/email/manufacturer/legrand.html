@@ -1,0 +1,22 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>Legrand AV / Chief / Middle Atlantic Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Legrand AV Brand</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ legrand_brand | default('Chief / Middle Atlantic') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Infrastructure Category</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ legrand_infra_category | default('Rack & Power') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Mount Count</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ mount_count | default(0) }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Rack Units Required</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ rack_units | default('TBD') }}</td></tr>
+</table>
+
+<p><strong>Legrand AV Product Categories:</strong></p>
+<ul>
+{% for category in legrand_categories %}
+<li>{{ category }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

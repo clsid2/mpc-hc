@@ -1,0 +1,22 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>Crestron CRM Integration Fields</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Company Name</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">[%CompanyName%]</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Contract Name</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">[%ContractName%]</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Connect Info</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">[%ConnectInfo%]</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>CSP Tier</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ crestron_csp_tier | default('Gold') }}</td></tr>
+</table>
+
+<p><strong>Crestron Product Families:</strong></p>
+<ul>
+{% for family in crestron_product_families %}
+<li>{{ family }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

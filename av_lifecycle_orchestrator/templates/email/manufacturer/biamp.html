@@ -1,0 +1,20 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>Biamp Partner Program Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Partner Level</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ biamp_partner_level | default('Authorized') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Vertical Market</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ vertical_market }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>DSP Platform</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ biamp_dsp_platform | default('TesiraFORTE') }}</td></tr>
+</table>
+
+<p><strong>Biamp Solutions Required:</strong></p>
+<ul>
+{% for solution in biamp_solutions %}
+<li>{{ solution }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

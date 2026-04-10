@@ -1,0 +1,33 @@
+manufacturer: legrand
+registration_method: portal_api
+api_endpoint: https://partners.legrand.com/api/deal-registration
+auth:
+  type: session
+  login_url: https://partners.legrand.com/login
+email_to: null
+processing_time_hours: null
+approval_window_days: null
+constraints:
+  partner_categories:
+    - Commercial AV Integrator
+    - Technology Manager
+    - Consultant
+    - Distributor
+    - Reseller
+    - Architect/Design Firm
+required_fields:
+  - dealer_id
+  - dealer_name
+  - legrand_account_number
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+notes: >
+  Legrand deal registration is submitted via the centralized distributor portal.
+  Requires a Legrand account number and partner category classification
+  (Commercial AV Integrator, Technology Manager, Consultant, Distributor,
+  Reseller, or Architect/Design Firm).

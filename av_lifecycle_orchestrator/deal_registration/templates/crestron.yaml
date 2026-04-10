@@ -1,0 +1,24 @@
+manufacturer: crestron
+registration_method: email
+api_endpoint: null
+auth: null
+email_to: dealreg@crestron.com
+processing_time_hours: null
+approval_window_days: null
+constraints:
+  dealer_authorization_required: true
+required_fields:
+  - dealer_id
+  - dealer_name
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - project_description
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+notes: >
+  Crestron deal registration is email-based using CRM merge tags
+  ([%CompanyName%], [%ContractName%], [%ConnectInfo%], etc.) formatted
+  for Crestron Fusion parsing. Dealer authorization must be current and active.

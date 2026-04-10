@@ -1,0 +1,35 @@
+manufacturer: shure
+registration_method: portal_api
+api_endpoint: https://partnershop.shure.com/api/deal-registration
+auth:
+  type: session
+  login_url: https://partnershop.shure.com/login
+  requires_my_shure_id: true
+email_to: null
+processing_time_hours: null
+approval_window_days: null
+constraints:
+  company_size_tiers:
+    - "1-50"
+    - "51-100"
+    - "101-500"
+    - "500+"
+  requires_partner_shop_access: true
+required_fields:
+  - dealer_id
+  - dealer_name
+  - my_shure_id
+  - partner_shop_access
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+  - employee_count
+notes: >
+  Shure deal registration is submitted via the Partner Shop portal and requires
+  a My Shure ID. Company size tier (1-50, 51-100, 101-500, 500+) is determined
+  from employee count. Includes HQ location, new/existing customer flag, and
+  product mix details.

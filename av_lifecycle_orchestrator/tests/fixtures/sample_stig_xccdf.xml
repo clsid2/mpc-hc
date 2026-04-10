@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Benchmark xmlns="http://checklists.nist.gov/xccdf/1.2" id="test_stig">
+  <title>Test AV Device STIG</title>
+  <Rule id="SV-001" severity="high">
+    <title>Default Credentials Must Be Changed</title>
+    <description>All default manufacturer credentials must be changed before deployment.</description>
+    <check><check-content>Verify default credentials have been changed.</check-content></check>
+    <fixtext>Change all default credentials to meet DoD password policy.</fixtext>
+  </Rule>
+  <Rule id="SV-002" severity="high">
+    <title>Management Interface Encryption Required</title>
+    <description>All management interfaces must use encrypted protocols (HTTPS, SSH).</description>
+    <check><check-content>Verify management interface uses TLS 1.2 or higher.</check-content></check>
+    <fixtext>Enable TLS 1.2+ on all management interfaces.</fixtext>
+  </Rule>
+  <Rule id="SV-003" severity="medium">
+    <title>SNMP v3 Required</title>
+    <description>SNMP v1 and v2c are prohibited. Only SNMP v3 with authentication is allowed.</description>
+    <check><check-content>Verify SNMP v3 is configured.</check-content></check>
+    <fixtext>Disable SNMP v1/v2c. Configure SNMP v3 with SHA authentication.</fixtext>
+  </Rule>
+</Benchmark>

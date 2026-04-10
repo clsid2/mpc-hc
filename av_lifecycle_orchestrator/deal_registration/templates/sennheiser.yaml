@@ -1,0 +1,26 @@
+manufacturer: sennheiser
+registration_method: email
+api_endpoint: null
+auth: null
+email_to: dealreg@sennheiser.com
+processing_time_hours: 48
+approval_window_days: null
+constraints:
+  min_business_users: 50
+  max_discount_percent: 15
+required_fields:
+  - dealer_id
+  - dealer_name
+  - sennheiser_account_number
+  - business_users
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+notes: >
+  Sennheiser deal registration is email-based. Requires a minimum of 50
+  business users and a valid Sennheiser Account Number. Approval is within
+  48 business hours. Maximum discount available is 15%.

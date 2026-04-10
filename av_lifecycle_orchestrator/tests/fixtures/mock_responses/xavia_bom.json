@@ -1,0 +1,13 @@
+{
+    "room_type": "conference_room",
+    "recommended_products": [
+        {"id": "xavia-001", "name": "75in 4K Display", "manufacturer": "Samsung", "model": "QM75R-B", "category": "display", "msrp": 4200.0},
+        {"id": "xavia-002", "name": "Ceiling Microphone Array", "manufacturer": "Shure", "model": "MXA920-S", "category": "audio", "msrp": 4200.0},
+        {"id": "xavia-003", "name": "DSP with AEC", "manufacturer": "Biamp", "model": "TesiraFORTE-CI", "category": "dsp", "msrp": 5500.0},
+        {"id": "xavia-004", "name": "Touch Panel 10in", "manufacturer": "Crestron", "model": "TSW-1070-B-S", "category": "control", "msrp": 3500.0},
+        {"id": "xavia-005", "name": "HDMI Transmitter", "manufacturer": "Crestron", "model": "DM-NVX-350", "category": "video", "msrp": 1800.0}
+    ],
+    "total_msrp": 19200.0,
+    "compatibility_verified": true,
+    "notes": ["Display size based on 6-seater viewing distance", "DSP selected for AEC capability"]
+}

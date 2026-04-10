@@ -1,0 +1,32 @@
+manufacturer: amx
+registration_method: portal_api
+api_endpoint: https://partner.amx.com/api/deal-registration
+auth:
+  type: session
+  login_url: https://partner.amx.com/login
+email_to: null
+processing_time_hours: null
+approval_window_days: null
+constraints:
+  company_code_required: true
+  departments:
+    - Sales
+    - Account Management
+required_fields:
+  - dealer_id
+  - dealer_name
+  - partner_portal_id
+  - company_code
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - project_description
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+notes: >
+  AMX deal registration is submitted via the AMX Partner Portal. Requires
+  Partner Portal access, a Company Code, and department selection
+  (Sales or Account Management). Includes terms acceptance and preferred
+  contact method.

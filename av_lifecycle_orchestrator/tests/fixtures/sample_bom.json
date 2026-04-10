@@ -1,0 +1,79 @@
+{
+    "project_name": "HQ Conference Room Upgrade",
+    "items": [
+        {
+            "item_id": "item-001",
+            "manufacturer": "Crestron",
+            "model_number": "TSW-1070-B-S",
+            "description": "10.1 in. Touch Screen, Black",
+            "category": "control",
+            "quantity": 3,
+            "unit_cost": 2100.0,
+            "unit_price": 3500.0,
+            "shipping_cost": 25.0,
+            "country_of_origin": "United States",
+            "room_assignment": "Executive Boardroom",
+            "attributes": {"M": "W", "T": "CTL", "T2": "TS", "X": "C-01"}
+        },
+        {
+            "item_id": "item-002",
+            "manufacturer": "Biamp",
+            "model_number": "TesiraFORTE-AVB-VT4",
+            "description": "DSP with 4 analog inputs, VoIP",
+            "category": "dsp",
+            "quantity": 1,
+            "unit_cost": 4200.0,
+            "unit_price": 7000.0,
+            "shipping_cost": 50.0,
+            "country_of_origin": "United States",
+            "room_assignment": "Executive Boardroom",
+            "attributes": {"M": "R", "T": "DSP", "T2": "VoIP", "X": "D-01"}
+        },
+        {
+            "item_id": "item-003",
+            "manufacturer": "Samsung",
+            "model_number": "QM85R-B",
+            "description": "85 in. 4K UHD Display",
+            "category": "display",
+            "quantity": 2,
+            "unit_cost": 3800.0,
+            "unit_price": 5500.0,
+            "shipping_cost": 150.0,
+            "country_of_origin": "Korea (South)",
+            "room_assignment": "All-Hands Space",
+            "attributes": {"M": "W", "T": "D", "T2": "4K", "X": "V-01"}
+        },
+        {
+            "item_id": "item-004",
+            "manufacturer": "Shure",
+            "model_number": "MXA920-S",
+            "description": "Ceiling Array Microphone",
+            "category": "audio",
+            "quantity": 4,
+            "unit_cost": 2800.0,
+            "unit_price": 4200.0,
+            "shipping_cost": 30.0,
+            "country_of_origin": "United States",
+            "room_assignment": "Executive Boardroom",
+            "attributes": {"M": "C", "T": "M", "T2": "Array", "X": "A-01"}
+        },
+        {
+            "item_id": "item-005",
+            "manufacturer": "Hikvision",
+            "model_number": "DS-2CD2147G2-SU",
+            "description": "4MP AcuSense Fixed Dome Camera",
+            "category": "other",
+            "quantity": 2,
+            "unit_cost": 180.0,
+            "unit_price": 320.0,
+            "shipping_cost": 10.0,
+            "country_of_origin": "China",
+            "room_assignment": "All-Hands Space",
+            "attributes": {}
+        }
+    ],
+    "equipment_subtotal": 33060.0,
+    "total_items": 12,
+    "generated_by": "xavia",
+    "generated_at": "2026-04-10T12:00:00Z"
+}

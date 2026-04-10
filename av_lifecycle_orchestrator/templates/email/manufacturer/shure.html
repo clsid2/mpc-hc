@@ -1,0 +1,22 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>Shure Networked Audio Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Dante Network</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ shure_dante_enabled | default('Yes') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>IntelliMix Platform</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ shure_intellimix | default('IntelliMix Room') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Microphone Coverage Type</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ shure_mic_coverage | default('Ceiling Array') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Wireless Spectrum Coordination</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ shure_spectrum_coordination | default('Not required') }}</td></tr>
+</table>
+
+<p><strong>Shure Product Families:</strong></p>
+<ul>
+{% for family in shure_product_families %}
+<li>{{ family }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

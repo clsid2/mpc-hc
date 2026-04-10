@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+
+<h2>Deal Registration Request</h2>
+
+<p>Dear {{ manufacturer }} Team,</p>
+
+<p>We are writing to formally register the following opportunity with {{ manufacturer }}.</p>
+
+<h3>Dealer Information</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Dealer Name</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ dealer_name }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Dealer ID</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ dealer_id }}</td></tr>
+</table>
+
+<h3>End User Information</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Company</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ end_user_company }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Contact</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ end_user_contact_name }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Email</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ end_user_contact_email }}</td></tr>
+</table>
+
+<h3>Project Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Project Name</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ project_name }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Description</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ project_description }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Estimated Value</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">${{ "%.2f"|format(estimated_value) }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Expected Close</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ estimated_close_date }}</td></tr>
+</table>
+
+<h3>Products</h3>
+<ul>
+{% for product in product_lines %}
+<li>{{ product }}{% if quantities.get(product) %} (Qty: {{ quantities[product] }}){% endif %}</li>
+{% endfor %}
+</ul>
+
+{% block additional_content %}{% endblock %}
+
+<p>Please find the attached Bill of Materials and Basis of Design documents for your review.</p>
+
+<p>Best regards,<br>
+{{ sender_name }}<br>
+{{ dealer_name }}</p>
+
+</div>
+</body>
+</html>

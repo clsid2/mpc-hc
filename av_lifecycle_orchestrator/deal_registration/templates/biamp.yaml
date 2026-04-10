@@ -1,0 +1,25 @@
+manufacturer: biamp
+registration_method: graphql_api
+api_endpoint: https://api.evoko.app/graphql
+auth:
+  type: oauth2_pkce
+  token_url: https://api.evoko.app/oauth/token
+  scope: deal_registration
+email_to: null
+processing_time_hours: 48
+approval_window_days: null
+constraints: {}
+required_fields:
+  - dealer_id
+  - dealer_name
+  - end_user_company
+  - end_user_contact_name
+  - end_user_contact_email
+  - project_name
+  - estimated_close_date
+  - estimated_value
+  - product_lines
+notes: >
+  Biamp deal registration uses a GraphQL API at api.evoko.app/graphql with
+  OAuth 2.0 + PKCE authentication. Processing time is approximately 48 business
+  hours (2 business days).

@@ -1,0 +1,20 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>Q-SYS Ecosystem Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Q-SYS Core Model</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ qsys_core_model | default('Core 110f') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Q-SYS Reflect License</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ qsys_reflect_license | default('Not Required') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Certification Level</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ qsys_certification | default('Q-SYS Level 1') }}</td></tr>
+</table>
+
+<p><strong>Q-SYS Features/Plugins:</strong></p>
+<ul>
+{% for feature in qsys_features %}
+<li>{{ feature }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

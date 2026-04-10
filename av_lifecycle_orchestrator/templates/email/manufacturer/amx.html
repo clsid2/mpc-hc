@@ -1,0 +1,20 @@
+{% extends "email/deal_registration_base.html" %}
+
+{% block additional_content %}
+<h3>AMX by Harman Deal Details</h3>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Harman Pro Partner ID</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ harman_partner_id }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>AMX Control Platform</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ amx_control_platform | default('NX Series') }}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>SVSI/Networked AV</strong></td>
+    <td style="padding: 8px; border: 1px solid #ddd;">{{ amx_networked_av | default('No') }}</td></tr>
+</table>
+
+<p><strong>AMX/Harman Product Categories:</strong></p>
+<ul>
+{% for category in amx_product_categories %}
+<li>{{ category }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

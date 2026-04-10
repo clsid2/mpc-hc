@@ -1,0 +1,5 @@
+[
+    {"id": 1, "name": "TSW-1070-B-S", "manufacturer": "Crestron", "model_number": "TSW-1070-B-S", "description": "10.1 in Touch Screen", "cost": 2100.0, "price": 3500.0, "shipping_cost": 25.0, "category": "control"},
+    {"id": 2, "name": "TesiraFORTE-AVB-VT4", "manufacturer": "Biamp", "model_number": "TesiraFORTE-AVB-VT4", "description": "DSP with VoIP", "cost": 4200.0, "price": 7000.0, "shipping_cost": 50.0, "category": "dsp"},
+    {"id": 3, "name": "QM85R-B", "manufacturer": "Samsung", "model_number": "QM85R-B", "description": "85in 4K Display", "cost": 3800.0, "price": 5500.0, "shipping_cost": 150.0, "category": "display"}
+]
