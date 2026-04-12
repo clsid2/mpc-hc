@@ -17,15 +17,15 @@ AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindFirstDlgItem(const DLGTEMPLATE* pTemp
 AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindNextDlgItem(DLGITEMTEMPLATE* pItem, BOOL bDialogEx);
 
 CDpiAwareResizableDialog::CDpiAwareResizableDialog()
-    : m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+    : m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bGripVisible(true), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
@@ -303,7 +303,7 @@ void CDpiAwareResizableDialog::UpdateSizeGripDPI()
     int gripX = clientRect.right - gripCx;
     int gripY = clientRect.bottom - gripCy;
 
-    pGrip->SetWindowPos(&CWnd::wndBottom, gripX, gripY, gripCx, gripCy, SWP_NOACTIVATE | SWP_NOREPOSITION | (m_bGripVisible ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+    pGrip->SetWindowPos(&CWnd::wndBottom, gripX, gripY, gripCx, gripCy, SWP_NOACTIVATE | SWP_NOREPOSITION | (!m_bMaximized && IsSizeGripVisible() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 }
 
 //see CResizableDialog::OnSize -- we override and do not call parent because private implementation is not dpi aware
@@ -319,9 +319,9 @@ void CDpiAwareResizableDialog::OnSize(UINT nType, int cx, int cy) {
     }
 
     if (nType == SIZE_MAXIMIZED) {
-        m_bGripVisible = false;
+        m_bMaximized = true;
     } else {
-        m_bGripVisible = true;
+        m_bMaximized = false;
     }
 
     UpdateSizeGripDPI();
