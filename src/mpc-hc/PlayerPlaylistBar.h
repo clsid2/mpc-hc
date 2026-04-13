@@ -37,6 +37,16 @@ class OpenMediaData;
 
 class CMainFrame;
 
+// Thin container window that provides WS_EX_CLIENTEDGE border drawing and
+// forwards child-originated messages to its own parent (the playlist bar).
+class CPlaylistListFrame : public CWnd
+{
+protected:
+    afx_msg void OnNcPaint();
+    LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+    DECLARE_MESSAGE_MAP()
+};
+
 struct CueTrackMeta {
     CString title;
     CString performer;
@@ -59,9 +69,9 @@ private:
     void ScaleFont();
 
     CImageList m_fakeImageList;
+    CPlaylistListFrame m_listFrame;
     CPlayerListCtrl m_list;
 
-    int m_itemHeight = 0;
     int m_initialWindowDPI = 0;
     bool createdWindow;
     CPlaylistIDs m_ExternalPlayListFNCopy;

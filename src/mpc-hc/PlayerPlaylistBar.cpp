@@ -32,12 +32,58 @@
 #include "PathUtils.h"
 #include "WinAPIUtils.h"
 #include "CMPCTheme.h"
+#include "CMPCThemeUtil.h"
 #include "CoverArt.h"
 #include "FileHandle.h"
 #include "MediaInfo/MediaInfoDLL.h"
 
 #undef SubclassWindow
 
+
+// CPlaylistListFrame — thin border container; forwards owner-draw and input messages to bar
+
+BEGIN_MESSAGE_MAP(CPlaylistListFrame, CWnd)
+    ON_WM_NCPAINT()
+END_MESSAGE_MAP()
+
+void CPlaylistListFrame::OnNcPaint()
+{
+    if (AppNeedsThemedControls()) {
+        CWindowDC dc(this);
+        CRect wr;
+        GetWindowRect(&wr);
+        wr.OffsetRect(-wr.left, -wr.top);
+        CPoint clientOffset = CMPCThemeUtil::GetClientRectOffset(this);
+        CRect clip = wr;
+        clip.DeflateRect(clientOffset.x, clientOffset.x);
+        dc.ExcludeClipRect(clip);
+        dc.FillSolidRect(wr, CMPCTheme::ContentBGColor);
+        CBrush brush(CMPCTheme::WindowBorderColorLight);
+        dc.FrameRect(wr, &brush);
+    } else {
+        __super::OnNcPaint();
+    }
+}
+
+LRESULT CPlaylistListFrame::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (CWnd* pBar = GetParent()) {
+        switch (message) {
+        case WM_NOTIFY:
+        case WM_DRAWITEM:
+        case WM_MEASUREITEM:
+            return pBar->SendMessage(message, wParam, lParam);
+        case WM_XBUTTONDOWN:
+        case WM_XBUTTONUP:
+        case WM_XBUTTONDBLCLK: {
+            CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            MapWindowPoints(pBar, &pt, 1);
+            return pBar->SendMessage(message, wParam, MAKELPARAM(pt.x, pt.y));
+        }
+        }
+    }
+    return __super::WindowProc(message, wParam, lParam);
+}
 
 
 IMPLEMENT_DYNAMIC(CPlayerPlaylistBar, CMPCThemePlayerBar)
@@ -73,14 +119,19 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
         return FALSE;
     }
 
+    m_listFrame.CreateEx(
+        WS_EX_CLIENTEDGE | WS_EX_DLGMODALFRAME, AfxRegisterWndClass(0), nullptr,
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+        CRect(0, 0, 100, 100), this, 0);
+
     m_list.CreateEx(
-        WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE,
+        0,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP
         | LVS_OWNERDRAWFIXED
         | LVS_OWNERDATA
         | LVS_NOCOLUMNHEADER
         | LVS_REPORT | LVS_SINGLESEL | LVS_AUTOARRANGE | LVS_NOSORTHEADER, // TODO: remove LVS_SINGLESEL and implement multiple item repositioning (dragging is ready)
-        CRect(0, 0, 100, 100), this, IDC_PLAYLIST);
+        CRect(0, 0, 100, 100), &m_listFrame, IDC_PLAYLIST);
 
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
@@ -1765,7 +1816,6 @@ BEGIN_MESSAGE_MAP(CPlayerPlaylistBar, CMPCThemePlayerBar)
     ON_WM_XBUTTONUP()
     ON_WM_XBUTTONDBLCLK()
     ON_WM_ERASEBKGND()
-    ON_WM_VSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -1815,12 +1865,17 @@ void CPlayerPlaylistBar::ResizeListColumn()
         CRect r;
         GetClientRect(r);
         r.DeflateRect(2, 2);
+        m_listFrame.MoveWindow(r, FALSE);
+
+        CRect listR;
+        m_listFrame.GetClientRect(&listR);
 
         m_list.SetRedraw(FALSE);
         m_list.SetColumnWidth(COL_NAME, 0);
         m_list.SetRedraw(TRUE);
 
-        m_list.MoveWindow(r, FALSE);
+        m_list.MoveWindow(listR, FALSE);
+
         m_list.GetClientRect(r);
 
         m_list.SetRedraw(FALSE);
