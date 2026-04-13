@@ -46,7 +46,7 @@ CPPageFullscreen::CPPageFullscreen()
     , m_bAutoChangeFSModeApplyDefModeAtFSExist(TRUE)
     , m_bAutoChangeFSModeRestoreResAfterProgExit(TRUE)
     , m_uAutoChangeFullscrResDelay(0)
-    , m_list(0)
+    , m_list()
 {
     m_FullScreenSeparateControlsText = CStringW(StrRes(IDS_PPAGEADVANCED_FULLSCREEN_SEPARATE_CONTROLS));
 }

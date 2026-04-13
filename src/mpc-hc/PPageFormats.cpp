@@ -37,7 +37,7 @@
 IMPLEMENT_DYNAMIC(CPPageFormats, CMPCThemePPageBase)
 CPPageFormats::CPPageFormats()
     : CMPCThemePPageBase(CPPageFormats::IDD, CPPageFormats::IDD)
-    , m_list(0)
+    , m_list()
     , m_bInsufficientPrivileges(false)
     , m_bFileExtChanged(false)
     , m_bHaveRegisteredCategory(false)

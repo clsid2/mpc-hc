@@ -29,7 +29,7 @@
 IMPLEMENT_DYNAMIC(CPPageMouse, CMPCThemePPageBase)
 CPPageMouse::CPPageMouse()
     : CMPCThemePPageBase(CPPageMouse::IDD, CPPageMouse::IDD)
-    , m_list(0)
+    , m_list()
 {
     m_comands_M.Add(0);
     m_comands_M.Add(ID_PLAY_PLAYPAUSE);
