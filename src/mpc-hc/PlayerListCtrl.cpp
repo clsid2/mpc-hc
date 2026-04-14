@@ -549,9 +549,10 @@ int CMPCThemeInPlaceEdit::OnCreate(LPCREATESTRUCT lpCreateStruct)
 // CPlayerListCtrl
 
 IMPLEMENT_DYNAMIC(CPlayerListCtrl, CMPCThemePlayerListCtrl)
-CPlayerListCtrl::CPlayerListCtrl()
+CPlayerListCtrl::CPlayerListCtrl(bool bDoubleClickAction)
     : m_nItemClicked(-1)
     , m_nSubItemClicked(-1)
+    , m_bDoubleClickAction(bDoubleClickAction)
     , m_nTimerID(0)
     , m_fInPlaceDirty(false)
     , inPlaceControl(false)
@@ -1067,7 +1068,7 @@ void CPlayerListCtrl::OnLButtonDown(UINT nFlags, CPoint point)
     } else if (m_nItemClicked == m_nItemClickedNow /*&& m_nSubItemClicked == m_nSubItemClickedNow*/) {
         m_nSubItemClicked = m_nSubItemClickedNow;
 
-        m_nTimerID = SetTimer(1, 1, nullptr);
+        m_nTimerID = SetTimer(1, m_bDoubleClickAction ? GetDoubleClickTime() : 1u, nullptr);
     } else {
         m_nItemClicked = m_nItemClickedNow;
         m_nSubItemClicked = m_nSubItemClickedNow;

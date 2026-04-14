@@ -178,6 +178,7 @@ class CPlayerListCtrl : public CMPCThemePlayerListCtrl
 
 private:
     int m_nItemClicked, m_nSubItemClicked;
+    bool m_bDoubleClickAction;
     bool inPlaceControl;
     CRect inPlaceControlRect;
     UINT_PTR m_nTimerID;
@@ -188,7 +189,7 @@ private:
     void StartVirtualEditLabel(int nItem, int nSubItem);
 
 public:
-    CPlayerListCtrl();
+    CPlayerListCtrl(bool bDoubleClickAction = false);
     virtual ~CPlayerListCtrl();
 
     int HitTestEx(const CPoint& point, int* col) const;
