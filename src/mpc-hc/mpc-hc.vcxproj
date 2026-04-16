@@ -123,6 +123,18 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Lite')) and '$(Platform)'=='x64'">
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)Lang" if exist "$(SolutionDir)bin\mpc-hc_x64\Lang" mklink /J "$(OutDir)Lang" "$(SolutionDir)bin\mpc-hc_x64\Lang"
+if not exist "$(OutDir)LAVFilters64" if exist "$(SolutionDir)bin\mpc-hc_x64\LAVFilters64" mklink /J "$(OutDir)LAVFilters64" "$(SolutionDir)bin\mpc-hc_x64\LAVFilters64"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Lite')) and '$(Platform)'=='Win32'">
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)Lang" if exist "$(SolutionDir)bin\mpc-hc_x86\Lang" mklink /J "$(OutDir)Lang" "$(SolutionDir)bin\mpc-hc_x86\Lang"
+if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFilters" mklink /J "$(OutDir)LAVFilters" "$(SolutionDir)bin\mpc-hc_x86\LAVFilters"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="!$(Configuration.Contains('Lite'))">
     <Link>
       <AdditionalDependencies>RARFileSource.res;%(AdditionalDependencies)</AdditionalDependencies>
@@ -141,9 +153,12 @@
     <ClCompile Include="CMPCThemeFrameWnd.cpp" />
     <ClCompile Include="CMPCThemeInternalPropertyPageWnd.cpp" />
     <ClCompile Include="CMPCThemeMiniDockFrameWnd.cpp" />
+    <ClCompile Include="CMPCThemeModelessResizableDialog.cpp" />
+    <ClCompile Include="CMPCThemeProgressCtrl.cpp" />
     <ClCompile Include="CMPCThemePropPageButton.cpp" />
     <ClCompile Include="CMPCThemeResizablePropertyPage.cpp" />
     <ClCompile Include="CMPCThemeResizablePropertySheet.cpp" />
+    <ClCompile Include="CMPCThemeScrollBarRenderer.cpp" />
     <ClCompile Include="CMPCThemeTitleBarControlButton.cpp" />
     <ClCompile Include="CMPCThemeUtil.cpp" />
     <ClCompile Include="CMPCThemeComboBox.cpp" />
@@ -190,6 +205,7 @@
     <ClCompile Include="CShockwaveFlash.cpp" />
     <ClCompile Include="DebugShadersDlg.cpp" />
     <ClCompile Include="DeinterlacerFilter.cpp" />
+    <ClCompile Include="DpiAwareResizableDialog.cpp" />
     <ClCompile Include="DpiHelper.cpp" />
     <ClCompile Include="DVBChannel.cpp" />
     <ClCompile Include="EditListEditor.cpp" />
@@ -275,6 +291,8 @@
     <ClCompile Include="PPageSubtitles.cpp" />
     <ClCompile Include="PPageSync.cpp" />
     <ClCompile Include="PPageTheme.cpp" />
+    <ClCompile Include="PPageToolBar.cpp" />
+    <ClCompile Include="PPageToolBarLayout.cpp" />
     <ClCompile Include="PPageTweaks.cpp" />
     <ClCompile Include="PPageWebServer.cpp" />
     <ClCompile Include="RarEntrySelectorDialog.cpp" />
@@ -332,9 +350,12 @@
     <ClInclude Include="CMPCThemeFrameWnd.h" />
     <ClInclude Include="CMPCThemeInternalPropertyPageWnd.h" />
     <ClInclude Include="CMPCThemeMiniDockFrameWnd.h" />
+    <ClInclude Include="CMPCThemeModelessResizableDialog.h" />
+    <ClInclude Include="CMPCThemeProgressCtrl.h" />
     <ClInclude Include="CMPCThemePropPageButton.h" />
     <ClInclude Include="CMPCThemeResizablePropertyPage.h" />
     <ClInclude Include="CMPCThemeResizablePropertySheet.h" />
+    <ClInclude Include="CMPCThemeScrollBarRenderer.h" />
     <ClInclude Include="CMPCThemeTitleBarControlButton.h" />
     <ClInclude Include="CMPCThemeUtil.h" />
     <ClInclude Include="CMPCThemeComboBox.h" />
@@ -382,6 +403,7 @@
     <ClInclude Include="CShockwaveFlash.h" />
     <ClInclude Include="DebugShadersDlg.h" />
     <ClInclude Include="DeinterlacerFilter.h" />
+    <ClInclude Include="DpiAwareResizableDialog.h" />
     <ClInclude Include="DpiHelper.h" />
     <ClInclude Include="DVBChannel.h" />
     <ClInclude Include="EditListEditor.h" />
@@ -403,6 +425,7 @@
     <ClInclude Include="FullscreenWnd.h" />
     <ClInclude Include="GoToDlg.h" />
     <ClInclude Include="GraphThread.h" />
+    <ClInclude Include="MemoryDCBuffer.h" />
     <ClInclude Include="MediaTransControls.h" />
     <ClInclude Include="Ifo.h" />
     <ClInclude Include="IGraphBuilder2.h" />
@@ -473,6 +496,8 @@
     <ClInclude Include="PPageSubtitles.h" />
     <ClInclude Include="PPageSync.h" />
     <ClInclude Include="PPageTheme.h" />
+    <ClInclude Include="PPageToolBar.h" />
+    <ClInclude Include="PPageToolBarLayout.h" />
     <ClInclude Include="PPageTweaks.h" />
     <ClInclude Include="PPageWebServer.h" />
     <ClInclude Include="RarEntrySelectorDialog.h" />

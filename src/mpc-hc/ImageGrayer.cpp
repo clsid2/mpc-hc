@@ -194,7 +194,7 @@ bool ImageGrayer::UpdateColor(const CImage& imgSource, CImage& imgDest, bool dis
         if (disabled) {
             themeColor = CMPCTheme::ImageDisabledColor;
         } else {
-            themeColor = CMPCTheme::TextFGColor;
+            themeColor = CMPCTheme::TextFGColorFade;
         }
         newColor.rgbRed = GetRValue(themeColor);
         newColor.rgbGreen = GetGValue(themeColor);
@@ -285,4 +285,20 @@ bool ImageGrayer::Colorize(const CImage& imgSrc, CImage& imgDest, COLORREF fg, C
     }
 
     return true;
+}
+
+void ImageGrayer::PreMultiplyAlpha(CImage& imgSource) {
+    BYTE* bits = static_cast<BYTE*>(imgSource.GetBits());
+    for (int y = 0; y < imgSource.GetHeight(); y++, bits += imgSource.GetPitch()) {
+        RGBQUAD* p = reinterpret_cast<RGBQUAD*>(bits);
+        for (int x = 0; x < imgSource.GetWidth(); x++) {
+            HLS hls(p[x]);
+
+            RGBQUAD rgb = hls.toRGBQUAD();
+
+            p[x].rgbRed = static_cast<BYTE>(round((float)p[x].rgbRed * p[x].rgbReserved / 255.0f));
+            p[x].rgbBlue = static_cast<BYTE>(round((float)p[x].rgbBlue * p[x].rgbReserved / 255.0f));
+            p[x].rgbGreen = static_cast<BYTE>(round((float)p[x].rgbGreen * p[x].rgbReserved / 255.0f));
+        }
+    }
 }

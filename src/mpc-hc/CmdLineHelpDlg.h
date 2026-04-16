@@ -37,6 +37,9 @@ public:
 
     enum { IDD = IDD_CMD_LINE_HELP };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     afx_msg virtual BOOL OnInitDialog();

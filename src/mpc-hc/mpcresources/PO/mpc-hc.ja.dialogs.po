@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # O SA, 2021
 # Sonozaki Shion <mskt01a@gmail.com>, 2021
-# ever_green, 2025
+# ever_green, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-11-08 22:23:47+0000\n"
+"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: ever_green, 2025\n"
+"Last-Translator: ever_green, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -66,7 +66,7 @@ msgstr "プレビュー"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "V/A Buffers:"
-msgstr "V/A バッファー:"
+msgstr "V/A バッファ:"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
 msgid "Audio to wav"
@@ -78,7 +78,7 @@ msgstr "開始"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
 msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr "内蔵の音声切り替えフィルターを有効にする (再起動が必要)"
+msgstr "内蔵オーディオ スイッチャー フィルターを有効にする (再起動が必要)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
@@ -110,15 +110,15 @@ msgstr "カスタム チャンネル マッピングを有効にする"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM1"
 msgid "Speaker configuration for"
-msgstr ""
+msgstr "入力スピーカーの設定:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM2"
 msgid "input channels:"
-msgstr ""
+msgstr "チャンネル"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC_CM3"
 msgid "Hold shift for immediate changes when clicking something"
-msgstr ""
+msgstr "Shift キーを押したままクリックすると、即座に変更されます"
 
 msgctxt "IDD_GOTO_DLG_CAPTION"
 msgid "Go To..."
@@ -128,7 +128,7 @@ msgctxt "IDD_GOTO_DLG_IDC_STATIC"
 msgid ""
 "Enter a timecode using the format [hh:]mm:ss.ms to jump to a specified time."
 " You do not need to enter the separators explicitly."
-msgstr "指定時間にジャンプするには、[hh:]mm:ss.ms の形式でタイムコードを入力してください。区切り記号を入力する必要はありません。"
+msgstr "指定時間にジャンプするには、[hh:]mm:ss.ms の形式でタイムコードを入力してください。区切り記号は省略可能です。"
 
 msgctxt "IDD_GOTO_DLG_IDC_STATIC"
 msgid "Time"
@@ -160,7 +160,7 @@ msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
-msgstr "インターネットやコンピューターにある再生したい動画やオーディオ ファイルのアドレスを入力してください。"
+msgstr "インターネット上またはお使いのコンピューター上にある映画やオーディオ ファイルのアドレスを入力すると、プレーヤーが開きます。"
 
 msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid "Open:"
@@ -188,15 +188,11 @@ msgstr "キャンセル"
 
 msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
 msgid "Add to playlist without opening"
-msgstr "開かずに再生リストに追加する"
+msgstr "開かずにプレイリストに追加する"
 
 msgctxt "IDD_ABOUTBOX_CAPTION"
 msgid "About"
 msgstr "バージョン情報"
-
-msgctxt "IDD_ABOUTBOX_IDC_AUTHORS_LINK"
-msgid "Copyright 2002-2025 clsid2 and others"
-msgstr "著作権 2002-2025 clsid2 およびその他"
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid ""
@@ -269,7 +265,7 @@ msgstr "ファイル名のみ"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO5"
 msgid "Don't prefix anything"
-msgstr "プログラム名"
+msgstr "プログラム名のみ"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK13"
 msgid "Replace file name with title"
@@ -297,7 +293,7 @@ msgstr "プロセスの優先度を 通常以上 にする"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK14"
 msgid "Enable cover-art support"
-msgstr "カバーアートのサポートを有効にする"
+msgstr "カバーアート表示を有効にする"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "History"
@@ -309,7 +305,7 @@ msgstr "最近使ったファイルの履歴を保存する"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK2"
 msgid "Remember last playlist"
-msgstr "終了時の再生リストを記憶する"
+msgstr "終了時のプレイリストを記憶する"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
 msgid "Remember File position"
@@ -421,7 +417,7 @@ msgstr "再生"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO2"
 msgid "Repeat forever"
-msgstr "連続再生 (無限)"
+msgstr "常時リピート"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC1"
 msgid "time(s)"
@@ -429,7 +425,7 @@ msgstr "回"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
 msgid "Repeat mode:"
-msgstr "連続再生モード:"
+msgstr "リピート モード:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "After Playback"
@@ -573,7 +569,7 @@ msgid ""
 "videocard's settings, subtitles aren't going to look any better but it will "
 "surely eat your CPU."
 msgstr ""
-"字幕の配置を強制的に指定して、ビデオカードの設定で全画面表示のアンチエイリアスを有効にすると、CPU を消費するのみで字幕は少しも綺麗になりません。"
+"字幕の配置を強制的に指定して、ビデオカードの設定で全画面アンチエイリアスを有効にしても、字幕はまったく綺麗にならず、CPU を余計に消費するだけです。"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC2"
 msgid "File extensions"
@@ -613,7 +609,7 @@ msgstr "ディレクトリ"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK7"
 msgid "Playlist"
-msgstr "再生リスト"
+msgstr "プレイリスト"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC1"
 msgid "Autoplay"
@@ -633,7 +629,7 @@ msgstr "DVD"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK3"
 msgid "Audio CD"
-msgstr "音楽 CD"
+msgstr "オーディオ CD"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_STATIC"
 msgid "Jump distances (small, medium, large in ms)"
@@ -653,22 +649,22 @@ msgstr "「再生中」 のファイル情報を Skype のムード メッセー
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK_LCD"
 msgid "Enable Logitech LCD support (experimental)"
-msgstr "Logitech LCD のサポートを有効にする (試験的)"
+msgstr "Logitech LCD サポートを有効にする (試験的)"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK6"
 msgid ""
 "Prevent minimizing the player when in fullscreen on a non default monitor"
-msgstr "既定以外のモニターで全画面表示時にプレーヤーを最小化しないようにする"
+msgstr "既定以外のモニターでの全画面表示中にプレーヤーの最小化を防ぐ"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK7"
 msgid ""
 "Open previous/next file in folder on \"Skip back/forward\" when there is "
 "only one item in playlist"
-msgstr "再生リストに項目が 1 つしかない場合、 「戻る/進む」 でフォルダー内の前/次のファイルを開く"
+msgstr "プレイリストに項目が 1 つしかない場合、 「前へ/次へ」 でフォルダー内の前/次のファイルを開く"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_FASTSEEK_CHECK"
 msgid "Fast seek (on keyframe)"
-msgstr "高速シーク (キーフレームに)"
+msgstr "高速シーク (キーフレーム単位)"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON1"
 msgid "Add Filter..."
@@ -676,7 +672,7 @@ msgstr "フィルターを追加..."
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON2"
 msgid "Remove"
-msgstr "消去"
+msgstr "除去"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_RADIO1"
 msgid "Prefer"
@@ -810,6 +806,14 @@ msgctxt "IDD_FAVORGANIZE_IDOK"
 msgid "OK"
 msgstr "OK"
 
+msgctxt "IDD_FAVORGANIZE_IDCANCEL"
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgctxt "IDD_FAVORGANIZE_ID_APPLY_NOW"
+msgid "Apply"
+msgstr "適用"
+
 msgctxt "IDD_PNSPRESET_DLG_CAPTION"
 msgid "PnS Frame Adjust Presets"
 msgstr "PnS フレーム調整プリセット"
@@ -832,7 +836,7 @@ msgstr "下へ"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON1"
 msgid "&Set"
-msgstr "設定(&S)"
+msgstr "反映(&S)"
 
 msgctxt "IDD_PNSPRESET_DLG_IDCANCEL"
 msgid "&Cancel"
@@ -875,8 +879,7 @@ msgid ""
 "MPC-HC could not render some of the pins in the graph, you may not have the "
 "needed codecs or filters installed on the system."
 msgstr ""
-"MPC-HC "
-"は、グラフの一部のピンをレンダリングできませんでした。必要なコーデックまたはフィルターがシステムにインストールされていない可能性があります。"
+"MPC-HC はグラフ内の一部のピンをレンダリングできませんでした。必要なコーデックやフィルターがシステムにインストールされていない可能性があります。"
 
 msgctxt "IDD_MEDIATYPES_DLG_IDC_STATIC2"
 msgid "The following pin(s) failed to find a connectable filter:"
@@ -924,15 +927,15 @@ msgstr "間隔"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC2"
 msgid "Angle (z,°)"
-msgstr "角度 (z,°)"
+msgstr "回転角度 (°)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC3"
 msgid "Scale (x,%)"
-msgstr "スケール (x,%)"
+msgstr "横方向の倍率 (%)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC4"
 msgid "Scale (y,%)"
-msgstr "スケール (y,%)"
+msgstr "縦方向の倍率 (%)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Border Style"
@@ -1050,7 +1053,7 @@ msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
 msgid ""
 "If you would like to use the stand-alone versions of these filters or "
 "another replacement, disable them here."
-msgstr "スタンドアロン版や代替フィルタを使用する場合は、ここで無効にしてください。"
+msgstr "スタンドアロン版や代替フィルターを使用する場合は、ここで無効にしてください。"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
 msgid "Source Filters"
@@ -1166,7 +1169,7 @@ msgstr "VMR-9 ミキサー モード"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "EVR バッファー:"
+msgstr "EVR バッファ:"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
@@ -1398,7 +1401,7 @@ msgstr "受信機"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST10"
 msgid "Channel switching approach:"
-msgstr "チャンネル スイッチング アプローチ:"
+msgstr "チャンネル切り替え方式:"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
 msgid "Rebuild filter graph"
@@ -1438,7 +1441,7 @@ msgstr "最も近い垂直同期で表示する"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "目標同期オフセット:"
+msgstr "同期オフセット目標値:"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC6"
 msgid "ms"
@@ -1486,7 +1489,7 @@ msgstr "全画面表示モニター"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK2"
 msgid "Use autochange fullscreen monitor mode"
-msgstr "全画面表示モニター モードの自動変更を使用する"
+msgstr "全画面表示時にモニター モードの自動変更を使用する"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_BUTTON1"
 msgid "Add"
@@ -1506,7 +1509,7 @@ msgstr "下へ"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK3"
 msgid "Apply default monitor mode on fullscreen exit"
-msgstr "全画面表示終了時に既定のモニター モードを適用する"
+msgstr "全画面表示の解除時に既定のモニター モードを適用する"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_RESTORERESCHECK"
 msgid "Restore resolution on program exit"
@@ -1534,7 +1537,7 @@ msgstr "スキャン"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK1"
 msgid "Prefer forced and/or default subtitles tracks"
-msgstr "強制字幕トラックや既定の字幕トラックを優先する"
+msgstr "強制字幕および/または既定の字幕を優先する"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
 msgid "Prefer external subtitles over embedded subtitles"
@@ -1598,7 +1601,7 @@ msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid ""
 "Shaders contain special effects which can be added to the video rendering "
 "process."
-msgstr "シェーダーには、ビデオ レンダリング プロセスに追加できる特殊効果が含まれています。"
+msgstr "シェーダーには、ビデオのレンダリング処理に追加できる特殊効果が含まれています。"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON12"
 msgid "Add shader file"
@@ -1606,7 +1609,7 @@ msgstr "シェーダー ファイルを追加"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON13"
 msgid "Remove"
-msgstr "消去"
+msgstr "除去"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON1"
 msgid "Add to pre-resize"
@@ -1634,25 +1637,21 @@ msgstr "削除"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active pre-resize shaders"
-msgstr "アクティブなリサイズ前のシェーダー"
+msgstr "有効なリサイズ前のシェーダー"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active post-resize shaders"
-msgstr "アクティブなリサイズ後のシェーダー"
+msgstr "有効なリサイズ後のシェーダー"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC5"
 msgid ""
 "MPC-VR does not support pre-resize shaders. It will run them after resize, "
 "before the post-resize shaders."
-msgstr "MPC-VR は、リサイズ前のシェーダーをサポートしていません。 リサイズ後、リサイズ後のシェーダーの前に実行されます。"
+msgstr "MPC-VR はリサイズ前のシェーダーには対応していません。これらはリサイズ後に、リサイズ後のシェーダーの前に実行されます。"
 
 msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
 msgstr "シェーダー デバッガー"
-
-msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC"
-msgid "Debug Information"
-msgstr "デバッグ情報"
 
 msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO1"
 msgid "PS 2.0"
@@ -1670,9 +1669,13 @@ msgctxt "IDD_DEBUGSHADERS_DLG_IDC_RADIO4"
 msgid "PS 3.0"
 msgstr "PS 3.0"
 
+msgctxt "IDD_DEBUGSHADERS_DLG_IDC_STATIC1"
+msgid "Debug Information"
+msgstr "デバッグ情報"
+
 msgctxt "IDD_PPAGEADVANCED_IDC_STATIC"
 msgid "Advanced Settings, do not edit unless you know what you are doing."
-msgstr "高度な設定は、自分が何をしているのかわからない限り編集しないでください。"
+msgstr "高度な設定: 内容を十分に理解している場合のみ編集してください。"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
 msgid "True"
@@ -1688,7 +1691,7 @@ msgstr "既定"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK5"
 msgid "SaneAR Audio Renderer Enabled"
-msgstr "SaneAR オーディオ レンダラーが有効"
+msgstr "SaneAR オーディオ レンダラーを有効にする"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC5"
 msgid "Device"
@@ -1734,8 +1737,7 @@ msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC8"
 msgid ""
 "To minimize audio distortion, it is recommended to keep player volume at "
 "around 85% when playing loud lossy-encoded content."
-msgstr ""
-"音声の歪みを最小限に抑えるために、大音量の非可逆エンコードされたコンテンツを再生する場合は、プレーヤーの音量を約 85% に維持することを推奨します。"
+msgstr "大音量の非可逆圧縮コンテンツを再生する場合、音声の歪みを最小限に抑えるため、プレイヤーの音量は約 85% に保つことを推奨します。"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
 msgid "MPC Audio Renderer Settings"
@@ -1755,29 +1757,29 @@ msgstr "クラッシュ レポート"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC"
 msgid "We are sorry, it seems MPC-HC just crashed. :("
-msgstr "申し訳ありません。 MPC-HC がクラッシュしました。"
+msgstr "申し訳ありません。MPC-HC がクラッシュしました。"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_CHECK1"
 msgid "Send a bug report to help us diagnose and fix the problem."
-msgstr "問題の診断と修正に役立てるためにバグ レポートを送信する。"
+msgstr "問題の診断と修正のためにバグレポートを送信する。"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC1"
 msgid "Optional information"
-msgstr "オプションの情報"
+msgstr "任意情報"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC2"
 msgid "Email:"
-msgstr "電子メール:"
+msgstr "メールアドレス:"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC3"
 msgid ""
 "Your email address is optional and will only be used if the developers need "
 "to contact you for more information."
-msgstr "電子メールのアドレスは任意であり、開発者がより多くの情報を得るために連絡する必要がある場合にのみ使用されます。"
+msgstr "メール アドレスの入力は任意です。開発者が追加の情報を確認する必要がある場合にのみ使用されます。"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC4"
 msgid "Problem description (use English only):"
-msgstr "問題の詳細 (英語のみを使用してください):"
+msgstr "問題の詳細 (英語のみ):"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_BUTTON1"
 msgid "Restart MPC-HC"
@@ -1822,10 +1824,6 @@ msgstr "モダン テーマを使用する"
 msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
 msgid "Modern Theme Color:"
 msgstr "モダン テーマ カラー:"
-
-msgctxt "IDD_PPAGETHEME_IDC_STATIC3"
-msgid "Control buttons size:"
-msgstr "コントロール ボタンのサイズ:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
@@ -1950,3 +1948,63 @@ msgstr "選択"
 msgctxt "IDD_RAR_ENTRY_SELECTOR_IDCANCEL"
 msgid "Cancel"
 msgstr "キャンセル"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Style"
+msgstr "ツールバーのスタイル"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC3"
+msgid "Toolbar Scale:"
+msgstr "ツールバーのサイズ:"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Toolbar Alignment:"
+msgstr "ツールバーの配置:"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Active Style:"
+msgstr "現在のスタイル:"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 1"
+msgstr "カスタム ボタン 1"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Click"
+msgstr "クリック"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Right click"
+msgstr "右クリック"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 2"
+msgstr "カスタム ボタン 2"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 3"
+msgstr "カスタム ボタン 3"
+
+msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
+msgid "Custom Button 4"
+msgstr "カスタム ボタン 4"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
+msgid "Default"
+msgstr "既定"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON3"
+msgid "<<"
+msgstr "<<"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON4"
+msgid ">>"
+msgstr ">>"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON5"
+msgid "^"
+msgstr "^"
+
+msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
+msgid "v"
+msgstr "v"

@@ -59,6 +59,8 @@ bool CVobSubImage::Alloc(int w, int h)
     // wide border around the text, that's why we need a bit more memory
     // to be allocated.
 
+    ASSERT(w > 0 && h > 0);
+
     if (lpTemp1 == nullptr || w * h > org.cx * org.cy || (w + 2) * (h + 2) > (org.cx + 2) * (org.cy + 2)) {
         Free();
 
@@ -103,9 +105,14 @@ bool CVobSubImage::Decode(BYTE* _lpData, size_t _packetSize, size_t _dataSize, i
                           RGBQUAD* _orgpal /*[16]*/, RGBQUAD* _cuspal /*[4]*/,
                           bool _bTrim)
 {
-    GetPacketInfo(_lpData, _packetSize, _dataSize, _t);
+    if (!GetPacketInfo(_lpData, _packetSize, _dataSize, _t)) {
+        return false;
+    }
 
-    if (!Alloc(rect.Width(), rect.Height())) {
+    int w = rect.Width();
+    int h = rect.Height();
+    if (w <= 0 || h <= 0 || !Alloc(w, h)) {
+        ASSERT(false);
         return false;
     }
 
@@ -156,10 +163,11 @@ bool CVobSubImage::Decode(BYTE* _lpData, size_t _packetSize, size_t _dataSize, i
     return true;
 }
 
-void CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t dataSize, int t /*= INT_MAX*/)
+bool CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t dataSize, int t /*= INT_MAX*/)
 {
-    //  delay = 0;
+    bool valid = false;
 
+    //  delay = 0;
     size_t i, nextctrlblk = dataSize;
     WORD _pal = 0, tr = 0;
     WORD nPal = 0, nTr = 0;
@@ -173,8 +181,9 @@ void CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
         i += 2;
 
         if (nextctrlblk > packetSize || nextctrlblk < dataSize) {
-            ASSERT(0);
-            return;
+            TRACE(L"Invalid VobSub packet\n");
+            rect.SetRectEmpty();
+            return false;
         }
 
         if (tCurrent > t) {
@@ -221,12 +230,15 @@ void CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
             switch (lpData[i++]) {
                 case 0x00: // forced start displaying
                     bForced = true;
+                    valid = true;
                     break;
                 case 0x01: // start displaying
                     bForced = false;
+                    valid = true;
                     break;
                 case 0x02: // stop displaying
                     delay = tCurrent;
+                    valid = true;
                     break;
                 case 0x03:
                     _pal = (lpData[i] << 8) | lpData[i + 1];
@@ -240,6 +252,7 @@ void CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
                     //tr &= 0x00f0;
                     break;
                 case 0x05:
+                    valid = true;
                     rect = CRect((lpData[i] << 4) + (lpData[i + 1] >> 4),
                                  (lpData[i + 3] << 4) + (lpData[i + 4] >> 4),
                                  ((lpData[i + 1] & 0x0f) << 8) + lpData[i + 2] + 1,
@@ -268,6 +281,12 @@ void CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
     }
 
     bAnimated = (nPal > 1 || nTr > 1);
+
+    if (!valid) {
+        TRACE(L"Invalid VobSub packet\n");
+        rect.SetRectEmpty();
+    }
+    return valid;
 }
 
 BYTE CVobSubImage::GetNibble(const BYTE* lpData)

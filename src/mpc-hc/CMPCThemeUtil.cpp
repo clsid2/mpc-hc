@@ -14,7 +14,11 @@
 #include "Translations.h"
 #include "ImageGrayer.h"
 #include "CMPCThemePropPageButton.h"
+#include <dwmapi.h>
 #undef SubclassWindow
+
+using DLGTEMPLATEEX = _DialogSplitHelper::DLGTEMPLATEEX;
+using DLGITEMTEMPLATEEX = _DialogSplitHelper::DLGITEMTEMPLATEEX;
 
 CBrush CMPCThemeUtil::contentBrush;
 CBrush CMPCThemeUtil::windowBrush;
@@ -34,7 +38,6 @@ CMPCThemeUtil::~CMPCThemeUtil()
         delete allocatedWindows[i];
     }
 }
-
 
 void CMPCThemeUtil::fulfillThemeReqs(CWnd* wnd, SpecialThemeCases specialCase /* = 0 */)
 {
@@ -128,6 +131,12 @@ void CMPCThemeUtil::fulfillThemeReqs(CWnd* wnd, SpecialThemeCases specialCase /*
                     makeThemed(pObject, tChild);
                 } else if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
                     CMPCThemeComboBox* pObject = DEBUG_NEW CMPCThemeComboBox();
+                    makeThemed(pObject, tChild);
+                } else if (0 == _tcsicmp(windowClass, WC_LISTVIEW)) {
+                    CMPCThemePlayerListCtrl* pObject = DEBUG_NEW CMPCThemePlayerListCtrl();
+                    makeThemed(pObject, tChild);
+                } else if (0 == _tcsicmp(windowClass, WC_LISTBOX)) {
+                    CMPCThemeListBox* pObject = DEBUG_NEW CMPCThemeListBox();
                     makeThemed(pObject, tChild);
                 } else if (0 == _tcsicmp(windowClass, TRACKBAR_CLASS)) {
                     CMPCThemeSliderCtrl* pObject = DEBUG_NEW CMPCThemeSliderCtrl();
@@ -238,14 +247,14 @@ LRESULT CALLBACK wndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 }
 
 void CMPCThemeUtil::subClassFileDialogWidgets(HWND widget, HWND parent, wchar_t* childWindowClass) {
-    if (0 == wcsicmp(childWindowClass, WC_STATIC)) {
+    if (0 == _wcsicmp(childWindowClass, WC_STATIC)) {
         CWnd* c = CWnd::FromHandle(widget);
         c->UnsubclassWindow();
         CMPCThemeStatic* pObject = DEBUG_NEW CMPCThemeStatic();
         pObject->setFileDialogChild(true);
         allocatedWindows.push_back(pObject);
         pObject->SubclassWindow(widget);
-    } else if (0 == wcsicmp(childWindowClass, WC_BUTTON)) {
+    } else if (0 == _wcsicmp(childWindowClass, WC_BUTTON)) {
         CWnd* c = CWnd::FromHandle(widget);
         DWORD style = c->GetStyle();
         DWORD buttonType = (style & BS_TYPEMASK);
@@ -256,7 +265,7 @@ void CMPCThemeUtil::subClassFileDialogWidgets(HWND widget, HWND parent, wchar_t*
             allocatedWindows.push_back(pObject);
             pObject->SubclassWindow(widget);
         }
-    } else if (0 == wcsicmp(childWindowClass, WC_EDIT)) {
+    } else if (0 == _wcsicmp(childWindowClass, WC_EDIT)) {
         CWnd* c = CWnd::FromHandle(widget);
         c->UnsubclassWindow();
         CMPCThemeEdit* pObject = DEBUG_NEW CMPCThemeEdit();
@@ -274,16 +283,16 @@ void CMPCThemeUtil::subClassFileDialog(CWnd* wnd) {
     if (AfxGetAppSettings().bWindows10DarkThemeActive) {
         initHelperObjects();
 
-        HWND duiview = ::FindWindowExW(fileDialogHandle, NULL, L"DUIViewWndClassName", NULL);
+        HWND duiview = ::FindWindowExW(themableDialogHandle, NULL, L"DUIViewWndClassName", NULL);
         HWND duihwnd = ::FindWindowExW(duiview, NULL, L"DirectUIHWND", NULL);
 
         if (duihwnd) { //we found the FileDialog
             if (dialogProminentControlStringID) { //if this is set, we assume there is a single prominent control (note, it's in the filedialog main window)
-                subClassFileDialogRecurse(wnd, fileDialogHandle, ProminentControlIDWidget);
+                subClassFileDialogRecurse(wnd, themableDialogHandle, ProminentControlIDWidget);
             } else {
                 subClassFileDialogRecurse(wnd, duihwnd, RecurseSinkWidgets);
             }
-            fileDialogHandle = nullptr;
+            themableDialogHandle = nullptr;
             ::RedrawWindow(duiview, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
         }
     }
@@ -295,7 +304,7 @@ void CMPCThemeUtil::subClassFileDialogRecurse(CWnd* wnd, HWND hWnd, FileDialogWi
         WCHAR childWindowClass[MAX_PATH];
         ::GetClassName(pChild, childWindowClass, _countof(childWindowClass));
         if (searchType == RecurseSinkWidgets) {
-            if (0 == wcsicmp(childWindowClass, L"FloatNotifySink")) { //children are the injected controls
+            if (0 == _wcsicmp(childWindowClass, L"FloatNotifySink")) { //children are the injected controls
                 subClassFileDialogRecurse(wnd, pChild, ThemeAllChildren); //recurse and theme all children of sink
             }
         } else if (searchType == ThemeAllChildren) {
@@ -303,7 +312,7 @@ void CMPCThemeUtil::subClassFileDialogRecurse(CWnd* wnd, HWND hWnd, FileDialogWi
         } else if (searchType == ProminentControlIDWidget){
             WCHAR str[MAX_PATH];
             ::GetWindowText(pChild, str, _countof(str));
-            if (0 == wcsicmp(str, ResStr(dialogProminentControlStringID))) {
+            if (0 == _wcsicmp(str, ResStr(dialogProminentControlStringID))) {
                 subClassFileDialogWidgets(pChild, hWnd, childWindowClass);
                 return;
             }
@@ -323,13 +332,13 @@ AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindFirstDlgItem(const DLGTEMPLATE* pTemp
 
 AFX_STATIC inline BOOL IsDialogEx(const DLGTEMPLATE* pTemplate)
 {
-    return ((_DialogSplitHelper::DLGTEMPLATEEX*)pTemplate)->signature == 0xFFFF;
+    return ((DLGTEMPLATEEX*)pTemplate)->signature == 0xFFFF;
 }
 
 static inline WORD& DlgTemplateItemCount(DLGTEMPLATE* pTemplate)
 {
     if (IsDialogEx(pTemplate)) {
-        return reinterpret_cast<_DialogSplitHelper::DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
+        return reinterpret_cast<DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
     } else {
         return pTemplate->cdit;
     }
@@ -338,7 +347,7 @@ static inline WORD& DlgTemplateItemCount(DLGTEMPLATE* pTemplate)
 static inline const WORD& DlgTemplateItemCount(const DLGTEMPLATE* pTemplate)
 {
     if (IsDialogEx(pTemplate)) {
-        return reinterpret_cast<const _DialogSplitHelper::DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
+        return reinterpret_cast<const DLGTEMPLATEEX*>(pTemplate)->cDlgItems;
     } else {
         return pTemplate->cdit;
     }
@@ -384,7 +393,7 @@ bool CMPCThemeUtil::ModifyTemplates(CPropertySheet* sheet, CRuntimeClass* pageCl
                     pNextItem = _AfxFindNextDlgItem(pItem, bDialogEx);
                     DWORD dwOldProtect, tp;
                     if (bDialogEx) {
-                        _DialogSplitHelper::DLGITEMTEMPLATEEX* pItemEx = (_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem;
+                        auto* pItemEx = (DLGITEMTEMPLATEEX*)pItem;
                         if (pItemEx->id == id) {
                             if (VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), PAGE_READWRITE, &dwOldProtect)) {
                                 pItemEx->style |= addStyle;
@@ -472,27 +481,30 @@ bool CMPCThemeUtil::MPCThemeEraseBkgnd(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     }
 }
 
-bool CMPCThemeUtil::getFontByFace(CFont& font, CWnd* wnd, wchar_t* fontName, int size, LONG weight)
+bool CMPCThemeUtil::getFontByFaceForDpi(CFont& font, const wchar_t* fontName, int size, UINT dpi, LONG weight)
 {
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
 
+    lf.lfHeight = -MulDiv(size, dpi, 72);
+    lf.lfWeight = weight;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfQuality = CLEARTYPE_QUALITY;
+    wcsncpy_s(lf.lfFaceName, fontName, LF_FACESIZE);
+
+    return font.CreateFontIndirect(&lf);
+}
+
+bool CMPCThemeUtil::getFontByFace(CFont& font, CWnd* wnd, const wchar_t* fontName, int size, LONG weight)
+{
     if (!wnd) {
         wnd = AfxGetMainWnd();
     }
 
     DpiHelper dpiWindow;
-
     dpiWindow.Override(wnd->GetSafeHwnd());
-    lf.lfHeight = -MulDiv(size, dpiWindow.DPIY(), 72);
 
-    lf.lfQuality = CLEARTYPE_QUALITY;
-
-    //lf.lfQuality = ANTIALIASED_QUALITY;
-    lf.lfWeight = weight;
-    wcsncpy_s(lf.lfFaceName, fontName, LF_FACESIZE);
-
-    return font.CreateFontIndirect(&lf);
+    return getFontByFaceForDpi(font, fontName, size, dpiWindow.DPIY(), weight);
 }
 
 bool CMPCThemeUtil::getFixedFont(CFont& font, CDC* pDC, CWnd* wnd)
@@ -849,16 +861,15 @@ const std::vector<CMPCTheme::pathPoint> CMPCThemeUtil::getIconPathByDPI(CWnd* wn
 // 2. for templateless dialogs (e.g., MessageBoxDialog.cpp), the caching requires a reboot to fix
 // 3. Does not honor selected font
 // 4. For PropSheet, always uses "MS Shell Dlg" no matter what the sheet has selected in the .rc
-void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
-    CDC* pDC;
-    if (wnd && (pDC = wnd->GetDC())) {
-        CFont msgFont;
-        if (!getFontByType(msgFont, wnd, CMPCThemeUtil::MessageFont)) {
-        //if (!getFontByFace(msgFont, wnd, L"MS Shell Dlg", 9)){
-            return;
-        }
 
-        CFont* oldFont = pDC->SelectObject(&msgFont);
+void CMPCThemeUtil::MapDialogRectInternal(CDialog* wnd, CRect& r, CFont* font) {
+    if (!font || !wnd) {
+        return;
+    }
+
+    CDC* pDC;
+    if ((pDC = wnd->GetDC())) {
+        CFont* oldFont = pDC->SelectObject(font);
 
         //average character dimensions: https://web.archive.org/web/20131208002908/http://support.microsoft.com/kb/125681
         TEXTMETRICW tm;
@@ -866,8 +877,10 @@ void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
         pDC->GetTextMetricsW(&tm);
         GetTextExtentPoint32W(pDC->GetSafeHdc(), L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52, &size);
         pDC->SelectObject(oldFont);
+        wnd->ReleaseDC(pDC);
+
         int avgWidth = (size.cx / 26 + 1) / 2;
-        int avgHeight = (WORD)tm.tmHeight;
+        int avgHeight = (WORD)(tm.tmHeight + tm.tmExternalLeading); //adipose: added tmExternalLeading which was not mentioned in kb125681, but see GetFontDimensions()
 
         //MapDialogRect definition: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapdialogrect
         r.left = MulDiv(r.left, avgWidth, 4);
@@ -875,6 +888,14 @@ void CMPCThemeUtil::MapDialogRect2(CDialog* wnd, CRect& r) {
         r.top = MulDiv(r.top, avgHeight, 8);
         r.bottom = MulDiv(r.bottom, avgHeight, 8);
     }
+}
+
+void CMPCThemeUtil::MapDialogRectMessageFont(CDialog* wnd, CRect& r) {
+    CFont msgFont;
+    if (!getFontByType(msgFont, wnd, CMPCThemeUtil::MessageFont)) {
+        return;
+    }
+    MapDialogRectInternal(wnd, r, &msgFont);
 }
 
 const std::vector<CMPCTheme::pathPoint> CMPCThemeUtil::getIconPathByDPI(CMPCThemeTitleBarControlButton* button)
@@ -954,9 +975,18 @@ void CMPCThemeUtil::drawGripper(CWnd* window, CWnd* dpiRefWnd, CRect rectGripper
     flushMemDC(pDC, dcMem, rectGripper);
 }
 
+inline void FastFrameRect(CDC* pDC, const CRect& rect, COLORREF color) {
+    // Top
+    pDC->FillSolidRect(rect.left, rect.top, rect.Width(), 1, color);
+    // Bottom
+    pDC->FillSolidRect(rect.left, rect.bottom - 1, rect.Width(), 1, color);
+    // Left
+    pDC->FillSolidRect(rect.left, rect.top, 1, rect.Height(), color);
+    // Right
+    pDC->FillSolidRect(rect.right - 1, rect.top, 1, rect.Height(), color);
+}
 
-void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio)
-{
+void CMPCThemeUtil::drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size) {
     COLORREF borderClr, bgClr;
     COLORREF oldBkClr = pDC->GetBkColor(), oldTextClr = pDC->GetTextColor();
     if (isHover) {
@@ -966,17 +996,7 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
         borderClr = CMPCTheme::CheckboxBorderColor;
         bgClr = CMPCTheme::CheckboxBGColor;
     }
-
     if (useSystemSize) {
-        CPngImage image;
-        image.Load(getResourceByDPI(window, pDC, isRadio ? CMPCTheme::ThemeRadios : CMPCTheme::ThemeCheckBoxes), AfxGetInstanceHandle());
-        BITMAP bm;
-        image.GetBitmap(&bm);
-        int size = bm.bmHeight;
-
-        CDC mDC;
-        mDC.CreateCompatibleDC(pDC);
-        mDC.SelectObject(image);
         int index;
         if (isRadio) {
             index = RadioRegular;
@@ -993,12 +1013,9 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
             }
         }
         CRect drawRect(0, 0, size, size);
-        //drawRect.OffsetRect(rectCheck.left + (rectCheck.Width() - size) / 2, rectCheck.top + (rectCheck.Height() - size) / 2);
         drawRect.OffsetRect(rectCheck.left, rectCheck.top + (rectCheck.Height() - size) / 2);
-
-        if (!isRadio && checkState != BST_CHECKED) { //we can draw this w/o BMPs
-            CBrush brush(borderClr);
-            pDC->FrameRect(drawRect, &brush);
+        if (!isRadio && checkState != BST_CHECKED) {
+            FastFrameRect(pDC, drawRect, borderClr);
             drawRect.DeflateRect(1, 1);
             pDC->FillSolidRect(drawRect, bgClr);
             if (checkState == BST_INDETERMINATE) {
@@ -1006,12 +1023,15 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
                 pDC->FillSolidRect(drawRect, CMPCTheme::CheckColor);
             }
         } else {
+            CDC mDC;
+            mDC.CreateCompatibleDC(pDC);
+            mDC.SelectObject(image);
+
             int left = index * size;
             pDC->BitBlt(drawRect.left, drawRect.top, drawRect.Width(), drawRect.Height(), &mDC, left, 0, SRCCOPY);
         }
     } else {
-        CBrush brush(borderClr);
-        pDC->FrameRect(rectCheck, &brush);
+        FastFrameRect(pDC, rectCheck, borderClr);
         rectCheck.DeflateRect(1, 1);
         pDC->FillSolidRect(rectCheck, bgClr);
         if (BST_CHECKED == checkState) {
@@ -1039,6 +1059,28 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
     pDC->SetTextColor(oldTextClr);
 }
 
+void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio /*= false*/, UINT resourceID /*= 0*/) {
+    struct ImageCache {
+        CPngImage image;
+        int size;
+    };
+    static std::map<UINT, ImageCache> cache;
+
+    if (!resourceID) {
+        resourceID = getResourceByDPI(window, pDC, isRadio ? CMPCTheme::ThemeRadios : CMPCTheme::ThemeCheckBoxes);
+    }
+
+    if (!cache.count(resourceID)) {
+        ImageCache& newCache = cache[resourceID];
+        newCache.image.Load(resourceID, AfxGetInstanceHandle());
+        BITMAP bm;
+        newCache.image.GetBitmap(&bm);
+        newCache.size = bm.bmHeight;
+    }
+
+    drawCheckBoxInternal(checkState, isHover, useSystemSize, rectCheck, pDC, isRadio, &cache[resourceID].image, cache[resourceID].size);
+}
+
 bool CMPCThemeUtil::canUseWin10DarkTheme()
 {
     if (AppNeedsThemedControls()) {
@@ -1048,6 +1090,14 @@ bool CMPCThemeUtil::canUseWin10DarkTheme()
         return ret;
     }
     return false;
+}
+
+bool CMPCThemeUtil::IsBasicMode()
+{
+    // Returns true if DWM composition is disabled (Windows 7 basic mode, not classic)
+    BOOL bCompositionEnabled = FALSE;
+    DwmIsCompositionEnabled(&bCompositionEnabled);
+    return !bCompositionEnabled && IsThemeActive();
 }
 
 UINT CMPCThemeUtil::defaultLogo()
@@ -1170,40 +1220,35 @@ CPoint CMPCThemeUtil::GetClientRectOffset(CWnd* window) {
     return offset;
 }
 
-void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget, WidgetPairType lType, WidgetPairType rType) {
+void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget) {
     if (window && IsWindow(window->m_hWnd)) {
         DpiHelper dpiWindow;
         dpiWindow.Override(window->GetSafeHwnd());
         LONG dynamicSpace = dpiWindow.ScaleX(5);
 
-
-
         CWnd* leftW = window->GetDlgItem(leftWidget);
         CWnd* rightW = window->GetDlgItem(rightWidget);
 
-        WidgetPairType ll = lType;
-        WidgetPairType rr = rType;
+        // Always auto-detect left widget type
+        WidgetPairType lType;
+        LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
+        DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
 
-        if (true || lType == WidgetPairAuto) {
-            LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
-            DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
-
-            if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
-                lType = WidgetPairCheckBox;
-            } else { //we only support checkbox or text on the left, just assume it's text now
-                lType = WidgetPairText;
-            }
+        if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
+            lType = WidgetPairCheckBox;
+        } else { //we only support checkbox or text on the left, just assume it's text now
+            lType = WidgetPairText;
         }
 
-        if (true || rType == WidgetPairAuto) {
-            TCHAR windowClass[MAX_PATH];
-            ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
+        // Always auto-detect right widget type
+        WidgetPairType rType;
+        TCHAR windowClass[MAX_PATH];
+        ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
 
-            if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
-                rType = WidgetPairCombo;
-            } else { //we only support combo or edit on the right, just assume it's edit now
-                rType = WidgetPairEdit;
-            }
+        if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
+            rType = WidgetPairCombo;
+        } else { //we only support combo or edit on the right, just assume it's edit now
+            rType = WidgetPairEdit;
         }
 
         if (leftW && rightW && IsWindow(leftW->m_hWnd) && IsWindow(rightW->m_hWnd)) {
@@ -1264,7 +1309,9 @@ void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int ri
             if ((lType == WidgetPairText || lType == WidgetPairCheckBox) && (rType == WidgetPairCombo || rType == WidgetPairEdit)) {
                 l.top = r.top;
                 l.bottom += r.Height() - l.Height();
-                leftW->ModifyStyle(0, SS_CENTERIMAGE);
+                if (lType == WidgetPairText) {
+                    leftW->ModifyStyle(0, SS_CENTERIMAGE);
+                }
             }
 
             if (l != cl) {
@@ -1298,3 +1345,4 @@ bool CMPCThemeUtil::IsWindowVisibleAndRendered(CWnd* window) {
     }
     return true;
 }
+

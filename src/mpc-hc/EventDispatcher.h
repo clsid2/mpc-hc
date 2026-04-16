@@ -47,6 +47,7 @@ enum class MpcEvent {
     STREAM_POS_UPDATE_REQUEST,
     DPI_CHANGED,
     DEFAULT_TOOLBAR_SIZE_CHANGED,
+    TOOLBAR_THEME_CHANGED,
 };
 
 class EventClient;

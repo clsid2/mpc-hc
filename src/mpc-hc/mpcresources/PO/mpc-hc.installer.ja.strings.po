@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# ever_green, 2024
+# ever_green, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: ever_green, 2024\n"
+"Last-Translator: ever_green, 2025\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,13 +24,13 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"これにより、コンピューターに [name] がインストールされます。\n"
+"この操作により、[name] をコンピューターにインストールします。\n"
 "\n"
-"続行する前に他のすべてのアプリケーションを閉じることを推奨します。"
+"続行する前に、他のすべてのアプリケーションを閉じることを推奨します。"
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
-msgstr "[name] を実行するには Windows Vista 以降が必要です。"
+msgstr "[name] を実行するには、Windows Vista 以降が必要です。"
 
 msgctxt "CustomMessages_comp_mpciconlib"
 msgid "Icon Library"
@@ -56,13 +56,13 @@ msgid ""
 "\n"
 "Your CPU does not have those capabilities."
 msgstr ""
-"このビルドの MPC-HC には、SSE2 拡張をサポートする CPU が必要です。\n"
+"このバージョンの MPC-HC を実行するには、SSE2 拡張機能に対応した CPU が必要です。\n"
 "\n"
-"お使いの CPU にはこれらの機能がありません。"
+"お使いの CPU はこの機能に対応していません。"
 
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"
-msgstr "Wiki ページに移動してツール バーの画像をダウンロードする"
+msgstr "Wiki ページに移動してツールバー画像をダウンロードする"
 
 msgctxt "CustomMessages_tsk_AllUsers"
 msgid "For all users"
@@ -70,11 +70,11 @@ msgstr "すべてのユーザーにインストールする"
 
 msgctxt "CustomMessages_tsk_CurrentUser"
 msgid "For the current user only"
-msgstr "現在実行しているユーザーにのみインストールする"
+msgstr "現在のユーザーにのみインストールする"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
-msgstr "その他のタスク:"
+msgstr "他のタスク:"
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"

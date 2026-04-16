@@ -87,7 +87,6 @@ SRCS_LC = \
 	libavcodec/allcodecs.c \
 	libavcodec/avcodec.c \
 	libavcodec/avdct.c \
-	libavcodec/avfft.c \
 	libavcodec/bitstream.c \
 	libavcodec/bitstream_filters.c \
 	libavcodec/bsf.c \
@@ -193,11 +192,13 @@ SRCS_LU = \
 	libavutil/random_seed.c \
 	libavutil/rational.c \
 	libavutil/rc4.c \
+	libavutil/refstruct.c \
 	libavutil/reverse.c \
 	libavutil/ripemd.c \
 	libavutil/samplefmt.c \
 	libavutil/sha.c \
 	libavutil/sha512.c \
+	libavutil/side_data.c \
 	libavutil/slicethread.c \
 	libavutil/spherical.c \
 	libavutil/stereo3d.c \

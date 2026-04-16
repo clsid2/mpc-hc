@@ -443,18 +443,36 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
         Shader.m_pPixelShader = nullptr;
     }
 
-    UINT currentAdapter = GetAdapter(m_pD3D, m_hWnd);
-    bool bTryToReset = (currentAdapter == m_CurrentAdapter);
-
-    if (!bTryToReset) {
-        m_pD3DDev = nullptr;
-        m_pD3DDevEx = nullptr;
-        m_CurrentAdapter = currentAdapter;
-    }
-
     if (!m_pD3D) {
         _Error += L"Failed to create Direct3D device\n";
         return E_UNEXPECTED;
+    }
+
+    if (m_pD3DDevEx) {
+        hr = m_pD3DDevEx->CheckDeviceState(NULL);
+        if (hr == D3DERR_DEVICELOST || hr == D3DERR_DEVICEREMOVED || hr == D3DERR_DEVICEHUNG || hr == D3DERR_OUTOFVIDEOMEMORY) {
+            m_pD3DDevEx.Release();
+            m_pD3DDev.Release();
+            m_pD3DEx.Release();
+            m_pD3D.Release();
+            Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+            if (m_pD3DEx) {
+                m_pD3D = m_pD3DEx;
+            } else {
+                return E_UNEXPECTED;
+            }
+        } else if (FAILED(hr)) {
+            m_pD3DDevEx.Release();
+            m_pD3DDev.Release();
+        }
+    }
+
+    UINT currentAdapter = GetAdapter(m_pD3D, m_hWnd);
+    bool bTryToReset = (currentAdapter == m_CurrentAdapter);
+    if (!bTryToReset) {
+        m_pD3DDev.Release();
+        m_pD3DDevEx.Release();
+        m_CurrentAdapter = currentAdapter;
     }
 
     D3DDISPLAYMODE d3ddm;
@@ -527,27 +545,43 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
             DisplayMode.Format = m_pp.BackBufferFormat;
             m_pp.FullScreen_RefreshRateInHz = DisplayMode.RefreshRate;
 
-            bTryToReset = bTryToReset && m_pD3DDevEx && SUCCEEDED(hr = m_pD3DDevEx->ResetEx(&m_pp, &DisplayMode));
+            bTryToReset = bTryToReset && m_pD3DDevEx;
+            if (bTryToReset) {
+                if (FAILED(hr = m_pD3DDevEx->ResetEx(&m_pp, &DisplayMode))) {
+                    bTryToReset = false;
+                } 
+            }
 
             if (!bTryToReset) {
-                m_pD3DDev = nullptr;
-                m_pD3DDevEx = nullptr;
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 hr = m_pD3DEx->CreateDeviceEx(m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                                               D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_ENABLE_PRESENTSTATS | D3DCREATE_NOWINDOWCHANGES,
                                               &m_pp, &DisplayMode, &m_pD3DDevEx);
+                if (m_pD3DDevEx) {
+                    m_pD3DDev = m_pD3DDevEx;
+                }
             }
 
             if (m_pD3DDevEx) {
-                m_pD3DDev = m_pD3DDevEx;
                 m_BackbufferType = m_pp.BackBufferFormat;
                 m_DisplayType = DisplayMode.Format;
             }
         } else {
-            bTryToReset = bTryToReset &&  m_pD3DDev && SUCCEEDED(hr = m_pD3DDev->Reset(&m_pp));
-
+            bTryToReset = bTryToReset && m_pD3DDev;
+            if (bTryToReset) {
+                hr = m_pD3DDev->TestCooperativeLevel();
+                if (hr == S_OK || hr == D3DERR_DEVICENOTRESET) {
+                    if (FAILED(hr = m_pD3DDev->Reset(&m_pp))) {
+                        bTryToReset = false;
+                    }
+                } else {
+                    bTryToReset = false;
+                }
+            }
             if (!bTryToReset) {
-                m_pD3DDev = nullptr;
-                m_pD3DDevEx = nullptr;
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 hr = m_pD3D->CreateDevice(m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                                           D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES,
                                           &m_pp, &m_pD3DDev);
@@ -592,26 +626,39 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
         m_hFocusWindow = m_hWnd;
 
         if (m_pD3DEx) {
-            bTryToReset = bTryToReset && m_pD3DDevEx && SUCCEEDED(hr = m_pD3DDevEx->ResetEx(&m_pp, nullptr));
+            bTryToReset = bTryToReset && m_pD3DDevEx;
+            if (bTryToReset) {
+                if (FAILED(m_pD3DDevEx->CheckDeviceState(NULL)) || FAILED(hr = m_pD3DDevEx->ResetEx(&m_pp, nullptr))) {
+                    bTryToReset = false;
+                } 
+            }
 
             if (!bTryToReset) {
-                m_pD3DDev = nullptr;
-                m_pD3DDevEx = nullptr;
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 hr = m_pD3DEx->CreateDeviceEx(m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                                               D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_ENABLE_PRESENTSTATS,
                                               &m_pp, nullptr, &m_pD3DDevEx);
-            }
-
-            if (m_pD3DDevEx) {
-                m_pD3DDev = m_pD3DDevEx;
+                if (m_pD3DDevEx) {
+                    m_pD3DDev = m_pD3DDevEx;
+                }
             }
         } else {
+            bTryToReset = bTryToReset && m_pD3DDev;
             if (bTryToReset) {
-                if (!m_pD3DDev || FAILED(hr = m_pD3DDev->Reset(&m_pp))) {
+                hr = m_pD3DDev->TestCooperativeLevel();
+                if (hr == S_OK || hr == D3DERR_DEVICENOTRESET) {
+                    if (FAILED(hr = m_pD3DDev->Reset(&m_pp))) {
+                        bTryToReset = false;
+                    }
+                } else {
                     bTryToReset = false;
                 }
             }
+
             if (!bTryToReset) {
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 hr = m_pD3D->CreateDevice(m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                                           D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED,
                                           &m_pp, &m_pD3DDev);
@@ -621,8 +668,9 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
     }
 
     if (m_pD3DDev) {
-        while (hr == D3DERR_DEVICELOST) {
+        for (int i = 0; i < 40 && hr == D3DERR_DEVICELOST; i++) {
             TRACE(_T("D3DERR_DEVICELOST. Trying to Reset.\n"));
+            Sleep(50);
             hr = m_pD3DDev->TestCooperativeLevel();
         }
         if (hr == D3DERR_DEVICENOTRESET) {
@@ -687,6 +735,7 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
     return S_OK;
 }
 
+// function is not used?
 HRESULT CBaseAP::ResetDXDevice(CString& _Error)
 {
     const CRenderersSettings& r = GetRenderersSettings();
@@ -803,7 +852,7 @@ HRESULT CBaseAP::ResetDXDevice(CString& _Error)
             m_pD3DEx->GetAdapterDisplayModeEx(GetAdapter(m_pD3DEx, m_hWnd), &DisplayMode, nullptr);
             DisplayMode.Format = m_pp.BackBufferFormat;
             m_pp.FullScreen_RefreshRateInHz = DisplayMode.RefreshRate;
-            if (FAILED(m_pD3DDevEx->Reset(&m_pp))) {
+            if (FAILED(m_pD3DDevEx->CheckDeviceState(NULL)) || FAILED(m_pD3DDevEx->ResetEx(&m_pp, &DisplayMode))) {
                 _Error += GetWindowsErrorMessage(hr, nullptr);
                 return hr;
             }
@@ -839,7 +888,7 @@ HRESULT CBaseAP::ResetDXDevice(CString& _Error)
             m_pp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
         }
         if (m_pD3DDevEx)
-            if (FAILED(m_pD3DDevEx->Reset(&m_pp))) {
+            if (FAILED(m_pD3DDevEx->CheckDeviceState(NULL)) || FAILED(m_pD3DDevEx->ResetEx(&m_pp, nullptr))) {
                 _Error += GetWindowsErrorMessage(hr, nullptr);
                 return hr;
             } else if (m_pD3DDev)
@@ -2633,11 +2682,7 @@ STDMETHODIMP CSyncAP::CreateRenderer(IUnknown** ppRenderer)
         CComPtr<IMFVideoRenderer> pMFVR;
         CComQIPtr<IMFGetService, &__uuidof(IMFGetService)> pMFGS = pBF;
         CComQIPtr<IEVRFilterConfig> pConfig = pBF;
-        if (SUCCEEDED(hr)) {
-            if (FAILED(pConfig->SetNumberOfStreams(3))) { // TODO - maybe need other number of input stream ...
-                break;
-            }
-        }
+        pConfig->SetNumberOfStreams(3);
 
         hr = pMFGS->GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&pMFVR));
 

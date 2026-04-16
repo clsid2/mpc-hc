@@ -417,3 +417,14 @@ bool StartsWithNoCase(CStringW str, CStringW prefix) {
     const int prefix_len = prefix.GetLength();
     return str_len >= prefix_len && 0 == str.Left(prefix_len).CompareNoCase(prefix);
 }
+
+CStringW& TrimLeadingUTF16BOM(CStringW& str)
+{
+    if (str.GetLength() >= 2) {
+        int i = 0;
+        while (i++ < 2 && (str.GetAt(0) == 0xFFEF || str.GetAt(0) == 0xFEFF)) {
+            str.Delete(0, 1);
+        }
+    }
+    return str;
+}

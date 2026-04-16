@@ -204,7 +204,17 @@ HRESULT CFGFilterLAV::PropertyPageCallback(IBaseFilter* pBF)
 {
     CheckPointer(pBF, E_POINTER);
 
-    CComPropertySheet ps(IDS_PROPSHEET_PROPERTIES, AfxGetMyApp()->GetMainWnd());
+    // If called from a non-main thread (e.g. LAV tray icon callback), marshal
+    // to the main thread via PostMessage so the property sheet runs there.
+    // This avoids a cross-thread SendMessage deadlock in NotifyFloatingWindows.
+    CWnd* pMainWnd = AfxGetMyApp()->GetMainWnd();
+    if (pMainWnd && ::GetCurrentThreadId() != ::GetWindowThreadProcessId(pMainWnd->m_hWnd, nullptr)) {
+        pBF->AddRef();
+        pMainWnd->PostMessage(WM_LAV_PROPPAGE_CALLBACK, 0, reinterpret_cast<LPARAM>(pBF));
+        return S_OK;
+    }
+
+    CComPropertySheet ps(IDS_PROPSHEET_PROPERTIES, pMainWnd);
 
     // Find out which internal filter we are opening the property page for
     CFGFilterLAV::LAVFILTER_TYPE LAVFilterType = CFGFilterLAV::INVALID;
@@ -757,7 +767,6 @@ void CFGFilterLAVVideo::Settings::LoadSettings()
     bHWFormats[HWCodec_VC1] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("vc1"), bHWFormats[HWCodec_VC1]);
     bHWFormats[HWCodec_MPEG2] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("mpeg2"), bHWFormats[HWCodec_MPEG2]);
     bHWFormats[HWCodec_MPEG4] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("mpeg4"), bHWFormats[HWCodec_MPEG4]);
-    bHWFormats[HWCodec_MPEG2DVD] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("dvd"), bHWFormats[HWCodec_MPEG2DVD]);
     bHWFormats[HWCodec_HEVC] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("hevc"), bHWFormats[HWCodec_HEVC]);
     bHWFormats[HWCodec_VP9] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("vp9"), bHWFormats[HWCodec_VP9]);
     bHWFormats[HWCodec_H264MVC] = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("h264mvc"), bHWFormats[HWCodec_H264MVC]);
@@ -807,7 +816,6 @@ void CFGFilterLAVVideo::Settings::SaveSettings()
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("vc1"), bHWFormats[HWCodec_VC1]);
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("mpeg2"), bHWFormats[HWCodec_MPEG2]);
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("mpeg4"), bHWFormats[HWCodec_MPEG4]);
-    pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("dvd"), bHWFormats[HWCodec_MPEG2DVD]);
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("hevc"), bHWFormats[HWCodec_HEVC]);
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("vp9"), bHWFormats[HWCodec_VP9]);
     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("h264mvc"), bHWFormats[HWCodec_H264MVC]);

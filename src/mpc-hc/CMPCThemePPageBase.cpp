@@ -23,30 +23,33 @@ BOOL CMPCThemePPageBase::OnInitDialog()
     return 0;
 }
 
-void CMPCThemePPageBase::SetMPCThemeButtonIcon(UINT nIDButton, UINT nIDIcon, ImageGrayer::mpcColorStyle colorStyle)
+void CMPCThemePPageBase::SetMPCThemeButtonIcon(UINT nIDButton, IconDef iconDef, ImageGrayer::mpcColorStyle colorStyle)
 {
     if (AppIsThemeLoaded()) {
-        if (!m_buttonIcons.count(nIDIcon)) {
+        if (!m_buttonIcons.count(iconDef)) {
             CImage img, imgEnabled, imgDisabled;
-            img.LoadFromResource(AfxGetInstanceHandle(), nIDIcon);
+            if (iconDef.svgTargetWidth) {
+                SVGImage::LoadIconDef(iconDef, img);
+            } else {
+                img.LoadFromResource(AfxGetInstanceHandle(), iconDef.nIDIcon);
+            }
 
             ImageGrayer::UpdateColor(img, imgEnabled, false, colorStyle);
             ImageGrayer::UpdateColor(img, imgDisabled, true, colorStyle);
 
-            CImageList& imageList = m_buttonIcons[nIDIcon];
+            CImageList& imageList = m_buttonIcons[iconDef];
             imageList.Create(img.GetWidth(), img.GetHeight(), ILC_COLOR32, 2, 0);
             imageList.Add(CBitmap::FromHandle(imgEnabled), nullptr);
             imageList.Add(CBitmap::FromHandle(imgDisabled), nullptr);
         }
 
         BUTTON_IMAGELIST buttonImageList;
-        buttonImageList.himl = m_buttonIcons[nIDIcon];
+        buttonImageList.himl = m_buttonIcons[iconDef];
         buttonImageList.margin = { 0, 0, 0, 0 };
         buttonImageList.uAlign = BUTTON_IMAGELIST_ALIGN_CENTER;
         static_cast<CButton*>(GetDlgItem(nIDButton))->SetImageList(&buttonImageList);
     } else {
-        CPPageBase::SetButtonIcon(nIDButton, nIDIcon);
-
+        CPPageBase::SetButtonIcon(nIDButton, iconDef);
     }
 }
 

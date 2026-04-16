@@ -38,6 +38,8 @@ bool ExploreToFile(LPCTSTR path);
 
 HRESULT FileDelete(CString file, HWND hWnd, bool recycle = true, bool noconfirm = false);
 
+bool IsLeftMouseButtonDown();
+
 class CoInitializeHelper
 {
 public:

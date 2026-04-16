@@ -620,7 +620,13 @@ STDMETHODIMP CAudioSwitcherFilter::SetSpeakerConfig(bool fCustomChannelMapping, 
 STDMETHODIMP_(int) CAudioSwitcherFilter::GetNumberOfInputChannels()
 {
     CStreamSwitcherInputPin* pInPin = GetInputPin();
-    return pInPin ? ((WAVEFORMATEX*)pInPin->CurrentMediaType().pbFormat)->nChannels : 0;
+    if (pInPin) {
+        WAVEFORMATEX* wfex = (WAVEFORMATEX*)pInPin->CurrentMediaType().pbFormat;
+        if (wfex) {
+            return wfex->nChannels;
+        }
+    }
+    return 0;
 }
 
 STDMETHODIMP_(REFERENCE_TIME) CAudioSwitcherFilter::GetAudioTimeShift()

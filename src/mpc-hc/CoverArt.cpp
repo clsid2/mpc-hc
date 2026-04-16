@@ -50,6 +50,7 @@ CString CoverArt::FindExternal(const CString& filename_no_ext, const CString& pa
         if (!files.IsEmpty()) {
             return files.GetHead();
         }
+#if 0
         FindFiles(path + _T("\\* front.png"), files);
         FindFiles(path + _T("\\* front.jp*g"), files);
         FindFiles(path + _T("\\* front.bmp"), files);
@@ -68,6 +69,7 @@ CString CoverArt::FindExternal(const CString& filename_no_ext, const CString& pa
         if (!files.IsEmpty()) {
             return files.GetHead();
         }
+#endif
 
         if (!author.IsEmpty()) {
             files.RemoveAll();

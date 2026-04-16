@@ -455,8 +455,8 @@ const std::vector<CMPCTheme::pathPoint> CMPCTheme::hideIcon192({
     {13, 0, linePath},
 });
 
-
-void CMPCTheme::InitializeColors(ModernThemeMode themeMode) {
+CMPCTheme::ModernThemeMode CMPCTheme::EffectiveThemeMode() {
+    ModernThemeMode themeMode = AfxGetAppSettings().eModernThemeMode;
     if (themeMode == ModernThemeMode::WINDOWSDEFAULT) {
         if (AfxGetAppSettings().bWindows10DarkThemeActive) {
             themeMode = ModernThemeMode::DARK;
@@ -464,8 +464,11 @@ void CMPCTheme::InitializeColors(ModernThemeMode themeMode) {
             themeMode = ModernThemeMode::LIGHT;
         }
     }
+    return themeMode;
+}
 
-    if (themeMode == ModernThemeMode::DARK) {
+void CMPCTheme::InitializeColors() {
+    if (EffectiveThemeMode() == ModernThemeMode::DARK) {
         drawThemedControls = true;
 
         MenuBGColor = RGB(43, 43, 43);
@@ -563,8 +566,8 @@ void CMPCTheme::InitializeColors(ModernThemeMode themeMode) {
         StatusBarBGColor = RGB(51, 51, 51);
         StatusBarSeparatorColor = RGB(247, 247, 247);
 
-        ProgressBarBGColor = RGB(0, 0, 0);
-        ProgressBarColor = RGB(75, 75, 75);
+        ProgressBarBGColor = RGBGS(128);
+        ProgressBarColor = RGB(15, 101, 31);
 
         SubresyncFadeText1 = RGB(190, 190, 190);
         SubresyncFadeText2 = RGB(160, 160, 160);

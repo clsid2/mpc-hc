@@ -21,13 +21,13 @@
 
 #pragma once
 
-#include "ModelessResizableDialog.h"
+#include "CMPCThemeModelessResizableDialog.h"
 #include "CMPCThemeTabCtrl.h"
 #include "CMPCThemePlayerListCtrl.h"
 
 // CFavoriteOrganizeDlg dialog
 
-class CFavoriteOrganizeDlg : public CModelessResizableDialog
+class CFavoriteOrganizeDlg : public CMPCThemeModelessResizableDialog
 {
     //  DECLARE_DYNAMIC(CFavoriteOrganizeDlg)
 
@@ -43,17 +43,24 @@ public:
     // Dialog Data
     enum { IDD = IDD_FAVORGANIZE };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
     CMPCThemeTabCtrl m_tab;
     CMPCThemePlayerListCtrl m_list;
     bool firstSize=false;
     int minSizeTime = 0;
+    bool m_bModified = false;
     void LoadList();
+    void ShowAndLoad();
+    void AddItemToVisualList(int tabIndex, const CString& favoriteString);
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
     virtual BOOL OnInitDialog();
 
     void SetupList(bool fSave);
+    void SaveChanges();
 
     void UpdateColumnsSizes();
     void MoveItem(int nItem, int offset);
@@ -75,10 +82,14 @@ public:
     afx_msg void OnUpdateDownBn(CCmdUI* pCmdUI);
     afx_msg void OnTcnSelchangingTab1(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnBnClickedOk();
+    afx_msg void OnBnClickedApply();
+    afx_msg void OnUpdateApplyBn(CCmdUI* pCmdUI);
+    virtual void OnCancel();
     afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
     afx_msg void OnLvnEndlabeleditList2(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnPlayFavorite(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnKeyPressed(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnLvnGetInfoTipList(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 };

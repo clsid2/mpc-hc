@@ -214,8 +214,8 @@ void CDX9RenderingEngine::CleanupRenderingEngine()
     }
 
     for (int i = 0; i < 2; i++) {
-        m_pTemporaryVideoTextures[i] = nullptr;
-        m_pTemporaryScreenSpaceTextures[i] = nullptr;
+        m_pTemporaryVideoTextures[i].Release();
+        m_pTemporaryScreenSpaceTextures[i].Release();
     }
 }
 
@@ -229,7 +229,7 @@ HRESULT CDX9RenderingEngine::CreateVideoSurfaces()
 
     // Free previously allocated temporary video textures, because the native video size might have been changed!
     for (int i = 0; i < 2; i++) {
-        m_pTemporaryVideoTextures[i] = nullptr;
+        m_pTemporaryVideoTextures[i].Release();
     }
 
     CheckPointer(m_pD3DDev, E_POINTER);
@@ -606,7 +606,7 @@ HRESULT CDX9RenderingEngine::InitTemporaryScreenSpaceTextures(int count)
             if (FAILED(hr)) {
                 // Free all textures
                 for (int j = 0; j < 2; j++) {
-                    m_pTemporaryScreenSpaceTextures[j] = nullptr;
+                    m_pTemporaryScreenSpaceTextures[j].Release();
                 }
 
                 return hr;
@@ -616,7 +616,7 @@ HRESULT CDX9RenderingEngine::InitTemporaryScreenSpaceTextures(int count)
 
     // Free unnecessary textures
     for (int i = count; i < 2; i++) {
-        m_pTemporaryScreenSpaceTextures[i] = nullptr;
+        m_pTemporaryScreenSpaceTextures[i].Release();
     }
 
     return hr;
@@ -1100,7 +1100,15 @@ HRESULT CDX9RenderingEngine::InitFinalPass()
             return hr;
         }
 
-        float* lut3DFloat32 = DEBUG_NEW float[m_Lut3DEntryCount * 3];
+        float* lut3DFloat32;
+        try {
+            lut3DFloat32 = DEBUG_NEW float[m_Lut3DEntryCount * 3];
+        } catch (...) {
+            m_bColorManagement = false;
+            delete[] iccProfilePath;
+            CleanupFinalPass();
+            return E_FAIL;
+        }
         hr = CreateIccProfileLut(iccProfilePath, lut3DFloat32);
         delete [] iccProfilePath;
         if (FAILED(hr)) {
@@ -1109,7 +1117,15 @@ HRESULT CDX9RenderingEngine::InitFinalPass()
             return hr;
         }
 
-        D3DXFLOAT16* lut3DFloat16 = DEBUG_NEW D3DXFLOAT16[m_Lut3DEntryCount * 3];
+        D3DXFLOAT16* lut3DFloat16;
+        try {
+            lut3DFloat16 = DEBUG_NEW D3DXFLOAT16[m_Lut3DEntryCount * 3];
+        } catch (...) {
+            m_bColorManagement = false;
+            delete[] lut3DFloat32;
+            CleanupFinalPass();
+            return E_FAIL;
+        }
         m_pD3DXFloat32To16Array(lut3DFloat16, lut3DFloat32, m_Lut3DEntryCount * 3);
         delete [] lut3DFloat32;
 

@@ -18,7 +18,7 @@
 	url = https://github.com/alexmarsev/soundtouch.git
 [submodule "soxr"]
 	path = src/thirdparty/soxr/libsoxr
-	url = https://github.com/alexmarsev/soxr.git
+	url = https://github.com/dofuuz/soxr.git
 [submodule "tinyxml2"]
 	path = src/thirdparty/tinyxml2/library
 	url = https://github.com/leethomason/tinyxml2.git
@@ -54,7 +54,7 @@
 	url = https://github.com/adah1972/libunibreak
 [submodule "src/thirdparty/stb"]
 	path = src/thirdparty/stb
-	url = https://github.com/nothings/stb.git
+	url = https://github.com/nothings/stb
 [submodule "src/thirdparty/ResizableLib/ResizableLib"]
 	path = src/thirdparty/ResizableLib/ResizableLib
 	url = https://github.com/ppescher/resizablelib

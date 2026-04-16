@@ -8,27 +8,11 @@
 
 CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrl()
 {
-    this->useFlickerHelper = false;
-    this->helper = nullptr;
-    BOOL notBasicMode;
-    DwmIsCompositionEnabled(&notBasicMode);
-    basicMode = !notBasicMode;
 }
 
 
 CMPCThemeToolTipCtrl::~CMPCThemeToolTipCtrl()
 {
-    if (nullptr != helper) {
-        helper->DestroyWindow();
-        delete helper;
-    }
-}
-
-void CMPCThemeToolTipCtrl::enableFlickerHelper()
-{
-    if (IsAppThemed() && IsThemeActive() && !basicMode) { //in classic/basic mode, the helper gets wiped out by the fade, so we disable it
-        this->useFlickerHelper = true;
-    }
 }
 
 IMPLEMENT_DYNAMIC(CMPCThemeToolTipCtrl, CToolTipCtrl)
@@ -36,9 +20,6 @@ BEGIN_MESSAGE_MAP(CMPCThemeToolTipCtrl, CToolTipCtrl)
     ON_WM_PAINT()
     ON_WM_ERASEBKGND()
     ON_WM_CREATE()
-    ON_WM_MOVE()
-    ON_WM_SHOWWINDOW()
-    ON_WM_SIZE()
     ON_WM_WINDOWPOSCHANGING()
 END_MESSAGE_MAP()
 
@@ -92,9 +73,6 @@ void CMPCThemeToolTipCtrl::OnPaint()
 {
     if (AppIsThemeLoaded()) {
         CPaintDC dc(this);
-        if (useFlickerHelper) { //helper will paint
-            return;
-        }
         paintTT(dc, this);
     } else {
         __super::OnPaint();
@@ -118,36 +96,7 @@ int CMPCThemeToolTipCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    if (AppIsThemeLoaded()) {
-        makeHelper();
-    }
     return 0;
-}
-
-void CMPCThemeToolTipCtrl::makeHelper()
-{
-    if (!useFlickerHelper) {
-        return;
-    }
-
-    if (nullptr != helper) {
-        delete helper;
-        helper = nullptr;
-    }
-    CRect r;
-    GetClientRect(r);
-    if (r.Size() == CSize(0, 0)) {
-        return;
-    }
-    ClientToScreen(r);
-
-    helper = DEBUG_NEW CMPCThemeToolTipCtrlHelper(this);
-    //do it the long way since no menu for parent
-    helper->CreateEx(NULL, AfxRegisterWndClass(0), NULL, WS_POPUP | WS_DISABLED,
-                     r.left, r.top, r.right - r.left, r.bottom - r.top,
-                     GetParent()->GetSafeHwnd(), NULL, NULL);
-    helper->Invalidate();
-    helper->ShowWindow(SW_SHOWNOACTIVATE);
 }
 
 void CMPCThemeToolTipCtrl::RedrawIfVisible() {
@@ -162,67 +111,6 @@ void CMPCThemeToolTipCtrl::RedrawIfVisible() {
         }
     }
 }
-
-BEGIN_MESSAGE_MAP(CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrlHelper, CWnd)
-    ON_WM_PAINT()
-    ON_WM_ERASEBKGND()
-    ON_WM_NCCALCSIZE()
-END_MESSAGE_MAP()
-
-
-CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrlHelper::CMPCThemeToolTipCtrlHelper(CMPCThemeToolTipCtrl* tt)
-{
-    this->tt = tt;
-}
-
-CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrlHelper::~CMPCThemeToolTipCtrlHelper()
-{
-    DestroyWindow();
-}
-
-void CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrlHelper::OnPaint()
-{
-    CPaintDC dc(this);
-    CMPCThemeToolTipCtrl::paintTT(dc, tt);
-}
-
-
-BOOL CMPCThemeToolTipCtrl::CMPCThemeToolTipCtrlHelper::OnEraseBkgnd(CDC* pDC)
-{
-    return TRUE;
-}
-
-void CMPCThemeToolTipCtrl::OnMove(int x, int y)
-{
-    CToolTipCtrl::OnMove(x, y);
-    if (AppIsThemeLoaded()) {
-        makeHelper();
-    }
-}
-
-
-void CMPCThemeToolTipCtrl::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-
-    CToolTipCtrl::OnShowWindow(bShow, nStatus);
-    if (AppIsThemeLoaded()) {
-        if (!bShow) {
-            if (helper != nullptr) {
-                delete helper;
-                helper = nullptr;
-            }
-        }
-    }
-}
-
-void CMPCThemeToolTipCtrl::OnSize(UINT nType, int cx, int cy)
-{
-    CToolTipCtrl::OnSize(nType, cx, cy);
-    if (AppIsThemeLoaded()) {
-        makeHelper();
-    }
-}
-
 
 void CMPCThemeToolTipCtrl::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 {

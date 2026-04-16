@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "CMPCThemeResizableDialog.h"
+#include "CMPCThemeModelessResizableDialog.h"
 
 #include "EventDispatcher.h"
 #include "PixelShaderCompiler.h"
@@ -30,10 +30,11 @@
 #include "CMPCThemeEdit.h"
 #include "CMPCThemeToolTipCtrl.h"
 
-class CModelessDialog : public CMPCThemeResizableDialog
+//mainly, this class seems to be used to block <enter> closing the dialog, and returning focus to the player when closed
+class CModelessDialog : public CMPCThemeModelessResizableDialog
 {
 public:
-    CModelessDialog(UINT nIDTemplate);
+    CModelessDialog(UINT nIDTemplate, CWnd* pParent);
     BOOL DestroyWindow();
 
 private:
@@ -62,6 +63,9 @@ private:
         TIMER_ONETIME_END = TIMER_ONETIME_START + 16,
     };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
 protected:
     int m_iVersion;
     CMPCThemeComboBox m_Shaders;
@@ -81,6 +85,7 @@ protected:
     CString GetShaderPath(int loc);
 
     virtual void DoDataExchange(CDataExchange* pDX) override;
+    virtual BOOL OnInitDialog() override;
 
     BOOL PreTranslateMessage(MSG* pMsg);
 

@@ -430,7 +430,8 @@ void CPlayerSeekBar::GenerateToolTipText(REFERENCE_TIME rtPos)
     } else if (timeFormat == TIME_FORMAT_FRAME) {
         time.Format(_T("%I64d"), rtPos);
     } else {
-        ASSERT(FALSE);
+        m_tooltipText.Empty();
+        return;
     }
 
     CComBSTR chapterName;

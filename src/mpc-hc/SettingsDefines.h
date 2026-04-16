@@ -89,6 +89,18 @@
 //#define IDS_RS_MONITOR_AUTOREFRESHRATE      _T("MonitorAutoRefreshRate")
 #define IDS_RS_SPEEDSTEP                    _T("SpeedStep")
 #define IDS_RS_DEFAULTTOOLBARSIZE           _T("DefaultToolbarSize")
+#define IDS_R_PLAYERTOOLBAR                 L"Toolbars\\PlayerToolBar"
+#define IDS_RS_TOOLBARACTION1                L"ToolbarAction1"
+#define IDS_RS_TOOLBARACTION2                L"ToolbarAction2"
+#define IDS_RS_TOOLBARACTION3                L"ToolbarAction3"
+#define IDS_RS_TOOLBARACTION4                L"ToolbarAction4"
+#define IDS_RS_TOOLBARRIGHTACTION1           L"ToolbarRightAction1"
+#define IDS_RS_TOOLBARRIGHTACTION2           L"ToolbarRightAction2"
+#define IDS_RS_TOOLBARRIGHTACTION3           L"ToolbarRightAction3"
+#define IDS_RS_TOOLBARRIGHTACTION4           L"ToolbarRightAction4"
+#define IDS_RS_TOOLBAR_TYPE                  L"ToolbarType"
+#define IDS_RS_TOOLBAR_NAME                  L"ToolbarName"
+#define IDS_RS_TOOLBAR_ALIGNMENT             L"ToolbarAlignment"
 #define IDS_RS_SAVEIMAGE_POSITION           _T("SaveImagePosition")
 #define IDS_RS_SAVEIMAGE_CURRENTTIME        _T("SaveImageCurrentTime")
 #define IDS_RS_ALLOW_INACCURATE_FASTSEEK    _T("AllowInaccurateFastseek")
@@ -186,6 +198,7 @@
 #define IDS_RS_AUDIORENDERERTYPE            _T("AudioRendererType")
 #define IDS_RS_HIDECAPTIONMENU              _T("HideCaptionMenu")
 #define IDS_RS_HIDENAVIGATION               _T("HideNavigation")
+#define IDS_RS_HIDECAPTURESETTINGS          _T("HideCaptureSettings")
 #define IDS_RS_DEFAULTVIDEOFRAME            _T("DefaultVideoFrame")
 #define IDS_RS_REMEMBERWINDOWSIZE           _T("RememberWindowSize")
 #define IDS_RS_PANSCANZOOM                  _T("PanScanZoom")
@@ -365,8 +378,7 @@
 
 #define IDS_RS_COVER_ART                    _T("EnableCoverArt")
 #define IDS_RS_COVER_ART_SIZE_LIMIT         _T("CoverArtSizeLimit")
-#define IDS_RS_LOGGING                      _T("EnableLogging")
-#define IDS_RS_USE_LEGACY_TOOLBAR           _T("UseLegacyToolbar")
+#define IDS_RS_LOGGING                      _T("DebugLogMask")
 
 #define IDS_RS_SUBTITLE_RENDERER            _T("SubtitleRenderer")
 

@@ -39,6 +39,7 @@
 #include "date/date.h"
 #include "PPageExternalFilters.h"
 #include "../VideoRenderers/MPCVRAllocatorPresenter.h"
+std::map<DWORD, const wmcmd_base*> CAppSettings::CommandIDToWMCMD;
 
 #pragma warning(push)
 #pragma warning(disable: 4351) // new behavior: elements of array 'array' will be default initialized
@@ -110,10 +111,21 @@ CAppSettings::CAppSettings()
     , fReportFailedPins(true)
     , fAutoloadAudio(true)
     , fBlockVSFilter(true)
-    , bBlockRDP(false)
+    , bBlockRDP(true)
     , nVolumeStep(5)
     , nSpeedStep(0)
     , nDefaultToolbarSize(24)
+    , nToolbarAction1(0)
+    , nToolbarAction2(0)
+    , nToolbarAction3(0)
+    , nToolbarAction4(0)
+    , nToolbarRightAction1(0)
+    , nToolbarRightAction2(0)
+    , nToolbarRightAction3(0)
+    , nToolbarRightAction4(0)
+    , nToolbarType(INTERNAL_TOOLBAR)
+    , strToolbarName(L"")
+    , nToolbarAlignment(0)
     , eAfterPlayback(AfterPlayback::DO_NOTHING)
     , fUseDVDPath(false)
     , idMenuLang(0)
@@ -200,6 +212,7 @@ CAppSettings::CAppSettings()
     , nUpdaterDelay(7)
     , eCaptionMenuMode(MODE_SHOWCAPTIONMENU)
     , fHideNavigation(false)
+    , bHideCaptureSettings(false)
     , nCS(CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR)
     , language(LANGID(-1))
     , fEnableSubtitles(true)
@@ -230,8 +243,7 @@ CAppSettings::CAppSettings()
     , nJpegQuality(90)
     , bEnableCoverArt(true)
     , nCoverArtSizeLimit(600)
-    , bEnableLogging(false)
-    , bUseLegacyToolbar(false)
+    , DebugLogMask(0)
     , iLAVGPUDevice(DWORD_MAX)
     , nCmdVolume(0)
     , eSubtitleRenderer(SubtitleRenderer::INTERNAL)
@@ -351,6 +363,9 @@ CAppSettings::CAppSettings()
 #if INTERNAL_SOURCEFILTER_WTV
     SrcFiltersKeys[SRC_WTV] = FilterKey(_T("SRC_WTV"), true);
 #endif
+#if INTERNAL_SOURCEFILTER_APE
+    SrcFiltersKeys[SRC_APE] = FilterKey(_T("SRC_APE"), true);
+#endif
 #if INTERNAL_SOURCEFILTER_CDDA
     SrcFiltersKeys[SRC_CDDA] = FilterKey(_T("SRC_CDDA"), true);
 #endif
@@ -434,6 +449,9 @@ CAppSettings::CAppSettings()
 #if INTERNAL_DECODER_G729
     TraFiltersKeys[TRA_G729] = FilterKey(_T("TRA_G729"), true);
 #endif
+#if INTERNAL_DECODER_AC4
+    TraFiltersKeys[TRA_AC4] = FilterKey(_T("TRA_AC4"), true);
+#endif
 #if INTERNAL_DECODER_OTHERAUDIO
     TraFiltersKeys[TRA_OTHERAUDIO] = FilterKey(_T("TRA_OTHERAUDIO"), true);
 #endif
@@ -514,6 +532,9 @@ CAppSettings::CAppSettings()
 #endif
 #if INTERNAL_DECODER_DNXHD
     TraFiltersKeys[TRA_DNXHD] = FilterKey(_T("TRA_DNXHD"), true);
+#endif
+#if INTERNAL_DECODER_CFHD
+    TraFiltersKeys[TRA_CFHD] = FilterKey(_T("TRA_CFHD"), true);
 #endif
 #if INTERNAL_DECODER_OTHERVIDEO
     TraFiltersKeys[TRA_OTHERVIDEO] = FilterKey(_T("TRA_OTHERVIDEO"), true);
@@ -610,6 +631,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_PRESIZE_SHADERS_TOGGLE,          'P', FCONTROL,          IDS_PRESIZE_SHADERS_TOGGLE },
     { ID_POSTSIZE_SHADERS_TOGGLE,         'P', FCONTROL | FALT,   IDS_POSTSIZE_SHADERS_TOGGLE },
     { ID_SUBTITLES_OVERRIDE_DEFAULT_STYLE,  0, 0,                 IDS_AG_TOGGLE_DEFAULT_SUBTITLE_STYLE },
+    { ID_SUBTITLES_OVERRIDE_ALL_STYLES,     0, 0,                 IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES },
     { ID_VIEW_PRESETS_MINIMAL,            '1', 0,                 IDS_AG_VIEW_MINIMAL },
     { ID_VIEW_PRESETS_COMPACT,            '2', 0,                 IDS_AG_VIEW_COMPACT },
     { ID_VIEW_PRESETS_NORMAL,             '3', 0,                 IDS_AG_VIEW_NORMAL },
@@ -655,6 +677,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_PANSCAN_ROTATEYP,         VK_NUMPAD4, FALT,              IDS_AG_PNS_ROTATEY_P },
     { ID_PANSCAN_ROTATEYM,         VK_NUMPAD6, FALT,              IDS_AG_PNS_ROTATEY_M },
     { ID_PANSCAN_ROTATEZP,         VK_NUMPAD1, FALT,              IDS_AG_PNS_ROTATEZ_P },
+    { ID_PANSCAN_ROTATEZP2,                  0, 0,                IDS_AG_PNS_ROTATEZ_P2 },
     { ID_PANSCAN_ROTATEZM,         VK_NUMPAD3, FALT,              IDS_AG_PNS_ROTATEZ_M },
     { ID_VOLUME_UP,                     VK_UP, 0,                 IDS_AG_VOLUME_UP,   0, wmcmd::WUP },
     { ID_VOLUME_DOWN,                 VK_DOWN, 0,                 IDS_AG_VOLUME_DOWN, 0, wmcmd::WDOWN },
@@ -755,9 +778,10 @@ void CAppSettings::CreateCommands()
     for (const auto& wc : default_wmcmds) {
         wmcmd w = wmcmd(wc);
         w.fVirt |= FVIRTKEY | FNOINVERT;
+        CommandIDToWMCMD[wc.cmd] = &wc;
         wmcmds.AddTail(w);
     }
-    ASSERT(wmcmds.GetCount() <= ACCEL_LIST_SIZE);
+    ASSERT(wmcmds.GetCount() == ACCEL_LIST_SIZE);
 }
 
 CAppSettings::~CAppSettings()
@@ -915,6 +939,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HIDECAPTIONMENU, eCaptionMenuMode);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HIDENAVIGATION, fHideNavigation);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HIDECAPTURESETTINGS, bHideCaptureSettings);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONTROLSTATE, nCS);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTVIDEOFRAME, iDefaultVideoSize);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_KEEPASPECTRATIO, fKeepAspectRatio);
@@ -1270,13 +1295,26 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART, bEnableCoverArt);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, nCoverArtSizeLimit);
 
-    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, bEnableLogging);
-    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_USE_LEGACY_TOOLBAR, bUseLegacyToolbar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, DebugLogMask);
 
     VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER,
                                  static_cast<int>(eSubtitleRenderer)));
 
-    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTTOOLBARSIZE, nDefaultToolbarSize);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_DEFAULTTOOLBARSIZE, nDefaultToolbarSize);
+
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION1, nToolbarAction1);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION2, nToolbarAction2);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION3, nToolbarAction3);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION4, nToolbarAction4);
+
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION1, nToolbarRightAction1);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION2, nToolbarRightAction2);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION3, nToolbarRightAction3);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION4, nToolbarRightAction4);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_TYPE, nToolbarType);
+    pApp->WriteProfileString(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_NAME, strToolbarName);
+    pApp->WriteProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_ALIGNMENT, nToolbarAlignment);
+
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_POSITION, bSaveImagePosition);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_CURRENTTIME, bSaveImageCurrentTime);
@@ -1612,6 +1650,7 @@ void CAppSettings::LoadSettings()
 
     eCaptionMenuMode = static_cast<MpcCaptionState>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HIDECAPTIONMENU, MODE_SHOWCAPTIONMENU));
     fHideNavigation = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HIDENAVIGATION, FALSE);
+    bHideCaptureSettings = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HIDECAPTURESETTINGS, FALSE);
     nCS = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONTROLSTATE, CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR);
     iDefaultVideoSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTVIDEOFRAME, DVS_FROMINSIDE);
     fKeepAspectRatio = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_KEEPASPECTRATIO, TRUE);
@@ -1638,7 +1677,7 @@ void CAppSettings::LoadSettings()
     strSubtitlesLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESLANGORDER);
     strAudiosLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIOSLANGORDER);
     fBlockVSFilter = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKVSFILTER, TRUE);
-    bBlockRDP = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKRDP, FALSE);
+    bBlockRDP = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKRDP, TRUE);
     fEnableWorkerThreadForOpening = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLEWORKERTHREADFOROPENING, TRUE);
     fReportFailedPins = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPORTFAILEDPINS, TRUE);
     fAllowMultipleInst = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MULTIINST, FALSE);
@@ -1876,7 +1915,7 @@ void CAppSettings::LoadSettings()
     }
     iVerticalAlignVideo = static_cast<verticalAlignVideoType>(tVertAlign);
 
-    strSubtitlesProviders = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESPROVIDERS, _T("<|OpenSubtitles2|||1|0|><|podnapisi|||0|0|>"));
+    strSubtitlesProviders = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESPROVIDERS, _T("<|OpenSubtitles2|||0|0|><|podnapisi|||0|0|>"));
     strSubtitlePaths = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLEPATHS, DEFAULT_SUBTITLE_PATHS);
     bSubtitleOverrideDefaultStyle = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_OVERRIDE_DEFAULT_STYLE, FALSE);
     bSubtitleOverrideAllStyles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_OVERRIDE_ALL_STYLES, FALSE);
@@ -2202,8 +2241,7 @@ void CAppSettings::LoadSettings()
     bEnableCoverArt = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART, TRUE);
     nCoverArtSizeLimit = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, 600);
 
-    bEnableLogging = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, FALSE);
-    bUseLegacyToolbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_LEGACY_TOOLBAR, FALSE);
+    DebugLogMask = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, 0);
 
     eSubtitleRenderer = static_cast<SubtitleRenderer>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER, static_cast<int>(SubtitleRenderer::INTERNAL)));
     if (eSubtitleRenderer == SubtitleRenderer::RESERVED) {
@@ -2211,7 +2249,24 @@ void CAppSettings::LoadSettings()
         bRenderSSAUsingLibass = true;
     }
 
-    nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTTOOLBARSIZE, 24);
+    nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_DEFAULTTOOLBARSIZE, 0);
+    if (nDefaultToolbarSize < 16) {
+        nDefaultToolbarSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_DEFAULTTOOLBARSIZE, 24); // old location
+    }
+
+    nToolbarAction1 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION1, 0);
+    nToolbarAction2 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION2, 0);
+    nToolbarAction3 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION3, 0);
+    nToolbarAction4 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARACTION4, 0);
+
+    nToolbarRightAction1 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION1, 0);
+    nToolbarRightAction2 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION2, 0);
+    nToolbarRightAction3 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION3, 0);
+    nToolbarRightAction4 = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBARRIGHTACTION4, 0);
+    nToolbarType = (TOOLBAR_TYPE)pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_TYPE, INTERNAL_TOOLBAR);
+    strToolbarName = pApp->GetProfileString(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_NAME, L"");
+    nToolbarAlignment = pApp->GetProfileInt(IDS_R_PLAYERTOOLBAR, IDS_RS_TOOLBAR_ALIGNMENT, 0);
+
 
     bSaveImagePosition = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_POSITION, TRUE);
     bSaveImageCurrentTime = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_CURRENTTIME, FALSE);
@@ -2237,7 +2292,7 @@ void CAppSettings::LoadSettings()
                                  pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_CROSSFEED_LEVEL,
                                                      SaneAudioRenderer::ISettings::CROSSFEED_LEVEL_CMOY));
 
-    sanear->SetIgnoreSystemChannelMixer(pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_IGNORE_SYSTEM_MIXER, TRUE));
+    sanear->SetIgnoreSystemChannelMixer(pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_IGNORE_SYSTEM_MIXER, FALSE));
 
     bUseYDL       = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_YDL, TRUE);
     iYDLMaxHeight = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_YDL_MAX_HEIGHT, 1440);
@@ -2273,7 +2328,7 @@ void CAppSettings::LoadSettings()
     iMouseLeftUpDelay = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MOUSE_LEFTUP_DELAY, 0);
 
     if (bMPCTheme) {
-        CMPCTheme::InitializeColors(eModernThemeMode);
+        CMPCTheme::InitializeColors();
     }
     // GUI theme can be used now
     static_cast<CMPlayerCApp*>(AfxGetApp())->m_bThemeLoaded = bMPCTheme;
@@ -2627,8 +2682,13 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_ADMINOPTION;
                 iAdminOption = _ttoi(cmdln.GetNext(pos));
             } else if (sw == _T("slave") && pos) {
-                nCLSwitches |= CLSW_SLAVE;
-                hMasterWnd = (HWND)IntToPtr(_ttoi(cmdln.GetNext(pos)));
+                HWND slavewnd = (HWND)IntToPtr(_ttoi(cmdln.GetNext(pos)));
+                if (slavewnd != nullptr && ::IsWindow(slavewnd)) {
+                    nCLSwitches |= CLSW_SLAVE;
+                    hMasterWnd = slavewnd;
+                } else {
+                    ASSERT(false);
+                }
             } else if (sw == _T("fixedsize") && pos) {
                 CAtlList<CString> sl;
                 // Optional arguments for the main window's position
@@ -3557,7 +3617,9 @@ void CAppSettings::CRecentFileListWithMoreInfo::SetSize(size_t nSize) {
 }
 
 void CAppSettings::CRecentFileListWithMoreInfo::RemoveAll() {
+    size_t max = m_maxSize;
     SetSize(0);
+    m_maxSize = max;
 }
 
 bool CAppSettings::IsVSFilterInstalled()
@@ -3565,7 +3627,7 @@ bool CAppSettings::IsVSFilterInstalled()
     return IsCLSIDRegistered(CLSID_VSFilter);
 }
 
-void CAppSettings::UpdateSettings()
+void CAppSettings::MigrateSettings()
 {
     auto pApp = AfxGetMyApp();
     ASSERT(pApp);
@@ -3801,6 +3863,30 @@ void CAppSettings::UpdateSettings()
                     break;
             }
         [[fallthrough]];
+        default:
+            pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_R_VERSION, 8);
+    }
+}
+
+void CAppSettings::UpdateSettings()
+{
+    auto pApp = AfxGetMyApp();
+
+    UINT version = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_R_VERSION, 0);
+    if (version >= APPSETTINGS_VERSION) {
+        return; // Nothing to update
+    }
+
+    switch (version) {
+        case 8:
+            // enable all internal filters
+            for (int f = 0; f < SRC_LAST; f++) {
+                SrcFilters[f] = true;
+            }
+            for (int f = 0; f < TRA_LAST; f++) {
+                TraFilters[f] = true;
+            }
+            [[fallthrough]];
         default:
             pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_R_VERSION, APPSETTINGS_VERSION);
     }

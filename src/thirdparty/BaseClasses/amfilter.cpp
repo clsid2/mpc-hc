@@ -565,6 +565,11 @@ CBaseFilter::Pause()
             if (NULL == pPin) {
                 break;
             }
+#if !WIN64
+            if (pPin == (CBasePin*)0x3) { // invalid pointer value, weird x86 bug
+                break;
+            }
+#endif
 
             // Disconnected pins are not activated - this saves pins
             // worrying about this state themselves

@@ -34,9 +34,7 @@
     <ClCompile Include="libxml2\hash.c" />
     <ClCompile Include="libxml2\HTMLparser.c" />
     <ClCompile Include="libxml2\HTMLtree.c" />
-    <ClCompile Include="libxml2\legacy.c" />
     <ClCompile Include="libxml2\list.c" />
-    <ClCompile Include="libxml2\nanoftp.c" />
     <ClCompile Include="libxml2\nanohttp.c">
       <ForcedIncludeFiles>io.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -44,7 +42,6 @@
     <ClCompile Include="libxml2\parserInternals.c" />
     <ClCompile Include="libxml2\pattern.c" />
     <ClCompile Include="libxml2\relaxng.c" />
-    <ClCompile Include="libxml2\SAX.c" />
     <ClCompile Include="libxml2\SAX2.c" />
     <ClCompile Include="libxml2\schematron.c" />
     <ClCompile Include="libxml2\threads.c" />
@@ -89,13 +86,11 @@
     <ClInclude Include="libxml2\include\libxml\HTMLparser.h" />
     <ClInclude Include="libxml2\include\libxml\HTMLtree.h" />
     <ClInclude Include="libxml2\include\libxml\list.h" />
-    <ClInclude Include="libxml2\include\libxml\nanoftp.h" />
     <ClInclude Include="libxml2\include\libxml\nanohttp.h" />
     <ClInclude Include="libxml2\include\libxml\parser.h" />
     <ClInclude Include="libxml2\include\libxml\parserInternals.h" />
     <ClInclude Include="libxml2\include\libxml\pattern.h" />
     <ClInclude Include="libxml2\include\libxml\relaxng.h" />
-    <ClInclude Include="libxml2\include\libxml\SAX.h" />
     <ClInclude Include="libxml2\include\libxml\SAX2.h" />
     <ClInclude Include="libxml2\include\libxml\schemasInternals.h" />
     <ClInclude Include="libxml2\include\libxml\schematron.h" />

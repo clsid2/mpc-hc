@@ -46,13 +46,27 @@ CPPageFullscreen::CPPageFullscreen()
     , m_bAutoChangeFSModeApplyDefModeAtFSExist(TRUE)
     , m_bAutoChangeFSModeRestoreResAfterProgExit(TRUE)
     , m_uAutoChangeFullscrResDelay(0)
-    , m_list(0)
+    , m_list()
 {
     m_FullScreenSeparateControlsText = CStringW(StrRes(IDS_PPAGEADVANCED_FULLSCREEN_SEPARATE_CONTROLS));
 }
 
 CPPageFullscreen::~CPPageFullscreen()
 {
+}
+
+inline void CPPageFullscreen::RenumberListItem(int nItem)
+{
+    CString strItemPos;
+    strItemPos.Format(_T("%02d"), nItem);
+    VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+}
+
+void CPPageFullscreen::RenumberListItems(int nStartItem)
+{
+    for (int nItem = nStartItem, count = m_list.GetItemCount(); nItem < count; nItem++) {
+        RenumberListItem(nItem);
+    }
 }
 
 void CPPageFullscreen::ModesUpdate()
@@ -303,11 +317,12 @@ BOOL CPPageFullscreen::OnInitDialog()
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() /*| LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
                             | LVS_EX_GRIDLINES */ | LVS_EX_BORDERSELECT | LVS_EX_ONECLICKACTIVATE | LVS_EX_CHECKBOXES | LVS_EX_FLATSB);
     m_list.setAdditionalStyles(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
     m_list.InsertColumn(COL_N, ResStr(IDS_PPAGE_FS_CLN_ON_OFF), LVCFMT_LEFT, 60);
     m_list.InsertColumn(COL_FRAMERATE_START, ResStr(IDS_PPAGE_FS_CLN_FROM_FPS), LVCFMT_RIGHT, 60);
     m_list.InsertColumn(COL_FRAMERATE_STOP, ResStr(IDS_PPAGE_FS_CLN_TO_FPS), LVCFMT_RIGHT, 60);
     m_list.InsertColumn(COL_DISPLAY_MODE, ResStr(IDS_PPAGE_FS_CLN_DISPLAY_MODE), LVCFMT_LEFT, 135);
-    m_list.InsertColumn(COL_AUDIO_DELAY, ResStr(IDS_PPAGE_FS_CLN_AUDIO_DELAY), LVCFMT_LEFT, 110);
+    m_list.InsertColumn(COL_AUDIO_DELAY, ResStr(IDS_PPAGE_FS_CLN_AUDIO_DELAY), LVCFMT_RIGHT, 110);
     m_list.setCheckedColors((COLORREF) - 1, (COLORREF) - 1, CMPCTheme::ContentTextDisabledFGColorFade); //for mpc theme highlighting since nmcustdraw will be ignored on CMPCThemelistctrl
 
     m_bHideFullscreenControls = s.bHideFullscreenControls;
@@ -488,6 +503,9 @@ void CPPageFullscreen::OnAdd()
     VERIFY(m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED));
     m_list.SetFocus();
 
+    // Renumber items after the inserted one
+    RenumberListItems(nItem + 1);
+
     SetModified();
 }
 
@@ -508,11 +526,7 @@ void CPPageFullscreen::OnRemove()
         VERIFY(m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED));
         m_list.SetFocus();
         // Update all items that were after the removed one
-        for (int count = m_list.GetItemCount(); nItem < count; nItem++) {
-            CString strItemPos;
-            strItemPos.Format(_T("%02d"), nItem);
-            VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
-        }
+        RenumberListItems(nItem);
 
         SetModified();
     }
@@ -556,10 +570,8 @@ void CPPageFullscreen::OnMoveUp()
         m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_list.SetFocus();
 
-        // Update the item that got moved down if any
-        nItem++;
-        strItemPos.Format(_T("%02d"), nItem);
-        VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+        // Update the item that got moved down
+        RenumberListItem(nItem + 1);
 
         SetModified();
     }
@@ -603,10 +615,8 @@ void CPPageFullscreen::OnMoveDown()
         m_list.SetItemState(nItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_list.SetFocus();
 
-        // Update the item that got moved up if any
-        nItem--;
-        strItemPos.Format(_T("%02d"), nItem);
-        VERIFY(m_list.SetItemText(nItem, COL_N, strItemPos));
+        // Update the item that got moved up
+        RenumberListItem(nItem - 1);
 
         SetModified();
     }
@@ -709,22 +719,26 @@ void CPPageFullscreen::OnListEndEdit(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPPageFullscreen::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
     *pResult = CDRF_DODEFAULT;
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYSUBITEMDRAW;
-    } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        COLORREF crText;
-        if (m_list.GetCheck((int)pLVCD->nmcd.dwItemSpec)) {
-            crText = RGB(0, 0, 0);
-        } else {
-            crText = RGB(128, 128, 128);
+    //this custom draw is used only in classic mode
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYSUBITEMDRAW;
+        } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            COLORREF crText;
+            if (m_list.GetCheck((int)pLVCD->nmcd.dwItemSpec)) {
+                crText = RGB(0, 0, 0);
+            } else {
+                crText = RGB(128, 128, 128);
+            }
+            pLVCD->clrText = crText;
+            *pResult = CDRF_DODEFAULT;
         }
-        pLVCD->clrText = crText;
-        *pResult = CDRF_DODEFAULT;
     }
 }
 

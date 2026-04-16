@@ -127,9 +127,10 @@ protected:
 	bool m_bIsPreview,m_bPreviewSupportsRotation;
     CStringW m_entryRFS;
     bool m_bIsCapture;
+    CStringW m_input; // used as hint to determine which filters to use
 
 public:
-	CFGManager(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd = 0, bool IsPreview = false);
+	CFGManager(LPCWSTR pClassName, LPCWSTR pInputFileURL, HWND hWnd = 0, bool IsPreview = false);
     virtual ~CFGManager();
     HRESULT RenderRFSFileEntry(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrPlayList, CStringW entryRFS);
     bool PreviewSupportsRotation() { return m_bPreviewSupportsRotation; }
@@ -159,7 +160,7 @@ public:
     void InsertBroadcomDecoder();
 
 public:
-	CFGManagerCustom(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd = 0, bool IsPreview = false);
+	CFGManagerCustom(LPCWSTR pClassName, LPCWSTR pInputFileURL, HWND hWnd = 0, bool IsPreview = false);
 };
 
 class CFGManagerPlayer : public CFGManagerCustom
@@ -172,7 +173,7 @@ protected:
     STDMETHODIMP ConnectDirect(IPin* pPinOut, IPin* pPinIn, const AM_MEDIA_TYPE* pmt);
 
 public:
-	CFGManagerPlayer(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd, bool IsPreview = false);
+	CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HWND hWnd, bool IsPreview = false);
 };
 
 class CFGManagerDVD : public CFGManagerPlayer
@@ -184,19 +185,13 @@ protected:
     STDMETHODIMP AddSourceFilter(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrFilterName, IBaseFilter** ppFilter);
 
 public:
-	CFGManagerDVD(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd, bool IsPreview = false);
+	CFGManagerDVD(LPCWSTR pInputFileURL, HWND hWnd, bool IsPreview = false);
 };
 
 class CFGManagerCapture : public CFGManagerPlayer
 {
 public:
-    CFGManagerCapture(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd);
-};
-
-class CFGManagerMuxer : public CFGManagerCustom
-{
-public:
-    CFGManagerMuxer(LPCTSTR pName, LPUNKNOWN pUnk);
+    CFGManagerCapture(HWND hWnd);
 };
 
 //

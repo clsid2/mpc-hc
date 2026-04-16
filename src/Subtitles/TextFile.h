@@ -34,7 +34,7 @@ public:
         ANSI
     };
 
-private:
+protected:
     enc m_encoding, m_defaultencoding, m_fallbackencoding;
     int m_offset;
     ULONGLONG m_posInFile;

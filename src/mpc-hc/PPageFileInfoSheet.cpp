@@ -77,7 +77,7 @@ BOOL CPPageFileInfoSheet::OnInitDialog()
     GetDlgItem(IDOK)->MoveWindow(r);
 
     r.MoveToX(5);
-    r.right += 10;
+    r.right += 24;
     m_Button_MI.Create(ResStr(IDS_AG_SAVE_AS), WS_CHILD | BS_PUSHBUTTON | WS_VISIBLE, r, this, IDC_BUTTON_MI);
     m_Button_MI.SetFont(GetFont());
     m_Button_MI.ShowWindow(SW_HIDE);

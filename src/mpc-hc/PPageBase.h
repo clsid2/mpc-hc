@@ -24,22 +24,23 @@
 #include "ResizableLib/ResizableDialog.h"
 #include "../../CmdUI/CmdUI.h"
 #include "CMPCThemeToolTipCtrl.h"
+#include "SVGImage.h"
 
 // CPPageBase dialog
-
+using namespace SVGImage;
 class CPPageBase : public CCmdUIPropertyPage
 {
     DECLARE_DYNAMIC(CPPageBase)
 
 protected:
     CMPCThemeToolTipCtrl m_wndToolTip;
-    std::map<UINT, CImageList> m_buttonIcons;
+    std::map<IconDef, CImageList, icomp> m_buttonIcons;
 
     static bool FillComboToolTip(CComboBox& comboBox, TOOLTIPTEXT* pTTT);
 
     void CreateToolTip();
 
-    void SetButtonIcon(UINT nIDButton, UINT nIDIcon);
+    void SetButtonIcon(UINT nIDButton, IconDef iconDef);
 
 public:
     CPPageBase(UINT nIDTemplate, UINT nIDCaption = 0);

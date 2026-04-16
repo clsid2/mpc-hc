@@ -168,7 +168,7 @@ public:
         LPCWSTR OSD_Font = nullptr,
         const bool bPeriodicallyDisplayed = false);
     void DebugMessage(LPCWSTR format, ...);
-    void ClearMessage(bool hide = false);
+    void ClearMessage(bool hide = false, bool repaint = true);
 
     bool CanShowMessage();
 

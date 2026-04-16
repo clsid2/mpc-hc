@@ -37,18 +37,15 @@ private:
     int m_iModernSeekbarHeight;
     CMPCThemeSpinButtonCtrl m_ModernSeekbarHeightCtrl;
     CMPCThemeEdit m_ModernSeekbarHeightEdit;
-    CMPCThemeSpinButtonCtrl m_DefaultToolbarSizeCtrl;
     CMPCThemeComboBox m_ThemeMode;
     int m_iThemeMode;
     CMPCThemeComboBox m_langsComboBox;
     CMPCThemeComboBox m_HoverPosition;
     int m_nPosLangEnglish;
-    int m_iDefaultToolbarSize;
     CMPCThemeComboBox m_FontSize;
     CMPCThemeComboBox m_FontType;
     int m_nOSDSize;
 
-    BOOL m_fUseSeekbarHover;
     CString m_strOSDFont;
 
     BOOL m_fShowChapters;

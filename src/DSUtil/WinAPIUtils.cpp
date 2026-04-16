@@ -310,6 +310,17 @@ HRESULT FileDelete(CString file, HWND hWnd, bool recycle /*= true*/, bool noconf
     return hRes;
 }
 
+bool IsLeftMouseButtonDown() {
+    int lkey;
+    if (GetSystemMetrics(SM_SWAPBUTTON)) {
+        lkey = VK_RBUTTON;
+    } else {
+        lkey = VK_LBUTTON;
+    }
+
+    return (GetAsyncKeyState(lkey) & 0x8000) != 0;
+}
+
 BOOL CClipboard::SetText(const CString& text) const
 {
 #ifdef _UNICODE

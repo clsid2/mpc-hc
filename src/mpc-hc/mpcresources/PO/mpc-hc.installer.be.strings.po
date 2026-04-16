@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Yauhen Bugamol, 2024
+# Yauhen Bugamol, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Yauhen Bugamol, 2024\n"
+"Last-Translator: Yauhen Bugamol, 2025\n"
 "Language-Team: Belarusian (https://app.transifex.com/mpchc/teams/106126/be/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -74,7 +74,7 @@ msgstr "Толькі для гэтага карыстальніка"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
-msgstr "Іншыя заданні:"
+msgstr "Іншыя аперацыі:"
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"
@@ -90,4 +90,4 @@ msgstr "Адвольнае ўсталяванне"
 
 msgctxt "CustomMessages_ViewChangelog"
 msgid "View Changelog"
-msgstr "Праглядзець спіс зменаў"
+msgstr "Праглядзець спіс змен"

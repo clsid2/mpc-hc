@@ -32,11 +32,11 @@
 #pragma warning(disable: 4244)
 
 #define LOG SUBTITLES_LOG
-#define LOG_NONE    _T("()")
-#define LOG_INPUT   _T("(\"%S\")")
-#define LOG_OUTPUT  _T("()=%S")
-#define LOG_BOTH    _T("(\"%S\")=%S")
-#define LOG_ERROR   _T("() ERROR: %S")
+#define LOG_NONE    _T("")
+#define LOG_INPUT   _T("\"%S\"")
+#define LOG_OUTPUT  _T("%S")
+#define LOG_BOTH    _T("\"%S\"=%S")
+#define LOG_ERROR   _T("ERROR: %S")
 
 #define GUESSED_NAME_POSTFIX " (*)"
 #define CheckAbortAndReturn() { if (IsAborting()) return SR_ABORTED; }
@@ -348,6 +348,11 @@ bool OpenSubtitles2::NeedLogin()
     return false;
 }
 
+bool OpenSubtitles2::UseForAutoDownload()
+{
+    return !UserName().empty();
+}
+
 SRESULT OpenSubtitles2::Login(const std::string& sUserName, const std::string& sPassword)
 {
     SRESULT result = SR_FAILED;
@@ -359,57 +364,61 @@ SRESULT OpenSubtitles2::Login(const std::string& sUserName, const std::string& s
     CString userAgent(UserAgent().c_str());
     CInternetSession session(userAgent);
     session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
-    CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
-    CString url(_T("/api/v1/login"));
-    CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_POST, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
+    try {
+        CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
+        CString url(_T("/api/v1/login"));
+        CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_POST, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
 
-    //Headers will be converted to UTF-8 but the body will be sent as-is
-    //That's why everything uses CString except for the body
-    CString headers(_T("Content-Type: application/json\r\n"));
-    headers.AppendFormat(_T("Api-Key: %s\r\n"), APIKEY);
-    headers.Append(_T("Accept: application/json\r\n"));
+        //Headers will be converted to UTF-8 but the body will be sent as-is
+        //That's why everything uses CString except for the body
+        CString headers(_T("Content-Type: application/json\r\n"));
+        headers.AppendFormat(_T("Api-Key: %s\r\n"), APIKEY);
+        headers.Append(_T("Accept: application/json\r\n"));
 
-    std::string body(R"({ "username": ")");
-    body = body + sUserName + R"(", "password": ")" + sPassword + R"(" })";
+        std::string body(R"({ "username": ")");
+        body = body + sUserName + R"(", "password": ")" + sPassword + R"(" })";
 
 
-    Response response;
-    if (CallAPI(httpFile, headers, body, response))
-    {
-        rapidjson::Document doc;
-        doc.Parse(response.text.c_str());
-        if (doc.IsObject() && doc.HasMember("token") && doc["token"].IsString()) {
-            token = doc["token"].GetString();
-            result = SR_SUCCEEDED;
-        }
-    } else if (response.code == 401) {
-        CString msg;
-        msg.FormatMessage(IDS_SUB_CREDENTIALS_ERROR, L"opensubtitles.com", static_cast<LPCWSTR>(UTF8To16(sUserName.c_str())));
-        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-    } else if (response.code >= 500 && response.code < 600) {
-        CString msg;
-        msg.Format(L"Failed to login to opensubtitles.com\n\nHTTP response code %d\n\nThis is a server error. Try again later.", response.code);
-        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-    } else {
-        CString msg = L"Failed to login to opensubtitles.com";
-        rapidjson::Document doc;
-        doc.Parse(response.text.c_str());
-        if (doc.IsObject() && doc.HasMember("message") && doc["message"].IsString()) {
-            CString errmsg = doc["message"].GetString();
-            msg.Append(L"\n\n");
-            msg.Append(errmsg);
+        Response response;
+        if (CallAPI(httpFile, headers, body, response))
+        {
+            rapidjson::Document doc;
+            doc.Parse(response.text.c_str());
+            if (doc.IsObject() && doc.HasMember("token") && doc["token"].IsString()) {
+                token = doc["token"].GetString();
+                result = SR_SUCCEEDED;
+            }
+        } else if (response.code == 401) {
+            CString msg;
+            msg.FormatMessage(IDS_OPENSUBTITLES_LOGIN_ERROR, static_cast<LPCWSTR>(UTF8To16(sUserName.c_str())));
+            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+        } else if (response.code >= 500 && response.code < 600) {
+            CString msg;
+            msg.Format(L"Failed to login to opensubtitles.com\n\nHTTP response code %d\n\nThis is a server error. Try again later.", response.code);
+            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
         } else {
-            msg.AppendFormat(L"\n\nHTTP response code %d", response.code);
+            CString msg = L"Failed to login to opensubtitles.com";
+            rapidjson::Document doc;
+            doc.Parse(response.text.c_str());
+            if (doc.IsObject() && doc.HasMember("message") && doc["message"].IsString()) {
+                CString errmsg = doc["message"].GetString();
+                msg.Append(L"\n\n");
+                msg.Append(errmsg);
+            } else {
+                msg.AppendFormat(L"\n\nHTTP response code %d", response.code);
+            }
+            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
         }
-        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+
+        httpFile->Close();
+        delete httpFile;
+        con->Close();
+        delete con;
+    } catch (CInternetException* pEx) {
+        LOG(L"Exception %lu\n", pEx->m_dwError);
+        pEx->Delete();
     }
 
-    httpFile->Close();
-    delete httpFile;
-    con->Close();
-    delete con;
     return result;
 }
 
@@ -420,79 +429,85 @@ SRESULT OpenSubtitles2::Search(const SubtitlesInfo& pFileInfo)
     CString userAgent(UserAgent().c_str());
     CInternetSession session(userAgent);
     session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
-    CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
+    try {
+        CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
 
-    CString url(_T("/api/v1/subtitles?"));
+        CString url(_T("/api/v1/subtitles?"));
 
-    std::list<std::string> languages = LanguagesISO6391();
-    if (!languages.empty()) {
-        languages.sort();
-        languages.unique();
-        // use alternative language codes used by the provider in case they differ from our ISO codes
-        for (auto it = languages.begin(); it != languages.end(); ++it) {
-            if ((*it).compare("pb") == 0) { // Portuguese Brazil
-                *it = "pt-br";
-            } else if ((*it).compare("pt") == 0) { // Portuguese
-                *it = "pt-pt";
-            } else if ((*it).compare("zh") == 0) { // Chinese
-                *it = "zh-cn,zh-tw";
-            }
-        }
-        url.AppendFormat(_T("languages=%s&"), JoinContainer(languages, _T(",")).c_str());
-    }
-    if (!pFileInfo.fileHash.empty()) {
-        url.AppendFormat(_T("moviehash=%s&"), (LPCTSTR) CString(pFileInfo.fileHash.c_str()));
-    }
-
-    CString query;
-    if (pFileInfo.manualSearchString.IsEmpty())
-        query = pFileInfo.fileName.c_str();
-    else
-        query = pFileInfo.manualSearchString;
-
-    url.AppendFormat(_T("query=%s"), (LPCTSTR)query);
-
-    CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_GET, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
-
-    CString headers(_T("Api-Key: "));
-    headers.Append(APIKEY);
-    headers.Append(_T("\r\n"));
-    Response response;
-    if (CallAPI(httpFile, headers, response)) {
-        rapidjson::Document doc;
-        doc.Parse(response.text.c_str());
-        if (doc.IsObject() && doc.HasMember("data") && doc["data"].IsArray()) {
-            result = SR_SUCCEEDED;
-            const auto& data = doc["data"];
-            for (const auto& item : data.GetArray()) {
-
-                SubtitlesInfo pSubtitlesInfo;
-
-                if (!GetOptionalValue(item, "/attributes/files/0/file_id", pSubtitlesInfo.id)) {
-                    continue;
+        std::list<std::string> languages = LanguagesISO6391();
+        if (!languages.empty()) {
+            languages.sort();
+            languages.unique();
+            // use alternative language codes used by the provider in case they differ from our ISO codes
+            for (auto it = languages.begin(); it != languages.end(); ++it) {
+                if ((*it).compare("pb") == 0) { // Portuguese Brazil
+                    *it = "pt-br";
+                } else if ((*it).compare("pt") == 0) { // Portuguese
+                    *it = "pt-pt";
+                } else if ((*it).compare("zh") == 0) { // Chinese
+                    *it = "zh-cn,zh-tw";
                 }
-                GetOptionalValue(item, "/attributes/files/0/file_name", pSubtitlesInfo.fileName);
-                GetOptionalValue(item, "/attributes/files/0/cd_number", pSubtitlesInfo.discNumber);
-                pSubtitlesInfo.fileExtension = "srt";
-                GetOptionalValue(item, "/attributes/language", pSubtitlesInfo.languageCode);
-                GetOptionalValue(item, "/attributes/download_count", pSubtitlesInfo.downloadCount);
-                GetOptionalValue(item, "/attributes/feature_details/movie_name", pSubtitlesInfo.title);
-                GetOptionalValue(item, "/attributes/feature_details/year", pSubtitlesInfo.year);
-                GetOptionalValue(item, "/attributes/feature_details/season_number", pSubtitlesInfo.seasonNumber);
-                GetOptionalValue(item, "/attributes/feature_details/episode_number", pSubtitlesInfo.episodeNumber);
-                GetOptionalValue(item, "/attributes/hearing_impaired", pSubtitlesInfo.hearingImpaired);
-                GetOptionalValue(item, "/attributes/feature_details/imdb_id", pSubtitlesInfo.imdbid);
-                GetOptionalValue(item, "/attributes/fps", pSubtitlesInfo.frameRate);
-                Set(pSubtitlesInfo);
             }
+            url.AppendFormat(_T("languages=%s&"), JoinContainer(languages, _T(",")).c_str());
         }
+        if (!pFileInfo.fileHash.empty()) {
+            url.AppendFormat(_T("moviehash=%s&"), (LPCTSTR) CString(pFileInfo.fileHash.c_str()));
+        }
+
+        CString query;
+        if (pFileInfo.manualSearchString.IsEmpty())
+            query = pFileInfo.fileName.c_str();
+        else
+            query = pFileInfo.manualSearchString;
+
+        url.AppendFormat(_T("query=%s"), (LPCTSTR)query);
+
+        CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_GET, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
+
+        int count = 0;
+        CString headers(_T("Api-Key: "));
+        headers.Append(APIKEY);
+        headers.Append(_T("\r\n"));
+        Response response;
+        if (CallAPI(httpFile, headers, response)) {
+            rapidjson::Document doc;
+            doc.Parse(response.text.c_str());
+            if (doc.IsObject() && doc.HasMember("data") && doc["data"].IsArray()) {
+                result = SR_SUCCEEDED;
+                const auto& data = doc["data"];
+                for (const auto& item : data.GetArray()) {
+
+                    SubtitlesInfo pSubtitlesInfo;
+
+                    if (!GetOptionalValue(item, "/attributes/files/0/file_id", pSubtitlesInfo.id)) {
+                        continue;
+                    }
+                    GetOptionalValue(item, "/attributes/files/0/file_name", pSubtitlesInfo.fileName);
+                    GetOptionalValue(item, "/attributes/files/0/cd_number", pSubtitlesInfo.discNumber);
+                    pSubtitlesInfo.fileExtension = "srt";
+                    GetOptionalValue(item, "/attributes/language", pSubtitlesInfo.languageCode);
+                    GetOptionalValue(item, "/attributes/download_count", pSubtitlesInfo.downloadCount);
+                    GetOptionalValue(item, "/attributes/feature_details/movie_name", pSubtitlesInfo.title);
+                    GetOptionalValue(item, "/attributes/feature_details/year", pSubtitlesInfo.year);
+                    GetOptionalValue(item, "/attributes/feature_details/season_number", pSubtitlesInfo.seasonNumber);
+                    GetOptionalValue(item, "/attributes/feature_details/episode_number", pSubtitlesInfo.episodeNumber);
+                    GetOptionalValue(item, "/attributes/hearing_impaired", pSubtitlesInfo.hearingImpaired);
+                    GetOptionalValue(item, "/attributes/feature_details/imdb_id", pSubtitlesInfo.imdbid);
+                    GetOptionalValue(item, "/attributes/fps", pSubtitlesInfo.frameRate);
+                    Set(pSubtitlesInfo);
+                    count++;
+                }
+            }
+            LOG(L"%d subs found\n", count);
+        }
+        httpFile->Close();
+        delete httpFile;
+        con->Close();
+        delete con;
+    } catch (CInternetException* pEx) {
+        LOG(L"Exception %lu\n", pEx->m_dwError);
+        pEx->Delete();
     }
-    httpFile->Close();
-    delete httpFile;
-    con->Close();
-    delete con;
     return result;
 }
 
@@ -502,42 +517,46 @@ SRESULT OpenSubtitles2::Download(SubtitlesInfo& pSubtitlesInfo)
 
     CString userAgent(UserAgent().c_str());
     CInternetSession session(userAgent);
-    session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
-    session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
-    CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
-    CString url(_T("/api/v1/download"));
-    CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_POST, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
+    session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 10000);
+    try {
+        CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
+        CString url(_T("/api/v1/download"));
+        CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_POST, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
 
-    CString headers(_T("Accept: application/json\r\n")); 
-    headers.AppendFormat(_T("Api-Key: %s\r\n"), APIKEY);
-	headers.Append(_T("Content-Type: application/json\r\n"));
-    if (!token.IsEmpty()) {
-        headers.AppendFormat(_T("Authorization: Bearer %s\r\n"), (LPCTSTR)token);
-    }
-
-    std::string body(R"({ "file_id": )");
-    body += pSubtitlesInfo.id;
-    body += " }";
-
-    Response response;
-    if (CallAPI(httpFile, headers, body, response)) {
-        rapidjson::Document doc;
-        doc.Parse(response.text.c_str());
-        if (!doc.HasParseError()) {
-            if (doc.HasMember("file_name") && doc["file_name"].IsString())
-            {
-                std::string downloadLink = doc["link"].GetString();
-                LOG(LOG_INPUT, downloadLink.c_str());
-                result = DownloadInternal(downloadLink, "", pSubtitlesInfo.fileContents);
-            }
+        CString headers(_T("Accept: application/json\r\n")); 
+        headers.AppendFormat(_T("Api-Key: %s\r\n"), APIKEY);
+	    headers.Append(_T("Content-Type: application/json\r\n"));
+        if (!token.IsEmpty()) {
+            headers.AppendFormat(_T("Authorization: Bearer %s\r\n"), (LPCTSTR)token);
         }
 
+        std::string body(R"({ "file_id": )");
+        body += pSubtitlesInfo.id;
+        body += " }";
+
+        Response response;
+        if (CallAPI(httpFile, headers, body, response)) {
+            rapidjson::Document doc;
+            doc.Parse(response.text.c_str());
+            if (!doc.HasParseError()) {
+                if (doc.HasMember("file_name") && doc["file_name"].IsString())
+                {
+                    std::string downloadLink = doc["link"].GetString();
+                    LOG(LOG_INPUT, downloadLink.c_str());
+                    result = DownloadInternal(downloadLink, "", pSubtitlesInfo.fileContents);
+                }
+            }
+        } else {
+            m_dwLastStatusCode = response.code;
+        }
+        httpFile->Close();
+        delete httpFile;
+        con->Close();
+        delete con;
+    } catch (CInternetException* pEx) {
+        LOG(L"Exception %lu\n", pEx->m_dwError);
+        pEx->Delete();
     }
-    httpFile->Close();
-    delete httpFile;
-    con->Close();
-    delete con;
     return result;
 }
 
@@ -549,23 +568,26 @@ SRESULT OpenSubtitles2::LogOut()
         CString userAgent(UserAgent().c_str());
         CInternetSession session(userAgent);
         session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
-        session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
-        session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
-        CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
-        CString url(_T("/api/v1/logout"));
-        CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_DELETE, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
+        try {
+            CHttpConnection* con = session.GetHttpConnection(_T("api.opensubtitles.com"), (DWORD)INTERNET_FLAG_SECURE);
+            CString url(_T("/api/v1/logout"));
+            CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_DELETE, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
 
-        CString headers(_T("Accept: application/json\r\n"));
-        headers.AppendFormat(_T("Api-Key: %s\r\n"), (LPCTSTR)APIKEY);
-        headers.AppendFormat(_T("Authorization: Bearer %s\r\n"), (LPCTSTR)token);
-        Response response;
-        if (CallAPI(httpFile, headers, response)) {
-            result = SR_SUCCEEDED;
+            CString headers(_T("Accept: application/json\r\n"));
+            headers.AppendFormat(_T("Api-Key: %s\r\n"), (LPCTSTR)APIKEY);
+            headers.AppendFormat(_T("Authorization: Bearer %s\r\n"), (LPCTSTR)token);
+            Response response;
+            if (CallAPI(httpFile, headers, response)) {
+                result = SR_SUCCEEDED;
+            }
+            httpFile->Close();
+            delete httpFile;
+            con->Close();
+            delete con;
+        } catch (CInternetException* pEx) {
+            LOG(L"Exception %lu\n", pEx->m_dwError);
+            pEx->Delete();
         }
-        httpFile->Close();
-        delete httpFile;
-        con->Close();
-        delete con;
     }
 
     token.Empty();

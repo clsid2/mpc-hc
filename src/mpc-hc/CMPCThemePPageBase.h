@@ -17,7 +17,7 @@ public:
 protected:
     virtual BOOL OnInitDialog();
     virtual void AdjustDynamicWidgets() {};
-    void SetMPCThemeButtonIcon(UINT nIDButton, UINT nIDIcon, ImageGrayer::mpcColorStyle colorStyle = ImageGrayer::mpcMono);
+    void SetMPCThemeButtonIcon(UINT nIDButton, IconDef iconDef, ImageGrayer::mpcColorStyle colorStyle = ImageGrayer::mpcMono);
     BOOL PreTranslateMessage(MSG* pMsg);
     CPPageBase* FindSiblingPage(CRuntimeClass* pClass);
 };

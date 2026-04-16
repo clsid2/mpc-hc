@@ -544,16 +544,34 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         return E_UNEXPECTED;
     }
 
-    UINT currentAdapter = GetAdapter(m_pD3D);
-    bool bTryToReset = (currentAdapter == m_CurrentAdapter);
+    HRESULT hr = S_OK;
 
-    if (!bTryToReset) {
-        m_pD3DDev = nullptr;
-        m_pD3DDevEx = nullptr;
-        m_CurrentAdapter = currentAdapter;
+    if (m_pD3DDevEx) {
+        hr = m_pD3DDevEx->CheckDeviceState(NULL);
+        if (hr == D3DERR_DEVICELOST || hr == D3DERR_DEVICEREMOVED || hr == D3DERR_DEVICEHUNG || hr == D3DERR_OUTOFVIDEOMEMORY) {
+            m_pD3DDevEx.Release();
+            m_pD3DDev.Release();
+            m_pD3DEx.Release();
+            m_pD3D.Release();
+            Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+            if (m_pD3DEx) {
+                m_pD3D = m_pD3DEx;
+            } else {
+                return E_UNEXPECTED;
+            }
+        } else if (FAILED(hr)) {
+            m_pD3DDevEx.Release();
+            m_pD3DDev.Release();
+        }
     }
 
-    HRESULT hr = S_OK;
+    UINT currentAdapter = GetAdapter(m_pD3D);
+    bool bTryToReset = (currentAdapter == m_CurrentAdapter);
+    if (!bTryToReset) {
+        m_pD3DDev.Release();
+        m_pD3DDevEx.Release();
+        m_CurrentAdapter = currentAdapter;
+    }
 
     //#define ENABLE_DDRAWSYNC
 #ifdef ENABLE_DDRAWSYNC
@@ -626,7 +644,6 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         if (r.m_AdvRendSets.bVMR9FullscreenGUISupport && !m_bHighColorResolution) {
             pp.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
         }
-        m_D3DDevExError = _T("No m_pD3DEx");
 
         if (!m_FocusThread) {
             m_FocusThread = (CFocusThread*)AfxBeginThread(RUNTIME_CLASS(CFocusThread), 0, 0, 0);
@@ -647,15 +664,23 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
             pp.BackBufferWidth = m_BackBufferSize.cx;
             pp.BackBufferHeight = m_BackBufferSize.cy;
 
-            bTryToReset = bTryToReset && m_pD3DDevEx && SUCCEEDED(hr = m_pD3DDevEx->ResetEx(&pp, &DisplayMode));
+            bTryToReset = bTryToReset && m_pD3DDevEx;
+            if (bTryToReset) {
+                if (FAILED(hr = m_pD3DDevEx->ResetEx(&pp, &DisplayMode))) {
+                    bTryToReset = false;
+                } 
+            }
 
             if (!bTryToReset) {
-                m_pD3DDev = nullptr;
-                m_pD3DDevEx = nullptr;
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 hr = m_pD3DEx->CreateDeviceEx(
                          m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                          GetVertexProcessing() | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_ENABLE_PRESENTSTATS | D3DCREATE_NOWINDOWCHANGES, //D3DCREATE_MANAGED
                          &pp, &DisplayMode, &m_pD3DDevEx);
+                if (m_pD3DDevEx) {
+                    m_pD3DDev = m_pD3DDevEx;
+                }
             }
 
             if (FAILED(hr)) {
@@ -665,14 +690,20 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
             }
 
             if (m_pD3DDevEx) {
-                m_pD3DDev = m_pD3DDevEx;
                 m_BackbufferType = pp.BackBufferFormat;
                 m_DisplayType = DisplayMode.Format;
             }
+        } else {
+            m_D3DDevExError = _T("No m_pD3DEx");
         }
         if (bTryToReset && m_pD3DDev && !m_pD3DDevEx) {
-            if (FAILED(hr = m_pD3DDev->Reset(&pp))) {
-                m_pD3DDev = nullptr;
+            hr = m_pD3DDev->TestCooperativeLevel();
+            if (hr == S_OK || hr == D3DERR_DEVICENOTRESET) {
+                if (FAILED(hr = m_pD3DDev->Reset(&pp))) {
+                    m_pD3DDev.Release();
+                }
+            } else {
+                m_pD3DDev.Release();
             }
         }
         if (!m_pD3DDev) {
@@ -713,16 +744,11 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         m_hFocusWindow = m_hWnd;
 
         if (m_pD3DEx) {
-            HRESULT getModeResult = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
-
-            if (getModeResult == D3DERR_NOTAVAILABLE) {
-                m_pD3DEx = nullptr;
-                Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-                if (nullptr != m_pD3DEx) {
-                    getModeResult = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
-                }
+            HRESULT hr_adm = m_pD3DEx->GetAdapterDisplayModeEx(m_CurrentAdapter, &DisplayMode, nullptr);
+            if (FAILED(hr_adm)) {
+                ASSERT(false);
+                return E_FAIL;
             }
-            CHECK_HR(getModeResult);
 
             m_ScreenSize.SetSize(DisplayMode.Width, DisplayMode.Height);
             m_refreshRate = DisplayMode.RefreshRate;
@@ -730,26 +756,38 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
             pp.BackBufferWidth  = m_BackBufferSize.cx;
             pp.BackBufferHeight = m_BackBufferSize.cy;
 
-            bTryToReset = bTryToReset && m_pD3DDevEx && SUCCEEDED(hr = m_pD3DDevEx->ResetEx(&pp, nullptr));
+            bTryToReset = bTryToReset && m_pD3DDevEx;
+            if (bTryToReset) {
+                if (FAILED(hr = m_pD3DDevEx->ResetEx(&pp, nullptr))) {
+                    bTryToReset = false;
+                } 
+            }
 
             if (!bTryToReset) {
-                m_pD3DDev = nullptr;
-                m_pD3DDevEx = nullptr;
+                m_pD3DDev.Release();
+                m_pD3DDevEx.Release();
                 // We can get 0x8876086a here when switching from two displays to one display using Win + P (Windows 7)
                 // Cause: We might not reinitialize dx correctly during the switch
                 hr = m_pD3DEx->CreateDeviceEx(
                          m_CurrentAdapter, D3DDEVTYPE_HAL, m_hFocusWindow,
                          GetVertexProcessing() | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_ENABLE_PRESENTSTATS, //D3DCREATE_MANAGED
                          &pp, nullptr, &m_pD3DDevEx);
+                if (m_pD3DDevEx) {
+                    m_pD3DDev = m_pD3DDevEx;
+                }
             }
             if (m_pD3DDevEx) {
-                m_pD3DDev = m_pD3DDevEx;
                 m_DisplayType = DisplayMode.Format;
             }
         }
         if (bTryToReset && m_pD3DDev && !m_pD3DDevEx) {
-            if (FAILED(hr = m_pD3DDev->Reset(&pp))) {
-                m_pD3DDev = nullptr;
+            hr = m_pD3DDev->TestCooperativeLevel();
+            if (hr == S_OK || hr == D3DERR_DEVICENOTRESET) {
+                if (FAILED(hr = m_pD3DDev->Reset(&pp))) {
+                    m_pD3DDev.Release();
+                }
+            } else {
+                m_pD3DDev.Release();
             }
         }
         if (!m_pD3DDev) {
@@ -770,8 +808,9 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
     }
 
     if (m_pD3DDev) {
-        while (hr == D3DERR_DEVICELOST) {
+        for (int i = 0; i < 40 && hr == D3DERR_DEVICELOST; i++) {
             TRACE(_T("D3DERR_DEVICELOST. Trying to Reset.\n"));
+            Sleep(50);
             hr = m_pD3DDev->TestCooperativeLevel();
         }
         if (hr == D3DERR_DEVICENOTRESET) {
@@ -1670,21 +1709,6 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::ResetDevice()
     // Can't comment out this because CDX9AllocatorPresenter is used by EVR Custom
     // Why is EVR using a presenter for DX9 anyway ?!
     DeleteSurfaces();
-
-    if (m_pD3DEx) {
-        m_pD3DDevEx.Release();
-        m_pD3DDev.Release();
-        m_pD3DEx.Release();
-        m_pD3D = nullptr;
-        Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-        if (m_pD3DEx) {
-            m_pD3D = m_pD3DEx;
-        } else {
-            ASSERT(FALSE);
-            m_bDeviceResetRequested = false;
-            return false;
-        }
-    }
 
     HRESULT hr;
     CString Error;

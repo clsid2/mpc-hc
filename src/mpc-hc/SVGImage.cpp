@@ -22,6 +22,8 @@
 #include "SVGImage.h"
 #include "mplayerc.h"
 #include <atlimage.h>
+
+#pragma warning(disable: 4244)
 #define NANOSVG_IMPLEMENTATION
 #include <nanosvg/src/nanosvg.h>
 #define NANOSVGRAST_IMPLEMENTATION
@@ -82,4 +84,45 @@ HRESULT SVGImage::Load(UINT uResId, CImage& image, float scale /*= 1.0f*/)
     }
 
     return NSVGimageToCImage(nsvgParse(svg.GetBuffer(), "px", 96.0f), image, scale);
+}
+
+void GdiTransform(CImage& image, Gdiplus::RotateFlipType transform) {
+    int bpp = image.GetBPP();
+
+    HBITMAP hbmp = image.Detach();
+    Gdiplus::Bitmap* bmpTemp = Gdiplus::Bitmap::FromHBITMAP(hbmp, 0);
+    Gdiplus::PixelFormat pixel_format = bmpTemp->GetPixelFormat();
+    if (bpp == 32) {
+        pixel_format = PixelFormat32bppARGB;
+    }
+    image.Attach(hbmp);
+
+    Gdiplus::Bitmap bmp(image.GetWidth(), image.GetHeight(), image.GetPitch(), pixel_format, static_cast<BYTE*>(image.GetBits()));
+    bmp.RotateFlip(transform);
+
+    image.Destroy();
+    if (image.Create(bmp.GetWidth(), bmp.GetHeight(), 32, CImage::createAlphaChannel)) {
+        Gdiplus::Bitmap dst(image.GetWidth(), image.GetHeight(), image.GetPitch(), PixelFormat32bppARGB, static_cast<BYTE*>(image.GetBits()));
+        Gdiplus::Graphics graphics(&dst);
+        graphics.DrawImage(&bmp, 0, 0);
+    }
+}
+
+HRESULT SVGImage::LoadIconDef(IconDef iconDef, CImage& image) {
+    CStringA svg;
+    if (!LoadResource(iconDef.nIDIcon, svg, _T("SVG"))) {
+        return E_FAIL;
+    }
+
+    NSVGimage* svgImage = nsvgParse(svg.GetBuffer(), "px", 96.0f);
+    HRESULT ret = NSVGimageToCImage(svgImage, image, (float)iconDef.svgTargetWidth / svgImage->width);
+    if (iconDef.svgTransform == TRANSFORM_FLIP_HORZ) {
+        GdiTransform(image, Gdiplus::RotateNoneFlipX);
+    } else if (iconDef.svgTransform == TRANSFORM_ROT90CCW) {
+        GdiTransform(image, Gdiplus::Rotate270FlipNone);
+    } else if (iconDef.svgTransform == TRANSFORM_ROT90CW) {
+        GdiTransform(image, Gdiplus::Rotate90FlipNone);
+    }
+
+    return ret;
 }

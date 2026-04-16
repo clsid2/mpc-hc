@@ -12,7 +12,6 @@ CMPCThemeRadioOrCheck::CMPCThemeRadioOrCheck()
     isHover = false;
     buttonType = RadioOrCheck::unknownType;
     isFileDialogChild = false;
-    buttonStyle = 0;
     isAuto = false;
 }
 
@@ -37,7 +36,6 @@ void CMPCThemeRadioOrCheck::PreSubclassWindow()
     }
     ASSERT(buttonType != unknownType);
 
-    buttonStyle = GetWindowLongPtr(GetSafeHwnd(), GWL_STYLE);
     CButton::PreSubclassWindow();
 }
 
@@ -55,6 +53,8 @@ END_MESSAGE_MAP()
 void CMPCThemeRadioOrCheck::OnPaint()
 {
     if (AppIsThemeLoaded() && CMPCTheme::drawThemedControls) {
+        DWORD buttonStyle = GetWindowLongPtr(GetSafeHwnd(), GWL_STYLE);
+
         CPaintDC dc(this);
         CRect   rectItem;
         GetClientRect(rectItem);

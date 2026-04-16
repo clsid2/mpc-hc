@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Trần Anh Minh <anhminhvks@yahoo.com>, 2020
+# Trần Anh Minh <anhminhvks@yahoo.com>, 2022
+# hoanghuy309 <hoanghuy309@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Trần Anh Minh <anhminhvks@yahoo.com>, 2020\n"
-"Language-Team: Vietnamese (https://www.transifex.com/mpchc/teams/106126/vi/)\n"
+"Last-Translator: hoanghuy309 <hoanghuy309@gmail.com>, 2025\n"
+"Language-Team: Vietnamese (https://app.transifex.com/mpchc/teams/106126/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,9 +25,9 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"Chuẩn bị cài đặt [name] vào máy tính của bạn.\n"
+"Chuẩn bị cài đặt [tên] trên máy tính của bạn.\n"
 "\n"
-"Đề nghị bạn đóng tất cả các ứng dụng khác trước khi tiếp tục."
+"Bạn nên đóng tất cả các ứng dụng khác trước khi tiếp tục."
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
@@ -38,7 +39,7 @@ msgstr "Thư viện biểu tượng"
 
 msgctxt "CustomMessages_comp_mpcresources"
 msgid "Translations"
-msgstr "Các gói ngôn ngữ"
+msgstr "Các bản dịch"
 
 msgctxt "CustomMessages_msg_DeleteSettings"
 msgid ""
@@ -46,7 +47,7 @@ msgid ""
 "\n"
 "If you plan on installing MPC-HC again then you do not have to delete them."
 msgstr ""
-"Bạn cũng muốn xóa các thiết lập của MPC-HC?\n"
+"Bạn cũng muốn xóa các cài đặt của MPC-HC?\n"
 "\n"
 "Nếu bạn dự định cài đặt lại MPC-HC thì bạn không cần phải xóa chúng."
 
@@ -56,21 +57,21 @@ msgid ""
 "\n"
 "Your CPU does not have those capabilities."
 msgstr ""
-"Phiên bản MPC-HC này yêu cầu CPU có hỗ trợ phần mở rộng SSE2.\n"
+"Bản dựng MPC-HC này yêu cầu CPU có hỗ trợ tiện ích mở rộng SSE2.\n"
 "\n"
-"CPU của bạn không đáp ứng được yêu cầu này."
+"CPU của bạn không có những khả năng đó."
 
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"
-msgstr "Truy cập trang Wiki của chúng tôi để tải xuống thanh công cụ khác"
+msgstr "Vào trang Wiki của chúng tôi để tải về ảnh thanh công cụ"
 
 msgctxt "CustomMessages_tsk_AllUsers"
 msgid "For all users"
-msgstr "Cho mọi người dùng"
+msgstr "Cho tất cả người dùng"
 
 msgctxt "CustomMessages_tsk_CurrentUser"
 msgid "For the current user only"
-msgstr "Chỉ cho người dùng hiện tại"
+msgstr "Chỉ dành cho người dùng hiện tại"
 
 msgctxt "CustomMessages_tsk_Other"
 msgid "Other tasks:"
@@ -78,7 +79,7 @@ msgstr "Các tác vụ khác:"
 
 msgctxt "CustomMessages_tsk_ResetSettings"
 msgid "Reset settings"
-msgstr "Thiết lập lại"
+msgstr "Đặt lại cài đặt"
 
 msgctxt "CustomMessages_types_DefaultInstallation"
 msgid "Default installation"

@@ -29,7 +29,7 @@
 IMPLEMENT_DYNAMIC(CPPageMouse, CMPCThemePPageBase)
 CPPageMouse::CPPageMouse()
     : CMPCThemePPageBase(CPPageMouse::IDD, CPPageMouse::IDD)
-    , m_list(0)
+    , m_list()
 {
     m_comands_M.Add(0);
     m_comands_M.Add(ID_PLAY_PLAYPAUSE);
@@ -128,7 +128,7 @@ BOOL CPPageMouse::OnInitDialog()
 
     AddStringData(m_cmbRightButtonClick, ResStr(IDS_MPLAYERC_77), ID_MENU_PLAYER_SHORT);
     AddStringData(m_cmbRightButtonClick, ResStr(IDS_MPLAYERC_78), ID_MENU_PLAYER_LONG);
-    AddStringData(m_cmbRightButtonClick, L"<...>", ID_MOUSE_ADD_CMD);
+    AddStringData(m_cmbRightButtonClick, L"<...>", ID_COMBO_ADD_CMD);
     if (s.nMouseRightClick != ID_MENU_PLAYER_LONG && s.nMouseRightClick != ID_MENU_PLAYER_SHORT) {
         AddCmdToRightClick(s.nMouseRightClick, m_cmbRightButtonClick.GetCount());
     }
@@ -176,6 +176,7 @@ BOOL CPPageMouse::OnInitDialog()
 
     //m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
     m_list.setAdditionalStyles(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
 
 
     m_list.InsertColumn(COL_ACTION, ResStr(IDS_MOUSE_ACTION));
@@ -276,8 +277,8 @@ void CPPageMouse::AddCmdToRightClick(WORD id, size_t idx) {
     while (pos) {
         wmcmd& wc = wmcmds.GetNext(pos);
         if (id == wc.cmd) {
-            idx = m_cmbRightButtonClick.InsertString(idx - 1, ResStr(wc.dwname));
-            m_cmbRightButtonClick.SetItemData(idx, id);
+            idx = m_cmbRightButtonClick.InsertString((int)idx - 1, ResStr(wc.dwname));
+            m_cmbRightButtonClick.SetItemData((int)idx, id);
             break;
         }
     }
@@ -285,13 +286,13 @@ void CPPageMouse::AddCmdToRightClick(WORD id, size_t idx) {
 
 void CPPageMouse::OnRightClickChange() {
     int curSel = m_cmbRightButtonClick.GetCurSel();
-    if (curSel != CB_ERR && m_cmbRightButtonClick.GetItemData(curSel) == ID_MOUSE_ADD_CMD) {
+    if (curSel != CB_ERR && m_cmbRightButtonClick.GetItemData(curSel) == ID_COMBO_ADD_CMD) {
         CAddCommandDlg dlg(this);
         if (dlg.DoModal() == IDOK) {
             const WORD id = dlg.GetSelectedCommandID();
             size_t idx;
             for (idx = 0; idx < m_cmbRightButtonClick.GetCount(); idx++) {
-                if (id == m_cmbRightButtonClick.GetItemData(idx)) {
+                if (id == m_cmbRightButtonClick.GetItemData((int)idx)) {
                     break;
                 }
             }

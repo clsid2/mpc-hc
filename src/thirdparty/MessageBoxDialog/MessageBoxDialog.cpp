@@ -628,9 +628,9 @@ int CMessageBoxDialog::XDialogUnitToPixel ( int x )
 
 		// Map the rect to the dialog.
 
-        //mpc-hc: CDialog without a template does not work well with MapDialogRect--use MapDialogRect2
+        //mpc-hc: CDialog without a template does not work well with MapDialogRect--use MapDialogRectMessageFont
         //MapDialogRect(rcDialog);
-        CMPCThemeUtil::MapDialogRect2(this, rcDialog);
+        CMPCThemeUtil::MapDialogRectMessageFont(this, rcDialog);
 
 		// Save the rect.
         m_sDialogUnit = rcDialog.Size();
@@ -652,9 +652,9 @@ int CMessageBoxDialog::YDialogUnitToPixel ( int y )
 		CRect rcDialog(0, 0, CX_DLGUNIT_BASE, CY_DLGUNIT_BASE);
 
 		// Map the rect to the dialog.
-        //mpc-hc: CDialog without a template does not work well with MapDialogRect--use MapDialogRect2
+        //mpc-hc: CDialog without a template does not work well with MapDialogRect--use MapDialogRectMessageFont
         //MapDialogRect(rcDialog);
-        CMPCThemeUtil::MapDialogRect2(this, rcDialog);
+        CMPCThemeUtil::MapDialogRectMessageFont(this, rcDialog);
 
 		// Save the rect.
 		m_sDialogUnit = rcDialog.Size();

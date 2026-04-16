@@ -37,17 +37,13 @@ en.langid=00000000
 en.comp_mpciconlib=Icon Library
 en.comp_mpcresources=Translations
 en.msg_DeleteSettings=Do you also want to delete MPC-HC settings?%n%nIf you plan on installing MPC-HC again then you do not have to delete them.
-#if defined(sse2_required)
 en.msg_simd_sse2=This build of MPC-HC requires a CPU with SSE2 extension support.%n%nYour CPU does not have those capabilities.
-#endif
-en.run_DownloadToolbarImages=Visit our Wiki page to download toolbar images
 en.tsk_AllUsers=For all users
 en.tsk_CurrentUser=For the current user only
 en.tsk_Other=Other tasks:
 en.tsk_ResetSettings=Reset settings
 en.types_DefaultInstallation=Default installation
 en.types_CustomInstallation=Custom installation
-en.ViewChangelog=View Changelog
 
 
 #if localize == "true"

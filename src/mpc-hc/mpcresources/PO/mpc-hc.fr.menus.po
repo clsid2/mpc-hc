@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Cyril Provence <ywa78408@eveav.com>, 2024
+# Cyril Provence <ywa78408@eveav.com>, 2025
+# tmtisfree <tmtisfree@free.fr>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-02-10 16:52:19+0000\n"
+"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Cyril Provence <ywa78408@eveav.com>, 2024\n"
+"Last-Translator: tmtisfree <tmtisfree@free.fr>, 2026\n"
 "Language-Team: French (https://app.transifex.com/mpchc/teams/106126/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -84,7 +85,7 @@ msgstr "&Télécharger des sous-titres..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "&Propriétés"
+msgstr "&Propriétés..."
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
@@ -100,7 +101,7 @@ msgstr "&Affichage"
 
 msgctxt "ID_VIEW_CAPTIONMENU"
 msgid "Caption&&Menu"
-msgstr "Titre && Menu"
+msgstr "Titre et menu"
 
 msgctxt "ID_VIEW_SEEKER"
 msgid "See&k Bar"
@@ -140,7 +141,7 @@ msgstr "&Navigation"
 
 msgctxt "POPUP"
 msgid "&Presets..."
-msgstr "&Présélections..."
+msgstr "&Présélection"
 
 msgctxt "ID_VIEW_PRESETS_MINIMAL"
 msgid "&Minimal"
@@ -164,19 +165,19 @@ msgstr "&Zoom"
 
 msgctxt "ID_VIEW_ZOOM_25"
 msgid "&25%"
-msgstr "&25%"
+msgstr "&25 %"
 
 msgctxt "ID_VIEW_ZOOM_50"
 msgid "&50%"
-msgstr "&50%"
+msgstr "&50 %"
 
 msgctxt "ID_VIEW_ZOOM_100"
 msgid "&100%"
-msgstr "&100%"
+msgstr "&100 %"
 
 msgctxt "ID_VIEW_ZOOM_200"
 msgid "&200%"
-msgstr "&200%"
+msgstr "&200 %"
 
 msgctxt "ID_VIEW_ZOOM_AUTOFIT"
 msgid "Auto &Fit"
@@ -188,7 +189,7 @@ msgstr "Options de &rendu"
 
 msgctxt "ID_VIEW_TEARING_TEST"
 msgid "&Tearing Test"
-msgstr "Test de &tearing"
+msgstr "Test de déchirement (&Tearing)"
 
 msgctxt "ID_VIEW_DISPLAY_RENDERER_STATS"
 msgid "&Display Statistics"
@@ -284,15 +285,15 @@ msgstr "&Luminosité ambiante"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_BRIGHT"
 msgid "&Bright (2.2 Gamma)"
-msgstr "&Claire (2.2 Gamma)"
+msgstr "&Claire (gamma 2,2)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DIM"
 msgid "&Dim (2.35 Gamma)"
-msgstr "&Moyenne (2.35 Gamma)"
+msgstr "&Moyenne (gamma 2,35)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DARK"
 msgid "D&ark (2.4 Gamma)"
-msgstr "&Sombre (2.4 Gamma)"
+msgstr "&Sombre (gamma 2,4)"
 
 msgctxt "POPUP"
 msgid "&Rendering Intent"
@@ -372,15 +373,15 @@ msgstr "Fenêtre &vidéo"
 
 msgctxt "ID_VIEW_VF_HALF"
 msgid "&Half Size"
-msgstr "&50%"
+msgstr "&50 %"
 
 msgctxt "ID_VIEW_VF_NORMAL"
 msgid "&Normal Size"
-msgstr "&100%"
+msgstr "&100 %"
 
 msgctxt "ID_VIEW_VF_DOUBLE"
 msgid "&Double Size"
-msgstr "&200%"
+msgstr "&200 %"
 
 msgctxt "ID_VIEW_VF_STRETCH"
 msgid "&Stretch To Window"
@@ -404,7 +405,7 @@ msgstr "Ajuster à l'&extérieur de la fenêtre"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
-msgstr "&Ratio d'affichage"
+msgstr "Ratio d'&aspect"
 
 msgctxt "ID_ASPECTRATIO_DAR"
 msgid "&Default (DAR)"
@@ -552,7 +553,7 @@ msgstr "Ré&péter"
 
 msgctxt "ID_PLAY_REPEAT_FOREVER"
 msgid "F&orever"
-msgstr "&Indéfiniment"
+msgstr "&En boucle"
 
 msgctxt "ID_PLAY_REPEAT_ONEFILE"
 msgid "&File"
@@ -612,7 +613,7 @@ msgstr "x 1,50"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_175"
 msgid "1.75 x"
-msgstr ""
+msgstr "x 1,75"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_200"
 msgid "2.00 x"
@@ -636,7 +637,7 @@ msgstr "x 8,00"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr ""
+msgstr "23,976 ips"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
@@ -648,7 +649,7 @@ msgstr "25 ips"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr ""
+msgstr "59,94 ips"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
@@ -708,7 +709,7 @@ msgstr "&Ne rien faire"
 
 msgctxt "ID_AFTERPLAYBACK_PLAYNEXT"
 msgid "Play &next file in the folder"
-msgstr "Lire le fichier &suivant dans le répertoire"
+msgstr "Lire le fichier &suivant dans le dossier"
 
 msgctxt "ID_AFTERPLAYBACK_MONITOROFF"
 msgid "Turn off the &monitor"
@@ -788,24 +789,24 @@ msgstr "&Aide"
 
 msgctxt "ID_HELP_HOMEPAGE"
 msgid "&Home Page"
-msgstr "&Site web de MPC-HC"
+msgstr "&Site Web de MPC-HC..."
 
 msgctxt "ID_HELP_CHECKFORUPDATE"
 msgid "Check for &updates"
-msgstr "Vérifier les &mises à jour"
+msgstr "Vérifier les &mises à jour..."
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"
-msgstr "Options de la ligne de &commande"
+msgstr "Options de la ligne de &commande..."
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Télécharger des &barres d'outils personnalisées"
+msgstr "Télécharger des &barres d'outils personnalisées..."
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"
-msgstr "&Donations"
+msgstr "&Donations..."
 
 msgctxt "ID_HELP_ABOUT"
 msgid "&About..."
-msgstr "&A propos de MPC-HC..."
+msgstr "&À propos..."

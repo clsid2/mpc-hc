@@ -2,14 +2,15 @@
 # Copyright (C) 2002 - 2017 see Authors.txt
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
-# skog lol, 2023
+# skoglol, 2023
+# JohWQ, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: skog lol, 2023\n"
+"Last-Translator: JohWQ, 2026\n"
 "Language-Team: Norwegian Bokmål (https://app.transifex.com/mpchc/teams/106126/nb/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,17 +24,17 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"Dette vil installere [name] på din datamaskin.\n"
+"Dette installerer [name] på din datamaskin.\n"
 "\n"
 "Det er anbefalt at du lukker alle andre applikasjoner før du fortsetter."
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
-msgstr "[name] behøver Windows Vista eller nyere for å kjøre."
+msgstr "[name] krever Windows Vista eller nyere for å kjøre."
 
 msgctxt "CustomMessages_comp_mpciconlib"
 msgid "Icon Library"
-msgstr "Ikonsbibliotek"
+msgstr "Ikonbibliotek"
 
 msgctxt "CustomMessages_comp_mpcresources"
 msgid "Translations"

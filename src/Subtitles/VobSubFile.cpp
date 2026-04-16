@@ -314,7 +314,11 @@ bool CVobSubFile::Open(CString fn)
         Close();
 
         int ver;
-        if (!ReadIdx(fn + _T(".idx"), ver)) {
+        try {
+            if (!ReadIdx(fn + _T(".idx"), ver)) {
+                break;
+            }
+        } catch (...) {
             break;
         }
 
@@ -819,6 +823,10 @@ bool CVobSubFile::ReadRar(CString fn)
 #define ProcessFile        RARProcessFile
 #define SetCallback        RARSetCallback
 #endif /* USE_STATIC_UNRAR */
+
+    if (fn.GetLength() >= MAX_PATH) {
+        return false;
+    }
 
     RAROpenArchiveDataEx OpenArchiveData;
     ZeroMemory(&OpenArchiveData, sizeof(OpenArchiveData));
@@ -2482,12 +2490,20 @@ void CVobSubStream::Open(CString name, BYTE* pData, int len)
 
 void CVobSubStream::Add(REFERENCE_TIME tStart, REFERENCE_TIME tStop, BYTE* pData, int len)
 {
-    if (len <= 4 || ((pData[0] << 8) | pData[1]) != len) {
+    int pkt_size = (pData[0] << 8) | pData[1];
+    if (len <= 4 || pkt_size != len) {
         return;
     }
 
     CVobSubImage vsi;
-    vsi.GetPacketInfo(pData, (pData[0] << 8) | pData[1], (pData[2] << 8) | pData[3]);
+    int dat_size = (pData[2] << 8) | pData[3];
+    if (pkt_size < dat_size + 4) {
+        ASSERT(false);
+        return;
+    }
+    if (!vsi.GetPacketInfo(pData, pkt_size, dat_size)) {
+        return;
+    }
 
     CAutoPtr<SubPic> p(DEBUG_NEW SubPic());
     p->tStart = tStart;
@@ -2587,9 +2603,9 @@ STDMETHODIMP CVobSubStream::Render(SubPicDesc& spd, REFERENCE_TIME rt, double fp
         if (sp->tStart <= rt && rt < sp->tStop) {
             if (m_img.nIdx != (size_t)pos || (sp->bAnimated && sp->tStart + m_img.tCurrent * 10000i64 <= rt)) {
                 BYTE* pData = sp->pData.GetData();
-                m_img.Decode(
-                    pData, (pData[0] << 8) | pData[1], (pData[2] << 8) | pData[3], int((rt - sp->tStart) / 10000i64),
-                    m_bCustomPal, m_tridx, m_orgpal, m_cuspal, true);
+                size_t packetsize = (pData[0] << 8) | pData[1];
+                size_t datasize = (pData[2] << 8) | pData[3];
+                m_img.Decode(pData, packetsize, datasize, int((rt - sp->tStart) / 10000i64), m_bCustomPal, m_tridx, m_orgpal, m_cuspal, true);
                 m_img.nIdx = (size_t)pos;
             }
 

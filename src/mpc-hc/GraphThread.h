@@ -27,11 +27,13 @@ class CGraphThread : public CWinThread
 {
     DECLARE_DYNCREATE(CGraphThread);
 public:
-    CGraphThread() : m_pMainFrame(nullptr) {}
+    CGraphThread() {}
 
     BOOL InitInstance();
     int ExitInstance();
     void SetMainFrame(CMainFrame* pMainFrame) { m_pMainFrame = pMainFrame; }
+
+    HRESULT hr_coinit = E_FAIL;
 
     enum {
         TM_EXIT = WM_APP,
@@ -52,5 +54,5 @@ protected:
     afx_msg void OnTunerScan(WPARAM wParam, LPARAM lParam);
 
 private:
-    CMainFrame* m_pMainFrame;
+    CMainFrame* m_pMainFrame = nullptr;
 };

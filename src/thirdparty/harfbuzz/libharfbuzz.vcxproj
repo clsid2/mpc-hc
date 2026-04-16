@@ -25,7 +25,6 @@
     <ClInclude Include="harfbuzz\src\hb-aat-layout-feat-table.hh" />
     <ClInclude Include="harfbuzz\src\hb-aat-layout-just-table.hh" />
     <ClInclude Include="harfbuzz\src\hb-aat-layout-kerx-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-lcar-table.hh" />
     <ClInclude Include="harfbuzz\src\hb-aat-layout-morx-table.hh" />
     <ClInclude Include="harfbuzz\src\hb-aat-layout-opbd-table.hh" />
     <ClInclude Include="harfbuzz\src\hb-aat-layout-trak-table.hh" />
@@ -166,12 +165,25 @@
     <ClCompile Include="harfbuzz\src\hb-buffer-verify.cc" />
     <ClCompile Include="harfbuzz\src\hb-buffer.cc" />
     <ClCompile Include="harfbuzz\src\hb-cairo.cc" />
+    <ClCompile Include="harfbuzz\src\hb-cairo-utils.cc" />
     <ClCompile Include="harfbuzz\src\hb-common.cc" />
+    <ClCompile Include="harfbuzz\src\hb-coretext.cc" />
+    <ClCompile Include="harfbuzz\src\hb-coretext-font.cc" />
+    <ClCompile Include="harfbuzz\src\hb-coretext-shape.cc" />
+    <ClCompile Include="harfbuzz\src\hb-directwrite.cc" />
+    <ClCompile Include="harfbuzz\src\hb-directwrite-font.cc" />
+    <ClCompile Include="harfbuzz\src\hb-directwrite-shape.cc" />
     <ClCompile Include="harfbuzz\src\hb-draw.cc" />
     <ClCompile Include="harfbuzz\src\hb-face.cc" />
+    <ClCompile Include="harfbuzz\src\hb-face-builder.cc" />
     <ClCompile Include="harfbuzz\src\hb-fallback-shape.cc" />
     <ClCompile Include="harfbuzz\src\hb-font.cc" />
     <ClCompile Include="harfbuzz\src\hb-ft.cc" />
+    <ClCompile Include="harfbuzz\src\hb-gdi.cc" />
+    <ClCompile Include="harfbuzz\src\hb-glib.cc" />
+    <ClCompile Include="harfbuzz\src\hb-graphite2.cc" />
+    <ClCompile Include="harfbuzz\src\hb-harfruzz.cc" />
+    <ClCompile Include="harfbuzz\src\hb-icu.cc" />
     <ClCompile Include="harfbuzz\src\hb-map.cc" />
     <ClCompile Include="harfbuzz\src\hb-number.cc" />
     <ClCompile Include="harfbuzz\src\hb-ot-cff1-table.cc" />
@@ -204,6 +216,7 @@
     <ClCompile Include="harfbuzz\src\hb-ot-var.cc" />
     <ClCompile Include="harfbuzz\src\hb-outline.cc" />
     <ClCompile Include="harfbuzz\src\hb-paint.cc" />
+    <ClCompile Include="harfbuzz\src\hb-paint-bounded.cc" />
     <ClCompile Include="harfbuzz\src\hb-paint-extents.cc" />
     <ClCompile Include="harfbuzz\src\hb-set.cc" />
     <ClCompile Include="harfbuzz\src\hb-shape-plan.cc" />
@@ -214,6 +227,12 @@
     <ClCompile Include="harfbuzz\src\hb-subset-cff-common.cc" />
     <ClCompile Include="harfbuzz\src\hb-subset-cff1.cc" />
     <ClCompile Include="harfbuzz\src\hb-subset-cff2.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-input.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-instancer-iup.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-instancer-solver.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-plan.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-plan-layout.cc" />
+    <ClCompile Include="harfbuzz\src\hb-subset-plan-var.cc" />
     <ClCompile Include="harfbuzz\src\hb-ucd.cc" />
     <ClCompile Include="harfbuzz\src\hb-unicode.cc" />
   </ItemGroup>

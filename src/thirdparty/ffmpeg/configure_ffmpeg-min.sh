@@ -28,7 +28,6 @@ configure() {
     --disable-avformat \
     --disable-avdevice \
     --disable-devices \
-    --disable-postproc \
     --disable-swscale \
     --enable-filter=abuffer,abuffersink,atempo,aresample \
     --arch=${arch}"

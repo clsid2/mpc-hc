@@ -1436,7 +1436,9 @@ STDMETHODIMP CStreamSwitcherFilter::Count(DWORD* pcStreams)
     POSITION pos = m_pInputs.GetHeadPosition();
     while (pos) {
         CStreamSwitcherInputPin* pInputPin = m_pInputs.GetNext(pos);
-
+        if (pInputPin == (CStreamSwitcherInputPin*)0x3) { // weird x86 bug
+            continue;
+        }
         if (pInputPin->IsConnected()) {
             if (CComPtr<IAMStreamSelect> pSSF = pInputPin->GetStreamSelectionFilter()) {
                 DWORD cStreams = 0;

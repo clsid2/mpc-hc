@@ -25,8 +25,9 @@
 #include "SubtitlesProviders.h" // Forward declaration doesn't work on VS2013. Remove this once VS2013 support is dropped.
 #include <list>
 #include "CMPCThemePlayerListCtrl.h"
-#include "ModelessResizableDialog.h"
+#include "CMPCThemeModelessResizableDialog.h"
 #include "CMPCThemeStatusBar.h"
+#include "CMPCThemeProgressCtrl.h"
 
 class CMainFrame;
 struct SubtitlesInfo;
@@ -41,7 +42,7 @@ class CSubtitleDlDlgListCtrl final : public CMPCThemePlayerListCtrl
     afx_msg BOOL OnToolNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 };
 
-class CSubtitleDlDlg : public CModelessResizableDialog
+class CSubtitleDlDlg : public CMPCThemeModelessResizableDialog
 {
 public:
     enum {
@@ -72,7 +73,7 @@ private:
     bool m_bIsRefreshed;
 
     CSubtitleDlDlgListCtrl m_list;
-    CProgressCtrl m_progress;
+    CMPCThemeProgressCtrl m_progress;
     CMPCThemeStatusBar m_status;
     CMainFrame* m_pMainFrame;
     SubtitlesList m_Subtitles;
@@ -88,6 +89,10 @@ public:
     virtual ~CSubtitleDlDlg() = default;
     enum { IDD = IDD_SUBTITLEDL_DLG };
 
+    UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+
+    void UpdateStatusBarLayout();
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
@@ -112,6 +117,7 @@ protected:
     afx_msg void OnItemChanging(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+    afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
     afx_msg LRESULT OnSearch(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSearching(WPARAM wParam, LPARAM lParam);
@@ -131,6 +137,6 @@ public:
     void DoCompleted(SRESULT _result, SubtitlesList& _subtitlesList);
     void DoFinished(BOOL _bAborted, BOOL _bShowDialog);
     void DoSearchFailed();
-    void DoDownloadFailed();
+    void DoDownloadFailed(DWORD statuscode);
     void DoClear();
 };

@@ -23,6 +23,8 @@
 
 #include "mplayerc.h"
 #include "PPagePlayer.h"
+#include "PPageToolBar.h"
+#include "PPageToolBarLayout.h"
 #include "PPageTheme.h"
 #include "PPageFormats.h"
 #include "PPageAccelTbl.h"
@@ -92,6 +94,8 @@ private:
     CFont dpiButtonFont, dpiTabFont;
 
     CPPagePlayer m_player;
+    CPPageToolBar m_toolBar;
+    CPPageToolBarLayout m_toolBarLayout;
     CPPageTheme m_theme;
     CPPageFormats m_formats;
     CPPageAccelTbl m_acceltbl;
@@ -124,6 +128,8 @@ private:
 
     CMPCThemeTreeCtrl* CreatePageTreeObject();
     virtual void SetTreeCtrlTheme(CTreeCtrl* ctrl);
+    static bool IsParentOnlyNode(CTreeCtrl* pTree, HTREEITEM hItem);
+
 public:
     CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd, UINT idPage = 0);
     CPPageSheet();
@@ -142,6 +148,7 @@ protected:
 
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnApply();
+    afx_msg void OnPageTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
     LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
     virtual TreePropSheet::CPropPageFrame* CreatePageFrame();

@@ -238,7 +238,7 @@ BOOL CPPageSubStyle::OnApply()
     }
     auto& s = AfxGetAppSettings(); 
     if (iOpenTypeLangHint >= 0) {
-        int i = openTypeLangHint.GetItemData(iOpenTypeLangHint);
+        int i = (int) openTypeLangHint.GetItemData(iOpenTypeLangHint);
         s.strOpenTypeLangHint = OpenTypeLang::OpenTypeLangTags[i].lang;
     }
 
@@ -395,7 +395,7 @@ BOOL CPPageSubStyle::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult) {
         bRet = TRUE;
 
         CString strTipText;
-        int alpha;
+        int alpha = 0;
         if (nID == IDC_SLIDER1) {
             alpha = m_alpha[0];
         } else if (nID == IDC_SLIDER2) {

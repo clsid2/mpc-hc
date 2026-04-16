@@ -37,7 +37,7 @@
 IMPLEMENT_DYNAMIC(CPPageFormats, CMPCThemePPageBase)
 CPPageFormats::CPPageFormats()
     : CMPCThemePPageBase(CPPageFormats::IDD, CPPageFormats::IDD)
-    , m_list(0)
+    , m_list()
     , m_bInsufficientPrivileges(false)
     , m_bFileExtChanged(false)
     , m_bHaveRegisteredCategory(false)
@@ -135,7 +135,9 @@ void CPPageFormats::LoadSettings()
 
     bool hasEnqueueContext = false;
 
-    const auto& s = AfxGetAppSettings();
+    auto& s = AfxGetAppSettings();
+    s.fileAssoc.LoadAAR();
+
     m_mf = s.m_Formats;
     m_list.DeleteAllItems();
 
@@ -199,10 +201,10 @@ BOOL CPPageFormats::OnInitDialog()
     LoadSettings();
     CreateToolTip();
 
-    SetMPCThemeButtonIcon(IDC_ASSOCIATE_ALL_FORMATS,   IDB_CHECK_ALL, ImageGrayer::mpcGrayDisabled);
-    SetMPCThemeButtonIcon(IDC_ASSOCIATE_AUDIO_FORMATS, IDB_CHECK_AUDIO, ImageGrayer::mpcGrayDisabled);
-    SetMPCThemeButtonIcon(IDC_ASSOCIATE_VIDEO_FORMATS, IDB_CHECK_VIDEO, ImageGrayer::mpcGrayDisabled);
-    SetMPCThemeButtonIcon(IDC_CLEAR_ALL_ASSOCIATIONS,  IDB_UNCHECK_ALL, ImageGrayer::mpcGrayDisabled);
+    SetMPCThemeButtonIcon(IDC_ASSOCIATE_ALL_FORMATS, { IDB_CHECK_ALL }, ImageGrayer::mpcGrayDisabled);
+    SetMPCThemeButtonIcon(IDC_ASSOCIATE_AUDIO_FORMATS, { IDB_CHECK_AUDIO }, ImageGrayer::mpcGrayDisabled);
+    SetMPCThemeButtonIcon(IDC_ASSOCIATE_VIDEO_FORMATS, { IDB_CHECK_VIDEO }, ImageGrayer::mpcGrayDisabled);
+    SetMPCThemeButtonIcon(IDC_CLEAR_ALL_ASSOCIATIONS, { IDB_UNCHECK_ALL }, ImageGrayer::mpcGrayDisabled);
 
     if (!IsUserAnAdmin()) {
         GetDlgItem(IDC_EDIT1)->EnableWindow(FALSE);

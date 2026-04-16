@@ -40,7 +40,6 @@
     #define localize = "true"
   #endif
 #endif
-#define sse2_required
 
 #if GetEnv('MPC_DRDUMP') == '1'
 #define USE_DRDUMP_CRASH_REPORTER 1
@@ -258,6 +257,9 @@ Source: {#bindir}\{#lavfiltersdir}\*.dll;          DestDir: {app}\{#lavfiltersdi
 Source: {#bindir}\{#lavfiltersdir}\*.ax;           DestDir: {app}\{#lavfiltersdir}; Components: main;         Flags: ignoreversion
 Source: {#bindir}\{#lavfiltersdir}\*.manifest;     DestDir: {app}\{#lavfiltersdir}; Components: main;         Flags: ignoreversion
 	#endif
+	#if INCLUDE_MPCVR
+Source: ..\distrib\mpcvr\{#mpcvr_ax};              DestDir: {app}\MPCVR;            Components: main;         Flags: ignoreversion
+	#endif
 Source: {#platform}\d3dcompiler_{#MPC_D3D_COMPILER_VERSION}.dll; DestDir: {app};    Components: main;         Flags: ignoreversion
 Source: {#platform}\d3dx9_{#MPC_DX_SDK_NUMBER}.dll;              DestDir: {app};    Components: main;         Flags: ignoreversion
 	#if INCLUDE_MEDIAINFO
@@ -265,6 +267,7 @@ Source: {#platform}\mediainfo.dll;                 DestDir: {app};              
 	#endif
 Source: ..\src\mpc-hc\res\shaders\dx9\*.hlsl;      DestDir: {app}\Shaders;          Components: main;         Flags: onlyifdoesntexist
 Source: ..\src\mpc-hc\res\shaders\dx11\*.hlsl;     DestDir: {app}\Shaders11;        Components: main;         Flags: onlyifdoesntexist
+Source: ..\distrib\Toolbars\*.*;                   DestDir: {app}\Toolbars;         Components: main;         Flags: onlyifdoesntexist recursesubdirs
 Source: ..\COPYING.txt;                            DestDir: {app};                  Components: main;         Flags: ignoreversion
 Source: ..\docs\Authors.txt;                       DestDir: {app};                  Components: main;         Flags: ignoreversion
 	#if USE_DRDUMP_CRASH_REPORTER
@@ -272,9 +275,6 @@ Source: {#platform}\crashrpt.dll;                  DestDir: {app}\CrashReporter;
 Source: {#platform}\dbghelp.dll;                   DestDir: {app}\CrashReporter;    Components: main;         Flags: ignoreversion
 Source: {#platform}\sendrpt.exe;                   DestDir: {app}\CrashReporter;    Components: main;         Flags: ignoreversion
 Source: CrashReporter_LICENSE.txt;                 DestDir: {app}\CrashReporter;    Components: main;         Flags: ignoreversion
-	#endif
-	#if INCLUDE_MPCVR
-Source: ..\distrib\mpcvr\{#mpcvr_ax};              DestDir: {app}\MPCVR;            Components: main;         Flags: ignoreversion
 	#endif
 
 
@@ -327,22 +327,28 @@ Type: files; Name: {commondesktop}\Media Player Classic - Home Cinema.lnk; Check
 Type: files; Name: {#quick_launch}\Media Player Classic - Home Cinema.lnk; Check: not IsTaskSelected('quicklaunchicon')    and IsUpgrade(); OnlyBelowVersion: 6.01
 
 ; Old ffmpeg dlls from LAV Filters
+Type: files; Name: {app}\{#lavfiltersdir}\avcodec-lav-61.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avcodec-lav-60.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avcodec-lav-59.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avcodec-lav-58.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avcodec-lav-57.dll;   Check: IsUpgrade()
+Type: files; Name: {app}\{#lavfiltersdir}\avfilter-lav-10.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avfilter-lav-9.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avfilter-lav-8.dll;   Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avfilter-lav-7.dll;   Check: IsUpgrade()
+Type: files; Name: {app}\{#lavfiltersdir}\avformat-lav-61.dll;  Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avformat-lav-60.dll;  Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avformat-lav-59.dll;  Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avformat-lav-58.dll;  Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avformat-lav-57.dll;  Check: IsUpgrade()
+Type: files; Name: {app}\{#lavfiltersdir}\avutil-lav-59.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avutil-lav-58.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avutil-lav-57.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avutil-lav-56.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\avutil-lav-55.dll;    Check: IsUpgrade()
+Type: files; Name: {app}\{#lavfiltersdir}\swresample-lav-5.dll; Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\swresample-lav-4.dll; Check: IsUpgrade()
+Type: files; Name: {app}\{#lavfiltersdir}\swscale-lav-8.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\swscale-lav-7.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\swscale-lav-6.dll;    Check: IsUpgrade()
 Type: files; Name: {app}\{#lavfiltersdir}\swscale-lav-5.dll;    Check: IsUpgrade()
@@ -404,11 +410,8 @@ Type: files; Name: {app}\Lang\mpcresources.ua.dll
 
 
 [Code]
-#if defined(sse2_required)
 function IsProcessorFeaturePresent(Feature: Integer): Boolean;
 external 'IsProcessorFeaturePresent@kernel32.dll stdcall';
-#endif
-
 
 function GetInstallFolder(Default: String): String;
 var
@@ -427,17 +430,11 @@ begin
   end;
 end;
 
-
-#if defined(sse2_required)
-
 function Is_SSE2_Supported(): Boolean;
 begin
   // PF_XMMI64_INSTRUCTIONS_AVAILABLE
   Result := IsProcessorFeaturePresent(10);
 end;
-
-#endif
-
 
 function IsUpgrade(): Boolean;
 var
@@ -553,11 +550,8 @@ function InitializeSetup(): Boolean;
 begin
     Result := True;
 
-#if defined(sse2_required)
     if not Is_SSE2_Supported() then begin
       SuppressibleMsgBox(CustomMessage('msg_simd_sse2'), mbCriticalError, MB_OK, MB_OK);
       Result := False;
     end;
-#endif
-
 end;

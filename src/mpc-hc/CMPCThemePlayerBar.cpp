@@ -30,10 +30,11 @@ void CMPCThemePlayerBar::InitializeSize() {
 BOOL CMPCThemePlayerBar::OnEraseBkgnd(CDC* pDC)
 {
     if (AppIsThemeLoaded()) {
-        CRect rect;
-        pDC->GetClipBox(&rect);
-        pDC->FillSolidRect(rect.left, rect.top, rect.Width(), rect.Height(), CMPCTheme::WindowBGColor);
-
+        if (pDC) {
+            CRect rect;
+            pDC->GetClipBox(&rect);
+            pDC->FillSolidRect(rect.left, rect.top, rect.Width(), rect.Height(), CMPCTheme::WindowBGColor);
+        }
         return TRUE;
     } else {
         return __super::OnEraseBkgnd(pDC);

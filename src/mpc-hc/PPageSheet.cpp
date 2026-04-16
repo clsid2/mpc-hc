@@ -47,6 +47,8 @@ CPPageSheet::CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd
 
     SetTreeWidth(216);
     AddPage(&m_player);
+    AddPage(&m_toolBar);
+    AddPage(&m_toolBarLayout);
     AddPage(&m_theme);
     AddPage(&m_formats);
     AddPage(&m_acceltbl);
@@ -159,6 +161,8 @@ BEGIN_MESSAGE_MAP(CPPageSheet, CTreePropSheet)
     ON_WM_CTLCOLOR()
     ON_WM_DRAWITEM()
     ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+    ON_NOTIFY(TVN_SELCHANGEDA, 0x7EEE, OnPageTreeSelChanged)
+    ON_NOTIFY(TVN_SELCHANGEDW, 0x7EEE, OnPageTreeSelChanged)
 END_MESSAGE_MAP()
 
 
@@ -200,6 +204,31 @@ void CPPageSheet::OnApply()
     if (m_bLanguageChanged) {
         m_bLanguageChanged = false;
         EndDialog(APPLY_LANGUAGE_CHANGE);
+    }
+}
+
+// TreePropSheet sets item data to (DWORD_PTR)-1 for nodes that have no page of their own
+bool CPPageSheet::IsParentOnlyNode(CTreeCtrl* pTree, HTREEITEM hItem)
+{
+    return hItem && pTree->GetItemData(hItem) == (DWORD_PTR)-1;
+}
+
+void CPPageSheet::OnPageTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    // Let the base class update the caption, then override it with the first child's
+    // text when a parent-only node is selected (e.g. show "General" instead of "Player").
+    CTreePropSheet::OnPageTreeSelChanged(pNMHDR, pResult);
+
+    if (m_pFrame && m_pFrame->GetShowCaption()) {
+        if (CTreeCtrl* pTree = GetPageTreeControl()) {
+            HTREEITEM hItem = pTree->GetSelectedItem();
+            if (IsParentOnlyNode(pTree, hItem)) {
+                HTREEITEM hChild = pTree->GetChildItem(hItem);
+                if (hChild) {
+                    m_pFrame->SetCaption(pTree->GetItemText(hChild));
+                }
+            }
+        }
     }
 }
 

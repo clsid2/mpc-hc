@@ -101,6 +101,7 @@ public:
     int m_defaultWrapStyle;
     int m_collisions;
     int m_scaledBAS; // -1 = unknown, 0 = no, 1 = yes
+    int m_scaledBAS2;
     CString m_sYCbCrMatrix;
 
     bool m_bStyleOverrideActive;

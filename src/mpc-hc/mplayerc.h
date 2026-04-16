@@ -97,6 +97,12 @@ enum {
     WM_GETSUBTITLES,
     WM_OSD_HIDE,
     WM_OSD_DRAW,
+    WM_MPC_STANDBY,
+    WM_MPC_HIBERNATE,
+    WM_MPC_SHUTDOWN,
+    WM_MPC_LOGOFF,
+    WM_MPC_OPENCURPLAYLIST,
+    WM_LAV_PROPPAGE_CALLBACK,
     WM_MPCVR_SWITCH_FULLSCREEN = WM_APP + 4096,
 };
 
@@ -179,6 +185,8 @@ public:
     virtual BOOL WriteProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue) override;
     virtual BOOL WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue) override;
     bool HasProfileEntry(LPCTSTR lpszSection, LPCTSTR lpszEntry);
+    std::vector<int> GetProfileVectorInt(CString strSection, CString strKey);
+    void WriteProfileVectorInt(CString strSection, CString strKey, std::vector<int> vData);
 
     bool GetAppSavePath(CString& path);
     bool GetAppDataPath(CString& path);
@@ -211,6 +219,7 @@ public:
     virtual BOOL SaveAllModified() override;
 
 public:
+    void HookModuleLoading();
     void SetClosingState();
 
 public:

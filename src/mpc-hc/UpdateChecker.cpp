@@ -269,8 +269,12 @@ static UINT RunCheckForUpdateThread(LPVOID pParam)
         if (!autoCheck || status == UPDATER_UPDATE_AVAILABLE) {
             UpdateCheckerDlg dlg(status, updateChecker.GetLatestVersion());
 
-            if (dlg.DoModal() == IDC_UPDATE_IGNORE_BUTTON) {
-                updateChecker.IgnoreLatestVersion();
+            try {
+                if (dlg.DoModal() == IDC_UPDATE_IGNORE_BUTTON) {
+                    updateChecker.IgnoreLatestVersion();
+                }
+            } catch (...) {
+                AfxGetAppSettings().nUpdaterAutoCheck = AUTOUPDATE_DISABLE;
             }
         }
     }

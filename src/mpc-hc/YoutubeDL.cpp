@@ -128,7 +128,15 @@ bool CYoutubeDLInstance::Run(CString url)
 
     if (!CreateProcess(NULL, args.GetBuffer(), NULL, NULL, true, 0,
                        NULL, NULL, &startup_info, &proc_info)) {
-        YDL_LOG(_T("Failed to create process for YDL"));
+        DWORD err = GetLastError();
+        CString errmsg;
+        errmsg.Format(_T("Failed to create process for yt-dlp/youtube-dl, error %lu"), err);
+        YDL_LOG(errmsg);
+        if (!s.sYDLExePath.IsEmpty()) {
+            AfxMessageBox(errmsg + L"\n\nYour YDLExepath value in advanced settings might be incorrect.", MB_ICONERROR, 0);
+        } else if (url.Find(L"youtube.com") > 0) {
+            AfxMessageBox(errmsg + L"\n\nTo watch Youtube videos with MPC-HC you need to put \"yt-dlp.exe\" in the MPC-HC installation folder.\n\nhttps://github.com/yt-dlp/yt-dlp/releases", MB_ICONERROR, 0);
+        }
         return false;
     }
 
@@ -200,16 +208,16 @@ bool CYoutubeDLInstance::Run(CString url)
         CString err = buf_err;
         if (err.IsEmpty()) {
             if (exitcode == 0xC0000135) {
-                err.Format(_T("An error occurred while running Youtube-DL\n\nYou probably forgot to install this required runtime:\nMicrosoft Visual C++ 2010 Service Pack 1 Redistributable Package (x86)"));
+                err.Format(_T("An error occurred while running yt-dlp/youtube-dl\n\nYou probably forgot to install this required runtime:\nMicrosoft Visual C++ 2010 Service Pack 1 Redistributable Package (x86)"));
             } else {
-                err.Format(_T("An error occurred while running Youtube-DL\n\nprocess exitcode = 0x%08x"), exitcode);
+                err.Format(_T("An error occurred while running yt-dlp/youtube-dl\n\nprocess exitcode = 0x%08x"), exitcode);
             }
         } else {
             if (err.Find(_T("ERROR: Unsupported URL")) >= 0) {
                 // abort without showing error message
                 return false;
             }
-            err = _T("Youtube-DL error message:\n\n") + err;
+            err = _T("yt-dlp/youtube-dl error message:\n\n") + err;
         }
         AfxMessageBox(err, MB_ICONERROR, 0);
     }
@@ -276,8 +284,9 @@ struct YDLStreamDetails {
     int abr = 0;
     int fps = 0;
     CString format_id;
+    CString format_note;
     CString language;
-    bool pref_lang  = false;
+    int lang_pref = 0;
     int video_score = 0;
     int audio_score = 0;
     CString useragent;
@@ -382,48 +391,67 @@ void GetAudioScore(YDLStreamDetails& details) {
 
     if (s.iYDLAudioFormat > 0) {
         if (s.iYDLAudioFormat == YDL_FORMAT_AAC) {
-            if (acodec == L"mp4a") score += 32;
+            if (acodec == L"mp4a") score += 64;
         } else {
-            if (acodec == L"opus") score += 32;
+            if (acodec == L"opus") score += 64;
         }
     }
 
-    if (details.pref_lang) {
-        score += 64;
+    if (details.lang_pref > 9) {
+        score += 256;
+    } else if (details.lang_pref > 0) {
+        score += 128;
+    }
+
+    if (details.protocol == L"https") {
+        score += 32;
     }
 
     // Youtube formats
-    if (!details.has_video && !details.format_id.IsEmpty()) {
-        if (details.format_id == L"258") {        // AAC (LC) 384 Kbps 5.1
+    if (!details.has_video && !details.format.IsEmpty()) {
+        CString fid = details.format;
+        bool isdef = fid.Find(L"default") >= 0;
+        bool ishigh = fid.Find(L"high") >= 0;
+        int p = fid.FindOneOf(L"- ");
+        if (p > 0) {
+            fid = fid.Left(p);
+        }
+        if (fid == L"258") {        // AAC (LC) 384 Kbps 5.1
             score += 13;
-        } else if (details.format_id == L"327") { // AAC (LC) 256 Kbps 5.1
-            score += 11;
-        } else if (details.format_id == L"256") { // AAC (HE v1) 192 Kbps 5.1
-            score += 9;
-        } else if (details.format_id == L"141") { // AAC (LC) 256 Kbps 2.0
+        } else if (fid == L"141") { // AAC (LC) 256 Kbps 2.0
             score += 12;
-        } else if (details.format_id == L"140") { // AAC (LC) 128 Kbps 2.0
+        } else if (fid == L"327") { // AAC (LC) 256 Kbps 5.1
+            score += 11;
+        } else if (fid == L"256") { // AAC (HE v1) 192 Kbps 5.1
+            score += 9;
+        } else if (fid == L"140") { // AAC (LC) 128 Kbps 2.0
             score += 8;
-        } else if (details.format_id == L"139") { // AAC (HE v1) 48 Kbps 2.0
+        } else if (fid == L"139") { // AAC (HE v1) 48 Kbps 2.0
             score += 5;
-        } else if (details.format_id == L"338") { // Opus 480 Kbps 4.0
+        } else if (fid == L"338") { // Opus 480 Kbps 4.0
             score += 10;
-        } else if (details.format_id == L"251") { // Opus 160 Kbps 2.0
+        } else if (fid == L"774") { // Opus 256 Kbps 2.0
+            score += 8;
+        } else if (fid == L"251") { // Opus 160 Kbps 2.0
             score += 7;
-        } else if (details.format_id == L"250") { // Opus 70 Kbps 2.0
+        } else if (fid == L"250") { // Opus 70 Kbps 2.0
             score += 6;
-        } else if (details.format_id == L"249") { // Opus 50 Kbps 2.0
+        } else if (fid == L"249") { // Opus 50 Kbps 2.0
             score += 4;
-        } else if (details.format_id == L"599") { // AAC ultralow
+        } else if (fid == L"599") { // AAC (HE v1) 30 Kbps 2.0
             score += 1;
-        } else if (details.format_id == L"600") { // Opus ultralow
+        } else if (fid == L"600") { // Opus 35 Kbps 2.0
             score += 1;
-        } else if (details.format_id == L"380") { // AC3 high
+        } else if (fid == L"380") { // AC3 384 Kbps 5.1
+            score += 7;
+        } else if (fid == L"328") { // EAC3 384 Kbps 5.1
+            score += 7;
+        } else if (fid == L"325") { // DTSE 384 Kbps 5.1
             score += 1;
-        } else if (details.format_id == L"328") { // EC3 high
-            score += 1;
-        } else if (details.format_id == L"233" || details.format_id == L"234") { // Unknown
-            score += 2;
+        } else if (fid == L"233") { // same as 139 but native HLS
+            score += 5;
+        } else if (fid == L"234") { // same as 140 but native HLS
+            score += 8;
         } else {
             //ASSERT(false);
         }
@@ -435,7 +463,7 @@ void GetAudioScore(YDLStreamDetails& details) {
 bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool require_video, bool require_audio_only)
 {
     bool canuse = true;
-    details = { _T(""), _T(""), 0, 0, _T(""), _T(""), _T(""), false, false, 0, 0, 0, _T(""), _T(""), false, 0, 0 };
+    details = { _T(""), _T(""), 0, 0, _T(""), _T(""), _T(""), false, false, 0, 0, 0, _T(""), _T(""), _T(""), 0, 0, 0, _T("") };
 
     details.url = format[_T("url")].GetString();
     if (details.url.IsEmpty()) {
@@ -444,33 +472,43 @@ bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool re
         #endif
         return false;
     }
-
-    if (format.HasMember(_T("protocol")) && !format[_T("protocol")].IsNull()) {
-        details.protocol = CString(format[_T("protocol")].GetString()).MakeLower();
+    if (format.HasMember(_T("has_drm")) && !format[_T("has_drm")].IsNull()) {
+        if (format[_T("has_drm")].GetBool()) {
+            return false;
+        }
     }
-    if (format.HasMember(_T("vcodec")) && !format[_T("vcodec")].IsNull()) {
+    if (format.HasMember(_T("protocol")) && format[_T("protocol")].IsString()) {
+        details.protocol = CString(format[_T("protocol")].GetString()).MakeLower();
+        if (details.protocol == _T("mhtml")) {
+            return false;
+        }
+    }
+    if (format.HasMember(_T("vcodec")) && format[_T("vcodec")].IsString()) {
         details.vcodec = CString(format[_T("vcodec")].GetString()).MakeLower();
     }
-    if (format.HasMember(_T("acodec")) && !format[_T("acodec")].IsNull()) {
+    if (format.HasMember(_T("acodec")) && format[_T("acodec")].IsString()) {
         details.acodec = CString(format[_T("acodec")].GetString()).MakeLower();
     }
-    if (format.HasMember(_T("format")) && !format[_T("format")].IsNull()) {
+    if (format.HasMember(_T("format")) && format[_T("format")].IsString()) {
         details.format = CString(format[_T("format")].GetString()).MakeLower();
     }
-    if (format.HasMember(_T("format_id")) && !format[_T("format_id")].IsNull()) {
+    if (format.HasMember(_T("format_id")) && format[_T("format_id")].IsString()) {
         details.format_id = CString(format[_T("format_id")].GetString()).MakeLower();
     }
-    if (format.HasMember(_T("language")) && !format[_T("language")].IsNull()) {
+    if (format.HasMember(_T("format_note")) && format[_T("format_note")].IsString()) {
+        details.format_id = CString(format[_T("format_note")].GetString()).MakeLower();
+    }
+    if (format.HasMember(_T("language")) && format[_T("language")].IsString()) {
         details.language = CString(format[_T("language")].GetString()).MakeLower();
     }
-    if (format.HasMember(_T("width")) && !format[_T("width")].IsNull()) {
+    if (format.HasMember(_T("width")) && format[_T("width")].IsInt()) {
         details.width = format[_T("width")].GetInt();
     }
-    if (format.HasMember(_T("height")) && !format[_T("height")].IsNull()) {
+    if (format.HasMember(_T("height")) && format[_T("height")].IsInt()) {
         details.height = format[_T("height")].GetInt();
     }
-    if (format.HasMember(_T("language_preference")) && !format[_T("language_preference")].IsNull()) {
-        details.pref_lang = format[_T("language_preference")].GetInt() > 0;
+    if (format.HasMember(_T("language_preference")) && format[_T("language_preference")].IsInt()) {
+        details.lang_pref = format[_T("language_preference")].GetInt();
     }
     if (format.HasMember(_T("http_headers")) && format[_T("http_headers")].HasMember(_T("User-Agent"))) {
         details.useragent = CString(format[_T("http_headers")][_T("User-Agent")].GetString());
@@ -498,9 +536,6 @@ bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool re
         }
     }
 
-    if (canuse && details.protocol == _T("mhtml")) {
-        canuse = false;
-    }
     if (canuse && require_video && !details.has_video) {
         canuse = false;
     }
@@ -508,14 +543,19 @@ bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool re
         canuse = false;
     }
 
-    details.vbr = details.has_video && format.HasMember(_T("vbr")) && !format[_T("vbr")].IsNull() ? (int)format[_T("vbr")].GetFloat() : 0;
+    details.vbr = details.has_video && format.HasMember(_T("vbr")) && format[_T("vbr")].IsFloat() ? (int)format[_T("vbr")].GetFloat() : 0;
     if (details.vbr == 0 && details.has_video) {
-        details.vbr = format.HasMember(_T("tbr")) && !format[_T("tbr")].IsNull() ? (int)format[_T("tbr")].GetFloat() : 0;
+        details.vbr = format.HasMember(_T("tbr")) && format[_T("tbr")].IsFloat() ? (int)format[_T("tbr")].GetFloat() : 0;
     }
-    details.fps = format.HasMember(_T("fps")) && !format[_T("fps")].IsNull() ? (int)format[_T("fps")].GetDouble() : 0;
-    details.abr = details.has_audio && format.HasMember(_T("abr")) && !format[_T("abr")].IsNull() ? (int)format[_T("abr")].GetFloat() : 0;
+    details.abr = details.has_audio && format.HasMember(_T("abr")) && format[_T("abr")].IsFloat() ? (int)format[_T("abr")].GetFloat() : 0;
     if (details.abr == 0 && details.has_audio) {
-        details.abr = format.HasMember(_T("tbr")) && !format[_T("tbr")].IsNull() ? (int)format[_T("tbr")].GetFloat() : 0;
+        details.abr = format.HasMember(_T("tbr")) && format[_T("tbr")].IsFloat() ? (int)format[_T("tbr")].GetFloat() : 0;
+    }
+    details.fps = format.HasMember(_T("fps")) && format[_T("fps")].IsDouble() ? (int)format[_T("fps")].GetDouble() : 0;
+    if (details.has_video && details.fps == 0) {
+        if (details.format_id.Find(L"p60") > 0) {
+            details.fps = 60;
+        }
     }
 
     if (canuse && details.has_video) {
@@ -527,12 +567,12 @@ bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool re
 
     #if YDL_TRACE
     if (canuse) {
-        TRACE(_T("protocol=%s vcodec=%s width=%d height=%d fps=%d vbr=%d acodec=%s abr=%d formatid=%s lang=%s(p%d) url=%s\n"), static_cast<LPCWSTR>(details.protocol), static_cast<LPCWSTR>(details.vcodec), details.width, details.height, details.fps, details.vbr, static_cast<LPCWSTR>(details.acodec), details.abr, static_cast<LPCWSTR>(details.format_id), static_cast<LPCWSTR>(details.language), details.pref_lang, static_cast<LPCWSTR>(details.url));
+        TRACE(_T("protocol=%s vcodec=%s width=%d height=%d fps=%d vbr=%d acodec=%s abr=%d formatid=%s lang=%s(p%d) url=%s\n"), static_cast<LPCWSTR>(details.protocol), static_cast<LPCWSTR>(details.vcodec), details.width, details.height, details.fps, details.vbr, static_cast<LPCWSTR>(details.acodec), details.abr, static_cast<LPCWSTR>(details.format_id), static_cast<LPCWSTR>(details.language), details.lang_pref, static_cast<LPCWSTR>(details.url));
     }
     #endif
     #if YDL_LOG_URLS
     if (canuse) {
-        YDL_LOG(_T("protocol=%s vcodec=%s width=%d height=%d fps=%d vbr=%d acodec=%s abr=%d formatid=%s lang=%s(p%d) url=%s"), static_cast<LPCWSTR>(details.protocol), static_cast<LPCWSTR>(details.vcodec), details.width, details.height, details.fps, details.vbr, static_cast<LPCWSTR>(details.acodec), details.abr, static_cast<LPCWSTR>(details.format_id), static_cast<LPCWSTR>(details.language), details.pref_lang, static_cast<LPCWSTR>(details.url));
+        YDL_LOG(_T("protocol=%s vcodec=%s width=%d height=%d fps=%d vbr=%d acodec=%s abr=%d formatid=%s lang=%s(p%d) url=%s"), static_cast<LPCWSTR>(details.protocol), static_cast<LPCWSTR>(details.vcodec), details.width, details.height, details.fps, details.vbr, static_cast<LPCWSTR>(details.acodec), details.abr, static_cast<LPCWSTR>(details.format_id), static_cast<LPCWSTR>(details.language), details.lang_pref, static_cast<LPCWSTR>(details.url));
     }
     #endif
 

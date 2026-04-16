@@ -350,6 +350,9 @@ CString GetContentType(CString fn, CAtlList<CString>* redir)
         }
         if (_tcsicmp(url.GetSchemeName(), _T("http")) == 0 || _tcsicmp(url.GetSchemeName(), _T("https")) == 0) {
             ishttp = true;
+            if (AfxGetMainFrame()->CanSendToYoutubeDL(fn)) {
+                return "ytdl";
+            }
         } else {
             return "";
         }
@@ -387,9 +390,9 @@ CString GetContentType(CString fn, CAtlList<CString>* redir)
     // Get content type by getting the header response from server
     if (ishttp) {
         CInternetSession internet;
-        internet.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
-        internet.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
-        internet.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
+        internet.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT,  5000);
+        internet.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 10000);
+        internet.SetOption(INTERNET_OPTION_SEND_TIMEOUT,    10000);
         CString headers = _T("User-Agent: MPC-HC");
         CHttpFile* httpFile = NULL;
         try {
@@ -1377,6 +1380,33 @@ bool CMPlayerCApp::HasProfileEntry(LPCTSTR lpszSection, LPCTSTR lpszEntry)
     return ret;
 }
 
+std::vector<int> CMPlayerCApp::GetProfileVectorInt(CString strSection, CString strKey) {
+    std::vector<int> vData;
+    UINT uSize = theApp.GetProfileInt(strSection, strKey + _T("Size"), 0);
+    UINT uSizeRead = 0;
+    BYTE* temp = nullptr;
+    theApp.GetProfileBinary(strSection, strKey, &temp, &uSizeRead);
+    if (uSizeRead == uSize) {
+        vData.resize(uSizeRead / sizeof(int), 0);
+        memcpy(vData.data(), temp, uSizeRead);
+    }
+    delete[] temp;
+    temp = nullptr;
+    return vData;
+}
+
+
+void CMPlayerCApp::WriteProfileVectorInt(CString strSection, CString strKey, std::vector<int> vData) {
+    UINT uSize = static_cast<UINT>(sizeof(int) * vData.size());
+    theApp.WriteProfileBinary(
+        strSection,
+        strKey,
+        (LPBYTE)vData.data(),
+        uSize
+    );
+    theApp.WriteProfileInt(strSection, strKey + _T("Size"), uSize);
+}
+
 void CMPlayerCApp::PreProcessCommandLine()
 {
     m_cmdln.RemoveAll();
@@ -1459,7 +1489,7 @@ NTSTATUS WINAPI Mine_NtQueryInformationProcess(HANDLE ProcessHandle, PROCESSINFO
     return nRet;
 }
 
-#define USE_DLL_BLOCKLIST 0
+#define USE_DLL_BLOCKLIST 1
 
 #if USE_DLL_BLOCKLIST
 #define STATUS_UNSUCCESSFUL ((NTSTATUS)0xC0000001L)
@@ -1494,52 +1524,33 @@ typedef struct {
 } blocked_module_t;
 
 // list of modules that can cause crashes or other unwanted behavior
+// limit blocking to ACM/VFW codecs, as blocking other stuff might result in repeated loading attempts and performance issues
 static blocked_module_t moduleblocklist[] = {
 #if WIN64
-    // Logitech codec
-    {_T("\\lvcod64.dll"), 12},
-    // ProxyCodec64
-    {_T("\\pxc0.dll"), 9},
-#else
-    {_T("\\mlc.dll"), 8},
+    {_T("\\lvcod64.dll"), 12},   // Logitech Video (I420) codec
+    {_T("\\pxc0.dll"), 9},       // ProxyCodec64
+    {_T("\\pxc1.dll"), 9},
+    {_T("\\tsccvid64.dll"), 14}, // Techsmith video codec
+    {_T("\\bdmpega64.acm"), 14}, // Bandicam audio codec
 #endif
-    // Lame
-    {_T("\\lameacm.acm"), 12},
-    // ffdshow vfw
+    {_T("\\mlc.dll"), 8},        // MLC lossless codec
     {_T("\\ff_vfw.dll"), 11},
-#if WIN64
-    // Trusteer Rapport
-    {_T("\\rooksbas_x64.dll"), 17},
-    {_T("\\rooksdol_x64.dll"), 17},
-    {_T("\\rapportgh_x64.dll"), 18},
-#endif
-    // ASUS GamerOSD
-    {_T("\\atkdx11disp.dll"), 16},
-    // ASUS GPU TWEAK II OSD
-    {_T("\\gtii-osd64.dll"), 15},
-    {_T("\\gtii-osd64-vk.dll"), 18},
-    {_T("\\gtiii-osd64.dll"), 16},
-    // Nahimic Audio
-    {L"\\nahimicmsidevprops.dll", 23},
-    {L"\\nahimicmsiosd.dll", 18},
-    // LoiLoGameRecorder
-    {_T("\\loilocap.dll"), 13},
-    // Other
-    {_T("\\tortoiseoverlays.dll"), 21},
+    {_T("\\lameacm.acm"), 12},
+    {_T("\\ff_acm.acm"), 11},
+
+    // other candidates for blocking that often crash:
+    // cfhd.dll, prodad_codec.dll, ajavfw.dll
 };
 
 bool IsBlockedModule(wchar_t* modulename)
 {
     size_t mod_name_len = wcslen(modulename);
 
-    //TRACE(L"Checking module blocklist: %s\n", modulename);
-
     for (size_t i = 0; i < _countof(moduleblocklist); i++) {
         blocked_module_t* b = &moduleblocklist[i];
         if (mod_name_len > b->name_len) {
             wchar_t* dll_ptr = modulename + mod_name_len - b->name_len;
             if (_wcsicmp(dll_ptr, b->name) == 0) {
-                //AfxMessageBox(modulename);
                 TRACE(L"Blocked module load: %s\n", modulename);
                 return true;
             }
@@ -1586,6 +1597,27 @@ NTSTATUS STDMETHODCALLTYPE Mine_NtMapViewOfSection(HANDLE SectionHandle, HANDLE 
     return ret;
 }
 #endif
+
+void CMPlayerCApp::HookModuleLoading() {
+#if USE_DLL_BLOCKLIST
+    // ToDo: maybe check registry first to see if any "bad" codecs are installed?
+    if (m_hNTDLL && !Real_NtMapViewOfSection) {
+        Real_NtMapViewOfSection = (pfn_NtMapViewOfSection)GetProcAddress(m_hNTDLL, "NtMapViewOfSection");
+        Real_NtUnmapViewOfSection = (pfn_NtUnmapViewOfSection)GetProcAddress(m_hNTDLL, "NtUnmapViewOfSection");
+        Real_NtQuerySection = (pfn_NtQuerySection)GetProcAddress(m_hNTDLL, "NtQuerySection");
+        HMODULE k32 = GetModuleHandle(L"kernel32.dll");
+        if (k32) {
+            Real_GetMappedFileNameW = (pfn_GetMappedFileNameW)GetProcAddress(k32, "K32GetMappedFileNameW");
+        }
+
+        if (Real_NtMapViewOfSection && Real_NtUnmapViewOfSection && Real_NtQuerySection && Real_GetMappedFileNameW) {
+            if (Mhook_SetHookEx(&Real_NtMapViewOfSection, Mine_NtMapViewOfSection)) {
+                MH_EnableHook(MH_ALL_HOOKS);
+            }
+        }
+    }
+#endif
+}
 
 static LONG Mine_ChangeDisplaySettingsEx(LONG ret, DWORD dwFlags, LPVOID lParam)
 {
@@ -1652,6 +1684,112 @@ static BOOL CreateFakeVideoTS(LPCWSTR strIFOPath, LPWSTR strFakeFile, size_t nFa
 
     return bRet;
 }
+
+static CMPCThemeScrollBarRenderer* GetScrollBarRenderer(HWND hWnd) {
+    CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
+
+    // Themed scrollbars not available in classic mode = !IsThemeActive()
+    if (pWnd && AppNeedsThemedControls() && IsThemeActive()) {
+        CMPCThemeScrollBarRenderer* pRenderer = DYNAMIC_DOWNCAST(CMPCThemePlayerListCtrl, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeEdit, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeListBox, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+        pRenderer = DYNAMIC_DOWNCAST(CMPCThemeTreeCtrl, pWnd);
+        if (pRenderer) {
+            return pRenderer;
+        }
+    }
+    return nullptr;
+}
+
+static BOOL(WINAPI* Real_BitBlt)(HDC, int, int, int, int, HDC, int, int, DWORD) = BitBlt;
+BOOL WINAPI Mine_BitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) {
+    HWND hWnd = WindowFromDC(hdc);
+    CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
+    if (pRenderer) {
+        CRect drawRect(x, y, x + cx, y + cy);
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, true);
+        
+        BOOL result = TRUE;
+        if (!clipState.IsFullyClipped()) {
+            result = Real_BitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+        }
+        
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdc, clipState);
+        return result;
+    }
+    return Real_BitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+}
+
+static BOOL(WINAPI* Real_GdiAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION) = GdiAlphaBlend;
+BOOL WINAPI Mine_GdiAlphaBlend(HDC hdcDest, int xoriginDest, int yoriginDest, int wDest, int hDest, HDC hdcSrc, int xoriginSrc, int yoriginSrc, int wSrc, int hSrc, BLENDFUNCTION ftn) {
+    HWND hWnd = WindowFromDC(hdcDest);
+    CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
+
+    if (pRenderer) {
+        CRect drawRect(xoriginDest, yoriginDest, xoriginDest + wDest, yoriginDest + hDest);
+        
+        // We draw to the src of the blend function -- note, this relies on an assumption
+        // that win32 uses a src hdc with the same origin as the window (double buffer hdc?)
+        // Real_GdiAlphaBlend will then function normally with our src data
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdcSrc, hWnd, drawRect, true);
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdcSrc, clipState);
+    }
+    
+    return Real_GdiAlphaBlend(hdcDest, xoriginDest, yoriginDest, wDest, hDest, hdcSrc, xoriginSrc, yoriginSrc, wSrc, hSrc, ftn);
+}
+
+static HRESULT(WINAPI* Real_DrawThemeBackground)(HTHEME, HDC, int, int, LPCRECT, LPCRECT) = DrawThemeBackground;
+HRESULT WINAPI Mine_DrawThemeBackground(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, LPCRECT pRect, LPCRECT pClipRect) {
+    HWND hWnd = WindowFromDC(hdc);
+    CMPCThemeScrollBarRenderer* pRenderer = GetScrollBarRenderer(hWnd);
+    if (pRenderer) {
+        CRect drawRect(pRect);
+        auto clipState = pRenderer->ApplyScrollbarClipping(hdc, hWnd, drawRect, false);
+        
+        HRESULT result = S_OK;
+        if (!clipState.IsFullyClipped()) {
+            result = Real_DrawThemeBackground(hTheme, hdc, iPartId, iStateId, pRect, pClipRect);
+        }
+        
+        CMPCThemeScrollBarRenderer::RestoreClipping(hdc, clipState);
+        return result;
+    }
+    return Real_DrawThemeBackground(hTheme, hdc, iPartId, iStateId, pRect, pClipRect);
+}
+
+int(WINAPI* Real_ScrollWindowEx)(HWND, int, int, CONST RECT*, CONST RECT*, HRGN, LPRECT, UINT) = ScrollWindowEx;
+int WINAPI Mine_ScrollWindowEx(HWND hWnd, int dx, int dy, CONST RECT* prcScroll, CONST RECT* prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags)
+{
+    RECT expandedClip = { 0 };
+    CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
+    if (pWnd && prcClip && dx && AppNeedsThemedControls()) {
+        CMPCThemePlayerListCtrl* pList = dynamic_cast<CMPCThemePlayerListCtrl*>(pWnd);
+        if (pList && !pList->PaintHooksActive()) {
+            expandedClip = *prcClip;
+            expandedClip.top = 0; //horizontal scroll will need to include header
+            prcClip = &expandedClip;
+        } else {
+            CMPCThemeHeaderCtrl* pHeader = dynamic_cast<CMPCThemeHeaderCtrl*>(pWnd);
+            if (pHeader) {
+                pList = dynamic_cast<CMPCThemePlayerListCtrl*>(pWnd->GetParent());
+                if (pList && !pList->PaintHooksActive()) {
+                    return NULLREGION;
+                }
+            }
+        }
+    }
+    return Real_ScrollWindowEx(hWnd, dx, dy, prcScroll, prcClip, hrgnUpdate, prcUpdate, flags);
+}
+
 
 // This hook forces files to open even if they are currently being written and hijacks
 // IFO file opening so that a modified IFO with no forbidden operations is opened instead.
@@ -1800,24 +1938,16 @@ BOOL CMPlayerCApp::InitInstance()
 
     bHookingSuccessful &= !!Mhook_SetHookEx(&Real_CreateFileW, Mine_CreateFileW);
     bHookingSuccessful &= !!Mhook_SetHookEx(&Real_DeviceIoControl, Mine_DeviceIoControl);
+    bHookingSuccessful &= !!Mhook_SetHookEx(&Real_ScrollWindowEx, Mine_ScrollWindowEx);
+    bHookingSuccessful &= !!Mhook_SetHookEx(&Real_BitBlt, Mine_BitBlt);
+    bHookingSuccessful &= !!Mhook_SetHookEx(&Real_GdiAlphaBlend, Mine_GdiAlphaBlend);
+    bHookingSuccessful &= !!Mhook_SetHookEx(&Real_DrawThemeBackground, Mine_DrawThemeBackground);
 
     bHookingSuccessful &= MH_EnableHook(MH_ALL_HOOKS) == MH_OK;
 
     if (!bHookingSuccessful) {
         AfxMessageBox(IDS_HOOKS_FAILED);
     }
-
-#if USE_DLL_BLOCKLIST
-    if (m_hNTDLL) {
-        Real_NtMapViewOfSection = (pfn_NtMapViewOfSection)GetProcAddress(m_hNTDLL, "NtMapViewOfSection");
-        Real_NtUnmapViewOfSection = (pfn_NtUnmapViewOfSection)GetProcAddress(m_hNTDLL, "NtUnmapViewOfSection");
-        Real_NtQuerySection = (pfn_NtQuerySection)GetProcAddress(m_hNTDLL, "NtQuerySection");
-        Real_GetMappedFileNameW = (pfn_GetMappedFileNameW)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "K32GetMappedFileNameW");
-        if (Real_NtMapViewOfSection && Real_NtUnmapViewOfSection && Real_NtQuerySection && Real_GetMappedFileNameW) {
-            VERIFY(Mhook_SetHookEx(&Real_NtMapViewOfSection, Mine_NtMapViewOfSection));
-        }
-    }
-#endif
 
     // If those hooks fail it's annoying but try to run anyway without reporting any error in release mode
     VERIFY(Mhook_SetHookEx(&Real_ChangeDisplaySettingsExA, Mine_ChangeDisplaySettingsExA));
@@ -2082,11 +2212,16 @@ BOOL CMPlayerCApp::InitInstance()
         }
     }
 
-    m_s->UpdateSettings(); // update settings
-    m_s->LoadSettings(); // read settings
+    m_s->MigrateSettings(); // migrate old settings
+    m_s->LoadSettings();    // read settings
+    m_s->UpdateSettings();  // update settings
 
     #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
-    if (!m_s->bEnableCrashReporter) {
+    if (m_s->bEnableCrashReporter) {
+        if (!CrashReporter::IsEnabled()) { // failed
+            m_s->bEnableCrashReporter = false;
+        }
+    } else {
         DisableCrashReporter();
     }
     #endif
@@ -2094,7 +2229,7 @@ BOOL CMPlayerCApp::InitInstance()
     m_AudioRendererDisplayName_CL = _T("");
 
     if (!__super::InitInstance()) {
-        AfxMessageBox(_T("InitInstance failed!"));
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
         return FALSE;
     }
 
@@ -2104,15 +2239,27 @@ BOOL CMPlayerCApp::InitInstance()
     try {
         pFrame = DEBUG_NEW CMainFrame;
         if (!pFrame || !pFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, nullptr, nullptr)) {
-            MessageBox(nullptr, ResStr(IDS_FRAME_INIT_FAILED), m_pszAppName, MB_ICONERROR | MB_OK);
+            MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
             return FALSE;
         }
     } catch (...) {
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
         return FALSE;
     }
 
     m_pMainWnd = pFrame;
-    pFrame->m_controls.LoadState();
+    if (!m_pMainWnd) {
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization", L"MPC-HC", MB_ICONERROR | MB_OK);
+        return FALSE;
+    }
+
+    try {
+        pFrame->m_controls.LoadState();
+    } catch (...) {
+        MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization of its control bars", L"MPC-HC", MB_ICONERROR | MB_OK);
+        return FALSE;
+    }
+
     CPoint borderAdjustDirection;
     pFrame->SetDefaultWindowRect((m_s->nCLSwitches & CLSW_MONITOR) ? m_s->iMonitor : 0);
     if (!m_s->slFiles.IsEmpty()) {
@@ -2178,8 +2325,6 @@ BOOL CMPlayerCApp::InitInstance()
     if (UpdateChecker::IsAutoUpdateEnabled()) {
         UpdateChecker::CheckForUpdate(true);
     }
-
-    if (!m_pMainWnd) return false;
 
     SendCommandLine(m_pMainWnd->m_hWnd);
     RegisterHotkeys();
@@ -2451,7 +2596,7 @@ void CMPlayerCApp::OnAppAbout()
 void CMPlayerCApp::SetClosingState()
 {
     m_fClosingState = true;
-#if USE_DRDUMP_CRASH_REPORTER & (MPC_VERSION_REV < 20)
+#if USE_DRDUMP_CRASH_REPORTER & (MPC_VERSION_REV < 10)
     DisableCrashReporter();
 #endif
 }

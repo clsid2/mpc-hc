@@ -94,7 +94,7 @@ IMPLEMENT_DYNAMIC(CPPageAccelTbl, CMPCThemePPageBase)
 CPPageAccelTbl::CPPageAccelTbl()
     : CMPCThemePPageBase(CPPageAccelTbl::IDD, CPPageAccelTbl::IDD)
     , m_counter(0)
-    , m_list(0)
+    , m_list()
     , m_fWinLirc(FALSE)
     , m_WinLircLink(_T("http://winlirc.sourceforge.net/"))
     , m_fUIce(FALSE)
@@ -929,11 +929,12 @@ BOOL CPPageAccelTbl::OnInitDialog()
 
     m_list.CreateEx(
         WS_EX_CLIENTEDGE,
-        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP | LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS,
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |  WS_TABSTOP | LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS,
         r, this, IDC_LIST1);
 
     //m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES );
     m_list.setAdditionalStyles(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES);
+    m_list.setAdditionalStyles(WS_CLIPCHILDREN, false);
     m_list.setColorInterface(this);
 
     //this list was created dynamically but lives in a dialog.  if we don't inherit the parent font,
@@ -943,8 +944,11 @@ BOOL CPPageAccelTbl::OnInitDialog()
         m_list.SetFont(curDialogFont);
     }
 
-    for (int i = 0, j = m_list.GetHeaderCtrl()->GetItemCount(); i < j; i++) {
-        m_list.DeleteColumn(0);
+    CHeaderCtrl* hctrl = m_list.GetHeaderCtrl();
+    if (hctrl) {
+        for (int i = 0, j = hctrl->GetItemCount(); i < j; i++) {
+            m_list.DeleteColumn(0);
+        }
     }
     m_list.InsertColumn(COL_CMD, ResStr(IDS_AG_COMMAND), LVCFMT_LEFT, 80);
     m_list.InsertColumn(COL_KEY, ResStr(IDS_AG_KEY), LVCFMT_LEFT, 80);
@@ -1127,17 +1131,20 @@ void CPPageAccelTbl::GetCustomGridColors(int nItem, COLORREF& horzGridColor, COL
 }
 
 void CPPageAccelTbl::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult) {
-    NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+    //this custom draw is used only in classic mode
     *pResult = CDRF_DODEFAULT;
+    if (!AppNeedsThemedControls()) {
+        NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
 
-    if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYITEMDRAW;
-    } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
-        *pResult = CDRF_NOTIFYSUBITEMDRAW;
-    } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
-        bool ignore;
-        GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
-        *pResult = CDRF_DODEFAULT;
+        if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYITEMDRAW;
+        } else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) {
+            *pResult = CDRF_NOTIFYSUBITEMDRAW;
+        } else if ((CDDS_ITEMPREPAINT | CDDS_SUBITEM) == pLVCD->nmcd.dwDrawStage) {
+            bool ignore;
+            GetCustomTextColors(pLVCD->nmcd.dwItemSpec, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, ignore);
+            *pResult = CDRF_DODEFAULT;
+        }
     }
 }
 

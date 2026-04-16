@@ -30,6 +30,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeMenu.h"
 #include "SysVersion.h"
+#include "DpiHelper.h"
 
 BEGIN_MESSAGE_MAP(CSubtitleDlDlgListCtrl, CMPCThemePlayerListCtrl)
     ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolNeedText)
@@ -91,7 +92,7 @@ enum {
 };
 
 CSubtitleDlDlg::CSubtitleDlDlg(CMainFrame* pParentWnd)
-    : CModelessResizableDialog(IDD, pParentWnd)
+    : CMPCThemeModelessResizableDialog(IDD, pParentWnd)
     , m_ps(nullptr, 0, 0)
     , m_bIsRefreshed(false)
     , m_pMainFrame(pParentWnd)
@@ -238,14 +239,10 @@ int CALLBACK CSubtitleDlDlg::SortCompare(LPARAM lParam1, LPARAM lParam2, LPARAM 
 
 BOOL CSubtitleDlDlg::OnInitDialog()
 {
+    EnableSaveRestoreKey(IDS_R_DLG_SUBTITLEDL, TRUE);
+
     __super::OnInitDialog();
-    m_progress.SetParent(&m_status);
-    if (AppIsThemeLoaded()) {
-        SetWindowTheme(m_progress.GetSafeHwnd(), _T(""), _T(""));
-        m_progress.SetBarColor(CMPCTheme::ProgressBarColor);
-        m_progress.SetBkColor(CMPCTheme::ProgressBarBGColor);
-    }
-    m_progress.UpdateWindow();
+    m_status.SetProgressBar(&m_progress, 1);
 
     m_list.SetExtendedStyle(m_list.GetExtendedStyle()
                             /*| LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT */
@@ -297,6 +294,20 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     m_list.InsertColumn(COL_DISC, ResStr(IDS_SUBDL_DLG_DISC_COL), LVCFMT_RIGHT, columnWidth[COL_DISC]);
     SetListViewSortColumn();
 
+    SetupAnchors();
+
+    CheckDlgButton(IDC_CHECK1, true);
+
+    CRect cr;
+    GetClientRect(cr);
+    const CSize s(cr.Width(), 250);
+    SetMinTrackSize(s);
+
+    return TRUE;
+}
+
+void CSubtitleDlDlg::SetupAnchors()
+{
     AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_CHECK1, BOTTOM_LEFT);
     AddAnchor(IDC_BUTTON1, BOTTOM_RIGHT);
@@ -306,14 +317,6 @@ BOOL CSubtitleDlDlg::OnInitDialog()
     AddAnchor(IDC_EDIT1, BOTTOM_RIGHT, BOTTOM_RIGHT);
     AddAnchor(IDC_BUTTON4, BOTTOM_RIGHT);
     AddAnchor(IDC_STATUSBAR, BOTTOM_LEFT, BOTTOM_RIGHT);
-
-    CRect cr;
-    GetClientRect(cr);
-    const CSize s(cr.Width(), 250);
-    SetMinTrackSize(s);
-    EnableSaveRestoreKey(IDS_R_DLG_SUBTITLEDL, TRUE);
-
-    return TRUE;
 }
 
 BOOL CSubtitleDlDlg::PreTranslateMessage(MSG* pMsg)
@@ -427,32 +430,43 @@ void CSubtitleDlDlg::OnColumnClick(NMHDR* pNMHDR, LRESULT* pResult)
     m_list.UpdateWindow();
 }
 
-void CSubtitleDlDlg::OnSize(UINT nType, int cx, int cy)
+void CSubtitleDlDlg::UpdateStatusBarLayout()
 {
-    __super::OnSize(nType, cx, cy);
-
     if (m_status && m_progress) {
-        // Reposition the progress control correctly!
         CRect statusRect, buttonRect;
         m_status.GetClientRect(&statusRect);
         GetDlgItem(IDOK)->GetWindowRect(&buttonRect);
         ScreenToClient(&buttonRect);
+
+        // Calculate part widths - if there's a gripper, the last part should not extend over it
         int parts[2] = { buttonRect.left - 2, -1 };
-        m_status.SetParts(2, parts);
-        m_status.GetRect(1, &statusRect);
-        statusRect.DeflateRect(1, 1, 1, 1);
-        m_progress.SetWindowPos(nullptr, statusRect.left, statusRect.top, statusRect.Width(), statusRect.Height(),  SWP_NOACTIVATE | SWP_NOZORDER);
-    }
-    if (m_status && AppIsThemeLoaded()) {
-        //m_status currently set up to draw a gripper, but doesn't play nice with theme until it gets invalidated
-        //style 0x103 from mpc-hc.rc = SBARS_SIZEGRIP | CCS_TOP | CCS_NOMOVEY ??
-        if (m_status.GetStyle() & SBARS_SIZEGRIP) { 
-            CRect statusRect;
-            m_status.GetClientRect(statusRect);
-            statusRect.left = statusRect.right - GetSystemMetrics(SM_CXVSCROLL);
-            m_status.InvalidateRect(statusRect);
+        if (m_status.GetStyle() & SBARS_SIZEGRIP) {
+            DpiHelper dpiHelper;
+            dpiHelper.Override(m_currentDpi, m_currentDpi);
+            int gripperWidth = dpiHelper.GetSystemMetricsDPI(SM_CXVSCROLL);
+            parts[1] = statusRect.Width() - gripperWidth;
         }
+
+        // Status bar handles progress bar positioning automatically
+        m_status.SetParts(2, parts);
     }
+}
+
+void CSubtitleDlDlg::OnSize(UINT nType, int cx, int cy)
+{
+    __super::OnSize(nType, cx, cy);
+    UpdateStatusBarLayout();
+}
+
+LRESULT CSubtitleDlDlg::OnDpiChanged(WPARAM wParam, LPARAM lParam)
+{
+    // Call base class to handle DPI change
+    LRESULT result = __super::OnDpiChanged(wParam, lParam);
+
+    // OnSize was blocked during DPI change, so update status bar layout manually
+    UpdateStatusBarLayout();
+
+    return result;
 }
 
 void CSubtitleDlDlg::OnDestroy()
@@ -487,9 +501,10 @@ void CSubtitleDlDlg::DownloadSelectedSubtitles()
 }
 
 // ON_UPDATE_COMMAND_UI does not work for modeless dialogs
-BEGIN_MESSAGE_MAP(CSubtitleDlDlg, CModelessResizableDialog)
+BEGIN_MESSAGE_MAP(CSubtitleDlDlg, CMPCThemeModelessResizableDialog)
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
+    ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
     ON_COMMAND(IDC_BUTTON1, OnRefresh)
     ON_COMMAND(IDC_BUTTON2, OnAbort)
     ON_COMMAND(IDC_BUTTON3, OnOptions)
@@ -618,6 +633,7 @@ void CSubtitleDlDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
     if (bShow == TRUE && !m_bIsRefreshed && !m_pMainFrame->m_fAudioOnly && s.fEnableSubtitles) {
         OnRefresh();
+        m_bIsRefreshed = true;
     }
 }
 
@@ -781,9 +797,14 @@ afx_msg LRESULT CSubtitleDlDlg::OnFailedSearch(WPARAM /*wParam*/, LPARAM /*lPara
     return S_OK;
 }
 
-afx_msg LRESULT CSubtitleDlDlg::OnFailedDownload(WPARAM /*wParam*/, LPARAM /*lParam*/)
+afx_msg LRESULT CSubtitleDlDlg::OnFailedDownload(WPARAM wParam, LPARAM /*lParam*/)
 {
-    SetStatusText(StrRes(IDS_SUBDL_DLG_FAILED_DL));
+    CString status = StrRes(IDS_SUBDL_DLG_FAILED_DL);
+    status.AppendFormat(L" (error %lu)", (DWORD)wParam);
+    if (wParam == 406) {
+        status.Append(L" (global daily download quota exceeded)");
+    }
+    SetStatusText(status);
 
     return S_OK;
 }
@@ -837,9 +858,9 @@ void CSubtitleDlDlg::DoSearchFailed()
 {
     SendMessage(UWM_FAILED_SEARCH, (WPARAM)nullptr, (LPARAM)nullptr);
 }
-void CSubtitleDlDlg::DoDownloadFailed()
+void CSubtitleDlDlg::DoDownloadFailed(DWORD statuscode)
 {
-    SendMessage(UWM_FAILED_DOWNLOAD, (WPARAM)nullptr, (LPARAM)nullptr);
+    SendMessage(UWM_FAILED_DOWNLOAD, (WPARAM)statuscode, (LPARAM)nullptr);
 }
 void CSubtitleDlDlg::DoClear()
 {

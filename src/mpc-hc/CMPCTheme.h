@@ -191,5 +191,7 @@ public:
 
     static bool drawThemedControls;
 
-    static void InitializeColors(ModernThemeMode themeMode);
+    static CMPCTheme::ModernThemeMode EffectiveThemeMode();
+
+    static void InitializeColors();
 };

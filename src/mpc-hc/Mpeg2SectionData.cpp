@@ -279,6 +279,10 @@ HRESULT CMpeg2DataParser::ParseSDT(ULONG ulFrequency, ULONG ulBandwidth, ULONG u
     WORD wSectionLength;
     WORD serviceType = 0;
 
+    if (!m_pData) {
+        return E_FAIL;
+    }
+
     CheckNoLog(m_pData->GetSection(PID_SDT, SI_SDT, &m_Filter, 15000, &pSectionList));
     CheckNoLog(pSectionList->GetSectionData(0, &dwLength, &data));
 

@@ -205,6 +205,7 @@ extern bool EndsWithNoCase(CStringW str, CStringW suffix);
 extern bool StartsWithNoCase(CStringW str, CStringW prefix);
 extern CString FormatNumber(CString szNumber, bool bNoFractionalDigits = true);
 extern void GetLocaleString(LCID lcid, LCTYPE type, CString& output);
+extern CStringW& TrimLeadingUTF16BOM(CStringW& str);
 
 template<class T>
 T& FastTrimRight(T& str)

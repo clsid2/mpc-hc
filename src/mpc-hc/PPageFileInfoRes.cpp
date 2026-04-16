@@ -114,7 +114,7 @@ BOOL CPPageFileInfoRes::OnInitDialog()
     }
 
     AddAnchor(IDC_EDIT1, TOP_LEFT, TOP_RIGHT);
-    AddAnchor(IDC_STATIC, TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_STATIC1, TOP_LEFT, TOP_RIGHT);
     AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_DEFAULTICON, TOP_LEFT);
     AddAnchor(IDC_BUTTON1, BOTTOM_LEFT);

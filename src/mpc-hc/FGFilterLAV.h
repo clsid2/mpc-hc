@@ -81,7 +81,7 @@ public:
             if (SUCCEEDED(pLAVFilter->Create(&pBF, pUnks))) {
                 if (CComQIPtr<ISpecifyPropertyPages> pSPP = pBF) {
                     CComPropertySheet ps(IDS_PROPSHEET_PROPERTIES, pParendWnd);
-                    ps.AddPages(pSPP, iIgnoredPage);
+                    ps.AddPages(pSPP, true, iIgnoredPage);
                     ps.DoModal();
 
                     if (CComQIPtr<filterInterface> pLAVFSettings = pBF) {

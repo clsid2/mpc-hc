@@ -40,6 +40,7 @@ void CPPageAdvanced::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_LIST1, m_list);
     DDX_Control(pDX, IDC_COMBO1, m_comboBox);
     DDX_Control(pDX, IDC_SPIN1, m_spinButtonCtrl);
+    DDX_Control(pDX, IDC_EDIT1, m_dynamicEdit);
 }
 
 BOOL CPPageAdvanced::OnInitDialog()
@@ -59,12 +60,12 @@ BOOL CPPageAdvanced::OnInitDialog()
         pToolTip->SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOOWNERZORDER);
     }
 
-    GetDlgItem(IDC_EDIT1)->GetWindowRect(editRect);
+    m_dynamicEdit.GetWindowRect(editRect);
     ScreenToClient(editRect);
 
-    m_spinButtonCtrl.SetBuddy(GetDlgItem(IDC_EDIT1));
+    m_spinButtonCtrl.SetBuddy(&m_dynamicEdit);
 
-    GetDlgItem(IDC_EDIT1)->ShowWindow(SW_HIDE);
+    m_dynamicEdit.ShowWindow(SW_HIDE);
     GetDlgItem(IDC_COMBO1)->ShowWindow(SW_HIDE);
     GetDlgItem(IDC_RADIO1)->ShowWindow(SW_HIDE);
     GetDlgItem(IDC_RADIO2)->ShowWindow(SW_HIDE);
@@ -135,7 +136,6 @@ void CPPageAdvanced::InitSettings()
         m_list.SetItemData(iItem, nItem);
     };
 
-    addBoolItem(USE_LEGACY_TOOLBAR, IDS_RS_USE_LEGACY_TOOLBAR, false, s.bUseLegacyToolbar, StrRes(IDS_PPAGEADVANCED_USE_LEGACY_TOOLBAR));
     addIntItem(RECENT_FILES_NB, IDS_RS_RECENT_FILES_NUMBER, 100, s.iRecentFilesNumber, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_RECENT_FILES_NUMBER));
     addIntItem(FILE_POS_LONGER, IDS_RS_FILEPOSLONGER, 5, s.iRememberPosForLongerThan, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_FILE_POS_LONGER));
     addBoolItem(FILE_POS_AUDIO, IDS_RS_FILEPOSAUDIO, true, s.bRememberPosForAudioFiles, StrRes(IDS_PPAGEADVANCED_FILE_POS_AUDIO));
@@ -144,7 +144,7 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(FULLSCREEN_SEPARATE_CONTROLS, IDS_RS_FULLSCREEN_SEPARATE_CONTROLS, true, s.bFullscreenSeparateControls, StrRes(IDS_PPAGEADVANCED_FULLSCREEN_SEPARATE_CONTROLS));
     addIntItem(COVER_SIZE_LIMIT, IDS_RS_COVER_ART_SIZE_LIMIT, 600, s.nCoverArtSizeLimit, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_COVER_SIZE_LIMIT));
     addBoolItem(BLOCK_VSFILTER, IDS_RS_BLOCKVSFILTER, true, s.fBlockVSFilter, StrRes(IDS_PPAGEADVANCED_BLOCK_VSFILTER));
-    addBoolItem(BLOCK_RDP, IDS_RS_BLOCKRDP, false, s.bBlockRDP, StrRes(IDS_PPAGEADVANCED_BLOCKRDP));
+    addBoolItem(BLOCK_RDP, IDS_RS_BLOCKRDP, true, s.bBlockRDP, StrRes(IDS_PPAGEADVANCED_BLOCKRDP));
     addBoolItem(LOOP_FOLDER_NEXT_FILE, IDS_RS_LOOP_FOLDER_NEXT_FILE, false, s.bLoopFolderOnPlayNextFile, StrRes(IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE));
     addIntItem(OSD_TRANSPARENCY, IDS_RS_OSD_TRANSPARENCY, 64, s.nOSDTransparency, std::make_pair(0, 160), "");
     addIntItem(OSD_BORDER, IDS_RS_OSD_BORDER, 1, s.nOSDBorder, std::make_pair(0, 3), "");
@@ -154,7 +154,7 @@ void CPPageAdvanced::InitSettings()
     addIntItem(YDL_AUDIO_FORMAT, IDS_RS_YDL_AUDIO_FORMAT, 0, s.iYDLAudioFormat, std::make_pair(0, 2), StrRes(IDS_PPAGEADVANCED_YDL_AUDIO_FORMAT));
     addBoolItem(YDL_AUDIO_ONLY, IDS_RS_YDL_AUDIO_ONLY, false, s.bYDLAudioOnly, StrRes(IDS_PPAGEADVANCED_YDL_AUDIO_ONLY));
     addCStringItem(YDL_EXEPATH, IDS_RS_YDL_EXEPATH, _T(""), s.sYDLExePath, StrRes(IDS_PPAGEADVANCED_YDL_EXEPATH));
-    addCStringItem(YDL_COMMAND_LINE, IDS_RS_YDL_COMMAND_LINE, _T(""), s.sYDLCommandLine, StrRes(IDS_PPAGEADVANCED_YDL_COMMAND_LINE));
+    addCStringItem(YDL_COMMAND_LINE, L"YDLCommandLineForDownloadOnly", _T(""), s.sYDLCommandLine, StrRes(IDS_PPAGEADVANCED_YDL_COMMAND_LINE));
     addCStringItem(YDL_SUBS_PREFERENCE, IDS_RS_YDL_SUBS_PREFERENCE, _T(""), s.sYDLSubsPreference, StrRes(IDS_PPAGEADVANCED_YDL_SUBS_PREFERENCE));
     addBoolItem(USE_AUTOMATIC_CAPTIONS, IDS_RS_USE_AUTOMATIC_CAPTIONS, false, s.bUseAutomaticCaptions, StrRes(IDS_PPAGEADVANCED_USE_AUTOMATIC_CAPTIONS));
     addBoolItem(SAVEIMAGE_POSITION, IDS_RS_SAVEIMAGE_POSITION, true, s.bSaveImagePosition, StrRes(IDS_PPAGEADVANCED_SAVEIMAGE_POSITION));
@@ -174,7 +174,7 @@ void CPPageAdvanced::InitSettings()
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif
-    addBoolItem(LOGGING, IDS_RS_LOGGING, false, s.bEnableLogging, StrRes(IDS_PPAGEADVANCED_LOGGER));
+    addIntItem(LOGGING, IDS_RS_LOGGING, 0, s.DebugLogMask, std::make_pair(0, 31), /*StrRes(IDS_PPAGEADVANCED_LOGGER)*/ L"Enables logging to file (requires restart).\nThis option for debugging purposes only and should not be enabled during normal use!\nLogs are saved in folder: %appdata%\\MPC-HC\nValue to set is the sum of the loggers that you want to enable:\n1: General\n4: Subtitle search\n8: yt-dlp processing\n16: DVB scanning");
     addIntItem(FULLSCREEN_DELAY, IDS_RS_FULLSCREEN_DELAY, MIN_FULLSCREEN_DELAY, s.iFullscreenDelay, std::make_pair(MIN_FULLSCREEN_DELAY, MAX_FULLSCREEN_DELAY), StrRes(IDS_PPAGEADVANCED_FULLSCREEN_DELAY));
     addIntItem(AUTO_DOWNLOAD_SCORE_MOVIES, IDS_RS_AUTODOWNLOADSCOREMOVIES, 0x16, s.nAutoDownloadScoreMovies,
         std::make_pair(10, 30), StrRes(IDS_PPAGEADVANCED_SCORE));
@@ -188,7 +188,7 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(PAUSE_WHILE_DRAGGING_SEEKBAR, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, true, s.bPauseWhileDraggingSeekbar, StrRes(IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR));
     addBoolItem(CONFIRM_FILE_DELETE, IDS_RS_CONFIRM_FILE_DELETE, true, s.bConfirmFileDelete, StrRes(IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE));
     addBoolItem(LIBASS_FOR_SRT, IDS_RS_LIBASS_FOR_SRT, false, s.bRenderSRTUsingLibass, StrRes(IDS_PPAGEADVANCED_LIBASS_FOR_SRT));
-    addBoolItem(SHOW_VOLUME_PERCENTAGE, IDS_RS_SHOW_VOLUME_PERCENTAGE, true, s.bShowVolumePercentage, L"Show percentage value on volume slider (in modern theme)");
+    addBoolItem(SHOW_VOLUME_PERCENTAGE, IDS_RS_SHOW_VOLUME_PERCENTAGE, true, s.bShowVolumePercentage, StrRes(IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE));
 }
 
 BOOL CPPageAdvanced::OnApply()
@@ -249,7 +249,7 @@ void CPPageAdvanced::OnBnClickedDefaultButton()
 
         if (auto pItemBool = std::dynamic_pointer_cast<SettingsBool>(pItem)) {
             str = pItemBool->GetValue() ? m_strTrue : m_strFalse;
-            SetDlgItemText(IDC_EDIT1, str);
+            m_dynamicEdit.SetWindowText(str);
             if (pItemBool->GetValue()) {
                 CheckRadioButton(IDC_RADIO1, IDC_RADIO2, IDC_RADIO1);
             } else {
@@ -260,11 +260,11 @@ void CPPageAdvanced::OnBnClickedDefaultButton()
             str = list.at(pItemCombo->GetValue());
             m_comboBox.SetCurSel(pItemCombo->GetValue());
         } else if (auto pItemInt = std::dynamic_pointer_cast<SettingsInt>(pItem)) {
-            SetDlgItemInt(IDC_EDIT1, pItemInt->GetValue());
             str.Format(_T("%d"), pItemInt->GetValue());
+            m_dynamicEdit.SetWindowText(str);
         } else if (auto pItemCString = std::dynamic_pointer_cast<SettingsCString>(pItem)) {
             str = pItemCString->GetValue();
-            SetDlgItemText(IDC_EDIT1, pItemCString->GetValue());
+            m_dynamicEdit.SetWindowText(str);
         } else {
             UNREACHABLE_CODE();
         }
@@ -312,24 +312,27 @@ void CPPageAdvanced::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CPPageAdvanced::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
-    LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+    *pResult = CDRF_DODEFAULT;
 
-    switch (pNMCD->dwDrawStage) {
+    //this custom draw is used only in classic mode
+    if (!AppNeedsThemedControls()) {
+        LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+
+        switch (pNMCD->dwDrawStage) {
         case CDDS_PREPAINT:
             *pResult = CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT;
             break;
         case CDDS_ITEMPREPAINT: {
-            auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData((int)pNMCD->dwItemSpec));
-            if (!IsDefault(eSetting)) {
-                ::SelectObject(pNMCD->hdc, m_fontBold.GetSafeHandle());
-                *pResult |= CDRF_NEWFONT;
-            } else {
-                *pResult = CDRF_DODEFAULT;
+                auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData((int)pNMCD->dwItemSpec));
+                if (!IsDefault(eSetting)) {
+                    ::SelectObject(pNMCD->hdc, m_fontBold.GetSafeHandle());
+                    *pResult |= CDRF_NEWFONT;
+                } else {
+                    *pResult = CDRF_DODEFAULT;
+                }
             }
+            break;
         }
-        break;
-        default:
-            *pResult = CDRF_DODEFAULT;
     }
 }
 
@@ -379,22 +382,23 @@ void CPPageAdvanced::OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult)
                 m_comboBox.ShowWindow(SW_SHOW);
             } else if (auto pItemInt = std::dynamic_pointer_cast<SettingsInt>(pItem)) {
                 setDialogItemsVisibility({ IDC_COMBO1, IDC_RADIO1, IDC_RADIO2 }, SW_HIDE);
-                GetDlgItem(IDC_EDIT1)->ModifyStyle(0, ES_NUMBER, 0);
                 const auto& range = pItemInt->GetRange();
+                m_dynamicEdit.SetMode(CMPCThemeDynamicEdit::Mode::INT);
+                m_dynamicEdit.SetIntRange(range.first, range.second);
                 if (!m_spinButtonCtrl.GetBuddy()) {
-                    GetDlgItem(IDC_EDIT1)->MoveWindow(editRect, TRUE);
-                    m_spinButtonCtrl.SetBuddy(GetDlgItem(IDC_EDIT1));
+                    m_dynamicEdit.MoveWindow(editRect, TRUE);
+                    m_spinButtonCtrl.SetBuddy(&m_dynamicEdit);
                 }
                 m_spinButtonCtrl.SetRange32(range.first, range.second);
                 m_spinButtonCtrl.SetPos32(pItemInt->GetValue());
                 m_spinButtonCtrl.ShowWindow(SW_SHOW);
-                GetDlgItem(IDC_EDIT1)->ShowWindow(SW_SHOW);
+                m_dynamicEdit.ShowWindow(SW_SHOW);
             } else if (auto pItemCString = std::dynamic_pointer_cast<SettingsCString>(pItem)) {
                 setDialogItemsVisibility({ IDC_COMBO1, IDC_RADIO1, IDC_RADIO2, IDC_BUTTON1, IDC_SPIN1 }, SW_HIDE);
-                GetDlgItem(IDC_EDIT1)->ModifyStyle(ES_NUMBER, 0, 0);
-                SetDlgItemText(IDC_EDIT1, pItemCString->GetValue());
+                m_dynamicEdit.SetMode(CMPCThemeDynamicEdit::Mode::STRING);
+                m_dynamicEdit.SetWindowText(pItemCString->GetValue());
                 m_spinButtonCtrl.SetBuddy(NULL);
-                GetDlgItem(IDC_EDIT1)->ShowWindow(SW_SHOW);
+                m_dynamicEdit.ShowWindow(SW_SHOW);
             } else {
                 UNREACHABLE_CODE();
             }

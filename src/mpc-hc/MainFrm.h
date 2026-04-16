@@ -83,6 +83,7 @@ enum class MLS {
     LOADED,
     CLOSING,
     FAILING,
+    ABORTING,
 };
 
 enum {
@@ -105,13 +106,14 @@ public:
 class OpenFileData : public OpenMediaData
 {
 public:
-    OpenFileData() : rtStart(0), bAddToRecent(true) {}
+    OpenFileData() : rtStart(0), bAddToRecent(true), rarEntryIndex(-1) {}
     CAtlList<CString> fns;
     REFERENCE_TIME rtStart;
     ABRepeat abRepeat;
     bool bAddToRecent;
     CString useragent;
     CString referrer;
+    int rarEntryIndex;
 };
 
 class OpenDVDData : public OpenMediaData
@@ -242,7 +244,7 @@ private:
     friend class CPPageFileInfoSheet;
     friend class CPPageLogo;
     friend class CMouse;
-    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked()
+    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_pGB_preview
     friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
     friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
     friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
@@ -382,6 +384,7 @@ private:
 
     void CreateDynamicMenus();
     void DestroyDynamicMenus();
+    void LoadDynamicMenus();
     void SetupOpenCDSubMenu();
     void SetupFiltersSubMenu();
     void SetupAudioSubMenu();
@@ -446,7 +449,9 @@ private:
 
     bool m_fEndOfStream;
     ULONGLONG m_dwLastPause;
-    ULONGLONG m_dwReloadPos;
+
+    CString m_reloadFilename;
+    REFERENCE_TIME m_rtReloadPos;
     int m_iReloadAudioIdx;
     int m_iReloadSubIdx;
 
@@ -498,12 +503,14 @@ private:
     CAutoPtr<SkypeMoodMsgHandler> m_pSkypeMoodMsgHandler;
     void SendNowPlayingToSkype();
 
-    MLS m_eMediaLoadState;
+    volatile MLS m_eMediaLoadState;
     OAFilterState m_CachedFilterState;
 
     bool m_bSettingUpMenus;
-    bool m_bOpenMediaActive;
+    volatile bool m_bOpenMediaActive;
     int m_OpenMediaFailedCount;
+
+    bool m_bTBDropdownActive;
 
     REFTIME GetAvgTimePerFrame() const;
     void OnVideoSizeChanged(const bool bWasAudioOnly = false);
@@ -638,7 +645,7 @@ protected:
     void LoadKeyFrames();
     std::vector<REFERENCE_TIME> m_kfs;
 
-    bool m_fOpeningAborted;
+    volatile bool m_fOpeningAborted;
     bool m_bWasSnapped;
 
 protected:
@@ -661,7 +668,7 @@ public:
     FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     bool ResetDevice();
     bool DisplayChange();
-    void CloseMediaBeforeOpen();
+    bool CloseMediaBeforeOpen();
     void CloseMedia(bool bNextIsQueued = false, bool bPendingFileDelete = false);
     void StartTunerScan(CAutoPtr<TunerScanData> pTSD);
     void StopTunerScan();
@@ -684,6 +691,7 @@ public:
     void RepaintVideo(const bool bForceRepaint = false);
     void HideVideoWindow(bool fHide);
 
+    CCritSec lockGraphAccess;
     OAFilterState GetMediaStateDirect();
     OAFilterState GetMediaState();
     OAFilterState UpdateCachedMediaState();
@@ -819,6 +827,8 @@ public:
 
 protected:  // control bar embedded members
     friend class CMainFrameControls;
+    friend class CPPageToolBarLayout;
+    friend class CPPageToolBar;
     CMainFrameControls m_controls;
     friend class CPlayerBar; // it notifies m_controls of panel re-dock
 
@@ -852,6 +862,8 @@ public:
     afx_msg int OnNcCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnDestroy();
+    afx_msg LRESULT OnLAVPropPageCallback(WPARAM wParam, LPARAM lParam);
+    bool m_bLAVPropPageOpen = false;
 
     afx_msg LRESULT OnTaskBarRestart(WPARAM, LPARAM);
     afx_msg LRESULT OnNotifyIcon(WPARAM, LPARAM);
@@ -885,6 +897,12 @@ public:
     afx_msg LRESULT OnResetDevice(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRepaintRenderLess(WPARAM wParam, LPARAM lParam);
 
+    afx_msg LRESULT OnDoStandby(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDoHibernate(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDoShutdown(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDoLogOff(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam);
+
     afx_msg void SaveAppSettings();
 
     afx_msg LRESULT OnNcHitTest(CPoint point);
@@ -903,6 +921,7 @@ public:
     afx_msg void OnEndSession(BOOL bEnding);
 
     BOOL OnMenu(CMenu* pMenu);
+    CMPCThemeMenu* GetShortMenu();
     afx_msg void OnMenuPlayerShort();
     afx_msg void OnMenuPlayerLong();
     afx_msg void OnMenuFilters();
@@ -914,6 +933,11 @@ public:
     void OnFilePostClosemedia(bool bNextIsQueued = false);
 
     afx_msg void OnBossKey();
+
+    void ToolbarContextMenu(int iItem, int nIndex, CRect buttonRect);
+
+    afx_msg void OnUpdateAudiosButton(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateSubtitlesButton(CCmdUI* pCmdUI);
 
     afx_msg void OnStreamAudio(UINT nID);
     afx_msg void OnStreamSub(UINT nID);
@@ -974,6 +998,7 @@ public:
     afx_msg void OnUpdateViewControlBar(CCmdUI* pCmdUI);
     afx_msg void OnViewSubresync();
     afx_msg void OnUpdateViewSubresync(CCmdUI* pCmdUI);
+    void UpdatePlaylistButton();
     afx_msg void OnViewPlaylist();
     afx_msg void OnPlaylistToggleShuffle();
     afx_msg void OnUpdateViewPlaylist(CCmdUI* pCmdUI);
@@ -1139,6 +1164,7 @@ public:
     afx_msg void OnPlayShadersPresets(UINT nID);
     afx_msg void OnPlayAudio(UINT nID);
     afx_msg void OnSubtitlesDefaultStyle();
+    afx_msg void OnSubtitlesOverrideStyles();
     afx_msg void OnPlaySubtitles(UINT nID);
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
@@ -1196,6 +1222,7 @@ public:
 
     afx_msg void OnClose();
 
+
     bool FilterSettingsByClassID(CLSID clsid, CWnd* parent);
     void FilterSettings(CComPtr<IUnknown> pUnk, CWnd* parent);
 
@@ -1211,7 +1238,8 @@ public:
     void ReleasePreviewGraph();
     HRESULT PreviewWindowHide();
     HRESULT PreviewWindowShow(REFERENCE_TIME rtCur2);
-    HRESULT HandleMultipleEntryRar(CStringW fn);
+    HRESULT HandleMultipleEntryRar(CStringW fn, int* pEntryIndex = nullptr);
+    bool TrySkipWithinRar(bool forward);
     bool CanPreviewUse();
 
     CFullscreenWnd* m_pDedicatedFSVideoWnd;
@@ -1226,6 +1254,11 @@ public:
 
     void        SetLoadState(MLS eState);
     MLS         GetLoadState() const;
+    bool        IsStateLoaded();
+    bool        IsStateLoadedOrLoading();
+    bool        IsStateClosed();
+    bool        IsStateClosedOrLoaded();
+    bool        IsStateClosingAborting();
     void        SetPlayState(MPC_PLAYSTATE iState);
     bool        CreateFullScreenWindow(bool isD3D=true);
     void        SetupEVRColorControl();
@@ -1271,7 +1304,6 @@ public:
                 DWORD dwExStyle = 0,
                 CCreateContext* pContext = NULL);
     CMPCThemeMenu* defaultMPCThemeMenu = nullptr;
-    void enableFileDialogHook(CMPCThemeUtil* helper);
 
     bool isSafeZone(CPoint pt);
 
@@ -1351,6 +1383,7 @@ public:
     enum UpdateControlTarget {
         UPDATE_VOLUME_STEP,
         UPDATE_LOGO,
+        UPDATE_MEDIA_ART,
         UPDATE_SKYPE,
         UPDATE_SEEKBAR_CHAPTERS,
         UPDATE_WINDOW_TITLE,
@@ -1392,9 +1425,16 @@ public:
     void MediaTransportControlSetMedia();
     void MediaTransportControlUpdateState(OAFilterState state);
 
+    enum themableDialogTypes {
+        None,
+        windowsFileDialog,
+    };
+    void enableFileDialogHook(CMPCThemeUtil* helper);
+    void enableDialogHook(CMPCThemeUtil* helper, themableDialogTypes type);
 private:
-    bool watchingFileDialog;
-    CMPCThemeUtil* fileDialogHookHelper;
+    themableDialogTypes watchingDialog, foundDialog;
+    CMPCThemeUtil* dialogHookHelper;
+
 public:
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);

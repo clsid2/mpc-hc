@@ -652,6 +652,7 @@ static void WebVTT2SSA(CStringW& str) {
 static bool OpenVTT(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet) {
     CStringW buff;
     file->ReadString(buff);
+    TrimLeadingUTF16BOM(buff);
     if (buff.Left(6).Compare(L"WEBVTT") != 0) {
         return false;
     }
@@ -828,7 +829,12 @@ static bool OpenVTT(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet) {
 bool OpenSubRipper(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
 {
     CStringW buff, start, end;
+    bool first_line = true;
     while (file->ReadString(buff)) {
+        if (first_line) {
+            TrimLeadingUTF16BOM(buff);
+            first_line = false;
+        }
         FastTrimRight(buff);
         if (buff.IsEmpty()) {
             continue;
@@ -1681,7 +1687,7 @@ static bool LoadFont(const CString& font)
 static bool LoadUUEFont(CTextFile* file, CString firstfontname)
 {
     CString s, font;
-    bool skip_ui_font = firstfontname.Find(_T("segoe") >= 0);
+    bool skip_ui_font = firstfontname.Find(_T("segoe")) >= 0;
     while (file->ReadString(s)) {
         FastTrim(s);
         if (s.IsEmpty()) {
@@ -1766,6 +1772,9 @@ bool OpenSubStationAlpha(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
     ret.event_param = event_param_v3;
 
     while (file->ReadString(buff)) {
+        if (first_line) {
+            TrimLeadingUTF16BOM(buff);
+        }
         FastTrim(buff);
         if (buff.IsEmpty() || buff.GetAt(0) == L';') {
             continue;
@@ -1905,6 +1914,7 @@ bool OpenSubStationAlpha(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
                     alpha = GetInt(pszBuff, nBuffLength);
                 }
                 style->charSet = GetInt(pszBuff, nBuffLength);
+                if (style->charSet < 0) style->charSet = DEFAULT_CHARSET;
                 if (style_param & (1)) {
                     style->relativeTo = (STSStyle::RelativeTo)GetInt(pszBuff, nBuffLength);
                 }
@@ -2026,7 +2036,7 @@ bool OpenSubStationAlpha(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
             if (nBuffLength) {
                 buff = GetStrW(pszBuff, nBuffLength);
                 buff.MakeLower();
-                ret.m_scaledBAS = (buff.Find(L"yes") >= 0) ? 1 : 0;
+                ret.m_scaledBAS = ret.m_scaledBAS2 = (buff.Find(L"yes") >= 0) ? 1 : 0;
             }
         } else if (entry == L"[v4 styles]") {
             fRet = true;
@@ -2383,6 +2393,7 @@ CSimpleTextSubtitle::CSimpleTextSubtitle()
     , m_defaultWrapStyle(0)
     , m_collisions(0)
     , m_scaledBAS(-1)
+    , m_scaledBAS2(-1)
     , m_bStyleOverrideActive(false)
     , m_bUsingPlayerDefaultStyle(false)
     , m_ePARCompensationType(EPCTDisabled)
@@ -2428,6 +2439,7 @@ void CSimpleTextSubtitle::Copy(CSimpleTextSubtitle& sts)
         m_defaultWrapStyle = sts.m_defaultWrapStyle;
         m_collisions = sts.m_collisions;
         m_scaledBAS = sts.m_scaledBAS;
+        m_scaledBAS2 = sts.m_scaledBAS2;
         m_encoding = sts.m_encoding;
         m_bUsingPlayerDefaultStyle = sts.m_bUsingPlayerDefaultStyle;
         m_provider = sts.m_provider;

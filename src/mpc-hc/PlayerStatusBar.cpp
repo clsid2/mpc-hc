@@ -152,13 +152,11 @@ void CPlayerStatusBar::EventCallback(MpcEvent ev)
 void CPlayerStatusBar::Relayout()
 {
     const CAppSettings& s = AfxGetAppSettings();
-    CString str;
-    CRect r, r2;
-
-    GetClientRect(r);
+    CRect rfull;
+    GetClientRect(rfull);
 
     if (s.bShowAudioFormatInStatusbar) {
-        r.DeflateRect(8, 4, 8, 4);
+        rfull.DeflateRect(8, 4, 8, 4);
     } else {
         BITMAP bm{};
         if (m_bm.m_hObject) {
@@ -166,47 +164,40 @@ void CPlayerStatusBar::Relayout()
         }
 #if 0
         if (m_type.GetIcon()) {
-            r2.SetRect(6, r.top + 4, 6 + m_pMainFrame->m_dpi.ScaleX(16), r.bottom - 4);
-            m_type.MoveWindow(r2);
+            CRect rtype;
+            rtype.SetRect(6, rfull.top + 4, 6 + m_pMainFrame->m_dpi.ScaleX(16), rfull.bottom - 4);
+            m_type.MoveWindow(rtype);
         }
 
-        r.DeflateRect(11 + m_pMainFrame->m_dpi.ScaleX(16), 5, bm.bmWidth + 8, 4);
+        rfull.DeflateRect(11 + m_pMainFrame->m_dpi.ScaleX(16), 5, bm.bmWidth + 8, 4);
 #else
-        r.DeflateRect(8, 4, bm.bmWidth + 8, 4);
+        rfull.DeflateRect(8, 4, bm.bmWidth + 8, 4);
 #endif
     }
 
     if (CDC* pDC = m_time.GetDC()) {
         CFont* pOld = pDC->SelectObject(&m_time.GetFont());
+        CRect rtime = rfull;
+        CString str;
         m_time.GetWindowText(str);
-        r2 = r;
-        r2.left = r2.right - pDC->GetTextExtent(str).cx;
-        m_time.MoveWindow(&r2, FALSE);
-        m_time_rect = r2;
+        if (str.IsEmpty()) {
+            rtime.left = rtime.right;
+        } else {
+            rtime.left = rtime.right - pDC->GetTextExtent(str).cx;
+        }
+        m_time.MoveWindow(&rtime, FALSE);
+        m_time_rect = rtime;
         pDC->SelectObject(pOld);
         m_time.ReleaseDC(pDC);
-    } else {
-        ASSERT(FALSE);
     }
 
-    if (CDC* pDC = m_status.GetDC()) {
-        CFont* pOld = pDC->SelectObject(&m_status.GetFont());
-        m_status.GetWindowText(str);
-        r2 = r;
-        r2.right = r2.left + pDC->GetTextExtent(str).cx;
-        // If the text is too long, ensure it won't overlap
-        // with the timer. Ellipses will be added if needed.
-        if (r2.right >= m_time_rect.left) {
-            r2.right = m_time_rect.left - 1;
-        }
-        m_status.MoveWindow(&r2, FALSE);
-        pDC->SelectObject(pOld);
-        m_status.ReleaseDC(pDC);
-    } else {
-        ASSERT(FALSE);
+    CRect rstatus = rfull;
+    if (m_time_rect.left > 0) {
+        rstatus.right = m_time_rect.left - 8;
     }
+    m_status.MoveWindow(&rstatus, FALSE);
 
-    InvalidateRect(r);
+    InvalidateRect(rfull);
     UpdateWindow();
 }
 
@@ -523,15 +514,6 @@ BOOL CPlayerStatusBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     if (m_time_rect.PtInRect(p) && !IsMenu(m_timerMenu)) {
         SetCursor(LoadCursor(nullptr, IDC_HAND));
         return TRUE;
-    }
-
-    if (!pFrame->m_fFullScreen && wp.showCmd != SW_SHOWMAXIMIZED) {
-        CRect r;
-        GetClientRect(r);
-        if (p.x >= r.Width() - r.Height() && !pFrame->IsCaptionHidden()) {
-            SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
-            return TRUE;
-        }
     }
 
     return CDialogBar::OnSetCursor(pWnd, nHitTest, message);

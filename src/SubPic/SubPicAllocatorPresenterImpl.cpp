@@ -240,7 +240,8 @@ STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetSubPicProvider(ISubPicProv
     }
 
     if (m_pAllocator) {
-        m_pAllocator->SetCurSize(CSize(m_windowRect.Width(), m_windowRect.Height()));
+        m_pAllocator->SetMaxTextureSize(m_curSubtitleTextureSize);
+        m_pAllocator->SetCurSize(m_windowRect.Size());
         m_pAllocator->SetCurVidRect(m_videoRect);
     }
 
@@ -496,6 +497,7 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::GetString(LPCSTR field, LPWSTR* valu
 
         if (m_inputMediaType.IsValid() && m_inputMediaType.formattype == FORMAT_VideoInfo2) {
             VIDEOINFOHEADER2* pVIH2 = (VIDEOINFOHEADER2*)m_inputMediaType.pbFormat;
+            PBITMAPINFOHEADER pBIH = &pVIH2->bmiHeader;
 
             if (pVIH2->dwControlFlags & AMCONTROL_COLORINFO_PRESENT) {
                 DXVA2_ExtendedFormat& flags = (DXVA2_ExtendedFormat&)pVIH2->dwControlFlags;
@@ -515,9 +517,28 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::GetString(LPCSTR field, LPWSTR* valu
                     case 4:
                         ret.Append(L"2020");
                         break;
-                    default:
-                        ret = L"None";
+                    case 0:
+                        // guess
+                        if (pBIH) {
+                            if (pBIH->biWidth <= 1024 && abs(pBIH->biWidth) <= 576) {
+                                ret.Append(L"601");
+                            } else {
+                                ret.Append(L"709");
+                            }
+                        } else {
+                            ret.Append(L"none");
+                        }
                         break;
+                    default:
+                        ret.Append(L"none");
+                        break;
+                }
+            } else if (pBIH) {
+                // guess
+                if (pBIH->biWidth <= 1024 && abs(pBIH->biWidth) <= 576) {
+                    ret = L"TV.601";
+                } else {
+                    ret = L"TV.709";
                 }
             }
         }

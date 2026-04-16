@@ -423,6 +423,11 @@ void CPPageInternalFilters::InitFiltersList()
         m_filters.Add(filter_t(_T("RealMedia"), SOURCE_FILTER, SRC_REALMEDIA, IDS_INTERNAL_LAVF));
     }
 #endif
+#if INTERNAL_SOURCEFILTER_APE
+    if (bLAVSplitterIsAvailable) {
+        m_filters.Add(filter_t(_T("APE"), SOURCE_FILTER, SRC_APE, IDS_INTERNAL_LAVF));
+    }
+#endif
 #if INTERNAL_SOURCEFILTER_HTTP
     if (bLAVSplitterIsAvailable) {
         m_filters.Add(filter_t(_T("HTTP(S)"), SOURCE_FILTER, SRC_HTTP, IDS_INTERNAL_LAVF));
@@ -560,6 +565,11 @@ void CPPageInternalFilters::InitFiltersList()
 #if INTERNAL_DECODER_G729
     if (bLAVAudioIsAvailable) {
         m_filters.Add(filter_t(_T("G729"), AUDIO_DECODER, TRA_G729, IDS_INTERNAL_LAVF));
+    }
+#endif
+#if INTERNAL_DECODER_AC4
+    if (bLAVAudioIsAvailable) {
+        m_filters.Add(filter_t(_T("AC4"), AUDIO_DECODER, TRA_AC4, IDS_INTERNAL_LAVF));
     }
 #endif
 #if INTERNAL_DECODER_OTHERAUDIO
@@ -705,6 +715,11 @@ void CPPageInternalFilters::InitFiltersList()
 #if INTERNAL_DECODER_DNXHD
     if (bLAVVideoIsAvailable) {
         m_filters.Add(filter_t(_T("DNxHD"), VIDEO_DECODER, TRA_DNXHD, IDS_INTERNAL_LAVF));
+    }
+#endif
+#if INTERNAL_DECODER_CFHD
+    if (bLAVVideoIsAvailable) {
+        m_filters.Add(filter_t(_T("CFHD"), VIDEO_DECODER, TRA_CFHD, IDS_INTERNAL_LAVF));
     }
 #endif
 #if INTERNAL_DECODER_OTHERVIDEO

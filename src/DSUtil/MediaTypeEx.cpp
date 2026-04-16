@@ -27,6 +27,9 @@
 #include <MMReg.h>
 #include "moreuuids.h"
 
+#include <dxva.h>
+#include <dxva2api.h>
+
 #pragma pack(push, 1)
 struct DOLBYAC3WAVEFORMAT {
     WAVEFORMATEX Format;
@@ -483,11 +486,9 @@ void CMediaTypeEx::Dump(CAtlList<CString>& sl)
     sl.AddTail(str);
     str.Format(_T("cbFormat: %lu"), cbFormat);
     sl.AddTail(str);
-
     sl.AddTail(_T(""));
 
-    if (formattype == FORMAT_VideoInfo || formattype == FORMAT_VideoInfo2
-            || formattype == FORMAT_MPEGVideo || formattype == FORMAT_MPEG2_VIDEO) {
+    if (formattype == FORMAT_VideoInfo || formattype == FORMAT_VideoInfo2 || formattype == FORMAT_MPEGVideo || formattype == FORMAT_MPEG2_VIDEO) {
         fmtsize =
             formattype == FORMAT_VideoInfo ? sizeof(VIDEOINFOHEADER) :
             formattype == FORMAT_VideoInfo2 ? sizeof(VIDEOINFOHEADER2) :
@@ -508,8 +509,10 @@ void CMediaTypeEx::Dump(CAtlList<CString>& sl)
         str.Format(_T("dwBitErrorRate: %u"), vih.dwBitErrorRate);
         sl.AddTail(str);
         str.Format(_T("AvgTimePerFrame: %I64d"), vih.AvgTimePerFrame);
+        if (vih.AvgTimePerFrame > 0) {
+			str.AppendFormat(L" (%.3f fps)", 10000000.0 / vih.AvgTimePerFrame);
+		}
         sl.AddTail(str);
-
         sl.AddTail(_T(""));
 
         if (formattype == FORMAT_VideoInfo2 || formattype == FORMAT_MPEG2_VIDEO) {
@@ -527,6 +530,47 @@ void CMediaTypeEx::Dump(CAtlList<CString>& sl)
             sl.AddTail(str);
             str.Format(_T("dwControlFlags: 0x%08x"), vih2.dwControlFlags);
             sl.AddTail(str);
+            if (vih2.dwControlFlags & (AMCONTROL_USED | AMCONTROL_COLORINFO_PRESENT)) {
+                // http://msdn.microsoft.com/en-us/library/windows/desktop/ms698715%28v=vs.85%29.aspx
+                const LPCSTR chromasubsampling[] = { nullptr, "MPEG-1", nullptr, nullptr, nullptr, "MPEG-2", "PAL DV", "Co-sited" };
+                const LPCSTR nominalrange[] = { nullptr, "0-255", "16-235", "48-208" };
+                const LPCSTR transfermatrix[] = { nullptr, "BT.709", "BT.601", "SMPTE 240M", "BT.2020", nullptr, nullptr, "YCgCo" };
+                const LPCSTR lighting[] = { nullptr, "bright", "office", "dim", "dark" };
+                const LPCSTR primaries[] = { nullptr, "Reserved", "BT.709", "BT.470-4 System M", "BT.470-4 System B,G",
+                    "SMPTE 170M", "SMPTE 240M", "EBU Tech. 3213", "SMPTE C", "BT.2020" };
+                const LPCSTR transfunc[] = { nullptr, "Linear RGB", "1.8 gamma", "2.0 gamma", "2.2 gamma", "BT.709", "SMPTE 240M",
+                    "sRGB", "2.8 gamma", "Log100", "Log316", "Symmetric BT.709", "Constant luminance BT.2020", "Non-constant luminance BT.2020",
+                    "2.6 gamma", "SMPTE ST 2084 (PQ)", "ARIB STD-B67 (HLG)"};
+
+#define ADD_PARAM_DESC(str, parameter, descs) if (parameter < std::size(descs) && descs[parameter]) str.AppendFormat(L" (%hs)", descs[parameter])
+
+                DXVA2_ExtendedFormat exfmt;
+                exfmt.value = vih2.dwControlFlags;
+
+                str.Format(L"- VideoChromaSubsampling: %u", exfmt.VideoChromaSubsampling);
+                ADD_PARAM_DESC(str, exfmt.VideoChromaSubsampling, chromasubsampling);
+                sl.AddTail(str);
+
+                str.Format(L"- NominalRange          : %u", exfmt.NominalRange);
+                ADD_PARAM_DESC(str, exfmt.NominalRange, nominalrange);
+                sl.AddTail(str);
+
+                str.Format(L"- VideoTransferMatrix   : %u", exfmt.VideoTransferMatrix);
+                ADD_PARAM_DESC(str, exfmt.VideoTransferMatrix, transfermatrix);
+                sl.AddTail(str);
+
+                str.Format(L"- VideoLighting         : %u", exfmt.VideoLighting);
+                ADD_PARAM_DESC(str, exfmt.VideoLighting, lighting);
+                sl.AddTail(str);
+
+                str.Format(L"- VideoPrimaries        : %u", exfmt.VideoPrimaries);
+                ADD_PARAM_DESC(str, exfmt.VideoPrimaries, primaries);
+                sl.AddTail(str);
+
+                str.Format(L"- VideoTransferFunction : %u", exfmt.VideoTransferFunction);
+                ADD_PARAM_DESC(str, exfmt.VideoTransferFunction, transfunc);
+                sl.AddTail(str);
+            }
             str.Format(_T("dwReserved2: 0x%08x"), vih2.dwReserved2);
             sl.AddTail(str);
 
@@ -718,34 +762,36 @@ void CMediaTypeEx::Dump(CAtlList<CString>& sl)
         sl.AddTail(_T(""));
     }
 
-    if (cbFormat > 0) {
-        sl.AddTail(_T("pbFormat:"));
+    if (fmtsize < cbFormat) { // extra and unknown data
+        ULONG extrasize = cbFormat - fmtsize;
+        str.Format(L"Extradata: %u", extrasize);
+        sl.AddTail(str);
+        if (extrasize > 1024) {
+            extrasize = 1024; // truncate for display
+        }
+        for (ULONG i = 0, j = (extrasize + 15) & ~15; i < j; i += 16) {
+            str.Format(L"%04x:", i);
+            ULONG line_end = std::min(i + 16, extrasize);
 
-        for (ptrdiff_t i = 0, j = (cbFormat + 15) & ~15; i < j; i += 16) {
-            str.Format(_T("%04Ix:"), i);
-
-            for (ptrdiff_t k = i, l = std::min(i + 16, (ptrdiff_t)cbFormat); k < l; k++) {
-                CString byte;
-                byte.Format(_T("%c%02x"), fmtsize > 0 && fmtsize == k ? '|' : ' ', pbFormat[k]);
-                str += byte;
+            for (ULONG k = i; k < line_end; k++) {
+                str.AppendFormat(L" %02x", pbFormat[fmtsize + k]);
             }
 
-            for (ptrdiff_t k = std::min(i + 16, (ptrdiff_t)cbFormat), l = i + 16; k < l; k++) {
-                str += _T("   ");
+            for (ULONG k = line_end, l = i + 16; k < l; k++) {
+                str += L"   ";
             }
 
-            str += _T(' ');
+            str += ' ';
 
-            for (ptrdiff_t k = i, l = std::min(i + 16, (ptrdiff_t)cbFormat); k < l; k++) {
-                unsigned char c = (unsigned char)pbFormat[k];
-                CString ch;
-                ch.Format(_T("%C"), c >= 0x20 ? c : '.');
-                str += ch;
+            CString ch;
+            for (size_t k = i; k < line_end; k++) {
+                unsigned char c = (unsigned char)pbFormat[fmtsize + k];
+                ch.AppendFormat(L"%C", c >= 0x20 ? c : '.');
             }
+            str += ch;
 
             sl.AddTail(str);
         }
-
         sl.AddTail(_T(""));
     }
 }

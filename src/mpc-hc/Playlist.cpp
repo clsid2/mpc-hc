@@ -114,7 +114,8 @@ CString CPlaylistItem::GetLabel(int i)
     CString str;
 
     if (i == 0) {
-        if (!m_label.IsEmpty()) {
+        ASSERT(m_label);
+        if (m_label && !m_label.IsEmpty()) {
             str = m_label;
         } else if (!m_fns.IsEmpty()) {
             str = PathUtils::StripPathOrUrl(m_fns.GetHead());

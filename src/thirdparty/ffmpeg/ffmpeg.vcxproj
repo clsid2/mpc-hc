@@ -26,7 +26,7 @@
   <ItemGroup>
     <None Include="config.asm" />
     <None Include="ffmpeg.bat" />
-    <None Include="ffmpeg.mak" />
+    <None Include="ffmpeg-msvc.mak" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.c" />

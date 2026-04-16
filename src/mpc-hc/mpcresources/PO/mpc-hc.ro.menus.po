@@ -4,14 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
-# Miloiu Andrei-Valentin, 2025
+# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-02-10 16:52:19+0000\n"
+"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Miloiu Andrei-Valentin, 2025\n"
+"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,11 +29,11 @@ msgstr "Deschide &rapid un fișier..."
 
 msgctxt "ID_FILE_OPENMEDIA"
 msgid "&Open File/URL..."
-msgstr "&Deschide un fișier/ un URL..."
+msgstr "&Deschide un fișier / un URL..."
 
 msgctxt "ID_FILE_OPENDVDBD"
 msgid "Open &DVD/BD..."
-msgstr "Deschidere &DVD-ul/BD-ul..."
+msgstr "Deschide &DVD-ul/BD-ul..."
 
 msgctxt "ID_FILE_OPENDEVICE"
 msgid "Open De&vice..."
@@ -85,7 +85,7 @@ msgstr "&Descarcă subtitrări..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "Pr&oprietăți"
+msgstr "P&roprietăți"
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
@@ -101,7 +101,7 @@ msgstr "&Vizualizare"
 
 msgctxt "ID_VIEW_CAPTIONMENU"
 msgid "Caption&&Menu"
-msgstr "Titlul și meniul"
+msgstr "Meniu și subtitrări"
 
 msgctxt "ID_VIEW_SEEKER"
 msgid "See&k Bar"
@@ -289,7 +289,7 @@ msgstr "L&uminoasă (2.2 Gamma)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DIM"
 msgid "&Dim (2.35 Gamma)"
-msgstr "&Estompată (2.35 Gamma)"
+msgstr "Sla&bă (2.35 Gamma)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_DARK"
 msgid "D&ark (2.4 Gamma)"
@@ -353,7 +353,7 @@ msgstr "Curăță GPU-ul &după prezentare"
 
 msgctxt "ID_VIEW_FLUSHGPU_WAIT"
 msgid "&Wait for flushes"
-msgstr "&Așteaptă după curățări"
+msgstr "&Așteaptă după eliberări de memorie"
 
 msgctxt "POPUP"
 msgid "R&eset"
@@ -405,7 +405,7 @@ msgstr "Atinge fereastra din exteri&or"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
-msgstr "Raport de &aspect"
+msgstr "Raportul de &aspect (AR-ul/RA-ul)"
 
 msgctxt "ID_ASPECTRATIO_DAR"
 msgid "&Default (DAR)"
@@ -538,7 +538,7 @@ msgstr "&Redare"
 
 msgctxt "ID_PLAY_PLAYPAUSE"
 msgid "&Play/Pause"
-msgstr "&Redă/Pauzează"
+msgstr "&Redă/Pune pe pauză (Întrerupe)"
 
 msgctxt "ID_PLAY_STOP"
 msgid "&Stop"
@@ -554,7 +554,7 @@ msgstr "Repetă"
 
 msgctxt "ID_PLAY_REPEAT_FOREVER"
 msgid "F&orever"
-msgstr "Repetă pentru t&otdeauna"
+msgstr "La nesfârșit (Pentru t&otdeauna)"
 
 msgctxt "ID_PLAY_REPEAT_ONEFILE"
 msgid "&File"
@@ -570,11 +570,11 @@ msgstr "A-B (&Resetează)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_A"
 msgid "A-B (Mark &A)"
-msgstr "A-B (Marchează &A)"
+msgstr "A-B (Marchează &A-ul)"
 
 msgctxt "ID_PLAY_REPEAT_AB_MARK_B"
 msgid "A-B (Mark &B)"
-msgstr "A-B (Marchează &B)"
+msgstr "A-B (Marchează &B-ul)"
 
 msgctxt "POPUP"
 msgid "&Playback Rate"
@@ -614,7 +614,7 @@ msgstr "1,50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_175"
 msgid "1.75 x"
-msgstr ""
+msgstr "1.75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_200"
 msgid "2.00 x"
@@ -638,19 +638,19 @@ msgstr "8,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr ""
+msgstr "23.976 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
-msgstr "24 cps/fps"
+msgstr "24 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS25"
 msgid "25 fps"
-msgstr "25 cps/fps"
+msgstr "25 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr ""
+msgstr "59.94 de fps-uri (de cadre pe secundă)"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
@@ -670,7 +670,7 @@ msgstr "&Filtre"
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
-msgstr "&Nuanțatoare"
+msgstr "&Nuanțatoare (Shadere)"
 
 msgctxt "ID_AUDIOS"
 msgid "&Audio Track"
@@ -710,7 +710,7 @@ msgstr "&Nicio acțiune"
 
 msgctxt "ID_AFTERPLAYBACK_PLAYNEXT"
 msgid "Play &next file in the folder"
-msgstr "Redă &următorul fișier din dosar/folder"
+msgstr "Redă &următorul fișier din dosar (folder)"
 
 msgctxt "ID_AFTERPLAYBACK_MONITOROFF"
 msgid "Turn off the &monitor"
@@ -798,7 +798,7 @@ msgstr "Caută act&ualizări"
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"
-msgstr "&Comutatoare pentru linia de comandă"
+msgstr "&Comutatoare pentru linia de comandă (pentru CLI)"
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"

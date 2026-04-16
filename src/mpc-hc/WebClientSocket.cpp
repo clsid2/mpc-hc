@@ -397,6 +397,10 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
             }
         } else {
             if (arg == _T(CMD_SETPOS) && m_request.Lookup("position", arg)) {
+                REFERENCE_TIME rtDur = m_pMainFrame->GetDur();
+                if (rtDur == 0) {
+                    return false;
+                }
                 int h, m, s, ms = 0;
                 TCHAR c;
                 if (_stscanf_s(arg, _T("%d%c%d%c%d%c%d"), &h, &c, 1, &m, &c, 1, &s, &c, 1, &ms) >= 5) {
@@ -409,9 +413,13 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
                     }
                 }
             } else if (arg == _T(CMD_SETPOS) && m_request.Lookup("percent", arg)) {
+                REFERENCE_TIME rtDur = m_pMainFrame->GetDur();
+                if (rtDur == 0) {
+                    return false;
+                }
                 float percent = 0;
                 if (_stscanf_s(arg, _T("%f"), &percent) == 1) {
-                    m_pMainFrame->SeekTo((REFERENCE_TIME)(percent / 100 * m_pMainFrame->GetDur()));
+                    m_pMainFrame->SeekTo((REFERENCE_TIME)(percent / 100 * rtDur));
                 }
             } else if (arg == _T(CMD_SETVOLUME) && m_request.Lookup("volume", arg)) {
                 int volume = _tcstol(arg, nullptr, 10);

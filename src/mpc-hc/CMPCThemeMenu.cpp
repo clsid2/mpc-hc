@@ -46,12 +46,15 @@ CMPCThemeMenu::~CMPCThemeMenu()
     }
 
     for (u_int i = 0; i < allocatedItems.size(); i++) {
-        delete allocatedItems[i];
+        delete allocatedItems[i];      
     }
+    allocatedItems.clear();
+
     for (u_int i = 0; i < allocatedMenus.size(); i++) {
         allocatedMenus[i]->Detach();
         delete allocatedMenus[i];
     }
+    allocatedMenus.clear();
 }
 
 void CMPCThemeMenu::initDimensions()

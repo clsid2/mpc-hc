@@ -132,7 +132,7 @@ void HandleCommonException(LPEXCEPTION_POINTERS exceptionInfo)
                offset,
                codeBase);
 
-    MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), message, _T("Unexpected error"), MB_OK | MB_TOPMOST | MB_SETFOREGROUND | MB_SYSTEMMODAL);
+    MessageBox(NULL, message, _T("Unexpected error"), MB_OK | MB_TOPMOST | MB_SETFOREGROUND | MB_SYSTEMMODAL);
 }
 
 void HandleAccessViolation(LPEXCEPTION_POINTERS exceptionInfo)
@@ -174,7 +174,7 @@ void HandleAccessViolation(LPEXCEPTION_POINTERS exceptionInfo)
                accessType,
                exceptionInfo->ExceptionRecord->ExceptionInformation[1]);
 
-    MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), message, _T("Unexpected error"), MB_OK | MB_TOPMOST | MB_SETFOREGROUND | MB_SYSTEMMODAL);
+    MessageBox(NULL, message, _T("Unexpected error"), MB_OK | MB_TOPMOST | MB_SETFOREGROUND | MB_SYSTEMMODAL);
 }
 
 LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)

@@ -4,24 +4,43 @@
 #include "CMPCThemeUtil.h"
 #include "DpiHelper.h"
 #include "mplayerc.h"
+#include "CMPCThemePlayerListCtrl.h"
 
 CMPCThemeHeaderCtrl::CMPCThemeHeaderCtrl()
 {
     hotItem = -2;
+    parent = nullptr;
 }
 
 
 CMPCThemeHeaderCtrl::~CMPCThemeHeaderCtrl()
 {
 }
+
+IMPLEMENT_DYNAMIC(CMPCThemeHeaderCtrl, CHeaderCtrl)
 BEGIN_MESSAGE_MAP(CMPCThemeHeaderCtrl, CHeaderCtrl)
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMPCThemeHeaderCtrl::OnNMCustomdraw)
     ON_NOTIFY(HDN_TRACKA, 0, &CMPCThemeHeaderCtrl::OnHdnTrack)
     ON_NOTIFY(HDN_TRACKW, 0, &CMPCThemeHeaderCtrl::OnHdnTrack)
     ON_WM_MOUSEMOVE()
     ON_WM_MOUSELEAVE()
+    ON_WM_ERASEBKGND()
     ON_WM_PAINT()
+    ON_NOTIFY_REFLECT_EX(HDN_BEGINTRACKA, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
+    ON_NOTIFY_REFLECT_EX(HDN_BEGINTRACKW, &CMPCThemeHeaderCtrl::OnHdnBegintrack)
+    ON_NOTIFY_REFLECT_EX(HDN_ENDTRACKA, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
+    ON_NOTIFY_REFLECT_EX(HDN_ENDTRACKW, &CMPCThemeHeaderCtrl::OnHdnEndtrack)
+    ON_WM_WINDOWPOSCHANGING()
 END_MESSAGE_MAP()
+
+BOOL CMPCThemeHeaderCtrl::OnEraseBkgnd(CDC* pDC) {
+    //header must draw itself 
+    if (!parent || parent->PaintHooksActive()) {
+        return __super::OnEraseBkgnd(pDC);
+    } else {
+        return TRUE;
+    }
+}
 
 void CMPCThemeHeaderCtrl::drawSortArrow(CDC* dc, COLORREF arrowClr, CRect arrowRect, bool ascending)
 {
@@ -87,14 +106,10 @@ void CMPCThemeHeaderCtrl::drawItem(int nItem, CRect rText, CDC* pDC)
     rGrid.top -= 1;
     rGrid.bottom -= 1;
 
-    CPoint ptCursor;
-    ::GetCursorPos(&ptCursor);
-    ScreenToClient(&ptCursor);
-    checkHot(ptCursor);
-
-    if (nItem == hotItem) {
+    if (nItem == hotItem && !colDrag) {
         bgColor = CMPCTheme::ColumnHeaderHotColor;
     }
+
     pDC->FillSolidRect(rGrid, bgColor);
 
     CPen gridPen, *oldPen;
@@ -137,7 +152,7 @@ void CMPCThemeHeaderCtrl::drawItem(int nItem, CRect rText, CDC* pDC)
         pDC->SetTextColor(textColor);
         pDC->SetBkColor(bgColor);
 
-        CMPCThemeUtil::DrawBufferedText(pDC, text, rText, textFormat);
+        pDC->DrawTextW(text, rText, textFormat);
         if (hditem.fmt & HDF_SORTUP) {
             drawSortArrow(pDC, CMPCTheme::HeaderCtrlSortArrowColor, rText, true);
         } else if (hditem.fmt & HDF_SORTDOWN) {
@@ -178,7 +193,7 @@ void CMPCThemeHeaderCtrl::OnHdnTrack(NMHDR* pNMHDR, LRESULT* pResult)
     *pResult = 0;
 }
 
-void CMPCThemeHeaderCtrl::checkHot(CPoint point)
+void CMPCThemeHeaderCtrl::checkHot(CPoint point, bool invalidate)
 {
     HDHITTESTINFO hdHitTestInfo;
     hdHitTestInfo.pt = point;
@@ -189,8 +204,14 @@ void CMPCThemeHeaderCtrl::checkHot(CPoint point)
     if ((hdHitTestInfo.flags & HHT_ONHEADER) == 0) {
         hotItem = -2;
     }
-    if (hotItem != prevHotItem) {
-        RedrawWindow();
+    if (hotItem != prevHotItem && invalidate) {
+        CRect wr;
+        GetWindowRect(wr);
+        if (!parent || parent->PaintHooksActive()) {
+            RedrawWindow(wr);
+        } else if (parent) {
+            parent->RedrawHeader(wr);
+        }
     }
 }
 
@@ -198,7 +219,7 @@ void CMPCThemeHeaderCtrl::checkHot(CPoint point)
 void CMPCThemeHeaderCtrl::OnMouseMove(UINT nFlags, CPoint point)
 {
     if ((nFlags & MK_LBUTTON) == 0) {
-        checkHot(point);
+        checkHot(point, true);
     }
 
     __super::OnMouseMove(nFlags, point);
@@ -208,7 +229,14 @@ void CMPCThemeHeaderCtrl::OnMouseLeave()
 {
     if (hotItem >= 0) {
         hotItem = -1;
-        RedrawWindow();
+        CRect wr;
+        GetWindowRect(wr);
+
+        if (!parent || parent->PaintHooksActive()) {
+            RedrawWindow(wr);
+        } else if (parent) {
+            parent->RedrawHeader(wr);
+        }
     }
     __super::OnMouseLeave();
 }
@@ -217,19 +245,36 @@ void CMPCThemeHeaderCtrl::OnMouseLeave()
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 void CMPCThemeHeaderCtrl::OnPaint()
 {
+  if (AppNeedsThemedControls()) {
+
     if (GetStyle() & HDS_FILTERBAR) {
         Default();
         return;
     }
 
     CPaintDC dc(this); // device context for painting
-    CMemDC memDC(dc, this);
-    CDC* pDC = &memDC.GetDC();
+    CRect updateRect;
+    dc.GetClipBox(&updateRect);
+
+    //header must draw itself 
+    if (!parent || parent->PaintHooksActive()) {
+        CMemDC memDC(dc, this);
+        CDC* pDC = &memDC.GetDC();
+        DrawAllItems(pDC, { 0,0 }, updateRect);
+    } else {
+        if (!updateRect.IsRectEmpty()) {
+            ClientToScreen(updateRect);
+            parent->RedrawHeader(updateRect);
+        }
+    }
+  } else {
+    Default();
+  }
+}
+
+void CMPCThemeHeaderCtrl::DrawAllItems(CDC* pDC, CPoint offset, const CRect& clipRect) {
     CFont* font = GetFont();
     CFont* pOldFont = pDC->SelectObject(font);
-
-    CRect rectClip;
-    dc.GetClipBox(rectClip);
 
     CRect rect;
     GetClientRect(rect);
@@ -239,23 +284,22 @@ void CMPCThemeHeaderCtrl::OnPaint()
 
     int xMax = 0;
 
+    CPoint ptCursor;
+    ::GetCursorPos(&ptCursor);
+    ScreenToClient(&ptCursor);
+    checkHot(ptCursor, false);
+
     for (int i = 0; i < nCount; i++) {
-        CPoint ptCursor;
-        ::GetCursorPos(&ptCursor);
-        ScreenToClient(&ptCursor);
-
         GetItemRect(i, rectItem);
-
-        CRgn rgnClip;
-        rgnClip.CreateRectRgnIndirect(&rectItem);
-        pDC->SelectClipRgn(&rgnClip);
-
-        // Draw item:
-        drawItem(i, rectItem, pDC);
-
-        pDC->SelectClipRgn(NULL);
-
         xMax = max(xMax, rectItem.right);
+        
+        CRect offsetRectItem = rectItem;
+        offsetRectItem.OffsetRect(offset);
+        
+        CRect intersection;
+        if (intersection.IntersectRect(offsetRectItem, clipRect)) {
+            drawItem(i, offsetRectItem, pDC);
+        }
     }
 
     // Draw "tail border":
@@ -267,6 +311,36 @@ void CMPCThemeHeaderCtrl::OnPaint()
         rectItem.right = rect.right + 1;
     }
 
-    drawItem(-1, rectItem, pDC);
+    rectItem.OffsetRect(offset);
+    
+    CRect intersection;
+    if (intersection.IntersectRect(rectItem, clipRect)) {
+        drawItem(-1, rectItem, pDC);
+    }
+    
     pDC->SelectObject(pOldFont);
+}
+
+BOOL CMPCThemeHeaderCtrl::OnHdnBegintrack(NMHDR* pNMHDR, LRESULT* pResult) {
+    LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+    colDrag = true;
+    *pResult = 0;
+    return FALSE;
+}
+
+
+BOOL CMPCThemeHeaderCtrl::OnHdnEndtrack(NMHDR* pNMHDR, LRESULT* pResult) {
+    LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+    colDrag = false;
+    *pResult = 0;
+    return FALSE;
+}
+
+
+void CMPCThemeHeaderCtrl::OnWindowPosChanging(WINDOWPOS* lpwndpos) {
+    if (parent && !parent->PaintHooksActive()) {
+        lpwndpos->flags |= SWP_NOCOPYBITS; //avoids shifting header pixels during scroll
+    }
+
+    __super::OnWindowPosChanging(lpwndpos);
 }

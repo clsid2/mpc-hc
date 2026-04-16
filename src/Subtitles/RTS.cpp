@@ -2051,6 +2051,8 @@ void CRenderedTextSubtitle::SetOverride(bool bOverrideDefault, bool bOverrideAll
 
         if (bOverride) {
             m_scaledBAS = 0;
+        } else {
+            m_scaledBAS = m_scaledBAS2; // restore original
         }
 
         if (bOverride && m_playRes.cy != 288 && m_playRes.cx > 0 && m_playRes.cy > 0) {
@@ -2708,6 +2710,7 @@ bool CRenderedTextSubtitle::CreateSubFromSSATag(CSubtitle* sub, const SSATagsLis
                 style.charSet = !tag.paramsInt.IsEmpty()
                                 ? tag.paramsInt[0]
                                 : org.charSet;
+                if (style.charSet < 0) style.charSet = DEFAULT_CHARSET;
                 break;
             case SSA_fn:
                 style.fontName = (!tag.params.IsEmpty() && !tag.params[0].IsEmpty() && tag.params[0] != L"0")
@@ -3275,7 +3278,7 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
             tmp.outlineWidthY *= sub->m_total_scale_y * 8.0;
             tmp.shadowDepthX  *= sub->m_total_scale_x * 8.0;
             tmp.shadowDepthY  *= sub->m_total_scale_y * 8.0;
-        } else if (sub->m_script_scale_y <= 0.9 && m_scaledBAS == -1 && m_layoutRes.cx == 0 && (m_subtitleType == Subtitle::ASS || m_subtitleType == Subtitle::SSA)) {
+        } else if (m_scaledBAS == -1 && m_layoutRes.cx == 0 && sub->m_script_scale_y <= 0.9 && (m_subtitleType == Subtitle::ASS || m_subtitleType == Subtitle::SSA)) {
             // If PlayRes is bigger than video, it usually is a buggy script where ScaledBorderAndShadow was intended
             tmp.outlineWidthX *= sub->m_total_scale_x * 8.0;
             tmp.outlineWidthY *= sub->m_total_scale_y * 8.0;

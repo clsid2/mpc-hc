@@ -364,8 +364,10 @@ ShaderSelection::ShaderCurrentPreset::ShaderCurrentPreset()
 
 ShaderSelection::ShaderCurrentPreset::~ShaderCurrentPreset()
 {
-    if (auto pMainFrame = AfxGetMainFrame()) {
-        pMainFrame->m_timerOneTime.Unsubscribe(CMainFrame::TimerOneTimeSubscriber::ACTIVE_SHADER_FILES_CHANGE_COOLDOWN);
+    if (!AfxGetMyApp()->m_fClosingState) {
+        if (auto pMainFrame = AfxGetMainFrame()) {
+            pMainFrame->m_timerOneTime.Unsubscribe(CMainFrame::TimerOneTimeSubscriber::ACTIVE_SHADER_FILES_CHANGE_COOLDOWN);
+        }
     }
 }
 

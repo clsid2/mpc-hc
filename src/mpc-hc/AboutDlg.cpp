@@ -72,6 +72,10 @@ BOOL CAboutDlg::OnInitDialog()
 
     m_homepage.Format(_T("<a>%s</a>"), WEBSITE_URL);
 
+    CString copyright;
+    copyright.Format(ResStr(IDS_ABOUT_COPYRIGHT), ResStr(IDS_ABOUT_COPYRIGHT_YEAR).GetString());
+    SetDlgItemText(IDC_AUTHORS_LINK, copyright);
+
     m_strBuildNumber = VersionInfo::GetFullVersionString();
 
     m_LAVFilters.Format(IDS_STRING_COLON, _T("LAV Filters"));
@@ -92,9 +96,11 @@ BOOL CAboutDlg::OnInitDialog()
 
     if (osVersion.dwMajorVersion == 10 && osVersion.dwMinorVersion == 0) {
         if (IsWindowsServer()) {
-            if (osVersion.dwBuildNumber > 20348) {
+            if (osVersion.dwBuildNumber > 26100) {
                 m_OSName = _T("Windows Server");
-            } else if (osVersion.dwBuildNumber == 20348) {
+            } else if (osVersion.dwBuildNumber == 26100) {
+                m_OSName = _T("Windows Server 2025");
+            } else if (osVersion.dwBuildNumber >= 20348) {
                 m_OSName = _T("Windows Server 2022");
             } else if (osVersion.dwBuildNumber >= 19042) {
                 m_OSName = _T("Windows Server, version 20H2");
@@ -110,14 +116,22 @@ BOOL CAboutDlg::OnInitDialog()
                 m_OSName = _T("Windows Server 2016");
             }
         } else {
-            if (osVersion.dwBuildNumber > 22631) {
+            if (osVersion.dwBuildNumber > 28000) {
                 m_OSName = _T("Windows 11");
+            } else if (osVersion.dwBuildNumber == 28000) {
+                m_OSName = _T("Windows 11 (Build 26H1)");
+            } else if (osVersion.dwBuildNumber == 26200) {
+                m_OSName = _T("Windows 11 (Build 25H2)");
+            } else if (osVersion.dwBuildNumber == 26100) {
+                m_OSName = _T("Windows 11 (Build 24H2)");
             } else if (osVersion.dwBuildNumber == 22631) {
                 m_OSName = _T("Windows 11 (Build 23H2)");
-            } else if (osVersion.dwBuildNumber >= 22621) {
+            } else if (osVersion.dwBuildNumber == 22621) {
                 m_OSName = _T("Windows 11 (Build 22H2)");
-            } else if (osVersion.dwBuildNumber >= 22000) {
+            } else if (osVersion.dwBuildNumber == 22000) {
                 m_OSName = _T("Windows 11 (Build 21H2)");
+            } else if (osVersion.dwBuildNumber >= 20000) {
+                m_OSName = _T("Windows 11");
             } else if (osVersion.dwBuildNumber >= 19046) {
                 m_OSName = _T("Windows 10");
             } else if (osVersion.dwBuildNumber == 19045) {

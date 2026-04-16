@@ -39,7 +39,6 @@ CPPageTheme::CPPageTheme()
     , m_iModernSeekbarHeight(DEF_MODERN_SEEKBAR_HEIGHT)
     , m_iThemeMode(0)
     , m_nPosLangEnglish(0)
-    , m_iDefaultToolbarSize(DEF_TOOLBAR_HEIGHT)
     , m_nOSDSize(0)
     , m_fShowChapters(TRUE)
     , m_bShowPreview(FALSE)
@@ -60,7 +59,6 @@ CPPageTheme::CPPageTheme()
 {
     EventRouter::EventSelection fires;
     fires.insert(MpcEvent::CHANGING_UI_LANGUAGE);
-    fires.insert(MpcEvent::DEFAULT_TOOLBAR_SIZE_CHANGED);
     GetEventd().Connect(m_eventc, fires);
 }
 
@@ -90,10 +88,6 @@ void CPPageTheme::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_SPIN2, m_SeekPreviewSizeCtrl);
     DDX_Check(pDX, IDC_CHECK2, m_fShowChapters);
 
-
-    DDX_Text(pDX, IDC_EDIT1, m_iDefaultToolbarSize);
-    DDV_MinMaxInt(pDX, m_iDefaultToolbarSize, MIN_TOOLBAR_HEIGHT, MAX_TOOLBAR_HEIGHT);
-    DDX_Control(pDX, IDC_SPIN1, m_DefaultToolbarSizeCtrl);
 
     DDX_Control(pDX, IDC_COMBO3, m_HoverPosition);
     DDX_Check(pDX, IDC_SHOW_OSD, m_fShowOSD);
@@ -145,9 +139,6 @@ BOOL CPPageTheme::OnInitDialog()
 
     m_ModernSeekbarHeightCtrl.SetRange32(MIN_MODERN_SEEKBAR_HEIGHT, MAX_MODERN_SEEKBAR_HEIGHT);
     m_iModernSeekbarHeight = s.iModernSeekbarHeight;
-
-    m_DefaultToolbarSizeCtrl.SetRange32(MIN_TOOLBAR_HEIGHT, MAX_TOOLBAR_HEIGHT);
-    m_iDefaultToolbarSize = s.nDefaultToolbarSize;
 
     m_iThemeMode = static_cast<int>(s.eModernThemeMode);
 
@@ -251,11 +242,9 @@ BOOL CPPageTheme::OnApply()
     UpdateData();
 
     CAppSettings& s = AfxGetAppSettings();
-    int nOldDefaultToolbarSize = s.nDefaultToolbarSize;
 
     s.bMPCTheme = !!m_bUseModernTheme;
     s.iModernSeekbarHeight = m_iModernSeekbarHeight;
-    s.nDefaultToolbarSize = m_iDefaultToolbarSize;
     s.eModernThemeMode = static_cast<CMPCTheme::ModernThemeMode>(m_iThemeMode);
 
     int iLangSel = m_langsComboBox.GetCurSel();
@@ -282,12 +271,6 @@ BOOL CPPageTheme::OnApply()
         ASSERT(FALSE);
     }
 
-    if (nOldDefaultToolbarSize != s.nDefaultToolbarSize) {
-        m_eventc.FireEvent(MpcEvent::DEFAULT_TOOLBAR_SIZE_CHANGED);
-        if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
-            pMainFrame->RecalcLayout();
-        }
-    }
     s.nHoverPosition = m_HoverPosition.GetCurSel();
 
     s.nOSDSize = m_nOSDSize;
@@ -411,7 +394,6 @@ void CPPageTheme::OnChngOSDCombo() {
 
 void CPPageTheme::AdjustDynamicWidgets() {
     AdjustDynamicWidgetPair(this, IDC_STATIC22, IDC_MODERNSEEKBARHEIGHT);
-    AdjustDynamicWidgetPair(this, IDC_STATIC3, IDC_EDIT1);
     AdjustDynamicWidgetPair(this, IDC_STATIC2, IDC_COMBO1);
     AdjustDynamicWidgetPair(this, IDC_STATIC5, IDC_COMBO2);
     AdjustDynamicWidgetPair(this, IDC_STATIC11, IDC_COMBO3);

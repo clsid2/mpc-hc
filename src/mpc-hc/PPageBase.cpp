@@ -94,18 +94,22 @@ void CPPageBase::CreateToolTip()
     }
 }
 
-void CPPageBase::SetButtonIcon(UINT nIDButton, UINT nIDIcon)
+void CPPageBase::SetButtonIcon(UINT nIDButton, IconDef iconDef)
 {
-    if (!m_buttonIcons.count(nIDIcon)) {
+    if (!m_buttonIcons.count(iconDef)) {
         CImage img;
-        img.LoadFromResource(AfxGetInstanceHandle(), nIDIcon);
-        CImageList& imageList = m_buttonIcons[nIDIcon];
+        if (iconDef.svgTargetWidth) {
+            SVGImage::LoadIconDef(iconDef, img);
+        } else {
+            img.LoadFromResource(AfxGetInstanceHandle(), iconDef.nIDIcon);
+        }
+        CImageList& imageList = m_buttonIcons[iconDef];
         imageList.Create(img.GetWidth(), img.GetHeight(), ILC_COLOR32, 1, 0);
         imageList.Add(CBitmap::FromHandle(img), nullptr);
     }
 
     BUTTON_IMAGELIST buttonImageList;
-    buttonImageList.himl = m_buttonIcons[nIDIcon];
+    buttonImageList.himl = m_buttonIcons[iconDef];
     buttonImageList.margin = { 0, 0, 0, 0 };
     buttonImageList.uAlign = BUTTON_IMAGELIST_ALIGN_CENTER;
     static_cast<CButton*>(GetDlgItem(nIDButton))->SetImageList(&buttonImageList);

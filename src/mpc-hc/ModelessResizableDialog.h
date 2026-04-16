@@ -1,6 +1,6 @@
 #pragma once
-#include "CMPCThemeResizableDialog.h"
-class CModelessResizableDialog : public CMPCThemeResizableDialog {
+#include "DpiAwareResizableDialog.h"
+class CModelessResizableDialog : public CDpiAwareResizableDialog {
 public:
     CModelessResizableDialog(UINT nIDTemplate, CWnd* pParent);
     virtual BOOL Create(UINT nIDTemplate, CWnd* pParentWnd);

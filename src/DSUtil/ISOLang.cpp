@@ -397,7 +397,7 @@ namespace
         { "Pali", "pli", "pi" },
         { "Pampanga", "pam", "" },
         { "Pangasinan", "pag", "" },
-        { "Panjabi", "pan", "pa" },
+        { "Punjabi", "pan", "pa",                    MAKELCID(MAKELANGID(LANG_PUNJABI, SUBLANG_DEFAULT), SORT_DEFAULT) },
         { "Papiamento", "pap", "" },
         { "Papuan (Other)", "paa", "" },
         { "Persian", "per", "fa",                    MAKELCID(MAKELANGID(LANG_PERSIAN, SUBLANG_DEFAULT), SORT_DEFAULT) },

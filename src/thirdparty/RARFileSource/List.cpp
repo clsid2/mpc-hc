@@ -67,8 +67,10 @@ template <class T> T *CRFSList<T>::Prev (CRFSNode<T> *n)
 
 template <class T> void CRFSList<T>::Clear ()
 {
-	T *node;
+	T *node = UnlinkFirst();
 
-	while (node = UnlinkFirst ())
-		delete node;
+    while (node) {
+        delete node;
+        node = UnlinkFirst();
+    }
 }

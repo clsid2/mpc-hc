@@ -4,14 +4,15 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Arne Bezuijen <transifex@arnage.nl>, 2021
-# Renz Straatman <renz75@outlook.com>, 2023
+# mark van tilburg <markvantilburg@gmail.com>, 2025
+# Renz Straatman <renz@kabelkrant.net>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2024-02-10 16:52:19+0000\n"
+"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Renz Straatman <renz75@outlook.com>, 2023\n"
+"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,27 +26,27 @@ msgstr "&Bestand"
 
 msgctxt "ID_FILE_OPENQUICK"
 msgid "&Quick Open File..."
-msgstr "Snel &bestand openen..."
+msgstr "Snel openen..."
 
 msgctxt "ID_FILE_OPENMEDIA"
 msgid "&Open File/URL..."
-msgstr "Bestand &openen..."
+msgstr "Open bestand..."
 
 msgctxt "ID_FILE_OPENDVDBD"
 msgid "Open &DVD/BD..."
-msgstr "&DVD of Blu-ray openen..."
+msgstr "Open DVD of Blu-ray..."
 
 msgctxt "ID_FILE_OPENDEVICE"
 msgid "Open De&vice..."
-msgstr "A&pparaat openen..."
+msgstr "Open apparaat..."
 
 msgctxt "ID_FILE_OPENDIRECTORY"
 msgid "Open Dir&ectory..."
-msgstr "&Map openen..."
+msgstr "Open map..."
 
 msgctxt "ID_FILE_OPENDISC"
 msgid "O&pen Disc"
-msgstr "Schijf openen"
+msgstr "Open schijf..."
 
 msgctxt "ID_RECENT_FILES"
 msgid "Recent &Files"
@@ -61,11 +62,11 @@ msgstr "&Opslaan als..."
 
 msgctxt "ID_FILE_SAVE_IMAGE"
 msgid "Save &Image..."
-msgstr "Snapshot maken..."
+msgstr "Maak afbeelding..."
 
 msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
-msgstr "Mozaïekweergave maken..."
+msgstr "Maak mozaïekweergave..."
 
 msgctxt "POPUP"
 msgid "S&ubtitles"
@@ -437,11 +438,11 @@ msgstr "Vierkante pixels (SAR)"
 
 msgctxt "ID_VIEW_VF_COMPMONDESKARDIFF"
 msgid "&Correct Monitor/Desktop AR Diff"
-msgstr "Afwijking beeldschermverhouding corrigeren"
+msgstr "Corrigeer afwijking in beeldschermverhouding"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
-msgstr "PnS framerate aanpassen"
+msgstr "Pan en scan"
 
 msgctxt "ID_VIEW_INCSIZE"
 msgid "&Increase Size"
@@ -545,7 +546,7 @@ msgstr "&Stoppen"
 
 msgctxt "ID_PLAY_FRAMESTEP"
 msgid "Fra&me Step"
-msgstr "Frame vooruit"
+msgstr "1 frame vooruit"
 
 msgctxt "POPUP"
 msgid "&Repeat"
@@ -613,7 +614,7 @@ msgstr "1,50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_175"
 msgid "1.75 x"
-msgstr ""
+msgstr "1.75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_200"
 msgid "2.00 x"
@@ -637,7 +638,7 @@ msgstr "8,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr ""
+msgstr "23.976 fps"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
@@ -649,7 +650,7 @@ msgstr "25 fps"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr ""
+msgstr "59.94 fps"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
@@ -673,7 +674,7 @@ msgstr "Shaders"
 
 msgctxt "ID_AUDIOS"
 msgid "&Audio Track"
-msgstr "&Geluidsspoor"
+msgstr "&Audiospoor"
 
 msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
@@ -801,7 +802,7 @@ msgstr "Opdrachtprompt-parameters"
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Werkbalkskins"
+msgstr "Skins"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"

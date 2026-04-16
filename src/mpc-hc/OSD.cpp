@@ -300,7 +300,7 @@ void COSD::Stop()
     m_bMouseOverCloseButton = false;
     m_lastMovePosX = -1;
 
-    ClearMessage();
+    ClearMessage(false, false);
 
     m_pVMB.Release();
     m_pMFVMB.Release();
@@ -769,7 +769,7 @@ void COSD::SetPosAndRange(__int64 pos, __int64 stop)
     }
 }
 
-void COSD::ClearMessage(bool hide)
+void COSD::ClearMessage(bool hide, bool repaint)
 {
     CAutoLock Lock(&m_Lock);
 
@@ -789,7 +789,9 @@ void COSD::ClearMessage(bool hide)
         if (m_pMFVMB) {
             m_pMFVMB->ClearAlphaBitmap();
         }
-        m_pMainFrame->RepaintVideo();
+        if (repaint) {
+            m_pMainFrame->RepaintVideo();
+        }
     } else if (m_pMVTO) {
         m_pMVTO->OsdClearMessage();
     } else if (::IsWindow(m_hWnd) && IsWindowVisible()) {

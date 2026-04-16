@@ -85,6 +85,8 @@ protected:
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
     virtual BOOL OnInitDialog();
     virtual BOOL OnApply();
+    inline void RenumberListItem(int nItem);
+    void RenumberListItems(int nStartItem);
 
     DECLARE_MESSAGE_MAP()
 

@@ -109,7 +109,7 @@ private:
 class CFGManagerBDA : public CFGManagerPlayer, IBDATuner, IAMStreamSelect
 {
 public:
-    CFGManagerBDA(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd);
+    CFGManagerBDA(HWND hWnd);
     ~CFGManagerBDA();
 
     // IGraphBuilder
