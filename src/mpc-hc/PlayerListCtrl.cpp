@@ -843,9 +843,11 @@ void CPlayerListCtrl::StartVirtualEditLabel(int nItem, int nSubItem)
     CRect rect;
     GetItemRect(nItem, &rect, LVIR_LABEL);
 
+    m_fInPlaceDirty = false;
+
     // Create hidden — parent adjusts rect/font in response to LVN_BEGINLABELEDIT
     m_pVirtualEdit = DEBUG_NEW CMPCThemeInPlaceEdit(nItem, nSubItem, text, &m_pVirtualEdit);
-    m_pVirtualEdit->Create(WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, rect, this, 0);
+    m_pVirtualEdit->Create(WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, rect, this, IDC_EDIT1);
 
     // Notify parent; edit is already created so parent can call GetVirtualEditCtrl()
     if (!SendLabelEditNotify(this, LVN_BEGINLABELEDIT, nItem, nSubItem, text)) {
