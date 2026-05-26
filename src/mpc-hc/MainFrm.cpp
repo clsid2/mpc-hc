@@ -8161,9 +8161,6 @@ void CMainFrame::OnViewPlaylist()
     m_controls.ToggleControl(CMainFrameControls::Panel::PLAYLIST);
     m_wndPlaylistBar.SetHiddenDueToFullscreen(false);
     UpdatePlaylistButton();
-    if (m_controls.ControlChecked(CMainFrameControls::Panel::PLAYLIST)) {
-        m_wndPlaylistBar.EnsureCurrentVisible();
-    }
 }
 
 void CMainFrame::OnUpdateViewPlaylist(CCmdUI* pCmdUI)
