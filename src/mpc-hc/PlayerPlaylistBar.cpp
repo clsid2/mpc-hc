@@ -129,6 +129,7 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP
         | LVS_OWNERDRAWFIXED
         | LVS_OWNERDATA
+        | LVS_EDITLABELS
         | LVS_NOCOLUMNHEADER
         | LVS_REPORT | LVS_SINGLESEL | LVS_AUTOARRANGE | LVS_NOSORTHEADER, // TODO: remove LVS_SINGLESEL and implement multiple item repositioning (dragging is ready)
         CRect(0, 0, 100, 100), &m_listFrame, IDC_PLAYLIST);
@@ -1882,11 +1883,6 @@ void CPlayerPlaylistBar::EventCallback(MpcEvent ev)
 void CPlayerPlaylistBar::ResizeListColumn()
 {
     if (::IsWindow(m_list.m_hWnd)) {
-        // Commit any active inline edit before resizing
-        if (m_list.GetVirtualEditCtrl()) {
-            m_list.SetFocus();
-        }
-
         CRect r;
         GetClientRect(r);
         r.DeflateRect(2, 2);
@@ -2769,10 +2765,22 @@ void CPlayerPlaylistBar::OnLvnGetDispInfoList(NMHDR* pNMHDR, LRESULT* pResult)
 void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
-    POSITION pos = FindPos(pDispInfo->item.iItem);
-    int maxW = pos ? m_pl.GetAt(pos).inlineEditMaxWidth : -1;
-    m_list.AdjustVirtualEditPos(inlineEditXpos, maxW);
-    *pResult = 1; // allow editing
+    if (pDispInfo->item.iSubItem != COL_NAME) {
+        *pResult = 1; // cancel
+        return;
+    }
+    HWND hEdit = (HWND)m_list.SendMessage(LVM_GETEDITCONTROL);
+    if (::IsWindow(m_edit.m_hWnd)) {
+        m_edit.UnsubclassWindow();
+    }
+    if (hEdit) {
+        m_edit.SubclassWindow(hEdit);
+        m_list.m_fInPlaceDirty = false;
+        POSITION pos = FindPos(pDispInfo->item.iItem);
+        int maxW = pos ? m_pl.GetAt(pos).inlineEditMaxWidth : -1;
+        m_edit.setOverridePos(inlineEditXpos, maxW);
+    }
+    *pResult = 0; // allow
 }
 
 void CPlayerPlaylistBar::OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
