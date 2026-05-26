@@ -1893,18 +1893,13 @@ void CPlayerPlaylistBar::ResizeListColumn()
 
         m_list.SetRedraw(FALSE);
         m_list.SetColumnWidth(COL_NAME, 0);
-        m_list.SetRedraw(TRUE);
-
         m_list.MoveWindow(listR, FALSE);
-
         m_list.GetClientRect(r);
-
-        m_list.SetRedraw(FALSE);
-        m_list.SetColumnWidth(COL_NAME, r.Width() - m_nTimeColWidth);
+        m_list.SetColumnWidth(COL_NAME, std::max(0, r.Width() - m_nTimeColWidth));
         m_list.SetRedraw(TRUE);
 
         Invalidate();
-        m_list.RedrawWindow(nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+        m_listFrame.RedrawWindow(nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE | RDW_NOCHILDREN);
     }
 }
 
