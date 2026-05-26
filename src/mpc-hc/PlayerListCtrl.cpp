@@ -828,6 +828,7 @@ BEGIN_MESSAGE_MAP(CPlayerListCtrl, CMPCThemePlayerListCtrl)
     ON_WM_HSCROLL()
     ON_WM_MOUSEWHEEL()
     ON_WM_LBUTTONDOWN()
+    ON_WM_RBUTTONDOWN()
     ON_WM_TIMER()
     ON_WM_LBUTTONDBLCLK()
     ON_NOTIFY_REFLECT(LVN_MARQUEEBEGIN, OnLvnMarqueeBegin)
@@ -1143,4 +1144,14 @@ int CPlayerListCtrl::InsertColumn(_In_ int nCol, _In_z_ LPCWSTR lpszColumnHeadin
     }
 
     return nCol;
+}
+
+void CPlayerListCtrl::OnRButtonDown(UINT nFlags, CPoint point)
+{
+    if (m_nTimerID) {
+        KillTimer(m_nTimerID);
+        m_nTimerID = 0;
+    }
+    m_nItemClicked = -1;
+    __super::OnRButtonDown(nFlags, point);
 }
