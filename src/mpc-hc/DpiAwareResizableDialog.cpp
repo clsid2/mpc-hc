@@ -17,15 +17,15 @@ AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindFirstDlgItem(const DLGTEMPLATE* pTemp
 AFX_STATIC DLGITEMTEMPLATE* AFXAPI _AfxFindNextDlgItem(DLGITEMTEMPLATE* pItem, BOOL bDialogEx);
 
 CDpiAwareResizableDialog::CDpiAwareResizableDialog()
-    : m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+    : m_currentDpi(96), m_inDpiChange(false), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(UINT nIDTemplate, CWnd* pParent) : CResizableDialog(nIDTemplate, pParent), m_currentDpi(96), m_inDpiChange(false), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
-CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_cachedTemplate(nullptr), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
+CDpiAwareResizableDialog::CDpiAwareResizableDialog(LPCTSTR lpszTemplateName, CWnd* pParent) : CResizableDialog(lpszTemplateName, pParent), m_currentDpi(96), m_inDpiChange(false), m_bMaximized(false), m_bSaveRestoreEnabled(false), m_bRestorationPending(false), m_currentDluSize(0, 0)
 {
 }
 
@@ -767,10 +767,6 @@ void CDpiAwareResizableDialog::RefreshStaticImages()
 }
 
 const DLGTEMPLATE* CDpiAwareResizableDialog::LoadDialogTemplate() const {
-    if (m_cachedTemplate) {
-        return m_cachedTemplate;
-    }
-
     UINT templateID = GetDialogTemplateID();
     if (templateID == 0) {
         return nullptr;
@@ -786,6 +782,5 @@ const DLGTEMPLATE* CDpiAwareResizableDialog::LoadDialogTemplate() const {
         return nullptr;
     }
 
-    m_cachedTemplate = (const DLGTEMPLATE*)LockResource(hglb);
-    return m_cachedTemplate;
+    return (const DLGTEMPLATE*)LockResource(hglb);
 }

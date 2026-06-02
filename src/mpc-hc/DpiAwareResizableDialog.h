@@ -87,7 +87,6 @@ protected:
     // State tracking
     UINT m_currentDpi;
     bool m_inDpiChange;
-    mutable const DLGTEMPLATE* m_cachedTemplate;
     bool m_bMaximized;
     bool m_bSaveRestoreEnabled;
     bool m_bRestorationPending;
