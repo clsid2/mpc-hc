@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hack茶ん, 2026\n"
 "Language-Team: Korean (https://app.transifex.com/mpchc/teams/106126/ko/)\n"
@@ -483,7 +483,7 @@ msgstr "되돌리기(&E)"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "정렬(&S)"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -769,7 +769,7 @@ msgstr "자막::기본 스타일"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "내장 필터::일반"
+msgstr "내부 필터::일반"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
@@ -4324,7 +4324,7 @@ msgstr "/standby\t\t재생 후, 대기 모드로 전환"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\t재생 후 운영 체제를 최대 절전 모드로 전환"
+msgstr "/hibernate\t\t재생 후, 운영체제를 최대 절전 모드로 전환"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4616,7 +4616,7 @@ msgstr "기본 스타일 덮어쓰기 전환"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "모든 스타일 덮어쓰기 전환"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4816,7 +4816,7 @@ msgstr "시스템 레이아웃 채널 사용"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "지원되는 형식에 대한 대안"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -4868,7 +4868,7 @@ msgstr "표본화 :"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "채널"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"
@@ -4964,4 +4964,4 @@ msgstr "섞기 : 끔"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "© 2002-%s clsid2 등"
+msgstr "Copyright 2002-%s clsid2 외"

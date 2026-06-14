@@ -7,14 +7,14 @@
 # Massimiliano F. <garfield002@gmail.com>, 2020
 # GABG, 2024
 # Donatello, 2024
-# Gianni Chedda <gianni.chedda0@gmail.com>, 2025
+# Gianni Chedda <gianni.chedda0@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-04-12 02:38:36+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Gianni Chedda <gianni.chedda0@gmail.com>, 2025\n"
+"Last-Translator: Gianni Chedda <gianni.chedda0@gmail.com>, 2026\n"
 "Language-Team: Italian (https://app.transifex.com/mpchc/teams/106126/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -494,7 +494,7 @@ msgstr "R&ipristina"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "&Ordina"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -4155,12 +4155,16 @@ msgstr "Pronto..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
+"/pns \"nome\"\tSpecifica quale Preset Regolazione Finestra PnS usare "
+"(esempio: /pns \"%s\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
 msgstr ""
+"/pns \"px,py,zx,zy\"\tSpecifica direttamente i valori di posizione e zoom "
+"nel formato \"px,py,zx,zy\""
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4331,6 +4335,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Impossibile accedere a opensubtitles.com con in nome utente \"%1\".\n"
+"\n"
+"Il nome utente o la password sono errati.\n"
+"\n"
+"Non usare l'account del vecchio sito .org."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4428,7 +4437,7 @@ msgstr "/standby\t\tSospendi il sistema operativo dopo la riproduzione"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tIberna il computer al termine della riproduzione"
+msgstr ""
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4734,7 +4743,7 @@ msgstr "Attiva/disattiva Sovrascrivi stile predefinito"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Attiva/disattiva Sovrascrivi tutti gli stili"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."

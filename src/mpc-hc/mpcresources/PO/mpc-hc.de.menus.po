@@ -6,15 +6,16 @@
 # tobsen <github@tobsen.de>, 2020
 # Steve, 2020
 # fc5b3681a8011aa2097a1a11b3d42f55_901a704, 2021
-# Gaugg_Markus, 2024
+# Gaugg_Markus, 2021
 # Nico, 2025
+# Maik Dießner, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Nico, 2025\n"
+"Last-Translator: Maik Dießner, 2026\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -168,19 +169,19 @@ msgstr "&Zoom"
 
 msgctxt "ID_VIEW_ZOOM_25"
 msgid "&25%"
-msgstr "&25%"
+msgstr "&25 %"
 
 msgctxt "ID_VIEW_ZOOM_50"
 msgid "&50%"
-msgstr "&50%"
+msgstr "&50 %"
 
 msgctxt "ID_VIEW_ZOOM_100"
 msgid "&100%"
-msgstr "&100%"
+msgstr "&100 %"
 
 msgctxt "ID_VIEW_ZOOM_200"
 msgid "&200%"
-msgstr "&200%"
+msgstr "&200 %"
 
 msgctxt "ID_VIEW_ZOOM_AUTOFIT"
 msgid "Auto &Fit"
@@ -444,7 +445,7 @@ msgstr "Anzeige-&Verzerrung korrigieren"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
-msgstr "P&nS Rahmen einstellen"
+msgstr "Pan-and-Scan-Bildausschnitt einste&llen"
 
 msgctxt "ID_VIEW_INCSIZE"
 msgid "&Increase Size"
@@ -540,7 +541,7 @@ msgstr "&Wiedergabe"
 
 msgctxt "ID_PLAY_PLAYPAUSE"
 msgid "&Play/Pause"
-msgstr "Wiedergabe&/Pause"
+msgstr "Wiedergabe/&Pause"
 
 msgctxt "ID_PLAY_STOP"
 msgid "&Stop"
@@ -552,7 +553,7 @@ msgstr "Einzel&bild vor"
 
 msgctxt "POPUP"
 msgid "&Repeat"
-msgstr "&Wiederholung"
+msgstr "Wieder&holung"
 
 msgctxt "ID_PLAY_REPEAT_FOREVER"
 msgid "F&orever"
@@ -584,63 +585,63 @@ msgstr "&Wiedergabegeschwindigkeit"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_025"
 msgid "0.25 x"
-msgstr "0.25 x"
+msgstr "0,25 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_050"
 msgid "0.50 x"
-msgstr "0.50 x"
+msgstr "0,50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_075"
 msgid "0.75 x"
-msgstr "0.75 x"
+msgstr "0,75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_090"
 msgid "0.90 x"
-msgstr "0.90 x"
+msgstr "0,90 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_100"
 msgid "1.00 x"
-msgstr "1.00 x"
+msgstr "1,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_110"
 msgid "1.10 x"
-msgstr "1.10 x"
+msgstr "1,10 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_125"
 msgid "1.25 x"
-msgstr "1.25 x"
+msgstr "1,25 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_150"
 msgid "1.50 x"
-msgstr "1.50 x"
+msgstr "1,50 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_175"
 msgid "1.75 x"
-msgstr "1.75 x"
+msgstr "1,75 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_200"
 msgid "2.00 x"
-msgstr "2.00 x"
+msgstr "2,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_300"
 msgid "3.00 x"
-msgstr "3.00 x"
+msgstr "3,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_400"
 msgid "4.00 x"
-msgstr "4.00 x"
+msgstr "4,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_600"
 msgid "6.00 x"
-msgstr "6.00 x"
+msgstr "6,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_800"
 msgid "8.00 x"
-msgstr "8.00 x"
+msgstr "8,00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr "23.976 FPS"
+msgstr "23,976 FPS"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
@@ -652,7 +653,7 @@ msgstr "25 FPS"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr "59.94 FPS"
+msgstr "59,94 FPS"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
@@ -796,7 +797,7 @@ msgstr "&Homepage"
 
 msgctxt "ID_HELP_CHECKFORUPDATE"
 msgid "Check for &updates"
-msgstr "Nach &Updates suchen"
+msgstr "Nach &Update suchen"
 
 msgctxt "ID_HELP_SHOWCOMMANDLINESWITCHES"
 msgid "&Command Line Switches"

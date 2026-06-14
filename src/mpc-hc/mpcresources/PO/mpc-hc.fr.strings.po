@@ -4443,7 +4443,7 @@ msgstr "/standby\t\tMet la machine en veille après la lecture"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tMet le système en veille prolongée en fin de lecture"
+msgstr ""
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

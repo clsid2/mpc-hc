@@ -4,14 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Krzysztof, 2024
-# Łukasz Janik, 2025
+# Łukasz Janik, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Łukasz Janik, 2025\n"
+"Last-Translator: Łukasz Janik, 2026\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,9 +25,9 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"Spowoduje to zainstalowanie [name] na komputerze.\n"
+"To zainstaluje [name] na Twoim komputerze.\n"
 "\n"
-"Przed kontynuowaniem zaleca się zamknięcie wszystkich innych aplikacji."
+"Zaleca się zamknięcie wszystkich innych aplikacji przed kontynuowaniem."
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
@@ -57,9 +57,9 @@ msgid ""
 "\n"
 "Your CPU does not have those capabilities."
 msgstr ""
-"Ta wersja MPC-HC wymaga procesora z obsługą rozszerzenia SSE2.\n"
+"Ta kompilacja MPC-HC wymaga procesora obsługującego rozszerzenie SSE2.\n"
 "\n"
-"Twój procesor nie posiada tych możliwości."
+"Twój procesor nie posiada takich możliwości."
 
 msgctxt "CustomMessages_run_DownloadToolbarImages"
 msgid "Visit our Wiki page to download toolbar images"

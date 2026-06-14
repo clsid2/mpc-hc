@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Felipefpl, 2026\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/mpchc/teams/106126/pt_BR/)\n"
@@ -492,7 +492,7 @@ msgstr "R&estaurar"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "&Organizar"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -4428,7 +4428,7 @@ msgstr "/standby\t\tPõe o sistema operacional no modo de espera após o playbac
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tHibernar o sistema operacional após a reprodução"
+msgstr "/hibernate\t\tHiberna o sistema operacional após o playback"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4733,7 +4733,7 @@ msgstr "Alternar o Estilo de Substituição Padrão"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Alternar a Substituição de Todos os Estilos"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4961,7 +4961,7 @@ msgstr "Use canais do layout do sistema"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "Verificação alternativa do formato suportado"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -5013,7 +5013,7 @@ msgstr "Taxa de Amostra:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "Canais"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"

@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: ever_green, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
@@ -484,7 +484,7 @@ msgstr "元に戻す(&E)"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "並べ替え(&S)"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -4620,7 +4620,7 @@ msgstr "既定のスタイルを上書き 切り替え"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "すべてのスタイルを上書き 切り替え"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4820,7 +4820,7 @@ msgstr "システム レイアウト チャンネルを使用する"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "対応形式の代替確認"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -4872,7 +4872,7 @@ msgstr "サンプル レート:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "チャンネル"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"

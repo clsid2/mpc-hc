@@ -4311,7 +4311,7 @@ msgstr "/standby\t\t播放完毕后将操作系统置于待机模式"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\t在回放后休眠操作系统"
+msgstr ""
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"

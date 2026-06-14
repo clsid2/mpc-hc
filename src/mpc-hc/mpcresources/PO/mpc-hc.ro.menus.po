@@ -690,15 +690,15 @@ msgstr "Vol&um"
 
 msgctxt "ID_VOLUME_UP"
 msgid "&Up"
-msgstr "&Crește"
+msgstr "S&us (Crește volumul)"
 
 msgctxt "ID_VOLUME_DOWN"
 msgid "&Down"
-msgstr "&Scade"
+msgstr "Jos (Sca&de volumul)"
 
 msgctxt "ID_VOLUME_MUTE"
 msgid "&Mute"
-msgstr "&Mut"
+msgstr "&Mut (Silențios)"
 
 msgctxt "POPUP"
 msgid "Af&ter Playback"
@@ -762,7 +762,7 @@ msgstr "&Titlul meniului"
 
 msgctxt "ID_NAVIGATE_ROOTMENU"
 msgid "&Root Menu"
-msgstr "&Rădăcina meniului"
+msgstr "Meniul p&rincipal"
 
 msgctxt "ID_NAVIGATE_SUBPICTUREMENU"
 msgid "&Subtitle Menu"
@@ -770,15 +770,15 @@ msgstr "Meniul pentru &subtitrări"
 
 msgctxt "ID_NAVIGATE_AUDIOMENU"
 msgid "&Audio Menu"
-msgstr "Meniul &audio"
+msgstr "Meniul pentru pista &audio (Meniul pentru sunet)"
 
 msgctxt "ID_NAVIGATE_ANGLEMENU"
 msgid "An&gle Menu"
-msgstr "Meniul un&ghiurilor"
+msgstr "Meniul pentru un&ghiuri"
 
 msgctxt "ID_NAVIGATE_CHAPTERMENU"
 msgid "&Chapter Menu"
-msgstr "Meniul &capitolelor"
+msgstr "Meniul pentru &capitole"
 
 msgctxt "ID_FAVORITES"
 msgid "F&avorites"

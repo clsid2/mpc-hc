@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # Hugo Simões <hugo.simoes.1984@gmail.com>, 2021
-# Blackspirits <blackspirits@gmail.com>, 2025
+# Filipe Mota <blackspirits@gmail.com>, 2025
 # Hugo Carvalho <hugokarvalho@hotmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>, 2026\n"
 "Language-Team: Portuguese (Portugal) (https://app.transifex.com/mpchc/teams/106126/pt_PT/)\n"
@@ -578,11 +578,11 @@ msgstr "Aumentar o tamanho do texto da legenda"
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "Reprodução::General"
+msgstr "Reprodução::Geral"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
-msgstr "Reprodutor::General"
+msgstr "Reprodutor::Geral"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
@@ -590,7 +590,7 @@ msgstr "Reprodução::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "Legendas::General"
+msgstr "Legendas::Geral"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -777,7 +777,7 @@ msgstr "Legendas::Estilo por defeito"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Filtros internos::General"
+msgstr "Filtros Internos::Geral"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
@@ -4141,12 +4141,16 @@ msgstr "Pronto..."
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
 msgstr ""
+"/pns \"nome\"\tEspecificar o Ajuste do FotogramaPnS Pré-definido a usar (por"
+" exemplo: /pns \"%s\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
 msgstr ""
+"/pns \"px,py,zx,zy\"\tEspecificar os valores diretos da posição e do zoom no"
+" formato \"px,py,zx,zy\""
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4317,6 +4321,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Não foi possível iniciar sessão no opensubtitles.com com o nome de utilizador \"%1”.\n"
+"\n"
+"O nome de utilizador ou a palavra-passe estão incorretos.\n"
+"\n"
+"Não utilize a conta do antigo site .org."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4416,7 +4425,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tHibernar o sistema operativo após a reprodução"
+msgstr ""
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -5101,4 +5110,4 @@ msgstr "Aleatório: Desativado"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Copyright 2002-%s clsid2 e outros"
+msgstr "Direitos de autor 2002-%s clsid2 e outros"

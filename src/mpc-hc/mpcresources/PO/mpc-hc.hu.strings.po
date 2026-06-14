@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-02-23 05:10:16+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -493,7 +493,7 @@ msgstr "&Helyreállítás"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "Rendezés"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -617,11 +617,11 @@ msgstr "Lejátszás::Árnyékolók"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
-msgstr "Lejátszó: Eszköztár"
+msgstr "Lejátszó::Eszköztár"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::Toolbar Layout"
-msgstr "Lejátszó: Eszköztár elrendezés"
+msgstr "Lejátszó::Eszköztár elrendezés"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"
@@ -779,7 +779,7 @@ msgstr "Feliratok::Alapstílus"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Belső szűrők::Általános"
+msgstr "Külső szűrők::Általános"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
@@ -4434,7 +4434,7 @@ msgstr ""
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tOperációs rendszer hibernálása lejátszás után"
+msgstr "/hibernate\t\tAz operációs redszer hibernálása lejátszás után"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4737,7 +4737,7 @@ msgstr "Alapértelmezett stílus felülírás bekapcsolás"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Minden stílus felülírása be- és kikapcsolása"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4959,7 +4959,7 @@ msgstr "A rendszer csatornaelosztás használata"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "Támogatott formátum alternatív ellenőrzése"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -5011,7 +5011,7 @@ msgstr "Minta ráta:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "Csatornák"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"

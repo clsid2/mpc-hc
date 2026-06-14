@@ -10,13 +10,14 @@
 # Steve, 2024
 # Jan Klass <kissaki@posteo.de>, 2024
 # Nico, 2025
+# Maik Dießner, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-08-15 11:24:59+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Nico, 2025\n"
+"Last-Translator: Maik Dießner, 2026\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -214,7 +215,8 @@ msgstr ""
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "English translation made by MPC-HC Team"
-msgstr "Übersetzung von Luan und Markus Gaugg. Aktualisiert durch u!^DEV."
+msgstr ""
+"Übersetzung von Luan und Markus Gaugg. Aktualisiert von u!^DEV und Dstruct."
 
 msgctxt "IDD_ABOUTBOX_IDC_STATIC"
 msgid "Build information"
@@ -270,7 +272,7 @@ msgstr "Vollen Dateipfad anzeigen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO4"
 msgid "File name only"
-msgstr "Nur Dateiname anzeigen"
+msgstr "Nur Dateinamen anzeigen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO5"
 msgid "Don't prefix anything"
@@ -278,7 +280,7 @@ msgstr "Keine Beschriftung anzeigen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK13"
 msgid "Replace file name with title"
-msgstr "Dateiname mit Titel ersetzen"
+msgstr "Dateinamen mit Titel ersetzen"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "Other"
@@ -334,7 +336,7 @@ msgstr "Letzte Fenstergröße merken"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
-msgstr "Letzten Pan && Scan-Zoom merken"
+msgstr "Letzten Pan&Scan-Zoom merken"
 
 msgctxt "IDD_PPAGEDVD_IDC_STATIC"
 msgid "\"Open DVD/BD\" behavior"
@@ -350,7 +352,7 @@ msgstr "Standard-Verzeichnis für DVD/BD verwenden:"
 
 msgctxt "IDD_PPAGEDVD_IDC_STATIC"
 msgid "Preferred language for DVD"
-msgstr "Bevorzugte Sprache für DVD"
+msgstr "Bevorzugte Sprache für DVDs"
 
 msgctxt "IDD_PPAGEDVD_IDC_RADIO3"
 msgid "Menu"
@@ -434,7 +436,7 @@ msgstr "Mal(e) ab"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
 msgid "Repeat mode:"
-msgstr "Wiederholungsmodus:"
+msgstr "Modus:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "After Playback"
@@ -624,7 +626,7 @@ msgstr "Wiedergabeliste"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC1"
 msgid "Autoplay"
-msgstr "AutoPlay"
+msgstr "Automatische Wiedergabe"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK1"
 msgid "Video"
@@ -818,15 +820,15 @@ msgstr "OK"
 
 msgctxt "IDD_FAVORGANIZE_IDCANCEL"
 msgid "Cancel"
-msgstr ""
+msgstr "Abbrechen"
 
 msgctxt "IDD_FAVORGANIZE_ID_APPLY_NOW"
 msgid "Apply"
-msgstr ""
+msgstr "Übernehmen"
 
 msgctxt "IDD_PNSPRESET_DLG_CAPTION"
 msgid "PnS Frame Adjust Presets"
-msgstr "PnS Rahmenanpassung Voreinstellungen"
+msgstr "Pan-and-Scan-Bildausschnittprofile"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON2"
 msgid "New"
@@ -998,11 +1000,11 @@ msgstr "Farben und Transparenz"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "0%"
-msgstr "0%"
+msgstr "0 %"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "100%"
-msgstr "100%"
+msgstr "100 %"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
 msgid "Primary"
@@ -1042,7 +1044,7 @@ msgstr "libass für SSA/ASS verwenden"
 
 msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
 msgid "Buttons"
-msgstr "Knöpfe"
+msgstr "Tasten"
 
 msgctxt "IDD_PPAGEMOUSE_IDC_STATIC"
 msgid "Click"
@@ -1162,7 +1164,7 @@ msgstr "Größenanpassung:"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr "Direct3D9-Rendergerät verwenden"
+msgstr "Direct3D-9-Rendergerät verwenden"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
@@ -1630,11 +1632,11 @@ msgstr "&Entfernen"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON1"
 msgid "Add to pre-resize"
-msgstr "P&re-Resize hinzufügen"
+msgstr "Zu Pre-Resize hinzufügen"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON2"
 msgid "Add to post-resize"
-msgstr "P&ost-Resize hinzufügen"
+msgstr "Zu Post-Resize hinzufügen"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Shader presets"
@@ -1665,8 +1667,8 @@ msgid ""
 "MPC-VR does not support pre-resize shaders. It will run them after resize, "
 "before the post-resize shaders."
 msgstr ""
-"MPC-VR unterstützt keine Pre-Resize Shader. Diese werden nach der "
-"Größenänderung ausgeführt, jedoch vor den Post-Resize Shadern."
+"MPC Video Renderer unterstützt keine Pre-Resize-Shader. Diese werden nach "
+"der Größenänderung ausgeführt, jedoch vor den Post-Resize-Shadern."
 
 msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
@@ -1734,7 +1736,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK3"
 msgid "Enable stereo crossfeed (for headphones)"
-msgstr "Crossfeed für Kopfhörer"
+msgstr "Stereo-Crossfeed aktivieren (für Kopfhörer)"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON1"
 msgid "C. Moy"
@@ -1762,12 +1764,12 @@ msgid ""
 "around 85% when playing loud lossy-encoded content."
 msgstr ""
 "Um die Audio-Verzerrung zu minimieren, ist es empfohlen, die Lautstärke des "
-"Media Players auf 85% zu halten, wenn lauter verlustbehaftet-encodierter "
+"Media Players auf 85 % zu halten, wenn lauter verlustbehaftet-encodierter "
 "Inhalt abgespielt wird."
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_BUTTON3"
 msgid "MPC Audio Renderer Settings"
-msgstr "MPC-Audio-Renderer-Einstellungen"
+msgstr "MPC Audio Renderer-Einstellungen"
 
 msgctxt "IDD_CMD_LINE_HELP_CAPTION"
 msgid "Command line help"
@@ -1783,7 +1785,7 @@ msgstr "Fehlerberichterstattung"
 
 msgctxt "IDD_CRASH_REPORTER_IDC_STATIC"
 msgid "We are sorry, it seems MPC-HC just crashed. :("
-msgstr "Der MPC-HC wurde leider unerwartet beendet."
+msgstr "MPC-HC wurde leider unerwartet beendet."
 
 msgctxt "IDD_CRASH_REPORTER_IDC_CHECK1"
 msgid "Send a bug report to help us diagnose and fix the problem."
@@ -1843,7 +1845,7 @@ msgstr "Abbrechen"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
-msgstr "Theme"
+msgstr "Design"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK1"
 msgid "Use Modern Theme"
@@ -1851,7 +1853,7 @@ msgstr "Modernes Design verwenden"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
 msgid "Modern Theme Color:"
-msgstr "Moderne Themenfarbe:"
+msgstr "Modus:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
@@ -1903,7 +1905,7 @@ msgstr "Audio-Info"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
 msgid "FPS"
-msgstr "FPS"
+msgstr "Bildrate (FPS)"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK6"
 msgid "A-B Marks"
@@ -1935,11 +1937,11 @@ msgstr "Fensterverhalten"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK7"
 msgid "Limit window proportions on resize"
-msgstr "Fensterproportionen bei Größenänderung begrenzen"
+msgstr "Bei Größenänderung begrenzen"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK9"
 msgid "Snap to desktop edges"
-msgstr "An den Kanten der Arbeitsfläche einrasten"
+msgstr "An den Kanten des Desktops einrasten"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
 msgid "Hide Windowed Controls"
@@ -1951,11 +1953,11 @@ msgstr "Windows-Integration"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
 msgid "Use enhanced taskbar features"
-msgstr "Erweiterte Funktionen der Taskleiste verwenden"
+msgstr "Nutze erweiterte Funktionen der Taskleiste"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
 msgid "Control via Windows UI (SMTC)"
-msgstr "Steuerung über Windows UI (SMTC)"
+msgstr "Steuerung über Windows-UI (SMTC)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC21"
 msgid "Language"
@@ -1987,7 +1989,7 @@ msgstr "Symbolleistenskalierung"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Alignment:"
-msgstr ""
+msgstr "Symbolleistenausrichtung"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
@@ -1995,7 +1997,7 @@ msgstr "Aktiver Stil:"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
-msgstr "Benutzerdefinierter Knopf 1"
+msgstr "Benutzerdefinierter Button 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
@@ -2007,15 +2009,15 @@ msgstr "Rechtsklick"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
-msgstr "Benutzerdefinierter Knopf 2"
+msgstr "Benutzerdefinierter Button 2"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 3"
-msgstr "Benutzerdefinierter Knopf 3"
+msgstr "Benutzerdefinierter Button 3"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 4"
-msgstr "Benutzerdefinierter Knopf 4"
+msgstr "Benutzerdefinierter Button 4"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON1"
 msgid "Default"

@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Random Vandal <zettaboy@gmail.com>, 2020
 # Jindřich T, 2026
+# Michal Várady <miko.vaji@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Jindřich T, 2026\n"
+"Last-Translator: Michal Várady <miko.vaji@gmail.com>, 2026\n"
 "Language-Team: Czech (https://app.transifex.com/mpchc/teams/106126/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -57,7 +58,7 @@ msgstr "Náhled"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK3"
 msgid "Record Audio"
-msgstr "Zaznamenat audio"
+msgstr "Zaznamenat zvuk"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK4"
 msgid "Preview"
@@ -69,7 +70,7 @@ msgstr "V/A buffery:"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
 msgid "Audio to wav"
-msgstr "Audio do WAV"
+msgstr "Zvuk do WAV"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_BUTTON2"
 msgid "Record"
@@ -77,7 +78,7 @@ msgstr "Zaznamenat"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
 msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr "Povolit vestavěný audio switcher (vyžaduje restart)"
+msgstr "Povolit vestavěný filtr přepínače zvuku (vyžaduje restart)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
@@ -193,7 +194,7 @@ msgstr "Storno"
 
 msgctxt "IDD_OPEN_DLG_IDC_CHECK1"
 msgid "Add to playlist without opening"
-msgstr "Přidat do playlistu bez otevření"
+msgstr "Přidat do seznamu stop bez otevření"
 
 msgctxt "IDD_ABOUTBOX_CAPTION"
 msgid "About"
@@ -362,7 +363,7 @@ msgstr "Další nastavení"
 
 msgctxt "IDD_PPAGEDVD_IDC_CHECK2"
 msgid "Allow closed captions in \"Line 21 Decoder\""
-msgstr "Povolit titulky pro zvukově postižené ve filtru 'Line 21 Decoder'"
+msgstr "Povolit skryté titulky ve filtru \"Line 21 Decoder\""
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Audio"
@@ -612,7 +613,7 @@ msgstr "Adresáře"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK7"
 msgid "Playlist"
-msgstr "Playlist"
+msgstr "Seznam stop"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC1"
 msgid "Autoplay"
@@ -662,8 +663,8 @@ msgid ""
 "Open previous/next file in folder on \"Skip back/forward\" when there is "
 "only one item in playlist"
 msgstr ""
-"Pokud je v seznamu stop jen jen jedna položka, otevřít pomocí příkazů "
-"'Skočit zpět/vpřed' předchozí/následující soubor v adresáři"
+"Pokud je v seznamu stop jen jedna položka, otevřít pomocí příkazů 'Skočit "
+"zpět/vpřed' předchozí/následující soubor v adresáři"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_FASTSEEK_CHECK"
 msgid "Fast seek (on keyframe)"
@@ -1083,7 +1084,7 @@ msgstr "Video dekodér"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
 msgid "Audio decoder"
-msgstr "Audio dekodér"
+msgstr "Dekodér zvuku"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
 msgid "Internal:"
@@ -1131,7 +1132,7 @@ msgstr "Natáčení obr."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
-msgstr "Syntezátor zvuku"
+msgstr "Zvukový renderer"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_BUTTON2"
 msgid "Settings"
@@ -1568,7 +1569,8 @@ msgstr "Online vyhledávání titulků"
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK4"
 msgid "Automatically search and download subtitles if none are found locally"
 msgstr ""
-"Automaticky vyhledat a stáhnout titulky, pokud nejsou nalezeny lokální"
+"Automaticky vyhledat a stáhnout titulky, pokud nejsou nalezeny žádné místní "
+"titulky"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK5"
 msgid ""
@@ -1580,7 +1582,7 @@ msgstr ""
 msgctxt "IDD_PPAGESUBMISC_IDC_STATIC1"
 msgid "Ignore files containing any of the following word(s):"
 msgstr ""
-"Ignorovat soubory jejichž název obsahuje některé z následujících slov:"
+"Ignorovat soubory, jejichž název obsahuje některé z následujících slov:"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_STATIC2"
 msgid "Languages in order of preference:"
@@ -1859,7 +1861,7 @@ msgstr "Výška moderního posuvníku:"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK2"
 msgid "Show chapter marks on seekbar"
-msgstr "Ukaž kapitoly na posuvníku"
+msgstr "Ukázat kapitoly na posuvníku"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
@@ -1911,7 +1913,7 @@ msgstr "Zobrazení nad videem (OSD)"
 
 msgctxt "IDD_PPAGETHEME_IDC_SHOW_OSD"
 msgid "Show OSD (requires restart)"
-msgstr "Ukaž OSD (vyžaduje restart)"
+msgstr "Ukázat OSD (vyžaduje restart)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC6"
 msgid "Font:"

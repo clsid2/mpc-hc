@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-14 14:38:47+0000\n"
+"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Андрей Станков <astankov84@gmail.com>, 2026\n"
 "Language-Team: Bulgarian (https://app.transifex.com/mpchc/teams/106126/bg/)\n"
@@ -490,7 +490,7 @@ msgstr "В&ъзстанови"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "&Сортиране"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -776,7 +776,7 @@ msgstr "Субтитри::Стил по подразбиране"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS"
 msgid "Internal Filters::General"
-msgstr "Вътрешни филтри::Общи"
+msgstr "Вътрешни Филтри::Общи"
 
 msgctxt "IDD_PPAGELOGO"
 msgid "Player::Logo"
@@ -4417,7 +4417,7 @@ msgstr "/standby\t\tПоставя компютъра в режим стендб
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr "/hibernate\t\tЗаспиване на компютъра след края на изпълнението"
+msgstr "/hibernate\tЗаспиване на компютъра след края на изпълнението"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4719,7 +4719,7 @@ msgstr "Упр. заместване на стил по подразбиране
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Упр. заместване на всички стилове "
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4942,7 +4942,7 @@ msgstr "Използване на системна настройка на ка�
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "Алтернативна проверка за поддържан формат"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -4994,7 +4994,7 @@ msgstr "Побитова скорост:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "Канали"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"

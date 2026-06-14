@@ -4,15 +4,15 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Gaugg_Markus, 2020
-# fc5b3681a8011aa2097a1a11b3d42f55_901a704, 2021
+# Maik Dießner, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2017-07-30 20:54:11+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: fc5b3681a8011aa2097a1a11b3d42f55_901a704, 2021\n"
-"Language-Team: German (https://www.transifex.com/mpchc/teams/106126/de/)\n"
+"Last-Translator: Maik Dießner, 2026\n"
+"Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,12 +25,12 @@ msgid ""
 "\n"
 "It is recommended that you close all other applications before continuing."
 msgstr ""
-"Hiermit wird der [Name] installiert. Bitte alle anderen Anwendungen "
+"Hiermit wird der [name] installiert. Bitte alle anderen Anwendungen "
 "schließen, bevor Sie mit der Installation fortfahren."
 
 msgctxt "Messages_WinVersionTooLowError"
 msgid "[name] requires Windows Vista or newer to run."
-msgstr "Systemvoraussetzung ist Windows Vista oder neuer."
+msgstr "[name] erfordert Windows Vista oder neuer."
 
 msgctxt "CustomMessages_comp_mpciconlib"
 msgid "Icon Library"

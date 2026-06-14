@@ -6,16 +6,15 @@
 # Orzełek, 2020
 # Rudolph RD, 2020
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
-# Mirosław Żylewicz, 2021
 # Krzysztof, 2024
-# Łukasz Janik, 2025
+# Łukasz Janik, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Łukasz Janik, 2025\n"
+"Last-Translator: Łukasz Janik, 2026\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,7 +28,7 @@ msgstr "&Plik"
 
 msgctxt "ID_FILE_OPENQUICK"
 msgid "&Quick Open File..."
-msgstr "Szybkie &otwieranie..."
+msgstr "&Szybkie otwieranie pliku..."
 
 msgctxt "ID_FILE_OPENMEDIA"
 msgid "&Open File/URL..."
@@ -49,11 +48,11 @@ msgstr "Otwórz &folder..."
 
 msgctxt "ID_FILE_OPENDISC"
 msgid "O&pen Disc"
-msgstr "Otwórz pły&tę"
+msgstr "O&twórz płytę"
 
 msgctxt "ID_RECENT_FILES"
 msgid "Recent &Files"
-msgstr "Ostatnio otwa&rte"
+msgstr "Ostatnio &otwarte"
 
 msgctxt "ID_FILE_CLOSE_AND_RESTORE"
 msgid "&Close"
@@ -65,7 +64,7 @@ msgstr "Z&apisz kopię jako..."
 
 msgctxt "ID_FILE_SAVE_IMAGE"
 msgid "Save &Image..."
-msgstr "Zapisz o&braz..."
+msgstr "Zapisz &obraz..."
 
 msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
@@ -73,7 +72,7 @@ msgstr "Zapisz &miniatury..."
 
 msgctxt "POPUP"
 msgid "S&ubtitles"
-msgstr "Napisy"
+msgstr "N&apisy"
 
 msgctxt "ID_FILE_SUBTITLES_LOAD"
 msgid "&Load Subtitles..."
@@ -81,7 +80,7 @@ msgstr "&Wczytaj napisy..."
 
 msgctxt "ID_FILE_SUBTITLES_SAVE"
 msgid "Save S&ubtitles..."
-msgstr "&Zapisz napisy..."
+msgstr "Zapisz n&apisy..."
 
 msgctxt "ID_FILE_SUBTITLES_DOWNLOAD"
 msgid "&Download Subtitles..."
@@ -89,11 +88,11 @@ msgstr "&Pobierz napisy..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "&Właściwości"
+msgstr "W&łaściwości"
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
-msgstr "Otwórz lokalizację pliku"
+msgstr "Otwórz &lokalizację pliku"
 
 msgctxt "ID_FILE_EXIT"
 msgid "E&xit"
@@ -113,7 +112,7 @@ msgstr "Pasek &postępu"
 
 msgctxt "ID_VIEW_CONTROLS"
 msgid "&Controls"
-msgstr "Przy&ciski sterowania"
+msgstr "Przy&ciski"
 
 msgctxt "ID_VIEW_INFORMATION"
 msgid "&Information"
@@ -165,7 +164,7 @@ msgstr "P&ełny ekran"
 
 msgctxt "POPUP"
 msgid "&Zoom"
-msgstr "Rozmiar &okna"
+msgstr "&Powiększenie"
 
 msgctxt "ID_VIEW_ZOOM_25"
 msgid "&25%"
@@ -185,23 +184,23 @@ msgstr "&200%"
 
 msgctxt "ID_VIEW_ZOOM_AUTOFIT"
 msgid "Auto &Fit"
-msgstr "&Dopasuj automatyczne"
+msgstr "Automatyczne &dopasowanie"
 
 msgctxt "POPUP"
 msgid "R&enderer Settings"
-msgstr "Ustawienia &renderowania"
+msgstr "Ustawienia &renderera"
 
 msgctxt "ID_VIEW_TEARING_TEST"
 msgid "&Tearing Test"
-msgstr "&Test szarpania obrazu"
+msgstr "&Test rozrywania obrazu"
 
 msgctxt "ID_VIEW_DISPLAY_RENDERER_STATS"
 msgid "&Display Statistics"
-msgstr "Wyświetlaj &statystyki"
+msgstr "&Wyświetl statystyki"
 
 msgctxt "ID_VIEW_OSD_DISPLAY_TIME"
 msgid "Display Current T&ime"
-msgstr "Wyświetlaj aktualny &czas"
+msgstr "Wyświetl aktualny &czas"
 
 msgctxt "ID_VIEW_OSD_SHOW_FILENAME"
 msgid "Show &File Name"
@@ -221,15 +220,15 @@ msgstr "&16 – 235"
 
 msgctxt "POPUP"
 msgid "&Presentation"
-msgstr "&Wyświetlanie"
+msgstr "&Prezentacja"
 
 msgctxt "ID_VIEW_D3DFULLSCREEN"
 msgid "D3D Fullscreen &Mode"
-msgstr "Pełny ekran &D3D"
+msgstr "Tryb pełnoekranowy &D3D"
 
 msgctxt "ID_VIEW_FULLSCREENGUISUPPORT"
 msgid "D3D Fullscreen &GUI Support"
-msgstr "&Interfejs graficzny na pełnym ekranie D3D"
+msgstr "Obsługa &GUI w trybie pełnoekranowym D3D"
 
 msgctxt "ID_VIEW_HIGHCOLORRESOLUTION"
 msgid "10-bit &RGB Output"
@@ -237,7 +236,7 @@ msgstr "&Wyjście 10-bitowe RGB"
 
 msgctxt "ID_VIEW_FORCEINPUTHIGHCOLORRESOLUTION"
 msgid "Force 10-bit RGB &Input"
-msgstr "W&ymuszenie 10-bitowego wejścia RGB"
+msgstr "Wymuś 10-bitowe &wejście RGB"
 
 msgctxt "ID_VIEW_FULLFLOATINGPOINTPROCESSING"
 msgid "&Full Floating Point Processing"
@@ -245,15 +244,15 @@ msgstr "&Pełne przetwarzanie zmiennoprzecinkowe"
 
 msgctxt "ID_VIEW_HALFFLOATINGPOINTPROCESSING"
 msgid "&Half Floating Point Processing"
-msgstr "&Niepełne przetwarzanie zmiennoprzecinkowe"
+msgstr "&Połowiczne przetwarzanie zmiennoprzecinkowe"
 
 msgctxt "ID_VIEW_DISABLEDESKTOPCOMPOSITION"
 msgid "Disable desktop composition (&Aero)"
-msgstr "Wyłącz &kompozycję pulpitu (Aero)"
+msgstr "Wyłącz kompozycję pulpitu (&Aero)"
 
 msgctxt "ID_VIEW_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time &Correction"
-msgstr "Korekcja &czasu klatki"
+msgstr "Włącz &korekcję czasu klatek"
 
 msgctxt "POPUP"
 msgid "&Color Management"
@@ -349,27 +348,27 @@ msgstr "&Kontrola GPU"
 
 msgctxt "ID_VIEW_FLUSHGPU_BEFOREVSYNC"
 msgid "Flush GPU &before VSync"
-msgstr "Opróżniaj bufor przed &synchronizacją pionową"
+msgstr "Opróżniaj GPU &przed synchronizacją pionową"
 
 msgctxt "ID_VIEW_FLUSHGPU_AFTERPRESENT"
 msgid "Flush GPU &after Present"
-msgstr "Opróżniaj bufor po &wyświetleniu"
+msgstr "Opróżnij GPU &po Present"
 
 msgctxt "ID_VIEW_FLUSHGPU_WAIT"
 msgid "&Wait for flushes"
-msgstr "&Oczekuj na opróżnienie bufora"
+msgstr "&Czekaj na opróżnienia"
 
 msgctxt "POPUP"
 msgid "R&eset"
-msgstr "Przywróć &ustawienia"
+msgstr "&Resetuj ustawienia"
 
 msgctxt "ID_VIEW_RESET_DEFAULT"
 msgid "Reset to &default renderer settings"
-msgstr "Zresetuj ustawienia renderowania"
+msgstr "Resetuj ustawienia renderera do &domyślnych"
 
 msgctxt "ID_VIEW_RESET_OPTIMAL"
 msgid "Reset to &optimal renderer settings"
-msgstr "Zresetuj ustawienia renderowania do &optymalnych"
+msgstr "Resetuj ustawienia renderera do &optymalnych"
 
 msgctxt "POPUP"
 msgid "Video &Frame"
@@ -389,11 +388,11 @@ msgstr "&200%"
 
 msgctxt "ID_VIEW_VF_STRETCH"
 msgid "&Stretch To Window"
-msgstr "Rozciągnięcie do &krawędzi okna"
+msgstr "&Rozciągnij do okna"
 
 msgctxt "ID_VIEW_VF_FROMINSIDE"
 msgid "Touch Window From &Inside"
-msgstr "Dopasowanie do &wewnątrz"
+msgstr "Dopasowanie od &wewnątrz"
 
 msgctxt "ID_VIEW_VF_ZOOM1"
 msgid "Zoom &1"
@@ -405,7 +404,7 @@ msgstr "Powiększenie &2"
 
 msgctxt "ID_VIEW_VF_FROMOUTSIDE"
 msgid "Touch Window From &Outside"
-msgstr "Dopasowanie na &zewnątrz"
+msgstr "Dopasowanie od &zewnątrz"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
@@ -417,35 +416,35 @@ msgstr "&Domyślne (DAR)"
 
 msgctxt "ID_ASPECTRATIO_4_3"
 msgid "&4:3"
-msgstr "4:3"
+msgstr "&4:3"
 
 msgctxt "ID_ASPECTRATIO_5_4"
 msgid "&5:4"
-msgstr "5:4"
+msgstr "&5:4"
 
 msgctxt "ID_ASPECTRATIO_16_9"
 msgid "&16:9"
-msgstr "16:9"
+msgstr "&16:9"
 
 msgctxt "ID_ASPECTRATIO_235_100"
 msgid "&235:100"
-msgstr "235:100"
+msgstr "&235:100"
 
 msgctxt "ID_ASPECTRATIO_185_100"
 msgid "1&85:100"
-msgstr "185:100"
+msgstr "1&85:100"
 
 msgctxt "ID_ASPECTRATIO_SAR"
 msgid "Assume &square pixels (SAR)"
-msgstr "Załóż &kwadratowe piksele (SAR)"
+msgstr "Przyjmuj &kwadratowe piksele (SAR)"
 
 msgctxt "ID_VIEW_VF_COMPMONDESKARDIFF"
 msgid "&Correct Monitor/Desktop AR Diff"
-msgstr "Koryguj różnicę proporcji &ekranu i pulpitu"
+msgstr "&Korekcja różnicy proporcji monitora/pulpitu"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
-msgstr "Skalowanie i kadrowanie"
+msgstr "S&kalowanie i kadrowanie"
 
 msgctxt "ID_VIEW_INCSIZE"
 msgid "&Increase Size"
@@ -493,19 +492,19 @@ msgstr "Wyśrodku&j"
 
 msgctxt "ID_PANSCAN_ROTATEZM"
 msgid "Rotate Cloc&kwise"
-msgstr "Obróć w prawo"
+msgstr "Obróć w pra&wo"
 
 msgctxt "ID_PANSCAN_ROTATEZ270"
 msgid "Rotate Counter-Clock&wise"
-msgstr "Obróć w lewo"
+msgstr "Obróć w le&wo"
 
 msgctxt "ID_PANSCAN_ROTATEXM"
 msgid "&Flip Vertically"
-msgstr "Obróć w pionie"
+msgstr "&Obróć w pionie"
 
 msgctxt "ID_PANSCAN_ROTATEYM"
 msgid "&Mirror"
-msgstr "&Odbij lustrzanie"
+msgstr "&Odbicie lustrzane"
 
 msgctxt "ID_VIEW_RESET"
 msgid "Re&set"
@@ -641,19 +640,19 @@ msgstr "8.00 x"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
-msgstr "23.976 fps"
+msgstr "23.976 kl./s"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS24"
 msgid "24 fps"
-msgstr "24 fps"
+msgstr "24 kl./s"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS25"
 msgid "25 fps"
-msgstr "25 fps"
+msgstr "25 kl./s"
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS59"
 msgid "59.94 fps"
-msgstr "59.94 fps"
+msgstr "59.94 kl./s"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
@@ -713,7 +712,7 @@ msgstr "Nic nie &rób"
 
 msgctxt "ID_AFTERPLAYBACK_PLAYNEXT"
 msgid "Play &next file in the folder"
-msgstr "Otwórz &następny plik w folderze"
+msgstr "Odtwórz &następny plik w folderze"
 
 msgctxt "ID_AFTERPLAYBACK_MONITOROFF"
 msgid "Turn off the &monitor"
