@@ -3,6 +3,7 @@
   <PropertyGroup Label="Configuration">
     <WindowsTargetPlatformVersion Condition="'$(MPCHC_WINSDK_VER)' == ''">8.1</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(MPCHC_WINSDK_VER)' != ''">$(MPCHC_WINSDK_VER)</WindowsTargetPlatformVersion>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '18.0'">v145</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '17.0'">v143</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
