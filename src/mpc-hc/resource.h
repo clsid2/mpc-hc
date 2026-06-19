@@ -107,6 +107,7 @@
 #define ID_VIEW_PRESETS_MINIMAL         827
 #define ID_VIEW_PRESETS_COMPACT         828
 #define ID_VIEW_PRESETS_NORMAL          829
+#define ID_VIEW_PRESETS_CUSTOM          33463
 #define ID_VIEW_FULLSCREEN              830
 #define ID_VIEW_FULLSCREEN_SECONDARY    831
 #define ID_VIEW_ZOOM_50                 832
@@ -427,6 +428,12 @@
 #define IDC_CHECK6                      11085
 #define IDC_CHECK7                      11086
 #define IDC_CHECK8                      11087
+#define IDC_CUSTOMPRESET_MENU           22094
+#define IDC_CUSTOMPRESET_SEEKBAR        22095
+#define IDC_CUSTOMPRESET_TOOLBAR        22096
+#define IDC_CUSTOMPRESET_INFO           22097
+#define IDC_CUSTOMPRESET_STATS          22098
+#define IDC_CUSTOMPRESET_STATUSBAR      22099
 #define IDC_CHECK9                      11088
 #define IDC_CHECK10                     11089
 #define IDC_CHECK11                     11090
@@ -1809,14 +1816,20 @@
 #define IDS_ABOUT_COPYRIGHT             58007
 #define IDS_ABOUT_COPYRIGHT_YEAR        58008
 #define IDS_PLAYLIST_SORT               58009
+#define IDS_TIME_ON_SEEKBAR_NEVER       58010
+#define IDS_TIME_ON_SEEKBAR_ALWAYS      58011
+#define IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN 58012
+#define IDS_PPAGEADVANCED_TIME_ON_SEEKBAR 58013
+#define IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW 58014
+#define IDS_AG_VIEW_CUSTOM              58015
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20076
-#define _APS_NEXT_COMMAND_VALUE         33462
-#define _APS_NEXT_CONTROL_VALUE         22094
+#define _APS_NEXT_COMMAND_VALUE         33464
+#define _APS_NEXT_CONTROL_VALUE         22100
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

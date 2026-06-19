@@ -466,7 +466,7 @@ private:
 
     bool m_bIsMPCVRExclusiveMode = false;
 
-    void SendStatusMessage(CString msg, int nTimeOut);
+    void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
     CString m_tempstatus_msg, m_closingmsg;
 
     REFERENCE_TIME m_rtDurationOverride;
@@ -1015,6 +1015,8 @@ public:
     afx_msg void OnUpdateViewCompact(CCmdUI* pCmdUI);
     afx_msg void OnViewNormal();
     afx_msg void OnUpdateViewNormal(CCmdUI* pCmdUI);
+    afx_msg void OnViewCustom();
+    afx_msg void OnUpdateViewCustom(CCmdUI* pCmdUI);
     afx_msg void OnViewFullscreen();
     afx_msg void OnViewFullscreenSecondary();
     afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
@@ -1385,6 +1387,17 @@ public:
     };
 
     void UpdateControlState(UpdateControlTarget target);
+
+    UINT GetNormalPresetCS() const;
+    void ApplyTimeOnSeekBarChange();
+
+    // Reveal the status bar for a message when a preset hides it; stays until next media load (issue #3256).
+    bool m_bStatusBarForcedForMessage = false;
+    bool IsStatusBarForcedForMessage() const { return m_bStatusBarForcedForMessage; }
+    void ShowStatusBarForMessage();
+    void RestoreStatusBarMessageHold();
+    void SetClosingError(const CString& msg); // set the closing message and reveal the status bar (errors)
+    void SetClosingError(UINT nIDmsg);
 
     void ReloadMenus();
 

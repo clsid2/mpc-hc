@@ -234,6 +234,8 @@ private:
         CONFIRM_FILE_DELETE,
         LIBASS_FOR_SRT,
         SHOW_VOLUME_PERCENTAGE,
+        TIME_ON_SEEKBAR,
+        HIDE_STATUSBAR_NORMALVIEW,
     };
 
     enum {

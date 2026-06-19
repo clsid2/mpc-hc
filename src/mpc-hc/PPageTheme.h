@@ -64,6 +64,13 @@ private:
     BOOL m_bHideWindowedControls;
     BOOL m_bUseEnhancedTaskBar;
     BOOL m_bUseSMTC;
+    // Custom view preset (hotkey 4) definition
+    BOOL m_bCustomPresetMenu;
+    BOOL m_bCustomPresetSeekbar;
+    BOOL m_bCustomPresetToolbar;
+    BOOL m_bCustomPresetInfo;
+    BOOL m_bCustomPresetStats;
+    BOOL m_bCustomPresetStatusbar;
     BOOL m_bShowPreview;
     BOOL m_bShowTime;
     CMPCThemeRadioOrCheck m_ShowTimeCtrl;

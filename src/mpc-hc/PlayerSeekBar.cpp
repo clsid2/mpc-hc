@@ -24,6 +24,7 @@
 #include "MainFrm.h"
 #include "mplayerc.h"
 #include "CMPCTheme.h"
+#include "WinAPIUtils.h"
 
 
 #define TOOLTIP_SHOW_DELAY 100
@@ -101,6 +102,8 @@ void CPlayerSeekBar::EventCallback(MpcEvent ev)
         case MpcEvent::DPI_CHANGED:
             m_pEnabledThumb = nullptr;
             m_pDisabledThumb = nullptr;
+            m_timeFont.DeleteObject(); // rebuilt on next use
+            m_timeText.Empty();
             break;
 
         default:
@@ -289,6 +292,57 @@ CRect CPlayerSeekBar::GetChannelRect() const
     }
 
     return r;
+}
+
+bool CPlayerSeekBar::ShowTimeOnSeekBar() const
+{
+    if (!AppIsThemeLoaded()) {
+        return false; // time on the seekbar is only supported with the modern theme
+    }
+    const CAppSettings& s = AfxGetAppSettings();
+    switch (s.nTimeOnSeekBar) {
+        case TIME_ON_SEEKBAR_ALWAYS:
+            return true;
+        case TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN:
+            return !m_pMainFrame->m_controls.ControlChecked(CMainFrameControls::Toolbar::STATUS);
+        default:
+            return false;
+    }
+}
+
+void CPlayerSeekBar::EnsureTimeFont() const
+{
+    LOGFONT lf;
+    GetStatusFont(&lf);
+    LONG baseHeight = m_pMainFrame->m_dpi.ScaleSystemToOverrideY(lf.lfHeight);
+    LONG baseMag = baseHeight < 0 ? -baseHeight : baseHeight;
+
+    // Scale the time font to the seekbar height (~2/3 of the channel height), but never below
+    // the normal status-bar font, so a short seekbar keeps the default size while a tall one
+    // (modern "fill" mode) gets proportionally larger text.
+    LONG channelH = GetChannelRect().Height();
+    LONG mag = (channelH > 0) ? std::max(baseMag, (LONG)MulDiv(channelH, 2, 3)) : baseMag;
+
+    if (!(HFONT)m_timeFont || m_timeFontHeight != mag) {
+        m_timeFont.DeleteObject();
+        lf.lfHeight = -mag; // negative => character height
+        VERIFY(m_timeFont.CreateFontIndirect(&lf));
+        m_timeFontHeight = mag;
+    }
+}
+
+void CPlayerSeekBar::UpdateTime()
+{
+    // Only show a live time string while there is a seekable duration (and the modern theme,
+    // via ShowTimeOnSeekBar); otherwise clear it so nothing is overlaid on the channel.
+    CString newText;
+    if (ShowTimeOnSeekBar() && m_bHasDuration) {
+        newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
+    }
+    if (newText != m_timeText) {
+        m_timeText = newText;
+        Invalidate();
+    }
 }
 
 CRect CPlayerSeekBar::GetThumbRect() const
@@ -732,7 +786,21 @@ void CPlayerSeekBar::OnPaint()
         }
     }
 
-
+    // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time
+    // right-aligned over the channel. No reserved area, so nothing shows until there is a live time.
+    if (ShowTimeOnSeekBar() && m_bHasDuration && !m_timeText.IsEmpty()) {
+        dc.SelectClipRgn(nullptr); // channel/thumb drawing restricted the clip region
+        EnsureTimeFont();
+        CFont* pOldFont = dc.SelectObject(&m_timeFont);
+        int oldBkMode = dc.SetBkMode(TRANSPARENT);
+        COLORREF oldColor = dc.SetTextColor(CMPCTheme::TextFGColor);
+        CRect rt(channelRect);
+        rt.right -= m_pMainFrame->m_dpi.ScaleX(4);
+        dc.DrawText(m_timeText, rt, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+        dc.SetTextColor(oldColor);
+        dc.SetBkMode(oldBkMode);
+        dc.SelectObject(pOldFont);
+    }
 }
 
 void CPlayerSeekBar::OnLButtonDown(UINT nFlags, CPoint point)
@@ -909,6 +977,7 @@ LRESULT CPlayerSeekBar::OnThemeChanged()
 {
     m_pEnabledThumb = nullptr;
     m_pDisabledThumb = nullptr;
+    m_timeFont.DeleteObject();
     return __super::OnThemeChanged();
 }
 

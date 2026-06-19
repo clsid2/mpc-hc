@@ -182,7 +182,9 @@ void CPlayerStatusBar::Relayout()
         CRect rtime = rfull;
         CString str;
         m_time.GetWindowText(str);
-        if (str.IsEmpty()) {
+        // When the time is shown on the seekbar instead (modern theme only), collapse the
+        // status-bar time control (but keep its text so GetStatusTimer() still feeds the seekbar).
+        if (str.IsEmpty() || (s.nTimeOnSeekBar == TIME_ON_SEEKBAR_ALWAYS && AppIsThemeLoaded())) {
             rtime.left = rtime.right;
         } else {
             rtime.left = rtime.right - pDC->GetTextExtent(str).cx;

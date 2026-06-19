@@ -56,6 +56,12 @@ CPPageTheme::CPPageTheme()
     , m_bHideWindowedControls(FALSE)
     , m_bUseEnhancedTaskBar(TRUE)
     , m_bUseSMTC(FALSE)
+    , m_bCustomPresetMenu(FALSE)
+    , m_bCustomPresetSeekbar(TRUE)
+    , m_bCustomPresetToolbar(TRUE)
+    , m_bCustomPresetInfo(FALSE)
+    , m_bCustomPresetStats(FALSE)
+    , m_bCustomPresetStatusbar(FALSE)
 {
     EventRouter::EventSelection fires;
     fires.insert(MpcEvent::CHANGING_UI_LANGUAGE);
@@ -107,6 +113,13 @@ void CPPageTheme::DoDataExchange(CDataExchange* pDX)
     DDX_Check(pDX, IDC_CHECK10, m_bHideWindowedControls);
     DDX_Check(pDX, IDC_CHECK_ENHANCED_TASKBAR, m_bUseEnhancedTaskBar);
     DDX_Check(pDX, IDC_CHECK11, m_bUseSMTC);
+
+    DDX_Check(pDX, IDC_CUSTOMPRESET_MENU, m_bCustomPresetMenu);
+    DDX_Check(pDX, IDC_CUSTOMPRESET_SEEKBAR, m_bCustomPresetSeekbar);
+    DDX_Check(pDX, IDC_CUSTOMPRESET_TOOLBAR, m_bCustomPresetToolbar);
+    DDX_Check(pDX, IDC_CUSTOMPRESET_INFO, m_bCustomPresetInfo);
+    DDX_Check(pDX, IDC_CUSTOMPRESET_STATS, m_bCustomPresetStats);
+    DDX_Check(pDX, IDC_CUSTOMPRESET_STATUSBAR, m_bCustomPresetStatusbar);
 }
 
 
@@ -227,6 +240,13 @@ BOOL CPPageTheme::OnInitDialog()
     m_bUseEnhancedTaskBar = s.bUseEnhancedTaskBar;
     m_bUseSMTC = s.bUseSMTC;
 
+    m_bCustomPresetMenu = (s.nCustomPresetCaption == MODE_SHOWCAPTIONMENU);
+    m_bCustomPresetSeekbar = !!(s.nCustomPresetControlState & CS_SEEKBAR);
+    m_bCustomPresetToolbar = !!(s.nCustomPresetControlState & CS_TOOLBAR);
+    m_bCustomPresetInfo = !!(s.nCustomPresetControlState & CS_INFOBAR);
+    m_bCustomPresetStats = !!(s.nCustomPresetControlState & CS_STATSBAR);
+    m_bCustomPresetStatusbar = !!(s.nCustomPresetControlState & CS_STATUSBAR);
+
     AdjustDynamicWidgets();
     CreateToolTip();
     EnableThemedDialogTooltips(this);
@@ -318,6 +338,15 @@ BOOL CPPageTheme::OnApply()
     }
 
     s.bUseSMTC = m_bUseSMTC;
+
+    s.nCustomPresetCaption = m_bCustomPresetMenu ? MODE_SHOWCAPTIONMENU : MODE_HIDEMENU;
+    UINT customCS = 0;
+    if (m_bCustomPresetSeekbar)   customCS |= CS_SEEKBAR;
+    if (m_bCustomPresetToolbar)   customCS |= CS_TOOLBAR;
+    if (m_bCustomPresetInfo)      customCS |= CS_INFOBAR;
+    if (m_bCustomPresetStats)     customCS |= CS_STATSBAR;
+    if (m_bCustomPresetStatusbar) customCS |= CS_STATUSBAR;
+    s.nCustomPresetControlState = customCS;
 
     return __super::OnApply();
 }

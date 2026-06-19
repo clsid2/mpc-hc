@@ -54,12 +54,13 @@ private:
     EventClient m_eventc;
     void EventCallback(MpcEvent ev);
 
-    void Relayout();
     int m_initialWindowDPI = 0;
 
 public:
     CPlayerStatusBar(CMainFrame* pMainFrame);
     virtual ~CPlayerStatusBar();
+
+    void Relayout();
 
     void Clear();
 

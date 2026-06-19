@@ -200,6 +200,7 @@ CAppSettings::CAppSettings()
     , fUseSearchInFolder(false)
     , fUseSeekbarHover(true)
     , nHoverPosition(TIME_TOOLTIP_ABOVE_SEEKBAR)
+    , nTimeOnSeekBar(TIME_ON_SEEKBAR_NEVER)
     , nOSDSize(0)
     , bHideWindowedMousePointer(true)
     , iBrightness(0)
@@ -211,6 +212,9 @@ CAppSettings::CAppSettings()
     , eCaptionMenuMode(MODE_SHOWCAPTIONMENU)
     , fHideNavigation(false)
     , bHideCaptureSettings(false)
+    , bHideStatusbarNormalView(false)
+    , nCustomPresetControlState(CS_SEEKBAR | CS_TOOLBAR)
+    , nCustomPresetCaption(MODE_HIDEMENU)
     , nCS(CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR)
     , language(LANGID(-1))
     , fEnableSubtitles(true)
@@ -633,6 +637,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_VIEW_PRESETS_MINIMAL,            '1', 0,                 IDS_AG_VIEW_MINIMAL },
     { ID_VIEW_PRESETS_COMPACT,            '2', 0,                 IDS_AG_VIEW_COMPACT },
     { ID_VIEW_PRESETS_NORMAL,             '3', 0,                 IDS_AG_VIEW_NORMAL },
+    { ID_VIEW_PRESETS_CUSTOM,             '4', 0,                 IDS_AG_VIEW_CUSTOM },
     { ID_VIEW_FULLSCREEN,           VK_RETURN, FALT,              IDS_AG_FULLSCREEN, 0, wmcmd::LDBLCLK },
     { ID_VIEW_FULLSCREEN_SECONDARY,    VK_F11, 0,                 IDS_MPLAYERC_39 },
     { ID_VIEW_ZOOM_25,               VK_OEM_3, FALT,              IDS_AG_ZOOM_25 }, /* VK_OEM_3 is `~ on US keyboards*/
@@ -1106,6 +1111,10 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SEARCH_IN_FOLDER, fUseSearchInFolder);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_USE_TIME_TOOLTIP, fUseSeekbarHover);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_TOOLTIP_POSITION, nHoverPosition);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_ON_SEEKBAR, nTimeOnSeekBar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HIDE_STATUSBAR_NORMALVIEW, bHideStatusbarNormalView);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CONTROLSTATE, nCustomPresetControlState);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, nCustomPresetCaption);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MPC_OSD_SIZE, nOSDSize);
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_MPC_OSD_FONT, strOSDFont);
 
@@ -1736,6 +1745,17 @@ void CAppSettings::LoadSettings()
     fUseSearchInFolder = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SEARCH_IN_FOLDER, TRUE);
     fUseSeekbarHover = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_TIME_TOOLTIP, TRUE);
     nHoverPosition = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_TOOLTIP_POSITION, TIME_TOOLTIP_ABOVE_SEEKBAR);
+    nTimeOnSeekBar = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_ON_SEEKBAR, TIME_ON_SEEKBAR_NEVER);
+    if (nTimeOnSeekBar < TIME_ON_SEEKBAR_NEVER || nTimeOnSeekBar > TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN) {
+        nTimeOnSeekBar = TIME_ON_SEEKBAR_NEVER;
+    }
+    bHideStatusbarNormalView = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HIDE_STATUSBAR_NORMALVIEW, FALSE);
+    nCustomPresetControlState = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CONTROLSTATE, CS_SEEKBAR | CS_TOOLBAR);
+    nCustomPresetControlState &= (CS_SEEKBAR | CS_TOOLBAR | CS_INFOBAR | CS_STATSBAR | CS_STATUSBAR); // drop invalid bits
+    nCustomPresetCaption = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, MODE_HIDEMENU);
+    if (nCustomPresetCaption < 0 || nCustomPresetCaption >= MODE_COUNT) {
+        nCustomPresetCaption = MODE_HIDEMENU;
+    }
     nOSDSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MPC_OSD_SIZE, 18);
     LOGFONT lf;
     GetMessageFont(&lf);
@@ -2703,6 +2723,9 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                         break;
                     case 3:
                         nCLSwitches |= CLSW_PRESET3;
+                        break;
+                    case 4:
+                        nCLSwitches |= CLSW_PRESET4;
                         break;
                     default:
                         nCLSwitches |= CLSW_UNRECOGNIZEDSWITCH;

@@ -73,6 +73,13 @@ private:
     std::unique_ptr<CDC> m_pDisabledThumb;
     CRect m_lastThumbRect;
 
+    CString m_timeText;                 // currently displayed time string (empty when none)
+    mutable CFont m_timeFont;           // font for the time text
+    mutable int   m_timeFontHeight = 0; // char height the cached font was built for (px)
+
+    bool ShowTimeOnSeekBar() const;
+    void EnsureTimeFont() const;
+
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
     virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz) override;
 
@@ -112,6 +119,8 @@ public:
     bool DraggingThumb();
     void PreviewWindowShow(const CPoint point);
     void UpdateToolTipTextPreview(REFERENCE_TIME rtPos);
+
+    void UpdateTime();
 
 private:
     DECLARE_MESSAGE_MAP()

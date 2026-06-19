@@ -90,7 +90,8 @@ enum : UINT64 {
     CLSW_PRESET1 = CLSW_RESET << 1,
     CLSW_PRESET2 = CLSW_PRESET1 << 1,
     CLSW_PRESET3 = CLSW_PRESET2 << 1,
-    CLSW_CONFIGLAVSPLITTER = CLSW_PRESET3 << 1,
+    CLSW_PRESET4 = CLSW_PRESET3 << 1,
+    CLSW_CONFIGLAVSPLITTER = CLSW_PRESET4 << 1,
     CLSW_CONFIGLAVAUDIO = CLSW_CONFIGLAVSPLITTER << 1,
     CLSW_CONFIGLAVVIDEO = CLSW_CONFIGLAVAUDIO << 1,
     CLSW_MUTE = CLSW_CONFIGLAVVIDEO << 1,
@@ -188,6 +189,12 @@ enum {
     TIME_TOOLTIP_BELOW_SEEKBAR
 };
 
+enum {
+    TIME_ON_SEEKBAR_NEVER,
+    TIME_ON_SEEKBAR_ALWAYS,
+    TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN
+};
+
 enum DVB_RebuildFilterGraph {
     DVB_REBUILD_FG_NEVER = 0,
     DVB_REBUILD_FG_WHEN_SWITCHING,
@@ -272,7 +279,7 @@ struct AutoChangeFullscreenMode {
     unsigned                    uDelay = 0u;
 };
 
-#define ACCEL_LIST_SIZE 203
+#define ACCEL_LIST_SIZE 204
 
 struct wmcmd_base : public ACCEL {
     BYTE mouse;
@@ -850,6 +857,7 @@ public:
     bool            fUseSearchInFolder;
     bool            fUseSeekbarHover;
     int             nHoverPosition;
+    int             nTimeOnSeekBar;
     CString         strOSDFont;
     int             nOSDSize;
     bool            bHideWindowedMousePointer;
@@ -867,6 +875,9 @@ public:
     MpcCaptionState eCaptionMenuMode;
     bool            fHideNavigation;
     bool            bHideCaptureSettings;
+    bool            bHideStatusbarNormalView;
+    int             nCustomPresetControlState; // CS_* bitmask for the Custom preset (hotkey 4)
+    int             nCustomPresetCaption;      // MpcCaptionState for the Custom preset
     UINT            nCS; // Control state for toolbars
     // Language
     LANGID          language;

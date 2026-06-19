@@ -1177,6 +1177,13 @@ BEGIN
     GROUPBOX        "Language",IDC_STATIC21,181,184,168,33
     LTEXT           "Language:",IDC_STATIC5,187,198,80,8
     COMBOBOX        IDC_COMBO2,263,198,82,20,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Custom Preset (4)",IDC_STATIC,181,221,168,62
+    CONTROL         "Menu bar",IDC_CUSTOMPRESET_MENU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,235,78,8
+    CONTROL         "Status bar",IDC_CUSTOMPRESET_STATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,235,76,8
+    CONTROL         "Seek bar",IDC_CUSTOMPRESET_SEEKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,249,78,8
+    CONTROL         "Information",IDC_CUSTOMPRESET_INFO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,249,76,8
+    CONTROL         "Controls",IDC_CUSTOMPRESET_TOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,263,78,8
+    CONTROL         "Statistics",IDC_CUSTOMPRESET_STATS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,263,76,8
 END
 
 IDD_RAR_ENTRY_SELECTOR DIALOGEX 0, 0, 316, 115
@@ -1586,6 +1593,7 @@ BEGIN
             MENUITEM "&Minimal",                    ID_VIEW_PRESETS_MINIMAL
             MENUITEM "&Compact",                    ID_VIEW_PRESETS_COMPACT
             MENUITEM "&Normal",                     ID_VIEW_PRESETS_NORMAL
+            MENUITEM "C&ustom",                     ID_VIEW_PRESETS_CUSTOM
         END
         MENUITEM SEPARATOR
         MENUITEM "F&ull Screen",                ID_VIEW_FULLSCREEN
@@ -2006,6 +2014,7 @@ BEGIN
                 MENUITEM "&Minimal",                    ID_VIEW_PRESETS_MINIMAL
                 MENUITEM "&Compact",                    ID_VIEW_PRESETS_COMPACT
                 MENUITEM "&Normal",                     ID_VIEW_PRESETS_NORMAL
+                MENUITEM "C&ustom",                     ID_VIEW_PRESETS_CUSTOM
             END
         END
         POPUP "R&enderer Settings"
@@ -2131,6 +2140,7 @@ BEGIN
                 MENUITEM "&Minimal",                    ID_VIEW_PRESETS_MINIMAL
                 MENUITEM "&Compact",                    ID_VIEW_PRESETS_COMPACT
                 MENUITEM "&Normal",                     ID_VIEW_PRESETS_NORMAL
+                MENUITEM "C&ustom",                     ID_VIEW_PRESETS_CUSTOM
             END
             MENUITEM SEPARATOR
             MENUITEM "F&ull Screen",                ID_VIEW_FULLSCREEN
@@ -3288,6 +3298,7 @@ BEGIN
     IDS_AG_VIEW_MINIMAL     "View Minimal"
     IDS_AG_VIEW_COMPACT     "View Compact"
     IDS_AG_VIEW_NORMAL      "View Normal"
+    IDS_AG_VIEW_CUSTOM      "View Custom"
     IDS_AG_FULLSCREEN       "Fullscreen"
     IDS_MPLAYERC_39         "Fullscreen (w/o res.change)"
     IDS_AG_ZOOM_AUTO_FIT    "Zoom Auto Fit"
@@ -4037,7 +4048,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_CMD_VIEWPRESET      "/viewpreset N\tStart with specific preset,\n\t\twhere N is either ""1"" Minimal, ""2"" Compact or ""3"" Normal"
+    IDS_CMD_VIEWPRESET      "/viewpreset N\tStart with specific preset,\n\t\twhere N is either ""1"" Minimal, ""2"" Compact or ""3"" Normal or ""4"" Custom"
     IDS_CMD_MUTE            "/mute\t\tMute the audio"
     IDS_CMD_VOLUME          "/volume N\tSet Volume, where N is a range from 0 to 100"
     IDS_YOUTUBEDL_NOT_FOUND "Youtube-DL failed to launch. Make sure yt-dlp.exe or youtube-dl.exe is located in MPC-HC folder or in PATH."
@@ -4139,6 +4150,13 @@ BEGIN
                             "Refresh interval (in milliseconds) of time in status bar"
     IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE
                             "Show percentage value on volume slider (in modern theme)"
+    IDS_TIME_ON_SEEKBAR_NEVER "Never"
+    IDS_TIME_ON_SEEKBAR_ALWAYS "Always"
+    IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN "When status bar is hidden"
+    IDS_PPAGEADVANCED_TIME_ON_SEEKBAR
+                            "Show the playback time at the right side of the seekbar instead of only in the status bar"
+    IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW
+                            "Hide the status bar in the Normal view preset (use ""Time on seekbar"" to keep the time visible)"
 END
 
 STRINGTABLE

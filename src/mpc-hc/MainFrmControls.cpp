@@ -43,6 +43,9 @@ UINT CMainFrameControls::GetEffectiveToolbarsSelection()
             || m_pMainFrame->GetPlaybackMode() == PM_ANALOG_CAPTURE) {
         ret &= ~CS_SEEKBAR;
     }
+    if (m_pMainFrame->IsStatusBarForcedForMessage()) {
+        ret |= CS_STATUSBAR; // temporarily reveal the status bar to show a message (issue #3256)
+    }
     return ret;
 }
 
