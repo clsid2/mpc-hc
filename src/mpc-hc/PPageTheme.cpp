@@ -96,6 +96,7 @@ void CPPageTheme::DoDataExchange(CDataExchange* pDX)
 
 
     DDX_Control(pDX, IDC_COMBO3, m_HoverPosition);
+    DDX_Control(pDX, IDC_TIMEONSEEKBAR, m_TimeOnSeekBar);
     DDX_Check(pDX, IDC_SHOW_OSD, m_fShowOSD);
     DDX_Check(pDX, IDC_CHECK13, m_fShowCurrentTimeInOSD);
     DDX_Check(pDX, IDC_CHECK4, m_bShowVideoInfoInStatusbar);
@@ -177,6 +178,12 @@ BOOL CPPageTheme::OnInitDialog()
     m_HoverPosition.AddString(ResStr(IDS_TIME_TOOLTIP_ABOVE));
     m_HoverPosition.AddString(ResStr(IDS_TIME_TOOLTIP_BELOW));
     m_HoverPosition.SetCurSel(s.nHoverPosition);
+
+    m_TimeOnSeekBar.AddString(ResStr(IDS_TIME_ON_SEEKBAR_NEVER));
+    m_TimeOnSeekBar.AddString(ResStr(IDS_TIME_ON_SEEKBAR_ALWAYS));
+    m_TimeOnSeekBar.AddString(ResStr(IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN));
+    m_TimeOnSeekBar.SetCurSel(s.nTimeOnSeekBar);
+    m_TimeOnSeekBar.SetDroppedWidth(200); // the longest option is wider than the combo field
 
     m_nOSDSize = s.nOSDSize;
     m_strOSDFont = s.strOSDFont;
@@ -292,6 +299,7 @@ BOOL CPPageTheme::OnApply()
     }
 
     s.nHoverPosition = m_HoverPosition.GetCurSel();
+    s.nTimeOnSeekBar = m_TimeOnSeekBar.GetCurSel();
 
     s.nOSDSize = m_nOSDSize;
     m_FontType.GetLBText(m_FontType.GetCurSel(), s.strOSDFont);
@@ -313,6 +321,7 @@ BOOL CPPageTheme::OnApply()
     // There is no main frame when the option dialog is displayed stand-alone
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
         pMainFrame->UpdateControlState(CMainFrame::UPDATE_SEEKBAR_CHAPTERS);
+        pMainFrame->ApplyTimeOnSeekBarChange();
     }
 
     s.fShowOSD = m_fShowOSD;

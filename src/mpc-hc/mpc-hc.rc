@@ -1136,15 +1136,17 @@ IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
 STYLE DS_SETFONT | DS_NOFAILCREATE | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Theme",IDC_STATIC1,6,6,170,61
+    GROUPBOX        "Theme",IDC_STATIC1,6,6,170,45
     CONTROL         "Use Modern Theme",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,20,114,8
     LTEXT           "Modern Theme Color:",IDC_STATIC2,12,34,70,8
     COMBOBOX        IDC_COMBO1,88,34,84,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Seekbar",IDC_STATIC4,6,70,170,46
-    LTEXT           "Modern Seekbar height:",IDC_STATIC22,12,84,82,8
-    EDITTEXT        IDC_MODERNSEEKBARHEIGHT,129,84,43,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_MODERNSEEKBARHEIGHT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,160,84,13,14
-    CONTROL         "Show chapter marks on seekbar",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,102,163,8
+    GROUPBOX        "Seekbar",IDC_STATIC4,6,54,170,62
+    LTEXT           "Modern Seekbar height:",IDC_STATIC22,12,67,82,8
+    EDITTEXT        IDC_MODERNSEEKBARHEIGHT,129,67,43,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_MODERNSEEKBARHEIGHT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,160,67,13,14
+    CONTROL         "Show chapter marks on seekbar",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,84,163,8
+    LTEXT           "Time on seekbar:",IDC_STATIC,12,101,72,8
+    COMBOBOX        IDC_TIMEONSEEKBAR,88,100,84,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Seekbar Hover",IDC_STATIC8,6,119,170,76
     LTEXT           "Hover Position:",IDC_STATIC11,12,159,65,8
     CONTROL         "Show video preview",IDC_SEEK_PREVIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,133,160,8
@@ -4153,8 +4155,6 @@ BEGIN
     IDS_TIME_ON_SEEKBAR_NEVER "Never"
     IDS_TIME_ON_SEEKBAR_ALWAYS "Always"
     IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN "When status bar is hidden"
-    IDS_PPAGEADVANCED_TIME_ON_SEEKBAR
-                            "Show the playback time at the right side of the seekbar instead of only in the status bar"
     IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW
                             "Hide the status bar in the Normal view preset (use ""Time on seekbar"" to keep the time visible)"
 END

@@ -41,6 +41,7 @@ private:
     int m_iThemeMode;
     CMPCThemeComboBox m_langsComboBox;
     CMPCThemeComboBox m_HoverPosition;
+    CMPCThemeComboBox m_TimeOnSeekBar;
     int m_nPosLangEnglish;
     CMPCThemeComboBox m_FontSize;
     CMPCThemeComboBox m_FontType;
