@@ -195,6 +195,15 @@ enum {
     TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN
 };
 
+enum {
+    STARTUP_PRESET_REMEMBER, // restore last control state (default)
+    STARTUP_PRESET_MINIMAL,
+    STARTUP_PRESET_COMPACT,
+    STARTUP_PRESET_NORMAL,
+    STARTUP_PRESET_CUSTOM,
+    STARTUP_PRESET_COUNT
+};
+
 enum DVB_RebuildFilterGraph {
     DVB_REBUILD_FG_NEVER = 0,
     DVB_REBUILD_FG_WHEN_SWITCHING,
@@ -878,6 +887,7 @@ public:
     bool            bHideStatusbarNormalView;
     int             nCustomPresetControlState; // CS_* bitmask for the Custom preset (hotkey 4)
     int             nCustomPresetCaption;      // MpcCaptionState for the Custom preset
+    int             nStartupPreset;            // STARTUP_PRESET_* applied at launch (Remember by default)
     UINT            nCS; // Control state for toolbars
     // Language
     LANGID          language;

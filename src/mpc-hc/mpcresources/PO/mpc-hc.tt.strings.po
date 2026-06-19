@@ -4647,6 +4647,12 @@ msgid ""
 "keep the time visible)"
 msgstr ""
 
+msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
+msgid ""
+"View preset to apply at startup (0: Remember last, 1: Minimal, 2: Compact, "
+"3: Normal, 4: Custom)"
+msgstr ""
+
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
 msgstr ""

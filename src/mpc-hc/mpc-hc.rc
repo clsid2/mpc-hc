@@ -4157,6 +4157,8 @@ BEGIN
     IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN "When status bar is hidden"
     IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW
                             "Hide the status bar in the Normal view preset (use ""Time on seekbar"" to keep the time visible)"
+    IDS_PPAGEADVANCED_STARTUP_PRESET
+                            "View preset to apply at startup (0: Remember last, 1: Minimal, 2: Compact, 3: Normal, 4: Custom)"
 END
 
 STRINGTABLE

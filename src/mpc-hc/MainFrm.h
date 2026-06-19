@@ -1390,6 +1390,8 @@ public:
 
     UINT GetNormalPresetCS() const;
     void ApplyTimeOnSeekBarChange();
+    void ApplyCustomPresetChange(UINT oldControlState, int oldCaption);
+    void ApplyStartupPreset();
 
     // Reveal the status bar for a message when a preset hides it; stays until next media load (issue #3256).
     bool m_bStatusBarForcedForMessage = false;

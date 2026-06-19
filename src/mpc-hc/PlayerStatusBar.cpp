@@ -468,7 +468,10 @@ void CPlayerStatusBar::OnPaint()
 
     dc.FillSolidRect(&r, 0);
 
-    if (m_bm.m_hObject) {
+    // Only draw the audio-channel bitmap when Relayout actually reserves room for it (Audio Info off).
+    // When Audio Info is on, no space is reserved and the time control overlaps this area; drawing the
+    // bitmap here would leave it exposed once the time collapses for "time on seekbar" (#3256).
+    if (m_bm.m_hObject && !AfxGetAppSettings().bShowAudioFormatInStatusbar) {
         BITMAP bm;
         m_bm.GetBitmap(&bm);
         CDC memdc;

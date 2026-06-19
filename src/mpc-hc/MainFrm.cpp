@@ -8425,6 +8425,37 @@ void CMainFrame::OnUpdateViewCustom(CCmdUI* pCmdUI)
 {
 }
 
+void CMainFrame::ApplyCustomPresetChange(UINT oldControlState, int oldCaption)
+{
+    // If the Custom preset is the active view, re-apply it so edits on the settings page take effect
+    // immediately (detected by comparing against the pre-change Custom preset values) (#3256).
+    const CAppSettings& s = AfxGetAppSettings();
+    if (s.nCS == oldControlState && (int)s.eCaptionMenuMode == oldCaption) {
+        OnViewCustom();
+    }
+}
+
+void CMainFrame::ApplyStartupPreset()
+{
+    // Applied once at launch (from InitInstance). STARTUP_PRESET_REMEMBER keeps the restored control state.
+    switch (AfxGetAppSettings().nStartupPreset) {
+        case STARTUP_PRESET_MINIMAL:
+            OnViewMinimal();
+            break;
+        case STARTUP_PRESET_COMPACT:
+            OnViewCompact();
+            break;
+        case STARTUP_PRESET_NORMAL:
+            OnViewNormal();
+            break;
+        case STARTUP_PRESET_CUSTOM:
+            OnViewCustom();
+            break;
+        default:
+            break;
+    }
+}
+
 void CMainFrame::OnViewFullscreen()
 {
     const CAppSettings& s = AfxGetAppSettings();
@@ -19440,7 +19471,14 @@ void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bError /* = f
     }
 
     m_tempstatus_msg = msg;
-    m_timerOneTime.Subscribe(timerId, [this] { m_tempstatus_msg.Empty(); }, nTimeOut);
+    // For a transient error we briefly reveal a preset-hidden status bar; re-hide it when the
+    // message times out so a recurring error (e.g. a failing shader on each load) can't pin it open (#3256).
+    m_timerOneTime.Subscribe(timerId, [this, bError] {
+        m_tempstatus_msg.Empty();
+        if (bError) {
+            RestoreStatusBarMessageHold();
+        }
+    }, nTimeOut);
 
     if (!m_tempstatus_msg.IsEmpty()) {
         m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);

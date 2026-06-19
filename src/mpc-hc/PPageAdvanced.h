@@ -235,6 +235,7 @@ private:
         LIBASS_FOR_SRT,
         SHOW_VOLUME_PERCENTAGE,
         HIDE_STATUSBAR_NORMALVIEW,
+        STARTUP_PRESET,
     };
 
     enum {

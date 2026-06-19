@@ -136,6 +136,7 @@
 #define IDS_RS_HIDE_STATUSBAR_NORMALVIEW    _T("HideStatusbarInNormalView")
 #define IDS_RS_CUSTOM_PRESET_CONTROLSTATE   _T("CustomPresetControlState")
 #define IDS_RS_CUSTOM_PRESET_CAPTION        _T("CustomPresetCaption")
+#define IDS_RS_STARTUP_PRESET               _T("StartupPreset")
 
 // Audio
 #define IDS_RS_VOLUME                       _T("Volume")

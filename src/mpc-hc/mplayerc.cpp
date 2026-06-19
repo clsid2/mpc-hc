@@ -2275,6 +2275,10 @@ BOOL CMPlayerCApp::InitInstance()
     if (!m_s->slFiles.IsEmpty()) {
         pFrame->m_controls.DelayShowNotLoaded(true);
     }
+    // Apply the persistent startup view preset, unless a command-line /viewpreset overrides it (applied later).
+    if (!(m_s->nCLSwitches & (CLSW_PRESET1 | CLSW_PRESET2 | CLSW_PRESET3 | CLSW_PRESET4))) {
+        pFrame->ApplyStartupPreset();
+    }
     pFrame->SetDefaultFullscreenState();
     pFrame->UpdateControlState(CMainFrame::UPDATE_CONTROLS_VISIBILITY);
     pFrame->SetIcon(icon, TRUE);

@@ -214,6 +214,7 @@ CAppSettings::CAppSettings()
     , bHideCaptureSettings(false)
     , bHideStatusbarNormalView(false)
     , nCustomPresetControlState(CS_SEEKBAR | CS_TOOLBAR)
+    , nStartupPreset(STARTUP_PRESET_REMEMBER)
     , nCustomPresetCaption(MODE_HIDEMENU)
     , nCS(CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR)
     , language(LANGID(-1))
@@ -1115,6 +1116,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HIDE_STATUSBAR_NORMALVIEW, bHideStatusbarNormalView);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CONTROLSTATE, nCustomPresetControlState);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, nCustomPresetCaption);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_STARTUP_PRESET, nStartupPreset);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MPC_OSD_SIZE, nOSDSize);
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_MPC_OSD_FONT, strOSDFont);
 
@@ -1755,6 +1757,10 @@ void CAppSettings::LoadSettings()
     nCustomPresetCaption = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, MODE_HIDEMENU);
     if (nCustomPresetCaption < 0 || nCustomPresetCaption >= MODE_COUNT) {
         nCustomPresetCaption = MODE_HIDEMENU;
+    }
+    nStartupPreset = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_STARTUP_PRESET, STARTUP_PRESET_REMEMBER);
+    if (nStartupPreset < 0 || nStartupPreset >= STARTUP_PRESET_COUNT) {
+        nStartupPreset = STARTUP_PRESET_REMEMBER;
     }
     nOSDSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MPC_OSD_SIZE, 18);
     LOGFONT lf;
