@@ -2165,6 +2165,10 @@ msgctxt "IDS_AG_VIEW_NORMAL"
 msgid "View Normal"
 msgstr "Xem bình thường"
 
+msgctxt "IDS_AG_VIEW_CUSTOM"
+msgid "View Custom"
+msgstr ""
+
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
 msgstr "Toàn màn hình"
@@ -4411,10 +4415,8 @@ msgstr "/playnext\t\tMở tập tin kế tiếp trong thư mục sau khi phát x
 msgctxt "IDS_CMD_VIEWPRESET"
 msgid ""
 "/viewpreset N\tStart with specific preset,\n"
-"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal"
+"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal or \"4\" Custom"
 msgstr ""
-"/viewpreset N\tKhởi động với cài đặt sẵn được chỉ định,\n"
-"\t\thoặc N là \"1\" Tối thiểu, \"2\" Gọn nhẹ hoặc \"3\" Bình thường"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4736,6 +4738,24 @@ msgstr "Thời gian làm mới (tính bằng mili giây) trên thanh trạng th�
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
+msgid "Never"
+msgstr "Không"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
+msgid "Always"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
+msgid "When status bar is hidden"
+msgstr ""
+
+msgctxt "IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW"
+msgid ""
+"Hide the status bar in the Normal view preset (use \"Time on seekbar\" to "
+"keep the time visible)"
 msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"

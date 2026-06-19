@@ -2208,6 +2208,10 @@ msgctxt "IDS_AG_VIEW_NORMAL"
 msgid "View Normal"
 msgstr "Vue normale"
 
+msgctxt "IDS_AG_VIEW_CUSTOM"
+msgid "View Custom"
+msgstr ""
+
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
 msgstr "Plein écran"
@@ -4464,10 +4468,8 @@ msgstr "/playnext\t\tOuvre le fichier suivant dans le répertoire après la lect
 msgctxt "IDS_CMD_VIEWPRESET"
 msgid ""
 "/viewpreset N\tStart with specific preset,\n"
-"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal"
+"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal or \"4\" Custom"
 msgstr ""
-"/viewpreset N\tDémarre avec un pré-réglage particulier,\n"
-"\t\toù N est soit \"1\" Minimal, \"2\" Compact ou \"3\" Normal"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4808,6 +4810,24 @@ msgid "Show percentage value on volume slider (in modern theme)"
 msgstr ""
 "Afficher la valeur en pourcentage sur le curseur de volume (dans le thème "
 "moderne)"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
+msgid "Never"
+msgstr "Jamais"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
+msgid "Always"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
+msgid "When status bar is hidden"
+msgstr ""
+
+msgctxt "IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW"
+msgid ""
+"Hide the status bar in the Normal view preset (use \"Time on seekbar\" to "
+"keep the time visible)"
+msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"

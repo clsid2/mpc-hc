@@ -2118,6 +2118,10 @@ msgctxt "IDS_AG_VIEW_NORMAL"
 msgid "View Normal"
 msgstr "標準表示"
 
+msgctxt "IDS_AG_VIEW_CUSTOM"
+msgid "View Custom"
+msgstr ""
+
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
 msgstr "全画面表示"
@@ -4350,10 +4354,8 @@ msgstr "/playnext\t\t再生終了後にフォルダー内の次のファイル�
 msgctxt "IDS_CMD_VIEWPRESET"
 msgid ""
 "/viewpreset N\tStart with specific preset,\n"
-"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal"
+"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal or \"4\" Custom"
 msgstr ""
-"/viewpreset N\t指定した表示プリセットで開始する\n"
-"\t\t(N: \"1\" 最小, \"2\" コンパクト, \"3\" 標準)"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4670,6 +4672,24 @@ msgstr "ステータス バーの時間の更新間隔 (ミリ秒)"
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
 msgstr "音量スライダーにパーセンテージ値を表示します (モダンテーマ)"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
+msgid "Never"
+msgstr "なし"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
+msgid "Always"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
+msgid "When status bar is hidden"
+msgstr ""
+
+msgctxt "IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW"
+msgid ""
+"Hide the status bar in the Normal view preset (use \"Time on seekbar\" to "
+"keep the time visible)"
+msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"

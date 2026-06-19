@@ -2151,6 +2151,10 @@ msgctxt "IDS_AG_VIEW_NORMAL"
 msgid "View Normal"
 msgstr "Običajni pogled"
 
+msgctxt "IDS_AG_VIEW_CUSTOM"
+msgid "View Custom"
+msgstr ""
+
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
 msgstr "Celozaslonsko"
@@ -4393,10 +4397,8 @@ msgstr "/playnext\t\tOdpri naslednjo datoteko po predvajanju"
 msgctxt "IDS_CMD_VIEWPRESET"
 msgid ""
 "/viewpreset N\tStart with specific preset,\n"
-"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal"
+"\t\twhere N is either \"1\" Minimal, \"2\" Compact or \"3\" Normal or \"4\" Custom"
 msgstr ""
-"/viewpreset N\tZačni z določeno prednastavitvijo,\n"
-"\t\tkjer je N bodisi \"1\" Minimalno, \"2\" Kompaktno ali \"3\" Normalno"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4716,6 +4718,24 @@ msgstr "Interval osveževanja (v milisekundah) časa v vrstici stanja"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE"
 msgid "Show percentage value on volume slider (in modern theme)"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
+msgid "Never"
+msgstr "Nikoli"
+
+msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
+msgid "Always"
+msgstr ""
+
+msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
+msgid "When status bar is hidden"
+msgstr ""
+
+msgctxt "IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW"
+msgid ""
+"Hide the status bar in the Normal view preset (use \"Time on seekbar\" to "
+"keep the time visible)"
 msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
