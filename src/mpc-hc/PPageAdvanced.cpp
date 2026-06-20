@@ -190,7 +190,9 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(LIBASS_FOR_SRT, IDS_RS_LIBASS_FOR_SRT, false, s.bRenderSRTUsingLibass, StrRes(IDS_PPAGEADVANCED_LIBASS_FOR_SRT));
     addBoolItem(SHOW_VOLUME_PERCENTAGE, IDS_RS_SHOW_VOLUME_PERCENTAGE, true, s.bShowVolumePercentage, StrRes(IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE));
     addBoolItem(HIDE_STATUSBAR_NORMALVIEW, IDS_RS_HIDE_STATUSBAR_NORMALVIEW, false, s.bHideStatusbarNormalView, StrRes(IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW));
-    addIntItem(STARTUP_PRESET, IDS_RS_STARTUP_PRESET, STARTUP_PRESET_REMEMBER, s.nStartupPreset, std::make_pair(0, STARTUP_PRESET_COUNT - 1), StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
+    addComboItem(STARTUP_PRESET, IDS_RS_STARTUP_PRESET, STARTUP_PRESET_REMEMBER, s.nStartupPreset,
+        { StrRes(IDS_STARTUP_PRESET_REMEMBER), StrRes(IDS_AG_VIEW_MINIMAL), StrRes(IDS_AG_VIEW_COMPACT), StrRes(IDS_AG_VIEW_NORMAL), StrRes(IDS_AG_VIEW_CUSTOM) },
+        StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
 }
 
 BOOL CPPageAdvanced::OnApply()
@@ -458,7 +460,7 @@ void CPPageAdvanced::OnCbnSelchangeCombobox()
         if (auto pItemCombo = std::dynamic_pointer_cast<SettingsCombo>(pItem)) {
             auto list = pItemCombo->GetList();
             pItemCombo->SetValue(iItem);
-            m_list.setItemTextWithDefaultFlag(iItem, COL_VALUE, list.at(iItem), !IsDefault(eSetting));
+            m_list.setItemTextWithDefaultFlag(nItem, COL_VALUE, list.at(iItem), !IsDefault(eSetting));
             UpdateData(FALSE);
             m_list.Update(nItem);
             if (m_comboBox.IsWindowVisible()) {
