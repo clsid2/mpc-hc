@@ -8351,11 +8351,7 @@ void CMainFrame::OnUpdateViewCompact(CCmdUI* pCmdUI)
 
 UINT CMainFrame::GetNormalPresetCS() const
 {
-    UINT cs = CS_SEEKBAR | CS_TOOLBAR;
-    if (!AfxGetAppSettings().bHideStatusbarNormalView) {
-        cs |= CS_STATUSBAR;
-    }
-    return cs;
+    return CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR;
 }
 
 void CMainFrame::OnViewNormal()
@@ -8398,12 +8394,6 @@ void CMainFrame::SetClosingError(UINT nIDmsg)
 
 void CMainFrame::ApplyTimeOnSeekBarChange()
 {
-    // Re-apply the Normal preset if currently active so toggling the
-    // "hide status bar in Normal view" option takes effect immediately.
-    const CAppSettings& s = AfxGetAppSettings();
-    if (s.nCS == (CS_SEEKBAR | CS_TOOLBAR | CS_STATUSBAR) || s.nCS == (CS_SEEKBAR | CS_TOOLBAR)) {
-        m_controls.SetToolbarsSelection(GetNormalPresetCS(), false);
-    }
     // Reflect "Always"/"Never" suppression of the status-bar time and refresh the seekbar.
     m_wndStatusBar.Relayout();
     m_wndSeekBar.UpdateTime();

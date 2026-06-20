@@ -884,7 +884,6 @@ public:
     MpcCaptionState eCaptionMenuMode;
     bool            fHideNavigation;
     bool            bHideCaptureSettings;
-    bool            bHideStatusbarNormalView;
     int             nCustomPresetControlState; // CS_* bitmask for the Custom preset (hotkey 4)
     int             nCustomPresetCaption;      // MpcCaptionState for the Custom preset
     int             nStartupPreset;            // STARTUP_PRESET_* applied at launch (Remember by default)

@@ -4155,8 +4155,6 @@ BEGIN
     IDS_TIME_ON_SEEKBAR_NEVER "Never"
     IDS_TIME_ON_SEEKBAR_ALWAYS "Always"
     IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN "When status bar is hidden"
-    IDS_PPAGEADVANCED_HIDE_STATUSBAR_NORMALVIEW
-                            "Hide the status bar in the Normal view preset (use ""Time on seekbar"" to keep the time visible)"
     IDS_PPAGEADVANCED_STARTUP_PRESET
                             "View preset to apply at startup"
     IDS_STARTUP_PRESET_REMEMBER "Remember last"
