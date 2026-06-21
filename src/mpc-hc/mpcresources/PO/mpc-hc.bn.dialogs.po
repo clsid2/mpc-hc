@@ -1972,23 +1972,23 @@ msgstr "মেন্যু"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
-msgstr "অবস্থিতি (A)"
+msgstr "অবস্থিতি"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "সীক বার (K)"
+msgstr "সীক বার"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"
-msgstr "তথ্যাদি (I)"
+msgstr "তথ্যাদি"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_TOOLBAR"
 msgid "Controls"
-msgstr "কন্ট্রোলসমূহ (C)"
+msgstr "কন্ট্রোলসমূহ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATS"
 msgid "Statistics"
-msgstr "পরিসংখ্যান (S)"
+msgstr "পরিসংখ্যান"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
 msgid "Select Media from RAR"

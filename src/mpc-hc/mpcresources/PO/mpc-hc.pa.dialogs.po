@@ -1941,23 +1941,23 @@ msgstr "ਮੀਨੂ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
-msgstr "ਸਥਿਤੀ(a)"
+msgstr "ਸਥਿਤੀ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "ਸੀਕ ਬਾਰ(k)"
+msgstr "ਸੀਕ ਬਾਰ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"
-msgstr "ਜਾਣਕਾਰੀ(I)"
+msgstr "ਜਾਣਕਾਰੀ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_TOOLBAR"
 msgid "Controls"
-msgstr "ਕੰਟਰੋਲ(C)"
+msgstr "ਕੰਟਰੋਲ"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATS"
 msgid "Statistics"
-msgstr "ਅੰਕੜੇ(S)"
+msgstr "ਅੰਕੜੇ"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
 msgid "Select Media from RAR"
