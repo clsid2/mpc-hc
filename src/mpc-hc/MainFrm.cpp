@@ -8331,6 +8331,7 @@ void CMainFrame::OnUpdateViewDebugShaders(CCmdUI* pCmdUI)
 
 void CMainFrame::OnViewMinimal()
 {
+    m_nActiveViewPreset = ID_VIEW_PRESETS_MINIMAL;
     SetCaptionState(MODE_BORDERLESS);
     m_controls.SetToolbarsSelection(CS_NONE, true);
 }
@@ -8341,6 +8342,7 @@ void CMainFrame::OnUpdateViewMinimal(CCmdUI* pCmdUI)
 
 void CMainFrame::OnViewCompact()
 {
+    m_nActiveViewPreset = ID_VIEW_PRESETS_COMPACT;
     SetCaptionState(MODE_FRAMEONLY);
     m_controls.SetToolbarsSelection(CS_SEEKBAR, true);
 }
@@ -8356,6 +8358,7 @@ UINT CMainFrame::GetNormalPresetCS() const
 
 void CMainFrame::OnViewNormal()
 {
+    m_nActiveViewPreset = ID_VIEW_PRESETS_NORMAL;
     SetCaptionState(MODE_SHOWCAPTIONMENU);
     m_controls.SetToolbarsSelection(GetNormalPresetCS(), true);
 }
@@ -8406,6 +8409,7 @@ void CMainFrame::OnUpdateViewNormal(CCmdUI* pCmdUI)
 
 void CMainFrame::OnViewCustom()
 {
+    m_nActiveViewPreset = ID_VIEW_PRESETS_CUSTOM;
     const CAppSettings& s = AfxGetAppSettings();
     SetCaptionState(static_cast<MpcCaptionState>(s.nCustomPresetCaption));
     m_controls.SetToolbarsSelection(s.nCustomPresetControlState, true);
@@ -8415,12 +8419,12 @@ void CMainFrame::OnUpdateViewCustom(CCmdUI* pCmdUI)
 {
 }
 
-void CMainFrame::ApplyCustomPresetChange(UINT oldControlState, int oldCaption)
+void CMainFrame::ApplyCustomPresetChange()
 {
     // If the Custom preset is the active view, re-apply it so edits on the settings page take effect
-    // immediately (detected by comparing against the pre-change Custom preset values) (#3256).
-    const CAppSettings& s = AfxGetAppSettings();
-    if (s.nCS == oldControlState && (int)s.eCaptionMenuMode == oldCaption) {
+    // immediately. Tracked explicitly (not inferred from nCS) so it still works after the user has
+    // toggled an individual bar since selecting the preset (#3256).
+    if (m_nActiveViewPreset == ID_VIEW_PRESETS_CUSTOM) {
         OnViewCustom();
     }
 }

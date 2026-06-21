@@ -348,9 +348,6 @@ BOOL CPPageTheme::OnApply()
 
     s.bUseSMTC = m_bUseSMTC;
 
-    const UINT oldCustomCS = (UINT)s.nCustomPresetControlState;
-    const int oldCustomCaption = s.nCustomPresetCaption;
-
     s.nCustomPresetCaption = m_bCustomPresetMenu ? MODE_SHOWCAPTIONMENU : MODE_HIDEMENU;
     UINT customCS = 0;
     if (m_bCustomPresetSeekbar)   customCS |= CS_SEEKBAR;
@@ -362,7 +359,7 @@ BOOL CPPageTheme::OnApply()
 
     // If the Custom preset is the active view, re-apply it so the change is visible immediately (#3256).
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
-        pMainFrame->ApplyCustomPresetChange(oldCustomCS, oldCustomCaption);
+        pMainFrame->ApplyCustomPresetChange();
     }
 
     return __super::OnApply();

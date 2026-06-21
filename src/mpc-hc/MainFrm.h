@@ -1390,8 +1390,9 @@ public:
 
     UINT GetNormalPresetCS() const;
     void ApplyTimeOnSeekBarChange();
-    void ApplyCustomPresetChange(UINT oldControlState, int oldCaption);
+    void ApplyCustomPresetChange();
     void ApplyStartupPreset();
+    int m_nActiveViewPreset = 0; // command id of the last-applied view preset, 0 = none (#3256)
 
     // Reveal the status bar for a message when a preset hides it; stays until next media load (issue #3256).
     bool m_bStatusBarForcedForMessage = false;
