@@ -1936,6 +1936,7 @@ CRenderedTextSubtitle::CRenderedTextSubtitle(CCritSec* pLock)
     , m_polygonBaselineOffset(0)
     , m_bOverridePlacement(false)
     , m_overridePlacement(50, 90)
+    , m_bTopAlignedPlacement(false)
     , m_webvtt_allow_clear(false)
     , m_bUseFreeType(false)
 {
@@ -3126,16 +3127,33 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
     } else {
         // find the appropriate embedded style
         GetStyle(entry, stss);
-        if (m_bOverridePlacement) {
-            // Apply override placement to embedded style
-            stss.scrAlignment = 2;
+        if (m_bOverridePlacement && !m_bTopAlignedPlacement) {
+            // Apply primary override placement (bottom-anchored) to embedded style
             LONG mw = m_storageRes.cx - stss.marginRect.left - stss.marginRect.right;
+            stss.scrAlignment = 2;
             stss.marginRect.bottom = std::lround(m_storageRes.cy - m_storageRes.cy * m_overridePlacement.cy / 100.0);
             // We need to set top margin, otherwise subtitles outside video frame will be clipped. Support up to 3 lines of subtitles. Should be enough.
             stss.marginRect.top    = m_storageRes.cy - (stss.marginRect.bottom + std::lround(stss.fontSize * 3.0));
             stss.marginRect.left   = std::lround(m_storageRes.cx * m_overridePlacement.cx / 100.0 - mw / 2.0);
             stss.marginRect.right  = m_storageRes.cx - (stss.marginRect.left + mw);
         }
+    }
+    if (m_bTopAlignedPlacement) {
+        // Secondary subtitle: force a top anchor regardless of overrideAllStyles, so the
+        // secondary subtitle is always kept at the top and multi-line text stacks downward
+        // from the fixed top position instead of growing off the top of the frame.
+        // Scope/limitation: this forced-top placement only applies on the internal (RTS)
+        // subtitle rendering path. When libass rendering is enabled for ASS/SSA
+        // (RenderSSAUsingLibass, off by default), CRenderedTextSubtitle::Render() returns
+        // from m_LibassContext.Render() before this runs, so a secondary ASS/SSA subtitle is
+        // laid out by libass per its own \an / styles and is not forced to the top. The
+        // common dual-subtitle case (external SRT on the internal renderer) is unaffected.
+        LONG mw = m_storageRes.cx - stss.marginRect.left - stss.marginRect.right;
+        stss.scrAlignment = 8;
+        stss.marginRect.top    = std::lround(m_storageRes.cy * m_overridePlacement.cy / 100.0);
+        stss.marginRect.bottom = m_storageRes.cy - (stss.marginRect.top + std::lround(stss.fontSize * 3.0));
+        stss.marginRect.left   = std::lround(m_storageRes.cx * m_overridePlacement.cx / 100.0 - mw / 2.0);
+        stss.marginRect.right  = m_storageRes.cx - (stss.marginRect.left + mw);
     }
 
     double dFontScaleXCompensation = 1.0;
@@ -3164,7 +3182,10 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
 
     STSStyle orgstss = stss;
 
-    sub->m_scrAlignment = -stss.scrAlignment;
+    // For the secondary subtitle we lock the alignment (positive value) so that in-line ASS
+    // \an / \a tags cannot override its forced top-center placement; the primary keeps the
+    // original negative value so embedded \an / \a tags still apply to it.
+    sub->m_scrAlignment = m_bTopAlignedPlacement ? stss.scrAlignment : -stss.scrAlignment;
     sub->m_wrapStyle = m_defaultWrapStyle;
     sub->m_fAnimated = false;
     sub->m_relativeTo = stss.relativeTo;

@@ -345,6 +345,10 @@ namespace GothSync
         STDMETHODIMP SetPixelShader2(LPCSTR pSrcData, LPCSTR pTarget, bool bScreenSpace);
         STDMETHODIMP_(bool) ResetDevice();
         STDMETHODIMP_(bool) DisplayChange();
+
+        // ISubPicAllocatorPresenter4 (second subtitle)
+        STDMETHODIMP_(bool) SupportsDualSubtitles() { return true; }
+        CComPtr<ISubPicAllocator> CreateSecondaryAllocator() override;
     };
 
     class CSyncAP:

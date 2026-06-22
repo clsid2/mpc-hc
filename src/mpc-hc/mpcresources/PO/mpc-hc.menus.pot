@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
+"POT-Creation-Date: 2026-06-16 09:05:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -671,6 +671,10 @@ msgstr ""
 
 msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
+msgstr ""
+
+msgctxt "ID_SUBTITLES_SECONDARY"
+msgid "Secondary Subtitle Track"
 msgstr ""
 
 msgctxt "ID_VIDEO_STREAMS"

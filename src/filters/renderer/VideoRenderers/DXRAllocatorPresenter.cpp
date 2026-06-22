@@ -88,9 +88,13 @@ HRESULT CDXRAllocatorPresenter::SetDevice(IDirect3DDevice9* pD3DDev)
         // release all resources
         m_pSubPicQueue = nullptr;
         m_pAllocator = nullptr;
+        DestroySecondaryPipeline(); // release the secondary pipeline's device ref too (mirror the primary)
+        m_pD3DDev = nullptr;
         __super::SetPosition(CRect(), CRect());
         return hr;
     }
+
+    m_pD3DDev = pD3DDev;
 
     const CRenderersSettings& r = GetRenderersSettings();
     CSize largestScreen = GetLargestScreenSize(CSize(2560, 1440));
@@ -122,7 +126,19 @@ HRESULT CDXRAllocatorPresenter::SetDevice(IDirect3DDevice9* pD3DDev)
         m_pSubPicQueue->SetSubPicProvider(m_pSubPicProvider);
     }
 
+    // Keep the secondary pipeline (if any) on the same device as the primary above.
+    ChangeSecondaryDevice(pD3DDev);
+
     return hr;
+}
+
+CComPtr<ISubPicAllocator> CDXRAllocatorPresenter::CreateSecondaryAllocator()
+{
+    // Twin of the primary CDX9SubPicAllocator created in SetDevice; null if no device yet.
+    if (!m_pD3DDev) {
+        return nullptr;
+    }
+    return (ISubPicAllocator*)DEBUG_NEW CDX9SubPicAllocator(m_pD3DDev, m_maxSubtitleTextureSize, true);
 }
 
 HRESULT CDXRAllocatorPresenter::Render(
@@ -137,6 +153,8 @@ HRESULT CDXRAllocatorPresenter::Render(
         m_pSubPicQueue->SetFPS(10000000.0 / atpf);
     }
     AlphaBltSubPic(wndRect, videoRect);
+    // paint the secondary subtitle on top of the primary one
+    AlphaBltSubPic2(wndRect, videoRect);
     return S_OK;
 }
 

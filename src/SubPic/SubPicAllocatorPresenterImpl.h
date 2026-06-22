@@ -32,7 +32,7 @@
 class CSubPicAllocatorPresenterImpl
     : public CUnknown
     , public CCritSec
-	, public ISubPicAllocatorPresenter3
+	, public ISubPicAllocatorPresenter4
     , public ISubRenderConsumer2
 {
 private:
@@ -58,6 +58,18 @@ protected:
     CComPtr<ISubPicAllocator> m_pAllocator;
     CComPtr<ISubPicQueue> m_pSubPicQueue;
 
+    // Secondary (second-subtitle) pipeline. Lazily built on the first non-null SetSubPicProvider2()
+    // and torn down when cleared, so it costs nothing (no extra worker thread / static cache) when
+    // unused. m_csSubPicQueue2 guards ONLY the load/store of the m_pSubPicQueue2 / m_pAllocator2
+    // member pointers against the paint thread; heavy work (queue construction, worker join,
+    // FreeStatic) must happen outside the lock (see CreateSecondaryPipeline/DestroySecondaryPipeline).
+    CComPtr<ISubPicProvider> m_pSubPicProvider2;
+    CComPtr<ISubPicAllocator> m_pAllocator2;
+    CComPtr<ISubPicQueue> m_pSubPicQueue2;
+    REFERENCE_TIME m_rtSecondaryDelay = 0;
+    REFERENCE_TIME m_rtNow2 = 0;
+    CCritSec m_csSubPicQueue2;
+
     bool m_bDeviceResetRequested;
     bool m_bPendingResetDevice;
 
@@ -68,6 +80,23 @@ protected:
                            SubPicDesc* pTarget = nullptr,
                            const double videoStretchFactor = 1.0,
                            int xOffsetInPixels = 0, int yOffsetInPixels = 0);
+
+    // Blends the secondary subtitle (from the second pipeline, using the m_rtNow2 shifted clock).
+    // Does NOT apply the primary subPicVerticalShift hotkey offset; returns S_FALSE (not E_FAIL)
+    // when no secondary pipeline / subpic is present so the frame is not failed.
+    HRESULT AlphaBltSubPic2(const CRect& windowRect,
+                            const CRect& videoRect,
+                            SubPicDesc* pTarget = nullptr,
+                            const double videoStretchFactor = 1.0,
+                            int xOffsetInPixels = 0, int yOffsetInPixels = 0);
+
+    // Secondary pipeline hook: supporting renderers override this to return a freshly created
+    // device-specific allocator; the base returns nullptr, which disables the secondary pipeline.
+    virtual CComPtr<ISubPicAllocator> CreateSecondaryAllocator() { return nullptr; }
+
+    void CreateSecondaryPipeline();
+    void DestroySecondaryPipeline();
+    void ChangeSecondaryDevice(IUnknown* pDev);
 
     void UpdateXForm();
     HRESULT CreateDIBFromSurfaceData(D3DSURFACE_DESC desc, D3DLOCKED_RECT r, BYTE* lpDib) const;
@@ -138,6 +167,14 @@ public:
     STDMETHODIMP AddPixelShader(int target, LPCWSTR name, LPCSTR profile, LPCSTR sourceCode) { return E_NOTIMPL; }
     STDMETHODIMP_(bool) ResizeDevice() { return false; }
     STDMETHODIMP_(bool) ToggleStats() { return false; }
+
+    // ISubPicAllocatorPresenter4
+
+    STDMETHODIMP_(void) SetSubPicProvider2(ISubPicProvider* pSubPicProvider2);
+    STDMETHODIMP_(void) SetSecondaryDelay(int delayMs);
+    STDMETHODIMP_(int) GetSecondaryDelay() const;
+    STDMETHODIMP_(void) InvalidateSubtitle2(REFERENCE_TIME rtInvalidate = -1);
+    STDMETHODIMP_(bool) SupportsDualSubtitles() { return false; }
 
     // ISubRenderOptions
 

@@ -802,11 +802,23 @@ HRESULT CDX9AllocatorPresenter::CreateDevice(CString& _Error)
         if (pSubPicProvider) {
             m_pSubPicQueue->SetSubPicProvider(pSubPicProvider);
         }
+
+        // Keep the secondary pipeline (if any) on the same device as the primary above.
+        ChangeSecondaryDevice(m_pD3DDev);
     }
 
     m_LastAdapterCheck = rd->GetPerfCounter();
 
     return S_OK;
+}
+
+CComPtr<ISubPicAllocator> CDX9AllocatorPresenter::CreateSecondaryAllocator()
+{
+    // Twin of the primary CDX9SubPicAllocator created in CreateDevice; null if no device yet.
+    if (!m_pD3DDev) {
+        return nullptr;
+    }
+    return (ISubPicAllocator*)DEBUG_NEW CDX9SubPicAllocator(m_pD3DDev, m_maxSubtitleTextureSize, false);
 }
 
 HRESULT CDX9AllocatorPresenter::AllocSurfaces()
@@ -1323,6 +1335,8 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::Paint(bool bAll)
     if (!m_bIsPreview) {
         // paint the text on the backbuffer
         AlphaBltSubPic(rDstPri, rDstVid);
+        // paint the secondary subtitle on top of the primary one (OSD below still stays topmost)
+        AlphaBltSubPic2(rDstPri, rDstVid);
 
         // Casimir666 : show OSD
         if (m_VMR9AlphaBitmap.dwFlags & VMRBITMAP_UPDATE) {

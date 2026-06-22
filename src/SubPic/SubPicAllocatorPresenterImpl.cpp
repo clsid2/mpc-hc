@@ -78,6 +78,7 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::NonDelegatingQueryInterface(REFIID r
     return
         QI(ISubPicAllocatorPresenter)
         QI(ISubPicAllocatorPresenter2)
+        QI(ISubPicAllocatorPresenter4)
         QI(ISubRenderOptions)
         QI(ISubRenderConsumer)
         QI(ISubRenderConsumer2)
@@ -122,6 +123,114 @@ HRESULT CSubPicAllocatorPresenterImpl::AlphaBltSubPic(const CRect& windowRect,
     }
 
     return E_FAIL;
+}
+
+HRESULT CSubPicAllocatorPresenterImpl::AlphaBltSubPic2(const CRect& windowRect,
+                                                    const CRect& videoRect,
+                                                    SubPicDesc* pTarget /*= nullptr*/,
+                                                    const double videoStretchFactor /*= 1.0*/,
+                                                    int xOffsetInPixels /*= 0*/, int yOffsetInPixels /*= 0*/)
+{
+    CComPtr<ISubPicQueue> pSubPicQueue2;
+    {
+        CAutoLock cAutoLock(&m_csSubPicQueue2);
+        pSubPicQueue2 = m_pSubPicQueue2;
+    }
+    if (!pSubPicQueue2) {
+        return S_FALSE;
+    }
+
+    CComPtr<ISubPic> pSubPic;
+    if (pSubPicQueue2->LookupSubPic(m_rtNow2, !IsRendering(), pSubPic)) {
+        CRect rcSource, rcDest;
+
+        // Unlike AlphaBltSubPic, the secondary subtitle does not inherit the primary
+        // subPicVerticalShift hotkey offset; it uses its own placement (xOffset/yOffset).
+        if (SUCCEEDED(pSubPic->GetSourceAndDest(windowRect, videoRect, rcSource, rcDest,
+                                                videoStretchFactor, xOffsetInPixels, yOffsetInPixels))) {
+            return pSubPic->AlphaBlt(rcSource, rcDest, pTarget);
+        }
+    }
+
+    return S_FALSE;
+}
+
+void CSubPicAllocatorPresenterImpl::CreateSecondaryPipeline()
+{
+    // Build the device-specific allocator (subclass hook) and a matching queue into locals, OUTSIDE
+    // the lock - queue construction may start a worker thread. Only the pointer store happens under
+    // m_csSubPicQueue2. A null allocator means the renderer does not support a secondary pipeline.
+    CComPtr<ISubPicAllocator> pAllocator2 = CreateSecondaryAllocator();
+    if (!pAllocator2) {
+        return;
+    }
+    pAllocator2->SetMaxTextureSize(m_curSubtitleTextureSize);
+    pAllocator2->SetCurSize(m_windowRect.Size());
+    pAllocator2->SetCurVidRect(m_videoRect);
+
+    const CRenderersSettings& r = GetRenderersSettings();
+    HRESULT hr = S_OK;
+    CComPtr<ISubPicQueue> pSubPicQueue2 = r.subPicQueueSettings.nSize > 0
+                                          ? (ISubPicQueue*)DEBUG_NEW CSubPicQueue(r.subPicQueueSettings, pAllocator2, &hr)
+                                          : (ISubPicQueue*)DEBUG_NEW CSubPicQueueNoThread(r.subPicQueueSettings, pAllocator2, &hr);
+    if (FAILED(hr) || !pSubPicQueue2) {
+        return;
+    }
+    pSubPicQueue2->SetTime(m_rtNow2);
+
+    CAutoLock cAutoLock(&m_csSubPicQueue2);
+    m_pAllocator2 = pAllocator2;
+    m_pSubPicQueue2 = pSubPicQueue2;
+}
+
+void CSubPicAllocatorPresenterImpl::DestroySecondaryPipeline()
+{
+    // Detach the member pointers into locals under the lock, then release the lock BEFORE the locals
+    // destruct: ~CSubPicQueue joins its worker thread (which itself may hold the queue's shared lock),
+    // so holding m_csSubPicQueue2 across that join could deadlock (plan v3.4 teardown discipline).
+    CComPtr<ISubPicQueue> pSubPicQueue2;
+    CComPtr<ISubPicAllocator> pAllocator2;
+    {
+        CAutoLock cAutoLock(&m_csSubPicQueue2);
+        pSubPicQueue2.Attach(m_pSubPicQueue2.Detach());
+        pAllocator2.Attach(m_pAllocator2.Detach());
+    }
+    // pSubPicQueue2 / pAllocator2 destruct here, outside the lock.
+}
+
+void CSubPicAllocatorPresenterImpl::ChangeSecondaryDevice(IUnknown* pDev)
+{
+    // Called by supporting presenters when their device is (re)established. Mirrors the primary device
+    // handling onto the secondary pipeline. Take local pointers under the lock, then operate after release.
+    CComPtr<ISubPicAllocator> pAllocator2;
+    CComPtr<ISubPicQueue> pSubPicQueue2;
+    {
+        CAutoLock cAutoLock(&m_csSubPicQueue2);
+        pAllocator2 = m_pAllocator2;
+        pSubPicQueue2 = m_pSubPicQueue2;
+    }
+
+    if (pSubPicQueue2) {
+        // Existing pipeline: retarget the allocator to the new device. If that fails, tear the pipeline
+        // down rather than leave a half-bound allocator that the paint thread could use.
+        if (pAllocator2 && FAILED(pAllocator2->ChangeDevice(pDev))) {
+            DestroySecondaryPipeline();
+            return;
+        }
+        pSubPicQueue2->Invalidate();
+    } else if (m_pSubPicProvider2) {
+        // The pipeline was torn down on a prior device loss but a secondary provider is still set:
+        // rebuild it on the new device and re-attach the provider (twin of the primary's re-set).
+        CreateSecondaryPipeline();
+        CComPtr<ISubPicQueue> pRebuilt;
+        {
+            CAutoLock cAutoLock(&m_csSubPicQueue2);
+            pRebuilt = m_pSubPicQueue2;
+        }
+        if (pRebuilt) {
+            pRebuilt->SetSubPicProvider(m_pSubPicProvider2);
+        }
+    }
 }
 
 // ISubPicAllocatorPresenter
@@ -193,6 +302,27 @@ STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetPosition(RECT w, RECT v)
         }
     }
 
+    // Mirror the position/size update to the secondary pipeline so the second subtitle is not
+    // rendered at a stale size after resize/hide/show (plan v3.2-#2). Take local pointers under the
+    // lock, then operate on them after releasing it.
+    if (bWindowPosChanged || bWindowSizeChanged || bVideoRectChanged) {
+        CComPtr<ISubPicAllocator> pAllocator2;
+        CComPtr<ISubPicQueue> pSubPicQueue2;
+        {
+            CAutoLock cAutoLock(&m_csSubPicQueue2);
+            pAllocator2 = m_pAllocator2;
+            pSubPicQueue2 = m_pSubPicQueue2;
+        }
+        if (pAllocator2) {
+            pAllocator2->SetMaxTextureSize(m_curSubtitleTextureSize);
+            pAllocator2->SetCurSize(m_windowRect.Size());
+            pAllocator2->SetCurVidRect(m_videoRect);
+        }
+        if (pSubPicQueue2) {
+            pSubPicQueue2->Invalidate();
+        }
+    }
+
 	if (bWindowPosChanged || bVideoRectChanged || m_bOtherTransform) {
         Paint(false);
 		m_bOtherTransform = false;
@@ -205,6 +335,20 @@ STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetTime(REFERENCE_TIME rtNow)
 
     if (m_pSubPicQueue) {
         m_pSubPicQueue->SetTime(m_rtNow);
+    }
+
+    // Secondary pipeline: independent shifted clock. m_rtNow2 is the single consumer used by both
+    // the queue (here) and AlphaBltSubPic2's LookupSubPic, so there is no per-frame key mismatch
+    // (plan B1). Mirrors the primary m_rtNow relationship.
+    m_rtNow2 = rtNow - m_rtSecondaryDelay;
+
+    CComPtr<ISubPicQueue> pSubPicQueue2;
+    {
+        CAutoLock cAutoLock(&m_csSubPicQueue2);
+        pSubPicQueue2 = m_pSubPicQueue2;
+    }
+    if (pSubPicQueue2) {
+        pSubPicQueue2->SetTime(m_rtNow2);
     }
 }
 
@@ -255,6 +399,73 @@ STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::Invalidate(REFERENCE_TIME rtI
     }
 }
 
+// ISubPicAllocatorPresenter4
+
+STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetSubPicProvider2(ISubPicProvider* pSubPicProvider2)
+{
+    m_pSubPicProvider2 = pSubPicProvider2;
+
+    if (pSubPicProvider2) {
+        // Lazily build the secondary pipeline on the first non-null provider. SetSubPicProvider2 is
+        // called from the foreground (UI) thread, so the build/teardown is serialized there; the lock
+        // only protects the pointer against the paint thread.
+        bool bHasQueue2;
+        {
+            CAutoLock cAutoLock(&m_csSubPicQueue2);
+            bHasQueue2 = (m_pSubPicQueue2 != nullptr);
+        }
+        if (!bHasQueue2) {
+            CreateSecondaryPipeline();
+        }
+
+        CComPtr<ISubPicQueue> pSubPicQueue2;
+        {
+            CAutoLock cAutoLock(&m_csSubPicQueue2);
+            pSubPicQueue2 = m_pSubPicQueue2;
+        }
+        if (pSubPicQueue2) {
+            // The queue owns the provider swap barrier (its m_csSubPicProvider + Invalidate),
+            // mirroring the primary queue's SetSubPicProvider.
+            pSubPicQueue2->SetSubPicProvider(pSubPicProvider2);
+        }
+    } else {
+        // Clearing the secondary subtitle tears the pipeline down so it costs nothing while unused.
+        DestroySecondaryPipeline();
+    }
+
+    Paint(false);
+}
+
+STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::SetSecondaryDelay(int delayMs)
+{
+    REFERENCE_TIME delay = MILLISECONDS_TO_100NS_UNITS(delayMs);
+    if (m_rtSecondaryDelay != delay) {
+        REFERENCE_TIME oldDelay = m_rtSecondaryDelay;
+        m_rtSecondaryDelay = delay;
+        // Reconstruct the unshifted time (m_rtNow2 + oldDelay) and let SetTime recompute m_rtNow2 with
+        // the new delay and retime queue2 - strictly twins SetSubtitleDelay (plan B1).
+        SetTime(m_rtNow2 + oldDelay);
+        Paint(false);
+    }
+}
+
+STDMETHODIMP_(int) CSubPicAllocatorPresenterImpl::GetSecondaryDelay() const
+{
+    return (int)(m_rtSecondaryDelay / 10000);
+}
+
+STDMETHODIMP_(void) CSubPicAllocatorPresenterImpl::InvalidateSubtitle2(REFERENCE_TIME rtInvalidate)
+{
+    CComPtr<ISubPicQueue> pSubPicQueue2;
+    {
+        CAutoLock cAutoLock(&m_csSubPicQueue2);
+        pSubPicQueue2 = m_pSubPicQueue2;
+    }
+    if (pSubPicQueue2) {
+        pSubPicQueue2->Invalidate(rtInvalidate);
+    }
+}
+
 void CSubPicAllocatorPresenterImpl::Transform(CRect r, Vector v[4])
 {
     v[0] = Vector((float)r.left, (float)r.top, 0);
@@ -279,7 +490,7 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::SetDefaultVideoAngle(Vector v)
     if (m_defaultVideoAngle != v) {
         constexpr float pi_2 = float(M_PI_2);
 
-        // In theory it should be a multiple of 90°
+        // In theory it should be a multiple of 90ï¿½
         int zAnglePi2 = std::lround(v.z / pi_2);
         //ASSERT(zAnglePi2 * pi_2 == v.z);
 

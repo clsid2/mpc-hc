@@ -528,6 +528,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_GOTO_PREV_SUB, ID_GOTO_NEXT_SUB, OnGotoSubtitle)
     ON_COMMAND_RANGE(ID_SUBRESYNC_SHIFT_DOWN, ID_SUBRESYNC_SHIFT_UP, OnSubresyncShiftSub)
     ON_COMMAND_RANGE(ID_SUB_DELAY_DOWN, ID_SUB_DELAY_UP, OnSubtitleDelay)
+    ON_COMMAND_RANGE(ID_SUB_SECONDARY_DELAY_DOWN, ID_SUB_SECONDARY_DELAY_UP, OnSecondarySubtitleDelay)
+    ON_COMMAND_RANGE(ID_SUB_SECONDARY_POS_DOWN, ID_SUB_SECONDARY_POS_UP, OnSecondarySubtitlePos)
     ON_COMMAND_RANGE(ID_SUB_POS_DOWN, ID_SUB_POS_UP, OnSubtitlePos)
     ON_COMMAND_RANGE(ID_SUB_FONT_SIZE_DEC, ID_SUB_FONT_SIZE_INC, OnSubtitleFontSize)
 
@@ -564,6 +566,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_SHADERS_PRESETS_START, ID_SHADERS_PRESETS_END, OnPlayShadersPresets)
     ON_COMMAND_RANGE(ID_AUDIO_SUBITEM_START, ID_AUDIO_SUBITEM_END, OnPlayAudio)
     ON_COMMAND_RANGE(ID_SUBTITLES_SUBITEM_START, ID_SUBTITLES_SUBITEM_END, OnPlaySubtitles)
+    ON_COMMAND_RANGE(ID_SUBTITLES_SECONDARY_SUBITEM_START, ID_SUBTITLES_SECONDARY_SUBITEM_END, OnPlaySecondarySubtitle)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_DEFAULT_STYLE, OnSubtitlesDefaultStyle)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_ALL_STYLES, OnSubtitlesOverrideStyles)
     ON_COMMAND_RANGE(ID_VIDEO_STREAMS_SUBITEM_START, ID_VIDEO_STREAMS_SUBITEM_END, OnPlayVideoStreams)
@@ -632,6 +635,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     // Support toolbar dropdown buttons
     ON_UPDATE_COMMAND_UI(ID_AUDIOS, OnUpdateAudiosButton)
     ON_UPDATE_COMMAND_UI(ID_SUBTITLES, OnUpdateSubtitlesButton)
+    ON_UPDATE_COMMAND_UI(ID_SUBTITLES_SECONDARY, OnUpdateSecondarySubtitleMenu)
 
     // Navigation panel
     ON_COMMAND(ID_VIEW_NAVIGATION, OnViewNavigation)
@@ -3760,6 +3764,9 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         } else if (itemID == ID_SUBTITLES) {
             SetupSubtitlesSubMenu();
             pSubMenu = &m_subtitlesMenu;
+        } else if (itemID == ID_SUBTITLES_SECONDARY) {
+            SetupSecondarySubtitleSubMenu();
+            pSubMenu = &m_subtitlesSecondaryMenu;
         } else if (itemID == ID_VIDEO_STREAMS) {
             CString menuStr;
             menuStr.LoadString(GetPlaybackMode() == PM_DVD ? IDS_MENU_VIDEO_ANGLE : IDS_MENU_VIDEO_STREAM);
@@ -3810,6 +3817,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
                 || nID >= ID_FAVORITES_FILE_START && nID <= ID_FAVORITES_FILE_END
                 || nID >= ID_RECENT_FILE_START && nID <= ID_RECENT_FILE_END
                 || nID >= ID_SUBTITLES_SUBITEM_START && nID <= ID_SUBTITLES_SUBITEM_END
+                || nID >= ID_SUBTITLES_SECONDARY_SUBITEM_START && nID <= ID_SUBTITLES_SECONDARY_SUBITEM_END
                 || nID >= ID_NAVIGATE_JUMPTO_SUBITEM_START && nID <= ID_NAVIGATE_JUMPTO_SUBITEM_END) {
                 continue;
             }
@@ -9980,6 +9988,31 @@ void CMainFrame::SetSubtitleDelay(int delay_ms, bool relative)
     m_OSD.DisplayMessage(OSD_TOPLEFT, strSubDelay);
 }
 
+void CMainFrame::SetSecondarySubtitleDelay(int delay_ms, bool relative)
+{
+    // Twins SetSubtitleDelay for the optional second subtitle pipeline. Only meaningful on a dual-subtitle
+    // renderer (m_pCAP4 non-null) with a secondary loaded.
+    if (!m_pCAP4) {
+        if (GetLoadState() == MLS::LOADED) {
+            SendStatusMessage(L"Secondary subtitle delay is not supported by the current subtitle renderer", 3000);
+        }
+        return;
+    }
+    if (!m_pSecondarySubInput.pSubStream) {
+        SendStatusMessage(StrRes(IDS_SUBTITLES_ERROR), 3000);
+        return;
+    }
+    if (relative) {
+        delay_ms += m_pCAP4->GetSecondaryDelay();
+    }
+    m_pCAP4->SetSecondaryDelay(delay_ms);
+
+    CString strSubDelay;
+    strSubDelay.Format(IDS_SUB_SECONDARY_DELAY, delay_ms);
+    SendStatusMessage(strSubDelay, 3000);
+    m_OSD.DisplayMessage(OSD_TOPLEFT, strSubDelay);
+}
+
 void CMainFrame::OnPlayChangeAudDelay(UINT nID)
 {
     if (CComQIPtr<IAudioSwitcherFilter> pASF = FindFilter(__uuidof(CAudioSwitcherFilter), m_pGB)) {
@@ -10156,12 +10189,19 @@ int CMainFrame::UpdateSelectedAudioStreamInfo(int index, AM_MEDIA_TYPE* pmt, LCI
     return nChannels;
 }
 
-int CMainFrame::GetSelectedSubtitleTrackIndex() {
+int CMainFrame::GetSubtitleTrackIndexOf(const SubtitleInput& subInput) {
+    // The absolute subtitle-track index of `subInput` within m_pSubStreams -- the exact inverse of
+    // GetSubtitleInput(int) -- or -1 if it is not in the list. The primary reaches this via
+    // GetSelectedSubtitleTrackIndex() (which maps -1 back to 0 to preserve its historical contract);
+    // the secondary uses it directly, with -1 as the ONLY "no secondary" sentinel.
+    if (!subInput.pSubStream) {
+        return -1;
+    }
     int subIdx = 0;
     POSITION pos = m_pSubStreams.GetHeadPosition();
     while (pos) {
-        SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
-        CComQIPtr<IAMStreamSelect> pSSF = subInput.pSourceFilter;
+        SubtitleInput& cur = m_pSubStreams.GetNext(pos);
+        CComQIPtr<IAMStreamSelect> pSSF = cur.pSourceFilter;
         if (pSSF) {
             DWORD cStreams;
             if (SUCCEEDED(pSSF->Count(&cStreams))) {
@@ -10169,7 +10209,7 @@ int CMainFrame::GetSelectedSubtitleTrackIndex() {
                     DWORD dwFlags, dwGroup;
                     if (SUCCEEDED(pSSF->Info(j, nullptr, &dwFlags, nullptr, &dwGroup, nullptr, nullptr, nullptr))) {
                         if (dwGroup == 2) {
-                            if (subInput.pSubStream == m_pCurrentSubInput.pSubStream && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
+                            if (cur.pSubStream == subInput.pSubStream && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
                                 return subIdx;
                             }
                             subIdx++;
@@ -10178,14 +10218,19 @@ int CMainFrame::GetSelectedSubtitleTrackIndex() {
                 }
             }
         } else {
-            if (subInput.pSubStream == m_pCurrentSubInput.pSubStream) {
+            if (cur.pSubStream == subInput.pSubStream) {
                 return subIdx;
             } else {
-                subIdx += subInput.pSubStream->GetStreamCount();
+                subIdx += cur.pSubStream->GetStreamCount();
             }
         }
     }
-    return 0;
+    return -1;
+}
+
+int CMainFrame::GetSelectedSubtitleTrackIndex() {
+    int i = GetSubtitleTrackIndexOf(m_pCurrentSubInput);
+    return i < 0 ? 0 : i;
 }
 
 bool CMainFrame::IsValidSubtitleStream(int i) {
@@ -15919,6 +15964,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
     OpenDeviceData* pDeviceData = dynamic_cast<OpenDeviceData*>(pOMD.m_p);
     ASSERT(pFileData || pDVDData || pDeviceData);
 
+    m_pCAP4 = nullptr;
     m_pCAP3 = nullptr;
     m_pCAP2 = nullptr;
     m_pCAP = nullptr;
@@ -15996,6 +16042,10 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP), TRUE);
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP2), TRUE);
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP3), TRUE);
+        m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP4), TRUE);
+        if (m_pCAP4 && !m_pCAP4->SupportsDualSubtitles()) {
+            m_pCAP4 = nullptr; // renderer exposes ISubPicAllocatorPresenter4 via the base QI but does not support dual subtitles
+        }
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMRWC), FALSE); // might have IVMRMixerBitmap9, but not IVMRWindowlessControl9
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMRMC), TRUE);
         m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMB), TRUE);
@@ -16076,6 +16126,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
             REFERENCE_TIME rtDur = 0;
             m_loadedAudioTrackIndex = -1;
             m_loadedSubtitleTrackIndex = -1;
+            m_loadedSecondarySubtitleTrackIndex = -1;
 
             if (m_pMS) {
                 m_pMS->GetDuration(&rtDur);
@@ -16119,6 +16170,9 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
                     }
                     if (m_loadedSubtitleTrackIndex == -1) {
                         m_loadedSubtitleTrackIndex = pMRU->GetCurrentSubtitleTrack();
+                    }
+                    if (m_loadedSecondarySubtitleTrackIndex == -1) {
+                        m_loadedSecondarySubtitleTrackIndex = pMRU->GetCurrentSecondarySubtitleTrack();
                     }
                 }
             }
@@ -16222,6 +16276,22 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
         if (substm >= 0) {
             SetSubtitle(substm);
         }
+
+        // Restore a per-file remembered secondary subtitle (S5b), strictly AFTER the primary is set so the
+        // not-primary check compares against the final primary. Only on a dual-capable renderer, and only for
+        // a still-external stream that is not the just-restored primary; otherwise the saved index is left
+        // untouched (preserved for next time) rather than wired into an invalid configuration.
+        if (m_pCAP4 && m_loadedSecondarySubtitleTrackIndex >= 0
+                && IsValidSubtitleStream(m_loadedSecondarySubtitleTrackIndex)) {
+            int secstm = m_loadedSecondarySubtitleTrackIndex;
+            if (SubtitleInput* pSubSec = GetSubtitleInput(secstm)) {
+                // IsEligibleSecondarySubtitle enforces external && tracked && != current primary -- the same
+                // gate the menu uses -- so primary and secondary can never end up wired to the same substream.
+                if (IsEligibleSecondarySubtitle(*pSubSec)) {
+                    SetSecondarySubtitle(*pSubSec);
+                }
+            }
+        }
         checkAborted();
 
         // apply /dubdelay command-line switch
@@ -16316,6 +16386,7 @@ void CMainFrame::CloseMediaPrivate()
     {
         CAutoLock cAutoLock(&m_csSubLock);
         m_pCurrentSubInput = SubtitleInput(nullptr);
+        m_pSecondarySubInput = SubtitleInput(nullptr);
         m_pSubStreams.RemoveAll();
         m_ExternalSubstreams.clear();
     }
@@ -16340,6 +16411,7 @@ void CMainFrame::CloseMediaPrivate()
     m_pMVRI.Release();
     m_pMVTO.Release();
     m_pD3DFSC.Release();
+    m_pCAP4.Release();
     m_pCAP3.Release();
     m_pCAP2.Release();
     m_pCAP.Release();
@@ -16601,6 +16673,7 @@ void CMainFrame::CreateDynamicMenus()
     VERIFY(m_openCDsMenu.CreatePopupMenu());
     VERIFY(m_filtersMenu.CreatePopupMenu());
     VERIFY(m_subtitlesMenu.CreatePopupMenu());
+    VERIFY(m_subtitlesSecondaryMenu.CreatePopupMenu());
     VERIFY(m_audiosMenu.CreatePopupMenu());
     VERIFY(m_videoStreamsMenu.CreatePopupMenu());
     VERIFY(m_chaptersMenu.CreatePopupMenu());
@@ -16618,6 +16691,7 @@ void CMainFrame::DestroyDynamicMenus()
     VERIFY(m_openCDsMenu.DestroyMenu());
     VERIFY(m_filtersMenu.DestroyMenu());
     VERIFY(m_subtitlesMenu.DestroyMenu());
+    VERIFY(m_subtitlesSecondaryMenu.DestroyMenu());
     VERIFY(m_audiosMenu.DestroyMenu());
     VERIFY(m_videoStreamsMenu.DestroyMenu());
     VERIFY(m_chaptersMenu.DestroyMenu());
@@ -17230,6 +17304,141 @@ void CMainFrame::SetupSubtitlesSubMenu()
         }
     } else if (GetPlaybackMode() == PM_FILE) {
         SetupNavStreamSelectSubMenu(subMenu, id, 2);
+    }
+}
+
+bool CMainFrame::IsEligibleSecondarySubtitle(const SubtitleInput& subInput) const
+{
+    // Eligible as a secondary subtitle: an externally-loaded stream (no IAMStreamSelect source filter, and
+    // tracked in m_ExternalSubstreams) that is not the stream currently selected as the PRIMARY subtitle.
+    // Embedded/IAMStreamSelect tracks are excluded because selecting one would call IAMStreamSelect::Enable
+    // and disturb the single primary selection.
+    return subInput.pSubStream
+           && !subInput.pSourceFilter
+           && std::find(m_ExternalSubstreams.cbegin(), m_ExternalSubstreams.cend(),
+                        (ISubStream*)subInput.pSubStream) != m_ExternalSubstreams.cend()
+           && subInput.pSubStream != m_pCurrentSubInput.pSubStream;
+}
+
+SubtitleInput* CMainFrame::GetSecondarySubtitleInput(int idx)
+{
+    // Returns the idx-th (0-based) eligible external subtitle, or nullptr. Single pass; the same eligibility
+    // predicate the menu builder uses, so the handler can never select an entry the menu didn't offer.
+    if (idx < 0) {
+        return nullptr;
+    }
+    int k = 0;
+    POSITION pos = m_pSubStreams.GetHeadPosition();
+    while (pos) {
+        SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
+        if (!IsEligibleSecondarySubtitle(subInput)) {
+            continue;
+        }
+        if (k == idx) {
+            return &subInput;
+        }
+        k++;
+    }
+    return nullptr;
+}
+
+void CMainFrame::SetupSecondarySubtitleSubMenu()
+{
+    CMenu& subMenu = m_subtitlesSecondaryMenu;
+    // Empty the menu
+    while (subMenu.RemoveMenu(0, MF_BYPOSITION));
+
+    if (GetLoadState() != MLS::LOADED || m_fAudioOnly) {
+        return;
+    }
+    // The secondary subtitle pipeline only exists on renderers that support dual subtitles. When it doesn't,
+    // leave the menu empty so WM_INITMENUPOPUP greys the "Secondary Subtitle Track" item.
+    if (!m_pCAP4) {
+        return;
+    }
+
+    UINT id = ID_SUBTITLES_SECONDARY_SUBITEM_START;
+
+    // "Off" entry (menu position 0, command id ID_SUBTITLES_SECONDARY_SUBITEM_START)
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, ResStr(IDS_SUBTITLE_SECONDARY_OFF)));
+    VERIFY(subMenu.AppendMenu(MF_SEPARATOR)); // menu position 1, no command id
+
+    // Build the dynamic list of eligible external subtitles in a single pass over m_pSubStreams.
+    int idx = 0, iSelected = -1;
+    POSITION pos = m_pSubStreams.GetHeadPosition();
+    while (pos) {
+        SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
+        if (!IsEligibleSecondarySubtitle(subInput)) {
+            continue;
+        }
+        // Never assign a command id outside the dispatched range (would escape OnPlaySecondarySubtitle and
+        // could collide with later command ranges). Truncate silently if a user somehow loads that many subs.
+        if (id > ID_SUBTITLES_SECONDARY_SUBITEM_END) {
+            break;
+        }
+        if (subInput.pSubStream == m_pSecondarySubInput.pSubStream) {
+            iSelected = idx;
+        }
+        CComHeapPtr<WCHAR> pName;
+        LCID lcid = 0;
+        CString name;
+        if (SUCCEEDED(subInput.pSubStream->GetStreamInfo(0, &pName, &lcid)) && pName) {
+            name = pName;
+        } else {
+            name = ResStr(IDS_AG_UNKNOWN_STREAM);
+        }
+        name.Replace(_T("&"), _T("&&"));
+        VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, name)); // entry idx -> menu position idx + 2
+        idx++;
+    }
+
+    // Radio-check the current selection: "Off" (position 0) when no/stale secondary, else the chosen entry.
+    int last = subMenu.GetMenuItemCount() - 1;
+    int checkPos = (iSelected >= 0) ? (iSelected + 2) : 0;
+    VERIFY(subMenu.CheckMenuRadioItem(0, last, checkPos, MF_BYPOSITION));
+}
+
+void CMainFrame::OnPlaySecondarySubtitle(UINT nID)
+{
+    if (!m_pCAP4) {
+        return;
+    }
+    int i = (int)nID - ID_SUBTITLES_SECONDARY_SUBITEM_START;
+    if (i <= 0) {
+        // "Off" -> clear the secondary subtitle
+        SetSecondarySubtitle(SubtitleInput(nullptr));
+        return;
+    }
+    // i - 1 skips the "Off" entry; the same predicate the builder used selects the matching external stream.
+    if (SubtitleInput* pSubInput = GetSecondarySubtitleInput(i - 1)) {
+        SetSecondarySubtitle(*pSubInput);
+    }
+}
+
+void CMainFrame::OnUpdateSecondarySubtitleMenu(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(IsStateLoaded() && m_pCAP4 && m_subtitlesSecondaryMenu.GetMenuItemCount() > 0);
+}
+
+void CMainFrame::RevalidateSecondarySubtitle()
+{
+    // Clear the secondary if it is no longer eligible (its stream left m_pSubStreams, it became the primary,
+    // or the renderer no longer supports dual subtitles), so the secondary pipeline can't keep rendering a
+    // stream the UI no longer offers. Cheap no-op when no secondary is set or the renderer isn't dual-capable.
+    if (!m_pCAP4 || !m_pSecondarySubInput.pSubStream) {
+        return;
+    }
+    bool eligible = false;
+    POSITION pos = m_pSubStreams.GetHeadPosition();
+    while (pos) {
+        SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
+        if (subInput.pSubStream == m_pSecondarySubInput.pSubStream) {
+            eligible = IsEligibleSecondarySubtitle(subInput);
+            break;
+        }
+    }
+    if (!eligible) {
+        SetSecondarySubtitle(SubtitleInput(nullptr));
     }
 }
 
@@ -18259,7 +18468,8 @@ bool CMainFrame::SetSubtitle(int i, bool bIsOffset /*= false*/, bool bDisplayMes
 
 void CMainFrame::UpdateSubtitleColorInfo()
 {
-    if (!IsStateLoaded() || !m_pCAP || !m_pCurrentSubInput.pSubStream) {
+    if (!IsStateLoaded() || !m_pCAP
+            || (!m_pCurrentSubInput.pSubStream && !m_pSecondarySubInput.pSubStream)) {
         return;
     }
 
@@ -18298,7 +18508,12 @@ void CMainFrame::UpdateSubtitleColorInfo()
         }
     }
 
-    m_pCurrentSubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    if (m_pCurrentSubInput.pSubStream) {
+        m_pCurrentSubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    }
+    if (m_pSecondarySubInput.pSubStream) {
+        m_pSecondarySubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    }
     LocalFree(yuvMatrix);
 }
 
@@ -18375,6 +18590,48 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
     if (s.fKeepHistory && s.bRememberTrackSelection) {
         s.MRU.UpdateCurrentSubtitleTrack(GetSelectedSubtitleTrackIndex());
     }
+
+    // A primary change (or reload, which funnels through here) may make the secondary ineligible -- e.g. the
+    // primary is now the same stream the secondary points at. Re-check and clear it if so.
+    RevalidateSecondarySubtitle();
+}
+
+void CMainFrame::SetSecondarySubtitle(const SubtitleInput& subInput)
+{
+    // Mirrors the provider-wiring half of SetSubtitle for the optional second subtitle. The secondary
+    // pipeline only exists on renderers that support dual subtitles (m_pCAP4 non-null); otherwise this is
+    // a no-op. The caller limits the secondary stream to externally-loaded subtitles.
+    // Never wire an embedded/IAMStreamSelect track as the secondary (selecting one would call
+    // IAMStreamSelect::Enable and disturb the primary). The menu already filters; guard the sink too.
+    if (subInput.pSubStream && subInput.pSourceFilter) {
+        return;
+    }
+    CAppSettings& s = AfxGetAppSettings();
+
+    {
+        CAutoLock cAutoLock(&m_csSubLock);
+
+        if (m_pCAP4 && m_pSecondarySubInput.pSubStream && m_pSecondarySubInput.pSubStream != subInput.pSubStream) {
+            m_pCAP4->SetSubPicProvider2(nullptr);
+        }
+
+        m_pSecondarySubInput = subInput;
+    }
+
+    if (m_pCAP4 && s.fEnableSubtitles) {
+        m_pCAP4->SetSubPicProvider2(CComQIPtr<ISubPicProvider>(subInput.pSubStream));
+    }
+
+    // give the newly-set secondary the same colorspace/level info the primary uses, and pin it to the top
+    UpdateSubtitleColorInfo();
+    UpdateSubtitleRenderingParameters();
+
+    // Remember the chosen secondary per-file, mirroring the primary's track-selection persistence
+    // (gated identically). GetSubtitleTrackIndexOf returns -1 when the secondary is cleared, so a removed
+    // secondary is not resurrected on reopen. The write back of a valid restored index is idempotent.
+    if (s.fKeepHistory && s.bRememberTrackSelection) {
+        s.MRU.UpdateCurrentSecondarySubtitleTrack(GetSubtitleTrackIndexOf(m_pSecondarySubInput));
+    }
 }
 
 void CMainFrame::OnAudioShiftOnOff()
@@ -18418,6 +18675,9 @@ void CMainFrame::ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pS
             m_pSubStreams.GetAt(cur).pSubStream = pSubStreamNew;
             if (m_pCurrentSubInput.pSubStream == pSubStreamOld) {
                 SetSubtitle(m_pSubStreams.GetAt(cur), true);
+            }
+            if (m_pSecondarySubInput.pSubStream == pSubStreamOld) {
+                SetSecondarySubtitle(m_pSubStreams.GetAt(cur));
             }
             break;
         }
@@ -19050,6 +19310,7 @@ bool CMainFrame::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPrevi
         m_pMVRSR.Release();
         m_pMVTO.Release();
 
+        m_pCAP4.Release();
         m_pCAP3.Release();
         m_pCAP2.Release();
         m_pCAP.Release();
@@ -19061,6 +19322,10 @@ bool CMainFrame::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPrevi
         m_pMFVDC.Release();
         m_pQP.Release();
     }
+
+    // m_pCAP4 is re-acquired only inside the fVidPrev branch below; release it unconditionally so a prior
+    // preview's secondary presenter cannot survive a rebuild that has no (or no-preview) video renderer.
+    m_pCAP4.Release();
 
     m_pGB->NukeDownstream(m_pVidCap);
     m_pGB->NukeDownstream(m_pAudCap);
@@ -19118,6 +19383,10 @@ bool CMainFrame::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPrevi
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP), TRUE);
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP2), TRUE);
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP3), TRUE);
+            m_pGB->FindInterface(IID_PPV_ARGS(&m_pCAP4), TRUE);
+            if (m_pCAP4 && !m_pCAP4->SupportsDualSubtitles()) {
+                m_pCAP4 = nullptr; // mirror OpenMediaPrivate: keep m_pCAP4 only for renderers that support dual subtitles
+            }
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMRWC), FALSE);
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMRMC), TRUE);
             m_pGB->FindInterface(IID_PPV_ARGS(&m_pVMB), TRUE);
@@ -20676,6 +20945,17 @@ afx_msg void CMainFrame::OnSubtitleDelay(UINT nID)
     SetSubtitleDelay(nDelayStep, /*relative=*/ true);
 }
 
+afx_msg void CMainFrame::OnSecondarySubtitleDelay(UINT nID)
+{
+    int nDelayStep = AfxGetAppSettings().nSubDelayStep;
+
+    if (nID == ID_SUB_SECONDARY_DELAY_DOWN) {
+        nDelayStep = -nDelayStep;
+    }
+
+    SetSecondarySubtitleDelay(nDelayStep, /*relative=*/ true);
+}
+
 afx_msg void CMainFrame::OnSubtitlePos(UINT nID)
 {
     if (m_pCAP) {
@@ -20692,6 +20972,29 @@ afx_msg void CMainFrame::OnSubtitlePos(UINT nID)
         if (GetMediaState() != State_Running) {
             m_pCAP->Paint(false);
         }
+    }
+}
+
+afx_msg void CMainFrame::OnSecondarySubtitlePos(UINT nID)
+{
+    // Moves the (forced-top) secondary subtitle vertically via its persistent override-placement percentage.
+    // The secondary uses per-RTS placement (not the presenter-level subPicVerticalShift the primary uses).
+    if (!m_pCAP4 || !m_pSecondarySubInput.pSubStream) {
+        return;
+    }
+    CAppSettings& s = AfxGetAppSettings();
+    switch (nID) {
+    case ID_SUB_SECONDARY_POS_DOWN:
+        s.nSecondarySubtitleVertPos += 2; // larger verPos = lower on screen
+        break;
+    case ID_SUB_SECONDARY_POS_UP:
+        s.nSecondarySubtitleVertPos -= 2;
+        break;
+    }
+    s.nSecondarySubtitleVertPos = std::clamp(s.nSecondarySubtitleVertPos, 0, 100);
+    UpdateSubtitleRenderingParameters();
+    if (m_pCAP && GetMediaState() != State_Running) {
+        m_pCAP->Paint(false);
     }
 }
 
@@ -22458,14 +22761,14 @@ bool CMainFrame::GetDecoderType(CString& type) const
     return false;
 }
 
-void CMainFrame::UpdateSubtitleRenderingParameters()
+// Applies the shared subtitle rendering parameters (storage res, PAR compensation, style override, freetype)
+// to one substream. bSecondary => force TOP placement (independent of the primary placement setting) and
+// refresh the secondary queue (queue2) instead of the primary one. Callers guarantee m_pCAP is valid.
+void CMainFrame::ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary)
 {
-    if (!m_pCAP) {
-        return;
-    }
-
     const CAppSettings& s = AfxGetAppSettings();
-    if (auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream)) {
+    bool bInvalidate = false;
+    if (auto pRTS = dynamic_cast<CRenderedTextSubtitle*>(pSubStream)) {
         bool bChangeStorageRes = false;
         bool bChangePARComp = false;
         double dPARCompensation = 1.0;
@@ -22524,18 +22827,47 @@ void CMainFrame::UpdateSubtitleRenderingParameters()
                 pRTS->SetDefaultStyle(style);
             }
             pRTS->SetOverride(s.bSubtitleOverrideDefaultStyle, s.bSubtitleOverrideAllStyles, s.subtitlesDefStyle);
-            pRTS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            if (bSecondary) {
+                pRTS->SetAlignment(true, s.nHorPos, s.nSecondarySubtitleVertPos, /*bTopAligned=*/ true);
+            } else {
+                pRTS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            }
             pRTS->SetUseFreeType(s.bUseFreeType);
             pRTS->SetOpenTypeLangHint(s.strOpenTypeLangHint);
             pRTS->Deinit();
         }
-        m_pCAP->Invalidate();
-    } else if (auto pVSS = dynamic_cast<CVobSubSettings*>((ISubStream*)m_pCurrentSubInput.pSubStream)) {
+        bInvalidate = true;
+    } else if (auto pVSS = dynamic_cast<CVobSubSettings*>(pSubStream)) {
         {
             CAutoLock cAutoLock(&m_csSubLock);
-            pVSS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            if (bSecondary) {
+                pVSS->SetAlignment(true, s.nHorPos, s.nSecondarySubtitleVertPos, /*hor=*/ 1, /*ver=*/ 0); // ver=0: top-anchored, twin of RTS secondary top
+            } else {
+                pVSS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            }
         }
-        m_pCAP->Invalidate();
+        bInvalidate = true;
+    }
+
+    if (bInvalidate) {
+        if (bSecondary) {
+            if (m_pCAP4) {
+                m_pCAP4->InvalidateSubtitle2();
+            }
+        } else {
+            m_pCAP->Invalidate();
+        }
+    }
+}
+
+void CMainFrame::UpdateSubtitleRenderingParameters()
+{
+    if (!m_pCAP) {
+        return;
+    }
+    ApplySubtitleRenderingParameters((ISubStream*)m_pCurrentSubInput.pSubStream, /*bSecondary=*/ false);
+    if (m_pCAP4 && m_pSecondarySubInput.pSubStream) {
+        ApplySubtitleRenderingParameters((ISubStream*)m_pSecondarySubInput.pSubStream, /*bSecondary=*/ true);
     }
 }
 

@@ -74,6 +74,7 @@ namespace DSObjects
         CComPtr<IUnknown> m_pDXR;
         CComPtr<ISubRenderCallback> m_pSRCB;
         CSize   m_ScreenSize;
+        CComPtr<IDirect3DDevice9> m_pD3DDev; // kept so the lazily-built secondary pipeline can create its allocator
 
     public:
         CDXRAllocatorPresenter(HWND hWnd, HRESULT& hr, CString& _Error);
@@ -94,6 +95,10 @@ namespace DSObjects
         STDMETHODIMP_(bool) Paint(bool bAll);
         STDMETHODIMP GetDIB(BYTE* lpDib, DWORD* size);
         STDMETHODIMP SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget);
+
+        // ISubPicAllocatorPresenter4 (second subtitle)
+        STDMETHODIMP_(bool) SupportsDualSubtitles() { return true; }
+        CComPtr<ISubPicAllocator> CreateSecondaryAllocator() override;
 
         // ISubPicAllocatorPresenter2
         STDMETHODIMP_(bool) IsRendering() {

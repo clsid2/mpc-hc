@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
+"POT-Creation-Date: 2026-06-16 09:05:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2552,6 +2552,30 @@ msgstr ""
 
 msgctxt "IDS_SUBTITLE_STREAM_OFF"
 msgid "Subtitle: off"
+msgstr ""
+
+msgctxt "IDS_SUBTITLE_SECONDARY_OFF"
+msgid "Off"
+msgstr ""
+
+msgctxt "IDS_SUB_SECONDARY_DELAY_DOWN"
+msgid "Secondary Subtitle Delay -"
+msgstr ""
+
+msgctxt "IDS_SUB_SECONDARY_DELAY_UP"
+msgid "Secondary Subtitle Delay +"
+msgstr ""
+
+msgctxt "IDS_SUB_SECONDARY_DELAY"
+msgid "Secondary sub delay: %ld ms"
+msgstr ""
+
+msgctxt "IDS_SUB_SECONDARY_POS_DOWN"
+msgid "Secondary Subtitle Position Down"
+msgstr ""
+
+msgctxt "IDS_SUB_SECONDARY_POS_UP"
+msgid "Secondary Subtitle Position Up"
 msgstr ""
 
 msgctxt "IDS_SUBTITLE_STREAM"

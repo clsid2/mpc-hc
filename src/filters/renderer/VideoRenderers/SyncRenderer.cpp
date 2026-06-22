@@ -731,8 +731,20 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
         m_pSubPicQueue->SetSubPicProvider(pSubPicProvider);
     }
 
+    // Keep the secondary pipeline (if any) on the same device as the primary above.
+    ChangeSecondaryDevice(m_pD3DDev);
+
     m_LastAdapterCheck = GetRenderersData()->GetPerfCounter();
     return S_OK;
+}
+
+CComPtr<ISubPicAllocator> CBaseAP::CreateSecondaryAllocator()
+{
+    // Twin of the primary CDX9SubPicAllocator created in CreateDevice; null if no device yet.
+    if (!m_pD3DDev) {
+        return nullptr;
+    }
+    return (ISubPicAllocator*)DEBUG_NEW CDX9SubPicAllocator(m_pD3DDev, m_maxSubtitleTextureSize, false);
 }
 
 // function is not used?
@@ -950,6 +962,9 @@ HRESULT CBaseAP::ResetDXDevice(CString& _Error)
     if (pSubPicProvider) {
         m_pSubPicQueue->SetSubPicProvider(pSubPicProvider);
     }
+
+    // Keep the secondary pipeline (if any) on the same device as the primary above.
+    ChangeSecondaryDevice(m_pD3DDev);
 
     m_pFont = nullptr;
     m_pSprite = nullptr;
@@ -1787,6 +1802,8 @@ STDMETHODIMP_(bool) CBaseAP::Paint(bool bAll)
     }
 
     AlphaBltSubPic(rDstPri, rDstVid);
+    // paint the secondary subtitle on top of the primary one (OSD below still stays topmost)
+    AlphaBltSubPic2(rDstPri, rDstVid);
 
     if (m_VMR9AlphaBitmap.dwFlags & VMRBITMAP_UPDATE) {
         CAutoLock BitMapLock(&m_VMR9AlphaBitmapLock);

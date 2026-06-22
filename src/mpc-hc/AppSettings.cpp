@@ -167,6 +167,7 @@ CAppSettings::CAppSettings()
     , fOverridePlacement(false)
     , nHorPos(50)
     , nVerPos(90)
+    , nSecondarySubtitleVertPos(15)
     , bSubtitleARCompensation(true)
     , nSubDelayStep(500)
     , bPreferDefaultForcedSubtitles(true)
@@ -746,6 +747,10 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_VIEW_VSYNCOFFSET_INCREASE,   VK_DOWN, FCONTROL | FALT,   IDS_AG_VSYNCOFFSET_INCREASE },
     { ID_SUB_DELAY_DOWN,                VK_F1, 0,                 IDS_MPLAYERC_104 },
     { ID_SUB_DELAY_UP,                  VK_F2, 0,                 IDS_MPLAYERC_105 },
+    { ID_SUB_SECONDARY_DELAY_DOWN,          0, 0,                 IDS_SUB_SECONDARY_DELAY_DOWN },
+    { ID_SUB_SECONDARY_DELAY_UP,            0, 0,                 IDS_SUB_SECONDARY_DELAY_UP },
+    { ID_SUB_SECONDARY_POS_DOWN,            0, 0,                 IDS_SUB_SECONDARY_POS_DOWN },
+    { ID_SUB_SECONDARY_POS_UP,              0, 0,                 IDS_SUB_SECONDARY_POS_UP },
     { ID_SUB_POS_DOWN,            VK_SUBTRACT, FCONTROL | FSHIFT, IDS_SUB_POS_DOWN },
     { ID_SUB_POS_UP,                   VK_ADD, FCONTROL | FSHIFT, IDS_SUB_POS_UP },
     { ID_SUB_FONT_SIZE_DEC,       VK_SUBTRACT, FCONTROL,          IDS_SUB_FONT_SIZE_DEC },
@@ -1033,6 +1038,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, fOverridePlacement);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, nHorPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, nVerPos);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, nSecondarySubtitleVertPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLEARCOMPENSATION, bSubtitleARCompensation);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBDELAYINTERVAL, nSubDelayStep);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLESUBTITLES, fEnableSubtitles);
@@ -1853,6 +1859,7 @@ void CAppSettings::LoadSettings()
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
     nHorPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, 50);
     nVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, 90);
+    nSecondarySubtitleVertPos = std::clamp(static_cast<int>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, 15)), 0, 100);
     bSubtitleARCompensation = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLEARCOMPENSATION, TRUE);
     nSubDelayStep = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBDELAYINTERVAL, 500);
     if (nSubDelayStep < 10) {
@@ -3131,9 +3138,27 @@ void CAppSettings::CRecentFileListWithMoreInfo::UpdateCurrentSubtitleTrack(int s
 }
 
 int CAppSettings::CRecentFileListWithMoreInfo::GetCurrentSubtitleTrack() {
-    size_t idx; 
+    size_t idx;
     if (GetCurrentIndex(idx)) {
         return rfe_array[idx].SubtitleTrackIndex;
+    }
+    return -1;
+}
+
+void CAppSettings::CRecentFileListWithMoreInfo::UpdateCurrentSecondarySubtitleTrack(int subIndex) {
+    size_t idx;
+    if (GetCurrentIndex(idx)) {
+        if (rfe_array[idx].SecondarySubtitleTrackIndex != subIndex) {
+            rfe_array[idx].SecondarySubtitleTrackIndex = subIndex;
+            WriteMediaHistorySecondarySubtitleIndex(rfe_array[idx]);
+        }
+    }
+}
+
+int CAppSettings::CRecentFileListWithMoreInfo::GetCurrentSecondarySubtitleTrack() {
+    size_t idx;
+    if (GetCurrentIndex(idx)) {
+        return rfe_array[idx].SecondarySubtitleTrackIndex;
     }
     return -1;
 }
@@ -3381,6 +3406,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntry(CStringW h
 
     r.AudioTrackIndex = pApp->GetProfileIntW(subSection, L"AudioTrackIndex", -1);
     r.SubtitleTrackIndex = pApp->GetProfileIntW(subSection, L"SubtitleTrackIndex", -1);
+    r.SecondarySubtitleTrackIndex = pApp->GetProfileIntW(subSection, L"SecondarySubtitleTrackIndex", -1);
     return true;
 }
 
@@ -3475,6 +3501,23 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistorySubtitleIndex(R
     }
 }
 
+void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistorySecondarySubtitleIndex(RecentFileEntry& r) {
+    auto pApp = AfxGetMyApp();
+
+    if (r.hash.IsEmpty()) {
+        r.hash = getRFEHash(r.fns.GetHead());
+    }
+
+    CStringW subSection, t;
+    subSection.Format(L"%s\\%s", m_section, static_cast<LPCWSTR>(r.hash));
+
+    if (r.SecondarySubtitleTrackIndex != -1) {
+        pApp->WriteProfileInt(subSection, L"SecondarySubtitleTrackIndex", int(r.SecondarySubtitleTrackIndex));
+    } else {
+        pApp->WriteProfileStringW(subSection, L"SecondarySubtitleTrackIndex", nullptr);
+    }
+}
+
 void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFileEntry& r, bool updateLastOpened /* = false */) {
     auto pApp = AfxGetMyApp();
 
@@ -3555,6 +3598,12 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFil
         pApp->WriteProfileInt(subSection, L"SubtitleTrackIndex", int(r.SubtitleTrackIndex));
     } else {
         pApp->WriteProfileStringW(subSection, L"SubtitleTrackIndex", nullptr);
+    }
+
+    if (r.SecondarySubtitleTrackIndex != -1) {
+        pApp->WriteProfileInt(subSection, L"SecondarySubtitleTrackIndex", int(r.SecondarySubtitleTrackIndex));
+    } else {
+        pApp->WriteProfileStringW(subSection, L"SecondarySubtitleTrackIndex", nullptr);
     }
 
     if (updateLastOpened || isNewEntry || r.lastOpened.IsEmpty()) {

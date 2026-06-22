@@ -1768,6 +1768,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -1960,6 +1961,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -2338,6 +2340,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -3461,6 +3464,12 @@ BEGIN
     IDS_MAINFRM_42          ", Free V/A Buffers: %03d/%03d"
     IDS_AG_ERROR            "Error"
     IDS_SUBTITLE_STREAM_OFF "Subtitle: off"
+    IDS_SUBTITLE_SECONDARY_OFF "Off"
+    IDS_SUB_SECONDARY_DELAY_DOWN "Secondary Subtitle Delay -"
+    IDS_SUB_SECONDARY_DELAY_UP "Secondary Subtitle Delay +"
+    IDS_SUB_SECONDARY_DELAY "Secondary sub delay: %ld ms"
+    IDS_SUB_SECONDARY_POS_DOWN "Secondary Subtitle Position Down"
+    IDS_SUB_SECONDARY_POS_UP "Secondary Subtitle Position Up"
     IDS_SUBTITLE_STREAM     "Subtitle: %s"
     IDS_MAINFRM_46          "Select the path for the DVD/BD:"
 END

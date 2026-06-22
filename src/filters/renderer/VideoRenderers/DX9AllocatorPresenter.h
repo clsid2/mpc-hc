@@ -301,6 +301,10 @@ namespace DSObjects
         STDMETHODIMP_(bool) ResetDevice();
         STDMETHODIMP_(bool) DisplayChange();
 
+        // ISubPicAllocatorPresenter4 (second subtitle): VMR9-renderless and EVR-custom support dual subtitles
+        STDMETHODIMP_(bool) SupportsDualSubtitles() { return true; }
+        CComPtr<ISubPicAllocator> CreateSecondaryAllocator() override;
+
         // ISubPicAllocatorPresenter2
         STDMETHODIMP_(bool) IsRendering() {
             return m_bIsRendering;

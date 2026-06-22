@@ -445,6 +445,7 @@ public:
         abRepeat = r.abRepeat;
         AudioTrackIndex = r.AudioTrackIndex;
         SubtitleTrackIndex = r.SubtitleTrackIndex;
+        SecondarySubtitleTrackIndex = r.SecondarySubtitleTrackIndex;
     }
     RecentFileEntry(const RecentFileEntry &r) {
         InitEntry(r);
@@ -461,6 +462,7 @@ public:
     ABRepeat abRepeat;
     int AudioTrackIndex = -1;
     int SubtitleTrackIndex = -1;
+    int SecondarySubtitleTrackIndex = -1;
 
     void operator=(const RecentFileEntry &r) {
         InitEntry(r);
@@ -524,6 +526,8 @@ class CAppSettings
         int GetCurrentAudioTrack();
         void UpdateCurrentSubtitleTrack(int audioIndex);
         int GetCurrentSubtitleTrack();
+        void UpdateCurrentSecondarySubtitleTrack(int subIndex);
+        int GetCurrentSecondarySubtitleTrack();
         void AddSubToCurrent(CStringW subpath);
         void SetCurrentTitle(CStringW subpath);
         void UpdateCurrentABRepeat(ABRepeat abRepeat);
@@ -531,6 +535,7 @@ class CAppSettings
         void ReadMediaHistory();
         void WriteMediaHistoryAudioIndex(RecentFileEntry& r);
         void WriteMediaHistorySubtitleIndex(RecentFileEntry& r);
+        void WriteMediaHistorySecondarySubtitleIndex(RecentFileEntry& r);
         void WriteMediaHistoryEntry(RecentFileEntry& r, bool updateLastOpened = false);
         void SaveMediaHistory();
         void ReadLegacyMediaHistory(std::map<CStringW, size_t> &filenameToIndex);
@@ -794,6 +799,7 @@ public:
     // Subtitles
     bool            fOverridePlacement;
     int             nHorPos, nVerPos;
+    int             nSecondarySubtitleVertPos; // forced top placement (%) for the secondary subtitle
     bool            bSubtitleARCompensation;
     int             nSubDelayStep;
 

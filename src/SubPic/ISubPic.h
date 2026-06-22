@@ -242,6 +242,19 @@ public ISubPicAllocatorPresenter2 {
     STDMETHOD_(bool, ToggleStats) () PURE;
 };
 
+// ISubPicAllocatorPresenter4 — additive interface for the optional second (secondary) subtitle pipeline.
+// Renderers supporting dual subtitles override SupportsDualSubtitles() to return true and implement the
+// secondary pipeline (queue2/allocator2); the base presenter disables it by default (returns false).
+interface __declspec(uuid("7E4C2A91-3B5D-4F86-9A1C-D80E5F62B374"))
+ISubPicAllocatorPresenter4 :
+public ISubPicAllocatorPresenter3 {
+    STDMETHOD_(void, SetSubPicProvider2)(ISubPicProvider * pSubPicProvider2) PURE;
+    STDMETHOD_(void, SetSecondaryDelay)(int delayMs) PURE;
+    STDMETHOD_(int,  GetSecondaryDelay)() const PURE;
+    STDMETHOD_(void, InvalidateSubtitle2)(REFERENCE_TIME rtInvalidate = -1) PURE;
+    STDMETHOD_(bool, SupportsDualSubtitles)() PURE;
+};
+
 //
 // ISubStream
 //
