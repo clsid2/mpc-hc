@@ -76,9 +76,11 @@ private:
     CString m_timeText;                 // currently displayed time string (empty when none)
     mutable CFont m_timeFont;           // font for the time text
     mutable int   m_timeFontHeight = 0; // char height the cached font was built for (px)
+    mutable int   m_timeReservedWidth = 0; // width of the time section reserved to the right of the channel (px)
 
     bool ShowTimeOnSeekBar() const;
     void EnsureTimeFont() const;
+    CRect GetTimeRect() const;          // the dedicated time section to the right of the channel
 
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
     virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz) override;
@@ -93,7 +95,9 @@ private:
     void SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPosDraw);
 
     void CreateThumb(bool bEnabled, CDC& parentDC);
+    CRect GetBaseRect() const;          // full usable rect (channel + time section), before reserving the time area
     CRect GetChannelRect() const;
+    CRect GetSeekableRect() const;      // client area that responds to seek/hover (excludes the time section)
     CRect GetThumbRect() const;
     CRect GetInnerThumbRect(bool bEnabled, const CRect& thumbRect) const;
 

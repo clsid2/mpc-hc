@@ -32,6 +32,10 @@
 #define HOVER_CAPTURED_TIMEOUT 100
 #define ADD_TO_BOTTOM_WITHOUT_CONTROLBAR 2
 #define SEEK_DRAGGER_OVERLAP 5
+#define TIME_SECTION_GAP 8          // gap (dialog px) between the channel and the time section
+#define TIME_SECTION_PADDING 3      // right padding (dialog px) inside the time section
+// Widest expected time string ("- remaining / duration"); reserve for it so the channel width is stable.
+#define TIME_SECTION_TEMPLATE _T("- 11:11:11 / 22:22:22")
 
 IMPLEMENT_DYNAMIC(CPlayerSeekBar, CDialogBar)
 
@@ -274,7 +278,7 @@ void CPlayerSeekBar::CreateThumb(bool bEnabled, CDC& parentDC)
     }
 }
 
-CRect CPlayerSeekBar::GetChannelRect() const
+CRect CPlayerSeekBar::GetBaseRect() const
 {
     CRect r;
     GetClientRect(&r);
@@ -283,7 +287,6 @@ CRect CPlayerSeekBar::GetChannelRect() const
         r.bottom += ADD_TO_BOTTOM_WITHOUT_CONTROLBAR;
     }
 
-    const CAppSettings& s = AfxGetAppSettings();
     if (AppIsThemeLoaded()) { //no thumb so we can use all the space
         r.DeflateRect(m_pMainFrame->m_dpi.ScaleFloorX(2), m_pMainFrame->m_dpi.ScaleFloorX(2));
     } else {
@@ -291,6 +294,42 @@ CRect CPlayerSeekBar::GetChannelRect() const
         r.DeflateRect(sz.cx, sz.cy, sz.cx, sz.cy);
     }
 
+    return r;
+}
+
+CRect CPlayerSeekBar::GetChannelRect() const
+{
+    CRect r(GetBaseRect());
+    // Reserve a dedicated section on the right for the time (modern theme only); the channel
+    // takes the remaining width so the time is never drawn over it (#3256).
+    if (ShowTimeOnSeekBar()) {
+        EnsureTimeFont();
+        r.right -= m_timeReservedWidth + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
+    }
+    return r;
+}
+
+CRect CPlayerSeekBar::GetSeekableRect() const
+{
+    // The interactive (seek/hover/preview) area spans the bar but stops at the channel's right edge,
+    // so the dedicated time section does not behave like the seekbar (#3256).
+    CRect r;
+    GetClientRect(&r);
+    if (ShowTimeOnSeekBar()) {
+        r.right = GetChannelRect().right;
+    }
+    return r;
+}
+
+CRect CPlayerSeekBar::GetTimeRect() const
+{
+    CRect r(GetBaseRect());
+    if (ShowTimeOnSeekBar()) {
+        EnsureTimeFont();
+        r.left = r.right - m_timeReservedWidth;
+    } else {
+        r.left = r.right;
+    }
     return r;
 }
 
@@ -319,8 +358,9 @@ void CPlayerSeekBar::EnsureTimeFont() const
 
     // Scale the time font to the seekbar height (~2/3 of the channel height), but never below
     // the normal status-bar font, so a short seekbar keeps the default size while a tall one
-    // (modern "fill" mode) gets proportionally larger text.
-    LONG channelH = GetChannelRect().Height();
+    // (modern "fill" mode) gets proportionally larger text. Use the base rect height (not
+    // GetChannelRect, which reserves width via this method) to avoid recursion.
+    LONG channelH = GetBaseRect().Height();
     LONG mag = (channelH > 0) ? std::max(baseMag, (LONG)MulDiv(channelH, 2, 3)) : baseMag;
 
     if (!(HFONT)m_timeFont || m_timeFontHeight != mag) {
@@ -328,20 +368,26 @@ void CPlayerSeekBar::EnsureTimeFont() const
         lf.lfHeight = -mag; // negative => character height
         VERIFY(m_timeFont.CreateFontIndirect(&lf));
         m_timeFontHeight = mag;
+
+        // Recompute the reserved section width for the new font (measured from the widest string).
+        CClientDC dc(const_cast<CPlayerSeekBar*>(this));
+        CFont* pOldFont = dc.SelectObject(&m_timeFont);
+        m_timeReservedWidth = dc.GetTextExtent(CString(TIME_SECTION_TEMPLATE)).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+        dc.SelectObject(pOldFont);
     }
 }
 
 void CPlayerSeekBar::UpdateTime()
 {
     // Only show a live time string while there is a seekable duration (and the modern theme,
-    // via ShowTimeOnSeekBar); otherwise clear it so nothing is overlaid on the channel.
+    // via ShowTimeOnSeekBar); otherwise clear it so the time section is left empty.
     CString newText;
     if (ShowTimeOnSeekBar() && m_bHasDuration) {
         newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
     }
     if (newText != m_timeText) {
         m_timeText = newText;
-        Invalidate();
+        InvalidateRect(GetTimeRect()); // repaint only the time section, not the whole channel
     }
 }
 
@@ -369,10 +415,7 @@ CRect CPlayerSeekBar::GetInnerThumbRect(bool bEnabled, const CRect& thumbRect) c
 
 void CPlayerSeekBar::UpdateTooltip(const CPoint& point)
 {
-    CRect clientRect;
-    GetClientRect(&clientRect);
-
-    if (!m_bHasDuration || !clientRect.PtInRect(point) || DraggingThumb()) {
+    if (!m_bHasDuration || !GetSeekableRect().PtInRect(point) || DraggingThumb()) {
         HideToolTip();
         m_pMainFrame->PreviewWindowHide();
         return;
@@ -787,15 +830,16 @@ void CPlayerSeekBar::OnPaint()
     }
 
     // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time
-    // right-aligned over the channel. No reserved area, so nothing shows until there is a live time.
-    if (ShowTimeOnSeekBar() && m_bHasDuration && !m_timeText.IsEmpty()) {
+    // right-aligned in its dedicated section to the right of the channel (the channel was shrunk
+    // to make room in GetChannelRect, so the time is never drawn over it).
+    if (ShowTimeOnSeekBar() && !m_timeText.IsEmpty()) {
         dc.SelectClipRgn(nullptr); // channel/thumb drawing restricted the clip region
         EnsureTimeFont();
         CFont* pOldFont = dc.SelectObject(&m_timeFont);
         int oldBkMode = dc.SetBkMode(TRANSPARENT);
         COLORREF oldColor = dc.SetTextColor(CMPCTheme::TextFGColor);
-        CRect rt(channelRect);
-        rt.right -= m_pMainFrame->m_dpi.ScaleX(4);
+        CRect rt(GetTimeRect());
+        rt.right -= m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
         dc.DrawText(m_timeText, rt, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
         dc.SetTextColor(oldColor);
         dc.SetBkMode(oldBkMode);
@@ -805,9 +849,7 @@ void CPlayerSeekBar::OnPaint()
 
 void CPlayerSeekBar::OnLButtonDown(UINT nFlags, CPoint point)
 {
-    CRect clientRect;
-    GetClientRect(&clientRect);
-    if (m_bEnabled && m_bHasDuration && clientRect.PtInRect(point)) {
+    if (m_bEnabled && m_bHasDuration && GetSeekableRect().PtInRect(point)) {
         pauseAfterFirstScroll = AfxGetAppSettings().bPauseWhileDraggingSeekbar && m_pMainFrame->GetMediaState() == State_Running;
         pausedForScrolling = false;
         SetCapture();
@@ -909,7 +951,7 @@ void CPlayerSeekBar::OnMouseMove(UINT nFlags, CPoint point)
 
         if (m_bHasDuration && m_pMainFrame->CanPreviewUse()) {
             const OAFilterState fs = m_pMainFrame->m_CachedFilterState;
-            if (fs != -1) {
+            if (fs != -1 && GetSeekableRect().PtInRect(point)) {
                 UpdateToolTipPosition(point);
                 PreviewWindowShow(point);
             } else {
@@ -927,7 +969,10 @@ BOOL CPlayerSeekBar::OnEraseBkgnd(CDC* pDC)
 BOOL CPlayerSeekBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
     BOOL ret = TRUE;
-    if (m_bEnabled && m_bHasDuration) {
+    CPoint point;
+    GetCursorPos(&point);
+    ScreenToClient(&point);
+    if (m_bEnabled && m_bHasDuration && GetSeekableRect().PtInRect(point)) {
         ::SetCursor(m_cursor);
     } else {
         ret = __super::OnSetCursor(pWnd, nHitTest, message);
