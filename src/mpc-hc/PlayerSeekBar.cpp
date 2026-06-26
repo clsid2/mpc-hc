@@ -34,8 +34,6 @@
 #define SEEK_DRAGGER_OVERLAP 5
 #define TIME_SECTION_GAP 8          // gap (dialog px) between the channel and the time section
 #define TIME_SECTION_PADDING 3      // right padding (dialog px) inside the time section
-// Widest expected time string ("- remaining / duration"); reserve for it so the channel width is stable.
-#define TIME_SECTION_TEMPLATE _T("- 11:11:11 / 22:22:22")
 
 IMPLEMENT_DYNAMIC(CPlayerSeekBar, CDialogBar)
 
@@ -60,6 +58,7 @@ CPlayerSeekBar::CPlayerSeekBar(CMainFrame* pMainFrame)
 
     GetEventd().Connect(m_eventc, {
         MpcEvent::DPI_CHANGED,
+        MpcEvent::STREAM_POS_UPDATE_REQUEST,
     }, std::bind(&CPlayerSeekBar::EventCallback, this, std::placeholders::_1));
 }
 
@@ -108,6 +107,12 @@ void CPlayerSeekBar::EventCallback(MpcEvent ev)
             m_pDisabledThumb = nullptr;
             m_timeFont.DeleteObject(); // rebuilt on next use
             m_timeText.Empty();
+            break;
+
+        case MpcEvent::STREAM_POS_UPDATE_REQUEST:
+            // The time options (remaining / high precision / percentage) just changed, which can
+            // resize the time section; fully repaint so the channel is redrawn at its new width.
+            Invalidate();
             break;
 
         default:
@@ -304,7 +309,7 @@ CRect CPlayerSeekBar::GetChannelRect() const
     // takes the remaining width so the time is never drawn over it (#3256).
     if (ShowTimeOnSeekBar()) {
         EnsureTimeFont();
-        r.right -= m_timeReservedWidth + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
+        r.right -= std::max(m_timeReservedWidth, m_timeActualWidth) + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
     }
     return r;
 }
@@ -326,7 +331,7 @@ CRect CPlayerSeekBar::GetTimeRect() const
     CRect r(GetBaseRect());
     if (ShowTimeOnSeekBar()) {
         EnsureTimeFont();
-        r.left = r.right - m_timeReservedWidth;
+        r.left = r.right - std::max(m_timeReservedWidth, m_timeActualWidth);
     } else {
         r.left = r.right;
     }
@@ -349,6 +354,41 @@ bool CPlayerSeekBar::ShowTimeOnSeekBar() const
     }
 }
 
+CString CPlayerSeekBar::BuildTimeTemplate() const
+{
+    // Build the widest string the time section can currently produce, matching the format options
+    // used by CPlayerStatusBar::SetStatusTimer, so the reserved width fits exactly what's enabled.
+    const CAppSettings& s = AfxGetAppSettings();
+    const bool highPrec = s.bHighPrecisionTimer || m_pMainFrame->IsSubresyncBarVisible();
+
+    // Size to the largest time this media will show (its duration); the position and remaining time
+    // never exceed it. Minutes/seconds are always 2 digits, so only the hour digit-count varies -
+    // derive it from the duration (the status timer uses %02u, i.e. a minimum of 2 hour digits).
+    const LONGLONG oneHour = 3600LL * 10000000LL;
+    CString time;
+    if (m_rtStop >= oneHour) {
+        int hourDigits = 0;
+        for (LONGLONG h = m_rtStop / oneHour; h > 0; h /= 10) {
+            hourDigits++;
+        }
+        if (hourDigits < 2) {
+            hourDigits = 2;
+        }
+        time = CString(_T('0'), hourDigits) + _T(":00:00");
+    } else {
+        time = _T("00:00");
+    }
+    // '0' placeholders are reliably full-width, so the measured width never under-reserves.
+    if (highPrec) {
+        time += _T(".000");
+    }
+    CString t = s.fRemainingTime ? (_T("- ") + time + _T(" / ") + time) : (time + _T(" / ") + time);
+    if (s.bTimerShowPercentage) {
+        t += _T(" (100.0%)");
+    }
+    return t;
+}
+
 void CPlayerSeekBar::EnsureTimeFont() const
 {
     LOGFONT lf;
@@ -363,16 +403,21 @@ void CPlayerSeekBar::EnsureTimeFont() const
     LONG channelH = GetBaseRect().Height();
     LONG mag = (channelH > 0) ? std::max(baseMag, (LONG)MulDiv(channelH, 2, 3)) : baseMag;
 
-    if (!(HFONT)m_timeFont || m_timeFontHeight != mag) {
+    const bool fontChanged = (!(HFONT)m_timeFont || m_timeFontHeight != mag);
+    if (fontChanged) {
         m_timeFont.DeleteObject();
         lf.lfHeight = -mag; // negative => character height
         VERIFY(m_timeFont.CreateFontIndirect(&lf));
         m_timeFontHeight = mag;
+    }
 
-        // Recompute the reserved section width for the new font (measured from the widest string).
+    // Recompute the reserved section width when the font or the set of enabled time options changes.
+    const CString tmpl = BuildTimeTemplate();
+    if (fontChanged || tmpl != m_timeTemplate) {
+        m_timeTemplate = tmpl;
         CClientDC dc(const_cast<CPlayerSeekBar*>(this));
         CFont* pOldFont = dc.SelectObject(&m_timeFont);
-        m_timeReservedWidth = dc.GetTextExtent(CString(TIME_SECTION_TEMPLATE)).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+        m_timeReservedWidth = dc.GetTextExtent(tmpl).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
         dc.SelectObject(pOldFont);
     }
 }
@@ -381,13 +426,34 @@ void CPlayerSeekBar::UpdateTime()
 {
     // Only show a live time string while there is a seekable duration (and the modern theme,
     // via ShowTimeOnSeekBar); otherwise clear it so the time section is left empty.
+    const int oldWidth = std::max(m_timeReservedWidth, m_timeActualWidth);
     CString newText;
-    if (ShowTimeOnSeekBar() && m_bHasDuration) {
-        newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
+    int newActualWidth = 0;
+    if (ShowTimeOnSeekBar()) {
+        EnsureTimeFont(); // refresh the modeled reserved width for the currently enabled time options
+        if (m_bHasDuration) {
+            newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
+            if (!newText.IsEmpty()) {
+                // Safety net: if the actual string is wider than the model (e.g. the frame-count
+                // format, or the position overrunning a short/inaccurate duration), widen so it
+                // never clips. The model stays the stable floor, so the common case doesn't jitter.
+                CClientDC dc(this);
+                CFont* pOldFont = dc.SelectObject(&m_timeFont);
+                newActualWidth = dc.GetTextExtent(newText).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+                dc.SelectObject(pOldFont);
+            }
+        }
     }
-    if (newText != m_timeText) {
+    m_timeActualWidth = newActualWidth;
+    const bool widthChanged = (std::max(m_timeReservedWidth, m_timeActualWidth) != oldWidth);
+    if (newText != m_timeText || widthChanged) {
         m_timeText = newText;
-        InvalidateRect(GetTimeRect()); // repaint only the time section, not the whole channel
+        const CRect timeRect(GetTimeRect());
+        if (widthChanged || timeRect.IsRectEmpty()) {
+            Invalidate(); // channel width shifted (or the section went away), so repaint the whole bar
+        } else {
+            InvalidateRect(timeRect); // repaint only the time section, not the whole channel
+        }
     }
 }
 
@@ -607,6 +673,8 @@ void CPlayerSeekBar::SetRange(REFERENCE_TIME rtStart, REFERENCE_TIME rtStop)
         m_rtStop = 0;
         if (m_bHasDuration) {
             m_bHasDuration = false;
+            m_timeText.Empty();   // media closed: clear the time text (the section keeps its standard spacing)
+            m_timeActualWidth = 0; // drop any actual-string widening so the closed state uses the model width
             HideToolTip();
             if (DraggingThumb()) {
                 ReleaseCapture();
