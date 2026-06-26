@@ -578,6 +578,12 @@ void CPlayerStatusBar::OnContextMenu(CWnd* pWnd, CPoint point)
         return __super::OnContextMenu(pWnd, point);
     }
 
+    ShowTimerOptionsMenu(this, point);
+}
+
+void CPlayerStatusBar::ShowTimerOptionsMenu(CWnd* pOwner, CPoint screenPt)
+{
+    // Shared by the status-bar time control and the seekbar time section (#3256).
     CAppSettings& s = AfxGetAppSettings();
 
     enum {
@@ -586,6 +592,7 @@ void CPlayerStatusBar::OnContextMenu(CWnd* pWnd, CPoint point)
         SHOW_PERCENTAGE
     };
 
+    m_timerMenu.DestroyMenu();
     m_timerMenu.CreatePopupMenu();
     m_timerMenu.AppendMenu(MF_STRING | MF_ENABLED | (s.fRemainingTime ? MF_CHECKED : MF_UNCHECKED), REMAINING_TIME, ResStr(IDS_TIMER_REMAINING_TIME));
     UINT nFlags = MF_STRING;
@@ -598,7 +605,7 @@ void CPlayerStatusBar::OnContextMenu(CWnd* pWnd, CPoint point)
     m_timerMenu.AppendMenu(MF_STRING | MF_ENABLED | (s.bTimerShowPercentage ? MF_CHECKED : MF_UNCHECKED), SHOW_PERCENTAGE, ResStr(IDS_TIMER_SHOW_PERCENTAGE));
 
     m_timerMenu.fulfillThemeReqs();
-    switch (m_timerMenu.TrackPopupMenu(TPM_LEFTBUTTON | TPM_RETURNCMD, point.x, point.y, this)) {
+    switch (m_timerMenu.TrackPopupMenu(TPM_LEFTBUTTON | TPM_RETURNCMD, screenPt.x, screenPt.y, pOwner)) {
         case REMAINING_TIME:
             s.fRemainingTime = !s.fRemainingTime;
             m_eventc.FireEvent(MpcEvent::STREAM_POS_UPDATE_REQUEST);

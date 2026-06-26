@@ -735,6 +735,7 @@ BEGIN_MESSAGE_MAP(CPlayerSeekBar, CDialogBar)
     ON_WM_XBUTTONDBLCLK()
     ON_WM_MBUTTONDOWN()
     ON_WM_MOUSEMOVE()
+    ON_WM_CONTEXTMENU()
     ON_WM_ERASEBKGND()
     ON_WM_SETCURSOR()
     ON_WM_TIMER()
@@ -913,6 +914,21 @@ void CPlayerSeekBar::OnPaint()
         dc.SetBkMode(oldBkMode);
         dc.SelectObject(pOldFont);
     }
+}
+
+void CPlayerSeekBar::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+    // Right-clicking the time section shows the same Remaining time / High precision / Show percentage
+    // options as the status-bar time control; elsewhere on the seekbar keep the default behavior (#3256).
+    if (ShowTimeOnSeekBar() && point.x != -1) {
+        CPoint clientPoint = point;
+        ScreenToClient(&clientPoint);
+        if (GetTimeRect().PtInRect(clientPoint)) {
+            m_pMainFrame->m_wndStatusBar.ShowTimerOptionsMenu(this, point);
+            return;
+        }
+    }
+    __super::OnContextMenu(pWnd, point);
 }
 
 void CPlayerSeekBar::OnLButtonDown(UINT nFlags, CPoint point)
@@ -1096,11 +1112,14 @@ LRESULT CPlayerSeekBar::OnThemeChanged()
 
 void CPlayerSeekBar::OnCaptureChanged(CWnd* pWnd)
 {
-    ASSERT(m_bDraggingThumb);
-    m_bDraggingThumb = false;
-    if (!pWnd) {
-        // HACK: windowed (not renderless) video renderers may not produce WM_MOUSEMOVE message here
-        m_pMainFrame->UpdateControlState(CMainFrame::UPDATE_CHILDVIEW_CURSOR_HACK);
+    // Capture can also change without a drag in progress (e.g. when the time section's right-click
+    // popup menu takes capture), so only run the drag-end cleanup when we were actually dragging.
+    if (m_bDraggingThumb) {
+        m_bDraggingThumb = false;
+        if (!pWnd) {
+            // HACK: windowed (not renderless) video renderers may not produce WM_MOUSEMOVE message here
+            m_pMainFrame->UpdateControlState(CMainFrame::UPDATE_CHILDVIEW_CURSOR_HACK);
+        }
     }
 }
 
