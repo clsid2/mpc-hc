@@ -307,7 +307,7 @@ CRect CPlayerSeekBar::GetChannelRect() const
     CRect r(GetBaseRect());
     // Reserve a dedicated section on the right for the time (modern theme only); the channel
     // takes the remaining width so the time is never drawn over it (#3256).
-    if (ShowTimeOnSeekBar()) {
+    if (TimeSectionVisible()) {
         EnsureTimeFont();
         r.right -= std::max(m_timeReservedWidth, m_timeActualWidth) + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
     }
@@ -320,7 +320,7 @@ CRect CPlayerSeekBar::GetSeekableRect() const
     // so the dedicated time section does not behave like the seekbar (#3256).
     CRect r;
     GetClientRect(&r);
-    if (ShowTimeOnSeekBar()) {
+    if (TimeSectionVisible()) {
         r.right = GetChannelRect().right;
     }
     return r;
@@ -329,7 +329,7 @@ CRect CPlayerSeekBar::GetSeekableRect() const
 CRect CPlayerSeekBar::GetTimeRect() const
 {
     CRect r(GetBaseRect());
-    if (ShowTimeOnSeekBar()) {
+    if (TimeSectionVisible()) {
         EnsureTimeFont();
         r.left = r.right - std::max(m_timeReservedWidth, m_timeActualWidth);
     } else {
@@ -352,6 +352,14 @@ bool CPlayerSeekBar::ShowTimeOnSeekBar() const
         default:
             return false;
     }
+}
+
+bool CPlayerSeekBar::TimeSectionVisible() const
+{
+    // Only reserve/draw the time section when there is a seekable duration. Without one (no media,
+    // photos, live streams) the status timer shows a single value in a different, shorter format
+    // that doesn't match the reserved template, so reserving space would just leave an empty gap.
+    return ShowTimeOnSeekBar() && m_bHasDuration;
 }
 
 CString CPlayerSeekBar::BuildTimeTemplate() const
@@ -424,24 +432,22 @@ void CPlayerSeekBar::EnsureTimeFont() const
 
 void CPlayerSeekBar::UpdateTime()
 {
-    // Only show a live time string while there is a seekable duration (and the modern theme,
-    // via ShowTimeOnSeekBar); otherwise clear it so the time section is left empty.
+    // Only show a live time string while the time section is visible (modern theme + seekable
+    // media, via TimeSectionVisible); otherwise clear it so no space is reserved.
     const int oldWidth = std::max(m_timeReservedWidth, m_timeActualWidth);
     CString newText;
     int newActualWidth = 0;
-    if (ShowTimeOnSeekBar()) {
+    if (TimeSectionVisible()) {
         EnsureTimeFont(); // refresh the modeled reserved width for the currently enabled time options
-        if (m_bHasDuration) {
-            newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
-            if (!newText.IsEmpty()) {
-                // Safety net: if the actual string is wider than the model (e.g. the frame-count
-                // format, or the position overrunning a short/inaccurate duration), widen so it
-                // never clips. The model stays the stable floor, so the common case doesn't jitter.
-                CClientDC dc(this);
-                CFont* pOldFont = dc.SelectObject(&m_timeFont);
-                newActualWidth = dc.GetTextExtent(newText).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
-                dc.SelectObject(pOldFont);
-            }
+        newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
+        if (!newText.IsEmpty()) {
+            // Safety net: if the actual string is wider than the model (e.g. the frame-count
+            // format, or the position overrunning a short/inaccurate duration), widen so it
+            // never clips. The model stays the stable floor, so the common case doesn't jitter.
+            CClientDC dc(this);
+            CFont* pOldFont = dc.SelectObject(&m_timeFont);
+            newActualWidth = dc.GetTextExtent(newText).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+            dc.SelectObject(pOldFont);
         }
     }
     m_timeActualWidth = newActualWidth;
@@ -901,7 +907,7 @@ void CPlayerSeekBar::OnPaint()
     // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time
     // right-aligned in its dedicated section to the right of the channel (the channel was shrunk
     // to make room in GetChannelRect, so the time is never drawn over it).
-    if (ShowTimeOnSeekBar() && !m_timeText.IsEmpty()) {
+    if (TimeSectionVisible() && !m_timeText.IsEmpty()) {
         dc.SelectClipRgn(nullptr); // channel/thumb drawing restricted the clip region
         EnsureTimeFont();
         CFont* pOldFont = dc.SelectObject(&m_timeFont);
@@ -920,7 +926,7 @@ void CPlayerSeekBar::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     // Right-clicking the time section shows the same Remaining time / High precision / Show percentage
     // options as the status-bar time control; elsewhere on the seekbar keep the default behavior (#3256).
-    if (ShowTimeOnSeekBar() && point.x != -1) {
+    if (TimeSectionVisible() && point.x != -1) {
         CPoint clientPoint = point;
         ScreenToClient(&clientPoint);
         if (GetTimeRect().PtInRect(clientPoint)) {
