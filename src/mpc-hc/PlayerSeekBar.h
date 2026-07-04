@@ -81,7 +81,8 @@ private:
     mutable CString m_timeTemplate;     // widest string the reserved width was measured for (tracks the active options)
 
     bool ShowTimeOnSeekBar() const;
-    bool TimeSectionVisible() const;    // ShowTimeOnSeekBar() and there is seekable media to size the section for
+    bool TimeSectionVisible() const;    // ShowTimeOnSeekBar() and there is a timer string to display
+    int  TimeSectionEffectiveWidth() const; // px the section currently occupies (0 when not shown)
     void EnsureTimeFont() const;
     CString BuildTimeTemplate() const;  // widest time string for the currently enabled time options
     CRect GetTimeRect() const;          // the dedicated time section to the right of the channel

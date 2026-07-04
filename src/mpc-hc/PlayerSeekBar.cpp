@@ -356,10 +356,16 @@ bool CPlayerSeekBar::ShowTimeOnSeekBar() const
 
 bool CPlayerSeekBar::TimeSectionVisible() const
 {
-    // Only reserve/draw the time section when there is a seekable duration. Without one (no media,
-    // photos, live streams) the status timer shows a single value in a different, shorter format
-    // that doesn't match the reserved template, so reserving space would just leave an empty gap.
-    return ShowTimeOnSeekBar() && m_bHasDuration;
+    // Show the time section whenever there is a status-timer string to display. That covers media
+    // with a known duration (position / duration) as well as durationless media - live streams and
+    // capture still report a running position or "Live" - while leaving the channel full-width when
+    // nothing is loaded. The reserved width adapts to the shorter format via BuildTimeTemplate.
+    return ShowTimeOnSeekBar() && !m_timeText.IsEmpty();
+}
+
+int CPlayerSeekBar::TimeSectionEffectiveWidth() const
+{
+    return TimeSectionVisible() ? std::max(m_timeReservedWidth, m_timeActualWidth) : 0;
 }
 
 CString CPlayerSeekBar::BuildTimeTemplate() const
@@ -369,14 +375,16 @@ CString CPlayerSeekBar::BuildTimeTemplate() const
     const CAppSettings& s = AfxGetAppSettings();
     const bool highPrec = s.bHighPrecisionTimer || m_pMainFrame->IsSubresyncBarVisible();
 
-    // Size to the largest time this media will show (its duration); the position and remaining time
-    // never exceed it. Minutes/seconds are always 2 digits, so only the hour digit-count varies -
-    // derive it from the duration (the status timer uses %02u, i.e. a minimum of 2 hour digits).
+    // Size to the largest time this media will show. With a known duration that's the duration (the
+    // position and remaining time never exceed it); without one (live stream/capture) the status bar
+    // shows only the running position, so size to that instead. Minutes/seconds are always 2 digits,
+    // so only the hour digit-count varies (the status timer uses %02u, a minimum of 2 hour digits).
     const LONGLONG oneHour = 3600LL * 10000000LL;
+    const LONGLONG rtWidest = m_bHasDuration ? m_rtStop : m_rtPos;
     CString time;
-    if (m_rtStop >= oneHour) {
+    if (rtWidest >= oneHour) {
         int hourDigits = 0;
-        for (LONGLONG h = m_rtStop / oneHour; h > 0; h /= 10) {
+        for (LONGLONG h = rtWidest / oneHour; h > 0; h /= 10) {
             hourDigits++;
         }
         if (hourDigits < 2) {
@@ -390,6 +398,14 @@ CString CPlayerSeekBar::BuildTimeTemplate() const
     if (highPrec) {
         time += _T(".000");
     }
+
+    if (!m_bHasDuration) {
+        // Durationless media: the status bar shows a single running value, with no "/ duration",
+        // remaining-time prefix or percentage, so reserve for just that. Non-numeric strings such
+        // as "Live" are handled by UpdateTime's actual-width safety net.
+        return time;
+    }
+
     CString t = s.fRemainingTime ? (_T("- ") + time + _T(" / ") + time) : (time + _T(" / ") + time);
     if (s.bTimerShowPercentage) {
         t += _T(" (100.0%)");
@@ -432,34 +448,37 @@ void CPlayerSeekBar::EnsureTimeFont() const
 
 void CPlayerSeekBar::UpdateTime()
 {
-    // Only show a live time string while the time section is visible (modern theme + seekable
-    // media, via TimeSectionVisible); otherwise clear it so no space is reserved.
-    const int oldWidth = std::max(m_timeReservedWidth, m_timeActualWidth);
+    // Mirror the status-bar timer text: "position / duration" for media with a duration, or a single
+    // running position / "Live" for durationless media (live streams, capture). The section is shown
+    // whenever that text is non-empty (TimeSectionVisible), so no space is reserved when idle.
+    const int oldEffWidth = TimeSectionEffectiveWidth();
+
     CString newText;
-    int newActualWidth = 0;
-    if (TimeSectionVisible()) {
-        EnsureTimeFont(); // refresh the modeled reserved width for the currently enabled time options
+    if (ShowTimeOnSeekBar()) {
         newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
-        if (!newText.IsEmpty()) {
-            // Safety net: if the actual string is wider than the model (e.g. the frame-count
-            // format, or the position overrunning a short/inaccurate duration), widen so it
-            // never clips. The model stays the stable floor, so the common case doesn't jitter.
-            CClientDC dc(this);
-            CFont* pOldFont = dc.SelectObject(&m_timeFont);
-            newActualWidth = dc.GetTextExtent(newText).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
-            dc.SelectObject(pOldFont);
-        }
     }
+    const bool textChanged = (newText != m_timeText);
+
+    int newActualWidth = 0;
+    if (!newText.IsEmpty()) {
+        EnsureTimeFont(); // refresh the modeled reserved width for the current options/duration
+        // Safety net: if the actual string is wider than the model (e.g. the frame-count format, a
+        // "Live" label, or the position overrunning a short/inaccurate duration), widen so it never
+        // clips. The model stays the stable floor, so the common case doesn't jitter.
+        CClientDC dc(this);
+        CFont* pOldFont = dc.SelectObject(&m_timeFont);
+        newActualWidth = dc.GetTextExtent(newText).cx + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+        dc.SelectObject(pOldFont);
+    }
+
+    m_timeText = newText;
     m_timeActualWidth = newActualWidth;
-    const bool widthChanged = (std::max(m_timeReservedWidth, m_timeActualWidth) != oldWidth);
-    if (newText != m_timeText || widthChanged) {
-        m_timeText = newText;
-        const CRect timeRect(GetTimeRect());
-        if (widthChanged || timeRect.IsRectEmpty()) {
-            Invalidate(); // channel width shifted (or the section went away), so repaint the whole bar
-        } else {
-            InvalidateRect(timeRect); // repaint only the time section, not the whole channel
-        }
+
+    const int newEffWidth = TimeSectionEffectiveWidth();
+    if (newEffWidth != oldEffWidth) {
+        Invalidate(); // channel geometry changed (section appeared/disappeared or resized)
+    } else if (textChanged) {
+        InvalidateRect(GetTimeRect()); // same footprint, only the text changed
     }
 }
 
@@ -907,7 +926,7 @@ void CPlayerSeekBar::OnPaint()
     // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time
     // right-aligned in its dedicated section to the right of the channel (the channel was shrunk
     // to make room in GetChannelRect, so the time is never drawn over it).
-    if (TimeSectionVisible() && !m_timeText.IsEmpty()) {
+    if (TimeSectionVisible()) {
         dc.SelectClipRgn(nullptr); // channel/thumb drawing restricted the clip region
         EnsureTimeFont();
         CFont* pOldFont = dc.SelectObject(&m_timeFont);

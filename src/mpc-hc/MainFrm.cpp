@@ -4547,6 +4547,7 @@ void CMainFrame::OnFilePostClosemedia(bool bNextIsQueued/* = false*/)
     m_wndStatsBar.RemoveAllLines();
     m_wndStatusBar.Clear();
     m_wndStatusBar.ShowTimer(false);
+    m_wndSeekBar.UpdateTime(); // clear the seekbar time section (durationless media skips SetRange's repaint)
     currentAudioLang.Empty();
     currentSubLang.Empty();
     m_OSD.SetRange(0);
