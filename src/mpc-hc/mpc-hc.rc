@@ -4050,7 +4050,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_CMD_VIEWPRESET      "/viewpreset N\tStart with specific preset,\n\t\twhere N is either ""1"" Minimal, ""2"" Compact or ""3"" Normal or ""4"" Custom"
+    IDS_CMD_VIEWPRESET      "/viewpreset N\tStart with a specific preset,\n\t\twhere N is one of ""1"" Minimal, ""2"" Compact, ""3"" Normal, or ""4"" Custom"
     IDS_CMD_MUTE            "/mute\t\tMute the audio"
     IDS_CMD_VOLUME          "/volume N\tSet Volume, where N is a range from 0 to 100"
     IDS_YOUTUBEDL_NOT_FOUND "Youtube-DL failed to launch. Make sure yt-dlp.exe or youtube-dl.exe is located in MPC-HC folder or in PATH."
