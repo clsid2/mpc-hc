@@ -1823,6 +1823,7 @@
 #define IDS_AG_VIEW_CUSTOM              58015
 #define IDS_PPAGEADVANCED_STARTUP_PRESET 58016
 #define IDS_STARTUP_PRESET_REMEMBER     58017
+#define IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT 58018
 
 // Next default values for new objects
 // 

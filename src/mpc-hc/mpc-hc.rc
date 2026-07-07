@@ -4158,6 +4158,8 @@ BEGIN
     IDS_PPAGEADVANCED_STARTUP_PRESET
                             "View preset to apply at startup"
     IDS_STARTUP_PRESET_REMEMBER "Remember last"
+    IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT
+                            "Show the time on the left side of the seekbar instead of the right side"
 END
 
 STRINGTABLE

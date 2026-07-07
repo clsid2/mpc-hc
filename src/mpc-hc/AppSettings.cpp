@@ -201,6 +201,7 @@ CAppSettings::CAppSettings()
     , fUseSeekbarHover(true)
     , nHoverPosition(TIME_TOOLTIP_ABOVE_SEEKBAR)
     , nTimeOnSeekBar(TIME_ON_SEEKBAR_NEVER)
+    , bTimeOnSeekBarLeft(false)
     , nOSDSize(0)
     , bHideWindowedMousePointer(true)
     , iBrightness(0)
@@ -1112,6 +1113,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_USE_TIME_TOOLTIP, fUseSeekbarHover);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_TOOLTIP_POSITION, nHoverPosition);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_ON_SEEKBAR, nTimeOnSeekBar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_ON_SEEKBAR_LEFT, bTimeOnSeekBarLeft);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CONTROLSTATE, nCustomPresetControlState);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, nCustomPresetCaption);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_STARTUP_PRESET, nStartupPreset);
@@ -1749,6 +1751,7 @@ void CAppSettings::LoadSettings()
     if (nTimeOnSeekBar < TIME_ON_SEEKBAR_NEVER || nTimeOnSeekBar > TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN) {
         nTimeOnSeekBar = TIME_ON_SEEKBAR_NEVER;
     }
+    bTimeOnSeekBarLeft = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_TIME_ON_SEEKBAR_LEFT, FALSE);
     nCustomPresetControlState = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CONTROLSTATE, CS_SEEKBAR | CS_TOOLBAR);
     nCustomPresetControlState &= (CS_SEEKBAR | CS_TOOLBAR | CS_INFOBAR | CS_STATSBAR | CS_STATUSBAR); // drop invalid bits
     nCustomPresetCaption = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CUSTOM_PRESET_CAPTION, MODE_HIDEMENU);

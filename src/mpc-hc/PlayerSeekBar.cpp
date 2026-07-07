@@ -305,23 +305,32 @@ CRect CPlayerSeekBar::GetBaseRect() const
 CRect CPlayerSeekBar::GetChannelRect() const
 {
     CRect r(GetBaseRect());
-    // Reserve a dedicated section on the right for the time (modern theme only); the channel
+    // Reserve a dedicated section on the left or right for the time (modern theme only); the channel
     // takes the remaining width so the time is never drawn over it (#3256).
     if (TimeSectionVisible()) {
         EnsureTimeFont();
-        r.right -= std::max(m_timeReservedWidth, m_timeActualWidth) + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
+        const int w = std::max(m_timeReservedWidth, m_timeActualWidth) + m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_GAP);
+        if (TimeSectionOnLeft()) {
+            r.left += w;
+        } else {
+            r.right -= w;
+        }
     }
     return r;
 }
 
 CRect CPlayerSeekBar::GetSeekableRect() const
 {
-    // The interactive (seek/hover/preview) area spans the bar but stops at the channel's right edge,
-    // so the dedicated time section does not behave like the seekbar (#3256).
+    // The interactive (seek/hover/preview) area spans the bar but stops at the channel edge nearest
+    // the time section, so the dedicated time section does not behave like the seekbar (#3256).
     CRect r;
     GetClientRect(&r);
     if (TimeSectionVisible()) {
-        r.right = GetChannelRect().right;
+        if (TimeSectionOnLeft()) {
+            r.left = GetChannelRect().left;
+        } else {
+            r.right = GetChannelRect().right;
+        }
     }
     return r;
 }
@@ -331,9 +340,19 @@ CRect CPlayerSeekBar::GetTimeRect() const
     CRect r(GetBaseRect());
     if (TimeSectionVisible()) {
         EnsureTimeFont();
-        r.left = r.right - std::max(m_timeReservedWidth, m_timeActualWidth);
+        const int w = std::max(m_timeReservedWidth, m_timeActualWidth);
+        if (TimeSectionOnLeft()) {
+            r.right = r.left + w;
+        } else {
+            r.left = r.right - w;
+        }
     } else {
-        r.left = r.right;
+        // Empty section, collapsed to the edge it would occupy.
+        if (TimeSectionOnLeft()) {
+            r.right = r.left;
+        } else {
+            r.left = r.right;
+        }
     }
     return r;
 }
@@ -352,6 +371,11 @@ bool CPlayerSeekBar::ShowTimeOnSeekBar() const
         default:
             return false;
     }
+}
+
+bool CPlayerSeekBar::TimeSectionOnLeft() const
+{
+    return AfxGetAppSettings().bTimeOnSeekBarLeft;
 }
 
 bool CPlayerSeekBar::TimeSectionVisible() const
@@ -923,9 +947,10 @@ void CPlayerSeekBar::OnPaint()
         }
     }
 
-    // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time
-    // right-aligned in its dedicated section to the right of the channel (the channel was shrunk
-    // to make room in GetChannelRect, so the time is never drawn over it).
+    // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time in its
+    // dedicated section beside the channel (the channel was shrunk to make room in GetChannelRect, so
+    // the time is never drawn over it). Aligned toward the outer edge of the bar - right by default,
+    // left when the advanced option places the section on the left.
     if (TimeSectionVisible()) {
         dc.SelectClipRgn(nullptr); // channel/thumb drawing restricted the clip region
         EnsureTimeFont();
@@ -933,8 +958,16 @@ void CPlayerSeekBar::OnPaint()
         int oldBkMode = dc.SetBkMode(TRANSPARENT);
         COLORREF oldColor = dc.SetTextColor(CMPCTheme::TextFGColor);
         CRect rt(GetTimeRect());
-        rt.right -= m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
-        dc.DrawText(m_timeText, rt, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+        const int pad = m_pMainFrame->m_dpi.ScaleX(TIME_SECTION_PADDING);
+        UINT align;
+        if (TimeSectionOnLeft()) {
+            rt.left += pad;
+            align = DT_LEFT;
+        } else {
+            rt.right -= pad;
+            align = DT_RIGHT;
+        }
+        dc.DrawText(m_timeText, rt, align | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
         dc.SetTextColor(oldColor);
         dc.SetBkMode(oldBkMode);
         dc.SelectObject(pOldFont);

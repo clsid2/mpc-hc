@@ -235,6 +235,7 @@ private:
         LIBASS_FOR_SRT,
         SHOW_VOLUME_PERCENTAGE,
         STARTUP_PRESET,
+        TIME_ON_SEEKBAR_LEFT,
     };
 
     enum {

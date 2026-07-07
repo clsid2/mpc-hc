@@ -133,6 +133,7 @@
 #define IDS_RS_LIBASS_FOR_SRT               _T("UseLibassForSRT")
 #define IDS_RS_SHOW_VOLUME_PERCENTAGE       _T("ShowVolumePercentage")
 #define IDS_RS_TIME_ON_SEEKBAR              _T("TimeOnSeekBar")
+#define IDS_RS_TIME_ON_SEEKBAR_LEFT         _T("TimeOnSeekBarLeft")
 #define IDS_RS_CUSTOM_PRESET_CONTROLSTATE   _T("CustomPresetControlState")
 #define IDS_RS_CUSTOM_PRESET_CAPTION        _T("CustomPresetCaption")
 #define IDS_RS_STARTUP_PRESET               _T("StartupPreset")
