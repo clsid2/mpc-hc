@@ -1425,6 +1425,30 @@ msgctxt "IDS_PLAYLIST_HIDEFS"
 msgid "&Hide on Fullscreen"
 msgstr "Skryť p&ri režime na celú obrazovku"
 
+msgctxt "IDS_PLAYLIST_POSITION"
+msgid "&Position"
+msgstr ""
+
+msgctxt "IDS_PLAYLIST_POSITION_LEFT"
+msgid "&Left"
+msgstr "Vľavo"
+
+msgctxt "IDS_PLAYLIST_POSITION_TOP"
+msgid "&Top"
+msgstr "Hore"
+
+msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
+msgid "&Right"
+msgstr "Vpravo"
+
+msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
+msgid "&Bottom"
+msgstr "Dole"
+
+msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
+msgid "&Floating"
+msgstr ""
+
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
 msgstr "Zastavené"

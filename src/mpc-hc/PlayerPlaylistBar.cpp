@@ -2453,7 +2453,12 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         M_RANDOMIZE,
         M_SORTBYID,
         M_SHUFFLE,
-        M_HIDEFULLSCREEN
+        M_HIDEFULLSCREEN,
+        M_POSITION_LEFT,
+        M_POSITION_TOP,
+        M_POSITION_RIGHT,
+        M_POSITION_BOTTOM,
+        M_POSITION_FLOAT
     };
 
     CAppSettings& s = AfxGetAppSettings();
@@ -2504,6 +2509,19 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     m.AppendMenu(MF_STRING | MF_ENABLED | (s.bShufflePlaylistItems ? MF_CHECKED : MF_UNCHECKED), M_SHUFFLE, ResStr(IDS_PLAYLIST_SHUFFLE));
     m.AppendMenu(MF_SEPARATOR);
     m.AppendMenu(MF_STRING | MF_ENABLED | (s.bHidePlaylistFullScreen ? MF_CHECKED : MF_UNCHECKED), M_HIDEFULLSCREEN, ResStr(IDS_PLAYLIST_HIDEFS));
+    m.AppendMenu(MF_SEPARATOR);
+    {
+        const UINT dockBarID = GetParent()->GetDlgCtrlID();
+        CMPCThemeMenu positionMenu;
+        positionMenu.CreatePopupMenu();
+        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_LEFT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_LEFT, ResStr(IDS_PLAYLIST_POSITION_LEFT));
+        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_TOP ? MF_CHECKED : MF_UNCHECKED), M_POSITION_TOP, ResStr(IDS_PLAYLIST_POSITION_TOP));
+        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_RIGHT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_RIGHT, ResStr(IDS_PLAYLIST_POSITION_RIGHT));
+        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_BOTTOM ? MF_CHECKED : MF_UNCHECKED), M_POSITION_BOTTOM, ResStr(IDS_PLAYLIST_POSITION_BOTTOM));
+        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_FLOAT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_FLOAT, ResStr(IDS_PLAYLIST_POSITION_FLOAT));
+        m.AppendMenu(MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)positionMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_POSITION));
+        positionMenu.Detach();
+    }
     if (AppNeedsThemedControls()) {
         m.fulfillThemeReqs();
     }
@@ -2719,6 +2737,54 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         case M_HIDEFULLSCREEN:
             s.bHidePlaylistFullScreen = !s.bHidePlaylistFullScreen;
             m_pMainFrame->HidePlaylistFullScreen();
+            break;
+        case M_POSITION_LEFT:
+            if (GetParent()->GetDlgCtrlID() != AFX_IDW_DOCKBAR_LEFT) {
+                m_pMainFrame->DockControlBar(this, AFX_IDW_DOCKBAR_LEFT);
+            }
+            break;
+        case M_POSITION_TOP:
+            if (GetParent()->GetDlgCtrlID() != AFX_IDW_DOCKBAR_TOP) {
+                m_pMainFrame->DockControlBar(this, AFX_IDW_DOCKBAR_TOP);
+            }
+            break;
+        case M_POSITION_RIGHT:
+            if (GetParent()->GetDlgCtrlID() != AFX_IDW_DOCKBAR_RIGHT) {
+                m_pMainFrame->DockControlBar(this, AFX_IDW_DOCKBAR_RIGHT);
+            }
+            break;
+        case M_POSITION_BOTTOM:
+            if (GetParent()->GetDlgCtrlID() != AFX_IDW_DOCKBAR_BOTTOM) {
+                m_pMainFrame->DockControlBar(this, AFX_IDW_DOCKBAR_BOTTOM);
+            }
+            break;
+        case M_POSITION_FLOAT:
+            if (GetParent()->GetDlgCtrlID() != AFX_IDW_DOCKBAR_FLOAT) {
+                CRect rectMain;
+                m_pMainFrame->GetWindowRect(rectMain);
+                CPoint fp(rectMain.right, rectMain.top);
+
+                CRect rectDesktop;
+                GetDesktopWindow()->GetWindowRect(&rectDesktop);
+
+                CRect rect;
+                GetWindowRect(rect);
+
+                if (fp.x < rectDesktop.left) {
+                    fp.x = rectDesktop.left;
+                }
+                if (fp.y < rectDesktop.top) {
+                    fp.y = rectDesktop.top;
+                }
+                if (fp.x + rect.Width() > rectDesktop.right) {
+                    fp.x = rectDesktop.left;
+                }
+                if (fp.y + rect.Height() > rectDesktop.bottom) {
+                    fp.y = rectDesktop.top;
+                }
+
+                m_pMainFrame->FloatControlBar(this, fp);
+            }
             break;
         default:
             break;

@@ -1434,6 +1434,30 @@ msgctxt "IDS_PLAYLIST_HIDEFS"
 msgid "&Hide on Fullscreen"
 msgstr "&Ukryj w trybie pełnoekranowym"
 
+msgctxt "IDS_PLAYLIST_POSITION"
+msgid "&Position"
+msgstr ""
+
+msgctxt "IDS_PLAYLIST_POSITION_LEFT"
+msgid "&Left"
+msgstr "Lewo"
+
+msgctxt "IDS_PLAYLIST_POSITION_TOP"
+msgid "&Top"
+msgstr "Góra"
+
+msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
+msgid "&Right"
+msgstr "Prawo"
+
+msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
+msgid "&Bottom"
+msgstr "Dół"
+
+msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
+msgid "&Floating"
+msgstr ""
+
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
 msgstr "Zatrzymano"
