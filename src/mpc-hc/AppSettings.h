@@ -867,6 +867,7 @@ public:
     bool            fUseSeekbarHover;
     int             nHoverPosition;
     int             nTimeOnSeekBar;
+    bool            bTimeOnSeekBarLeft;
     CString         strOSDFont;
     int             nOSDSize;
     bool            bHideWindowedMousePointer;
