@@ -38,12 +38,6 @@ namespace
         MDT_RAW_DPI = 2,
         MDT_DEFAULT = MDT_EFFECTIVE_DPI
     } MONITOR_DPI_TYPE;
-
-    typedef int (WINAPI* tpGetSystemMetricsForDpi)(int nIndex, UINT dpi);
-    HRESULT WINAPI GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
-    BOOL WINAPI SystemParametersInfoForDpi(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni, UINT dpi);
-    UINT WINAPI GetDpiForWindow(HWND hwnd);
-    double WINAPI TextScaleFactor(void);
 }
 
 DpiHelper::DpiHelper()
@@ -77,16 +71,18 @@ UINT DpiHelper::GetDPIForWindow(HWND wnd) {
     // note: GetDpiForMonitor available since 8.1, GetDPIForWindow since 10 1607
 
     //try number 1
-    const WinapiFunc<decltype(GetDpiForWindow)> fnGetDpiForWindow = { _T("user32.dll"), "GetDpiForWindow" };
+    static const WinapiFunc<UINT WINAPI(HWND)>
+        fnGetDpiForWindow = { L"user32.dll", "GetDpiForWindow" };
     if (fnGetDpiForWindow) {
         return fnGetDpiForWindow(wnd);
     }
 
     //try number 2
-    const WinapiFunc<decltype(GetDpiForMonitor)> fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
+    static const WinapiFunc<HRESULT WINAPI(HMONITOR, MONITOR_DPI_TYPE, UINT*, UINT*)>
+        fnGetDpiForMonitor = { L"Shcore.dll", "GetDpiForMonitor" };
     if (fnGetDpiForMonitor) {
         UINT dpiX, dpiY;
-        if (fnGetDpiForMonitor(MonitorFromWindow(wnd, MONITOR_DEFAULTTONULL), MDT_EFFECTIVE_DPI, (UINT*)&dpiX, (UINT*)&dpiY) == S_OK) {
+        if (fnGetDpiForMonitor(MonitorFromWindow(wnd, MONITOR_DEFAULTTONULL), MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK) {
             return dpiX;
         }
     }
@@ -99,7 +95,8 @@ UINT DpiHelper::GetDPIForWindow(HWND wnd) {
 }
 
 UINT DpiHelper::GetDPIForMonitor(HMONITOR hMonitor) {
-    const WinapiFunc<decltype(GetDpiForMonitor)> fnGetDpiForMonitor = { _T("Shcore.dll"), "GetDpiForMonitor" };
+    static const WinapiFunc<HRESULT WINAPI(HMONITOR, MONITOR_DPI_TYPE, UINT*, UINT*)>
+        fnGetDpiForMonitor = { L"Shcore.dll", "GetDpiForMonitor" };
 
     if (hMonitor && fnGetDpiForMonitor) {
         UINT tdpix, tdpiy;
@@ -136,11 +133,10 @@ void DpiHelper::Override(int dpix, int dpiy)
 }
 
 int DpiHelper::GetSystemMetricsDPI(int nIndex) {
-    if (IsWindows10OrGreater()) {
-        static tpGetSystemMetricsForDpi pGetSystemMetricsForDpi = (tpGetSystemMetricsForDpi)GetProcAddress(GetModuleHandleW(L"user32.dll"), "GetSystemMetricsForDpi");
-        if (pGetSystemMetricsForDpi) {
-            return pGetSystemMetricsForDpi(nIndex, m_dpix);
-        }
+    static const WinapiFunc<int WINAPI(int, UINT)>
+        fnGetSystemMetricsForDpi = { L"user32.dll", "GetSystemMetricsForDpi" };
+    if (fnGetSystemMetricsForDpi) {
+        return fnGetSystemMetricsForDpi(nIndex, m_dpix);
     }
 
     return ScaleSystemToOverrideX(::GetSystemMetrics(nIndex));
@@ -158,7 +154,7 @@ void DpiHelper::GetMessageFont(LOGFONT* lf) {
 }
 
 bool DpiHelper::GetNonClientMetrics(PNONCLIENTMETRICSW ncm, bool& dpiCorrected) {
-    const WinapiFunc<decltype(SystemParametersInfoForDpi)>
+    static const WinapiFunc<BOOL WINAPI(UINT, UINT, PVOID, UINT, UINT)>
         fnSystemParametersInfoForDpi = { L"user32.dll", "SystemParametersInfoForDpi" };
 
     ZeroMemory(ncm, sizeof(NONCLIENTMETRICS));
@@ -339,14 +335,12 @@ void DpiHelper::ClearDialogFontMetricsCache() {
 
 BOOL DpiHelper::AdjustWindowRectExForDpi(LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle, UINT dpi) {
     // Use DPI-aware window rect adjustment if available (Windows 10 1607+)
-    typedef BOOL (WINAPI* PFN_AdjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
-    static PFN_AdjustWindowRectExForDpi pfnAdjustWindowRectExForDpi =
-        (PFN_AdjustWindowRectExForDpi)GetProcAddress(GetModuleHandleW(L"user32.dll"), "AdjustWindowRectExForDpi");
+    static const WinapiFunc<BOOL WINAPI(LPRECT, DWORD, BOOL, DWORD, UINT)>
+        fnAdjustWindowRectExForDpi = { L"user32.dll", "AdjustWindowRectExForDpi" };
 
-    if (pfnAdjustWindowRectExForDpi) {
-        return pfnAdjustWindowRectExForDpi(lpRect, dwStyle, bMenu, dwExStyle, dpi);
-    } else {
-        // Fallback for older Windows versions
-        return ::AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
+    if (fnAdjustWindowRectExForDpi) {
+        return fnAdjustWindowRectExForDpi(lpRect, dwStyle, bMenu, dwExStyle, dpi);
     }
+    // Fallback for older Windows versions
+    return ::AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
 }
