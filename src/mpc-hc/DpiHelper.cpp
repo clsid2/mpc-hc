@@ -42,7 +42,6 @@ namespace
     typedef int (WINAPI* tpGetSystemMetricsForDpi)(int nIndex, UINT dpi);
     HRESULT WINAPI GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);
     BOOL WINAPI SystemParametersInfoForDpi(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni, UINT dpi);
-    int WINAPI GetSystemMetricsForDpi(int nIndex);
     UINT WINAPI GetDpiForWindow(HWND hwnd);
     double WINAPI TextScaleFactor(void);
 }
@@ -176,22 +175,6 @@ bool DpiHelper::GetNonClientMetrics(PNONCLIENTMETRICSW ncm, bool& dpiCorrected) 
         return SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm->cbSize, ncm, 0);
     }
     return false; //never gets here
-}
-
-int DpiHelper::GetSystemMetrics(int type) {
-    const WinapiFunc<decltype(GetSystemMetricsForDpi)>
-        fnGetSystemMetricsForDpi = { L"user32.dll", "GetSystemMetricsForDpi" };
-
-    bool dpiCorrected = false;
-
-    if (fnGetSystemMetricsForDpi) {
-        dpiCorrected = true;
-        return fnGetSystemMetricsForDpi(type);
-    }
-    if (!dpiCorrected) {
-        int ret = fnGetSystemMetricsForDpi(type);
-        return ScaleSystemToOverrideY(ret);
-    }
 }
 
 bool DpiHelper::CanUsePerMonitorV2() {
