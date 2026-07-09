@@ -264,6 +264,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="Playlist.cpp" />
     <ClCompile Include="PnSPresetsDlg.cpp" />
     <ClCompile Include="PPageAccelTbl.cpp" />
+    <ClCompile Include="Profile.cpp" />
     <ClCompile Include="PPageAdvanced.cpp" />
     <ClCompile Include="PPageAudioRenderer.cpp" />
     <ClCompile Include="PPageAudioSwitcher.cpp" />
@@ -448,6 +449,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="MPCPngImage.h" />
     <ClInclude Include="Mpeg2SectionData.h" />
     <ClInclude Include="mplayerc.h" />
+    <ClInclude Include="Profile.h" />
     <ClInclude Include="MultiMonitor.h" />
     <ClInclude Include="OpenDirHelper.h" />
     <ClInclude Include="OpenDlg.h" />

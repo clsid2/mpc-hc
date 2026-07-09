@@ -393,6 +393,7 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MainFrmControls.cpp" />
     <ClCompile Include="mplayerc.cpp" />
+    <ClCompile Include="Profile.cpp" />
     <ClCompile Include="Playlist.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="UpdateChecker.cpp" />
@@ -962,6 +963,7 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MainFrmControls.h" />
     <ClInclude Include="mplayerc.h" />
+    <ClInclude Include="Profile.h" />
     <ClInclude Include="Playlist.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
