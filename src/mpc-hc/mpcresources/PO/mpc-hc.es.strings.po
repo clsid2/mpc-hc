@@ -8,13 +8,14 @@
 # Enmanuel Jaco <enmanuelgiron2001@gmail.com>, 2022
 # Leandro Botella Penalva, 2024
 # Alex Covarrubias, 2026
+# adipose, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-04-12 02:38:36+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Alex Covarrubias, 2026\n"
+"PO-Revision-Date: 2026-07-10 00:26+0000\n"
+"Last-Translator: adipose\n"
 "Language-Team: Spanish (https://app.transifex.com/mpchc/teams/106126/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4865,7 +4866,7 @@ msgstr "Nunca"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "Siempre"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
