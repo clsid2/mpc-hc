@@ -28,6 +28,7 @@
 #include "EventDispatcher.h"
 #include "DpiHelper.h"
 #include "AppSettings.h"
+#include "Profile.h"
 #include "../filters/renderer/VideoRenderers/RenderersSettings.h"
 #include "resource.h"
 
@@ -166,14 +167,20 @@ public:
     bool ExportSettings(CString savePath, CString subKey = _T(""));
 
 private:
-    std::map<CString, std::map<CString, CString, CStringUtils::IgnoreCaseLess>, CStringUtils::IgnoreCaseLess> m_ProfileMap;
-    bool m_bProfileInitialized;
-    bool m_bQueuedProfileFlush;
-    void InitProfile();
-    std::recursive_mutex m_profileMutex;
-    ULONGLONG m_dwProfileLastAccessTick;
+    // Import legacy settings on first run and protect newer settings from
+    // being clobbered by an older build (downgrade fork). See mplayerc.cpp.
+    void SetupSettingsStore();
+    // Route a section to the MediaHistory store when applicable, else m_Profile.
+    CProfile& ProfileForSection(LPCWSTR lpszSection);
 
 public:
+    // The versioned settings store. All GetProfile*/WriteProfile* overrides
+    // below delegate to it (via ProfileForSection).
+    CProfile m_Profile;
+    // Separate MediaHistory store (INI mode only; registry installs keep
+    // history in the registry). Null in registry mode.
+    std::unique_ptr<CProfile> m_HistoryProfile;
+
     void FlushProfile(bool bForce = true);
     virtual BOOL GetProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE* ppData, UINT* pBytes) override;
     virtual UINT GetProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault) override;

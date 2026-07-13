@@ -66,7 +66,13 @@ private:
 
 public:
     CProfile();
+    // Force INI mode bound to a specific file (used for the separate
+    // MediaHistory store), bypassing the portable/registry auto-detection.
+    explicit CProfile(const CStringW& iniFilePath);
     ~CProfile();
+
+    // Path of the separate MediaHistory INI (<exe-basename>.history.ini).
+    static CStringW HistoryIniPath();
 
 private:
     LONG OpenRegistryKey();
@@ -101,6 +107,8 @@ public:
     void EnumValueNames(const wchar_t* section, std::vector<CStringW>& valuenames);
     void EnumSectionNames(const wchar_t* section, std::vector<CStringW>& sectionnames);
 
+    bool HasEntry(const wchar_t* section, const wchar_t* entry);
+
     bool DeleteValue(const wchar_t* section, const wchar_t* entry);
     bool DeleteSection(const wchar_t* section);
 
@@ -115,6 +123,11 @@ public:
     // legacy-format sunset. Caller guards against re-running.
     bool MigrateFromLegacy();
 
+    // Move a section and all its subsections ("root" and "root\...") into
+    // another profile (preserving raw values) and remove them from this one.
+    // Used once to split MediaHistory out into its own store. INI mode.
+    void MoveSectionTree(const wchar_t* root, CProfile& dst);
+
     // Downgrade protection: when an older build opens a store last written by a
     // newer build, switch this instance to a private INI next to the executable
     // (loaded if it already exists, else started empty) and DETACH from the
@@ -124,53 +137,15 @@ public:
 
     SettingsLocation GetSettingsLocation() const;
 
+    // Registry path ("Software\\MPC-HC\\...") of the store when in registry
+    // mode, empty otherwise. Used by settings export.
+    CStringW GetRegistryKeyPath() const;
+
     CStringW GetIniPath() const {
         return m_IniPath;
     }
 };
 
-// App base class that routes MFC's profile calls to CProfile, so existing
-// call sites (theApp.GetProfileInt(...) etc.) keep working unchanged.
-// CMPlayerCApp will derive from this instead of CWinAppEx (wired separately).
-class CModApp : public CWinAppEx
-{
-public:
-    CProfile m_Profile;
-
-    // Must override GetProfile/WriteProfile, because MFC and other MFC
-    // dependent libraries use them.
-    UINT GetProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault) override {
-        int value;
-        if (m_Profile.ReadInt(lpszSection, lpszEntry, value)) {
-            return value;
-        }
-        return nDefault;
-    }
-    BOOL WriteProfileInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue) override {
-        return m_Profile.WriteInt(lpszSection, lpszEntry, nValue);
-    }
-    CString GetProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault = nullptr) override {
-        CStringW value;
-        if (!m_Profile.ReadString(lpszSection, lpszEntry, value) && lpszDefault) {
-            value = lpszDefault;
-        }
-        return value;
-    }
-    BOOL WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue) override {
-        if (!lpszValue) {
-            if (!lpszEntry) {
-                return m_Profile.DeleteSection(lpszSection);
-            }
-            return m_Profile.DeleteValue(lpszSection, lpszEntry);
-        }
-        return m_Profile.WriteString(lpszSection, lpszEntry, lpszValue);
-    }
-    BOOL GetProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE* ppData, UINT* pBytes) override {
-        return m_Profile.ReadBinary(lpszSection, lpszEntry, ppData, *pBytes) ? TRUE : FALSE;
-    }
-    BOOL WriteProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes) override {
-        return m_Profile.WriteBinary(lpszSection, lpszEntry, pData, nBytes);
-    }
-};
-
-#define AfxGetProfile() static_cast<CModApp*>(AfxGetApp())->m_Profile
+// CMPlayerCApp owns a CProfile (m_Profile) and delegates MFC's GetProfile*/
+// WriteProfile* overrides to it (see mplayerc.cpp).
+#define AfxGetProfile() (AfxGetMyApp()->m_Profile)

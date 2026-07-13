@@ -34,6 +34,7 @@ static const wchar_t* const PROFILE_REG_KEY = L"Software\\MPC-HC\\MPC-HC-setting
 static const wchar_t* const LEGACY_REG_KEY  = L"Software\\MPC-HC\\MPC-HC"; // pre-versioning MFC key
 static const wchar_t* const NEW_INI_SUFFIX  = L".settings.ini"; // <exe-basename>.settings.ini
 static const wchar_t* const OLD_INI_SUFFIX  = L".ini";          // legacy portable ini
+static const wchar_t* const HISTORY_INI_SUFFIX = L".history.ini"; // separate MediaHistory store
 
 // Prefix marking a NEW-format Base64 binary value in an INI. Legacy binary
 // values are A-P encoded (only chars 'A'..'P'), so this lowercase-led prefix
@@ -209,12 +210,23 @@ CProfile::CProfile()
     OpenRegistryKey();
 }
 
+CProfile::CProfile(const CStringW& iniFilePath)
+{
+    // Explicit INI mode at a fixed path; no registry, no auto-detection.
+    m_IniPath = iniFilePath;
+}
+
 CProfile::~CProfile()
 {
     if (m_hAppRegKey) {
         RegCloseKey(m_hAppRegKey);
         m_hAppRegKey = nullptr;
     }
+}
+
+CStringW CProfile::HistoryIniPath()
+{
+    return GetExeBasePath() + HISTORY_INI_SUFFIX;
 }
 
 LONG CProfile::OpenRegistryKey()
@@ -1064,6 +1076,64 @@ bool CProfile::MigrateFromLegacy()
     m_bIniNeedFlush = true;
     Flush(true);
     return true;
+}
+
+void CProfile::MoveSectionTree(const wchar_t* root, CProfile& dst)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    if (m_hAppRegKey) {
+        return; // the MediaHistory split only applies in INI mode
+    }
+
+    InitIni();
+    const CStringW rootStr(root);
+    const CStringW prefix(rootStr + L"\\");
+    bool moved = false;
+
+    for (auto it = m_ProfileMap.begin(); it != m_ProfileMap.end();) {
+        if (it->first.CompareNoCase(rootStr) == 0 || StartsWithNoCase(it->first, prefix)) {
+            for (const auto& kv : it->second) {
+                dst.WriteString(it->first, kv.first, kv.second); // raw value copy (already new-format)
+            }
+            it = m_ProfileMap.erase(it);
+            moved = true;
+        } else {
+            ++it;
+        }
+    }
+
+    if (moved) {
+        m_bIniNeedFlush = true;
+    }
+}
+
+bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    bool ret = false;
+
+    if (m_hAppRegKey) {
+        CRegKey regkey;
+        if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
+            ret = (ERROR_SUCCESS == RegQueryValueExW(regkey.m_hKey, entry, nullptr, nullptr, nullptr, nullptr));
+            regkey.Close();
+        }
+    } else {
+        InitIni();
+        auto it1 = m_ProfileMap.find(section);
+        if (it1 != m_ProfileMap.end()) {
+            ret = (it1->second.find(entry) != it1->second.end());
+        }
+    }
+
+    return ret;
+}
+
+CStringW CProfile::GetRegistryKeyPath() const
+{
+    return m_hAppRegKey ? CStringW(PROFILE_REG_KEY) : CStringW();
 }
 
 bool CProfile::ForkToLocalIni()
