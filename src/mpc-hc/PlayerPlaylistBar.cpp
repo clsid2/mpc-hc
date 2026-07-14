@@ -2522,7 +2522,7 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         m.AppendMenu(MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)positionMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_POSITION));
         positionMenu.Detach();
     }
-    if (AppNeedsThemedControls()) {
+    if (AppIsThemeLoaded()) {
         m.fulfillThemeReqs();
     }
 
