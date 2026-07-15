@@ -957,13 +957,12 @@ void CPlayerToolBar::OnUpdateRepeat(CCmdUI* pCmdUI) {
 void CPlayerToolBar::OnUpdateCustomAction(CCmdUI* pCmdUI) {
     const auto& s = AfxGetAppSettings();
 
-    if (pCmdUI->m_nID == ID_CUSTOM_ACTION1 && s.nToolbarAction1
-        || pCmdUI->m_nID == ID_CUSTOM_ACTION2 && s.nToolbarAction2
-        || pCmdUI->m_nID == ID_CUSTOM_ACTION3 && s.nToolbarAction3
-        || pCmdUI->m_nID == ID_CUSTOM_ACTION4 && s.nToolbarAction4)
-    {
-        pCmdUI->Enable(true);
-    }
+    bool enable = pCmdUI->m_nID == ID_CUSTOM_ACTION1 && (s.nToolbarAction1 || s.nToolbarRightAction1)
+        || pCmdUI->m_nID == ID_CUSTOM_ACTION2 && (s.nToolbarAction2 || s.nToolbarRightAction2)
+        || pCmdUI->m_nID == ID_CUSTOM_ACTION3 && (s.nToolbarAction3 || s.nToolbarRightAction3)
+        || pCmdUI->m_nID == ID_CUSTOM_ACTION4 && (s.nToolbarAction4 || s.nToolbarRightAction4);
+
+    pCmdUI->Enable(enable);
 }
 
 bool CPlayerToolBar::CmdIsMenu(int cmd) {
