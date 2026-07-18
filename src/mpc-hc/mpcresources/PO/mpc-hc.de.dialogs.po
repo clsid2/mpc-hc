@@ -336,7 +336,7 @@ msgstr "Letzte Fenstergröße merken"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
-msgstr "Letzten Pan&Scan-Zoom merken"
+msgstr "Letzten Pan-and-Scan-Zoom merken"
 
 msgctxt "IDD_PPAGEDVD_IDC_STATIC"
 msgid "\"Open DVD/BD\" behavior"
@@ -432,7 +432,7 @@ msgstr "Endlosschleife"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC1"
 msgid "time(s)"
-msgstr "Mal(e) ab"
+msgstr "Mal ab"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC7"
 msgid "Repeat mode:"
@@ -2021,7 +2021,7 @@ msgstr "Symbolleistenskalierung"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Toolbar Alignment:"
-msgstr "Symbolleistenausrichtung"
+msgstr "Ausrichtung"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"

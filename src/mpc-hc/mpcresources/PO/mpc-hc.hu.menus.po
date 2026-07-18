@@ -7,14 +7,14 @@
 # Peter Gyetvai <gyetpet@mailbox.org>, 2020
 # Speeder, 2022
 # Péter Patkós, 2024
-# Hevesi J. <hevesi2010@gmail.com>, 2025
+# Hevesi J. <hevesi2010@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2025\n"
+"Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -252,7 +252,7 @@ msgstr "Half Floating Point Processing"
 
 msgctxt "ID_VIEW_DISABLEDESKTOPCOMPOSITION"
 msgid "Disable desktop composition (&Aero)"
-msgstr "Asztal-összeállítás kikapcsolása"
+msgstr "Asztal összeállítás kikapcsolása"
 
 msgctxt "ID_VIEW_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time &Correction"
@@ -448,7 +448,7 @@ msgstr "Monitor/Asztal képarány-eltérés javítása"
 
 msgctxt "POPUP"
 msgid "P&nS Frame Adjust"
-msgstr "P&nS Képkocka beállítás"
+msgstr "P&nS képkocka beállítás"
 
 msgctxt "ID_VIEW_INCSIZE"
 msgid "&Increase Size"
@@ -808,7 +808,7 @@ msgstr "Parancssori kapcsolók"
 
 msgctxt "ID_HELP_TOOLBARIMAGES"
 msgid "Download &Toolbar Images"
-msgstr "Download Toolbar Images"
+msgstr "Eszköztár képek letöltése"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"

@@ -4,14 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Ali Kömesöğütlü <byzlo685@gmail.com>, 2020
-# Mücahid Aksel <mucahidaksel@gmail.com>, 2025
+# Mücahid Aksel <mucahidaksel@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2025\n"
+"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2026\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -117,7 +117,7 @@ msgstr "&Bilgi"
 
 msgctxt "ID_VIEW_STATISTICS"
 msgid "&Statistics"
-msgstr "İs&tatistikler"
+msgstr "İs&tatistik"
 
 msgctxt "ID_VIEW_STATUS"
 msgid "St&atus"
@@ -197,7 +197,7 @@ msgstr "&Yırtılmayı sına"
 
 msgctxt "ID_VIEW_DISPLAY_RENDERER_STATS"
 msgid "&Display Statistics"
-msgstr "İ&statistikleri göster"
+msgstr "İ&statistiği göster"
 
 msgctxt "ID_VIEW_OSD_DISPLAY_TIME"
 msgid "Display Current T&ime"

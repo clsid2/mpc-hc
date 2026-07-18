@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: ever_green, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
@@ -4931,7 +4931,7 @@ msgstr "既定"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "一時停止中オーディオ デバイスをアクティブにする"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -4947,7 +4947,7 @@ msgstr "レンダラーは一部のチェックを省略してデバイスの初
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "レンダラーはデバイスに聞こえないノイズを送信します。"
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"

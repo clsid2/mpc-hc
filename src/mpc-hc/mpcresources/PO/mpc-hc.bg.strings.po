@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Андрей Станков <astankov84@gmail.com>, 2026\n"
 "Language-Team: Bulgarian (https://app.transifex.com/mpchc/teams/106126/bg/)\n"
@@ -5053,7 +5053,7 @@ msgstr "По подразбиране"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "Оставяне на аудио устройството активно при пауза"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -5071,7 +5071,7 @@ msgstr ""
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "Ще се възпроизвежда шум извън чуващия се обхват през устройството."
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"

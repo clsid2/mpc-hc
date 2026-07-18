@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Łukasz Janik, 2026\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
@@ -277,7 +277,7 @@ msgstr "Ustawienia przechwytywania"
 
 msgctxt "IDS_NAVIGATION_BAR"
 msgid "Navigation Bar"
-msgstr "Nawigacja"
+msgstr "Pasek nawigacyjny"
 
 msgctxt "IDS_SUBRESYNC_CAPTION"
 msgid "Subresync"
@@ -435,7 +435,7 @@ msgstr "Inna"
 
 msgctxt "IDS_PPAGE_OUTPUT_SYS_DEF"
 msgid "System Default"
-msgstr "Domyślny"
+msgstr "Domyślne systemu"
 
 msgctxt "IDS_GRAPH_INTERFACES_ERROR"
 msgid "Failed to query the needed interfaces for playback"
@@ -479,7 +479,7 @@ msgstr "&Zapisz jako..."
 
 msgctxt "IDS_PLAYLIST_SORTBYLABEL"
 msgid "Sort by &label"
-msgstr "Posortuj według &nazwy"
+msgstr "Sortuj według &letykiety"
 
 msgctxt "IDS_PLAYLIST_SORTBYPATH"
 msgid "Sort by &path"
@@ -1068,8 +1068,8 @@ msgstr ""
 msgctxt "IDC_DSVMR9ALTERNATIVEVSYNC"
 msgid "Reduces tearing by bypassing the default VSync built into D3D."
 msgstr ""
-"Zmniejsza efekt tearingu poprzez pominięcie domyślnej synchronizacji "
-"pionowej VSync wbudowanej w D3D."
+"Zmniejsza efekt rozrywania obrazu przez pominięcie domyślnej synchronizacji "
+"VSync w D3D."
 
 msgctxt "IDS_NAVIGATE_TUNERSCAN"
 msgid "Tuner scan"
@@ -1420,15 +1420,15 @@ msgstr "Test rozrywania obrazu"
 
 msgctxt "IDS_SCALE_16_9"
 msgid "Scale to 16:9 TV,%.3f,%.3f,%.3f,%.3f"
-msgstr "Przeskaluj do formatu 16:9 TV,%.3f,%.3f,%.3f,%.3f"
+msgstr "Skaluj do 16:9 TV,%.3f,%.3f,%.3f,%.3f"
 
 msgctxt "IDS_SCALE_WIDESCREEN"
 msgid "Zoom to Widescreen,%.3f,%.3f,%.3f,%.3f"
-msgstr "Dopasuj do szerokiego ekranu,%.3f,%.3f,%.3f,%.3f"
+msgstr "Powiększ do szerokiego ekranu,%.3f,%.3f,%.3f,%.3f"
 
 msgctxt "IDS_SCALE_ULTRAWIDE"
 msgid "Zoom to Ultra-Widescreen,%.3f,%.3f,%.3f,%.3f"
-msgstr "Dopasuj do ultraszerokiego ekranu,%.3f,%.3f,%.3f,%.3f"
+msgstr "Powiększ do ultraszerokiego ekranu,%.3f,%.3f,%.3f,%.3f"
 
 msgctxt "IDS_PLAYLIST_HIDEFS"
 msgid "&Hide on Fullscreen"
@@ -1934,7 +1934,7 @@ msgstr "Sport"
 
 msgctxt "IDS_CONTENT_CHILDREN_YOUTH_PROG"
 msgid "Children's/Youth programmes"
-msgstr "Program dla dzieci"
+msgstr "Programy dla dzieci/młodzieży"
 
 msgctxt "IDS_CONTENT_MUSIC_BALLET_DANCE"
 msgid "Music/Ballet/Dance"
@@ -1984,11 +1984,11 @@ msgstr "Nie pokazuj nigdy"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOWMOVED"
 msgid "Show when moving the cursor, hide after:"
-msgstr "Pokaż podczas ruchu myszy, ukryj po:"
+msgstr "Pokaż po poruszeniu kursorem, ukryj po:"
 
 msgctxt "IDS_PPAGEFULLSCREEN_SHOHHOVERED"
 msgid "Show when hovering control, hide after:"
-msgstr "Pokaż po najechaniu myszą, ukryj po:"
+msgstr "Pokaż po najechaniu na kontrolkę, ukryj po:"
 
 msgctxt "IDS_MAINFRM_PRE_SHADERS_FAILED"
 msgid "Failed to set pre-resize shaders"
@@ -2004,7 +2004,7 @@ msgstr "Korekta czasu ramki: wyłączona"
 
 msgctxt "IDS_OSD_RS_TARGET_VSYNC_OFFSET"
 msgid "Target VSync Offset: %.1f"
-msgstr "Oczekiwane przesunięcie synchronizacji pionowej: %.1f"
+msgstr "Docelowe przesunięcie synchronizacji pionowej: %.1f"
 
 msgctxt "IDS_OSD_RS_VSYNC_OFFSET"
 msgid "VSync Offset: %d"
@@ -2569,7 +2569,7 @@ msgstr "Format"
 
 msgctxt "IDS_MAINFRM_2"
 msgid "Focus lost to: %s - %s"
-msgstr "W pracy przeszkodził: %s - %s"
+msgstr "Fokus przeniesiono do: %s - %s"
 
 msgctxt "IDS_AG_SUBTITLES_SAVED"
 msgid "Subtitles saved"
@@ -2585,7 +2585,7 @@ msgstr "Klatki na sekundę"
 
 msgctxt "IDS_MAINFRM_6"
 msgid "drawn: %d, dropped: %d"
-msgstr "wyświetlone: %d, porzucone: %d"
+msgstr "wyświetlono: %d, pominięto: %d"
 
 msgctxt "IDS_AG_FRAMES"
 msgid "Frames"
@@ -2718,7 +2718,7 @@ msgstr "Proporcje obrazu"
 
 msgctxt "IDS_MAINFRM_37"
 msgid ", Total: %ld, Dropped: %ld"
-msgstr ", wszystkich: %ld, porzuconych: %ld"
+msgstr ", Łącznie: %ld, Pominięto: %ld"
 
 msgctxt "IDS_MAINFRM_38"
 msgid ", Size: %I64d KB"
@@ -3222,11 +3222,11 @@ msgstr "Nie ma więcej plików w bieżącym folderze."
 
 msgctxt "IDS_FIRST_IN_FOLDER"
 msgid "The first file of the folder is already loaded."
-msgstr "Pierwszy plik z folderu został już wczytany. "
+msgstr "Pierwszy plik w folderze jest już załadowany."
 
 msgctxt "IDS_LAST_IN_FOLDER"
 msgid "The last file of the folder is already loaded."
-msgstr "Ostatni plik z folderu został już wczytany. "
+msgstr "Ostatni plik w folderze jest już załadowany."
 
 msgctxt "IDS_FRONT_LEFT"
 msgid "Front Left"
@@ -5067,7 +5067,7 @@ msgstr "Domyślny"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "Utrzymuj urządzenie audio aktywne podczas wstrzymania"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -5084,7 +5084,7 @@ msgstr ""
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "Renderer będzie wysyłał do urządzenia niesłyszalny szum."
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"
