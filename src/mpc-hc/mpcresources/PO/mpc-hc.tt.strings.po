@@ -1380,19 +1380,19 @@ msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Сулдан"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Өстән"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Уңнан"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Астан"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"

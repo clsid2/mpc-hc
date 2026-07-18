@@ -609,7 +609,7 @@ msgstr "Ustaw jako &domyślny program"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC"
 msgid "Explorer Context Menu"
-msgstr "Menu kontekstowe"
+msgstr "Menu kontekstowe Eksploratora"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK6"
 msgid "Directory"
@@ -1022,7 +1022,7 @@ msgstr "Cień"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK1"
 msgid "Link alpha channels"
-msgstr "Łącz kanały alfa"
+msgstr "Połącz kanały alfa"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC21"
 msgid "8-bit Character Set"
@@ -1214,7 +1214,7 @@ msgstr "Wyświetl informacje debugowania"
 
 msgctxt "IDD_PPAGEWEBSERVER_IDC_CHECK4"
 msgid "Serve pages from:"
-msgstr "Używaj stron z położenia:"
+msgstr "Udostępniaj strony z:"
 
 msgctxt "IDD_PPAGEWEBSERVER_IDC_BUTTON1"
 msgid "Browse..."
@@ -1454,7 +1454,7 @@ msgstr "Wyświetlanie przy najbliższej synchronizacji pionowej"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Przesunięcie synchronizacji:"
+msgstr "Docelowe przesunięcie synchronizacji:"
 
 msgctxt "IDD_PPAGESYNC_IDC_STATIC6"
 msgid "ms"
@@ -1499,7 +1499,7 @@ msgstr "Wyjdź z trybu pełnoekranowego po zakończeniu odtwarzania"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
-msgstr "Wyświetlacz"
+msgstr "Monitor pełnoekranowy"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK2"
 msgid "Use autochange fullscreen monitor mode"
@@ -1571,7 +1571,7 @@ msgstr "Resetuj"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_STATIC"
 msgid "Online subtitle search"
-msgstr "Wyszukiwanie napisów w Internecie"
+msgstr "Wyszukiwanie napisów w internecie"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK4"
 msgid "Automatically search and download subtitles if none are found locally"
@@ -1727,7 +1727,7 @@ msgstr "Ustawienia"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK1"
 msgid "Exclusive mode"
-msgstr "Tryb wyłączny"
+msgstr "Tryb ekskluzywny"
 
 msgctxt "IDD_PPAGEAUDIORENDERER_IDC_CHECK4"
 msgid "Ignore system channel mixer (always ignored in exclusive WASAPI mode)"
@@ -1980,27 +1980,27 @@ msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
-msgstr "Menu"
+msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
-msgstr "Pasek stanu"
+msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "Pasek postępu"
+msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"
-msgstr "Informacje"
+msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_TOOLBAR"
 msgid "Controls"
-msgstr "Przyciski"
+msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATS"
 msgid "Statistics"
-msgstr "Statystyki"
+msgstr ""
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
 msgid "Select Media from RAR"

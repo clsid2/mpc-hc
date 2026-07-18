@@ -1393,19 +1393,19 @@ msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Злева"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Зверху"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Справа"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Знізу"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"

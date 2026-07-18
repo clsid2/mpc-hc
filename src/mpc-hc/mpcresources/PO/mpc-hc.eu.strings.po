@@ -1413,19 +1413,19 @@ msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Ezker"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Goi"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Eskuin"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Behe"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
@@ -4738,7 +4738,7 @@ msgstr ""
 
 msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
 msgid "Never"
-msgstr "Inoiz ez"
+msgstr ""
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"

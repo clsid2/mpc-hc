@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -1443,19 +1443,19 @@ msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Bal"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Felső"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Jobb"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Alsó"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
@@ -4820,7 +4820,7 @@ msgstr "A hangerőcsúszkán a százalékos érték megjelenítése (modern tém
 
 msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
 msgid "Never"
-msgstr "Soha"
+msgstr ""
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
@@ -4990,7 +4990,7 @@ msgstr "WASAPI mód:"
 
 msgctxt "IDS_ARS_EXCLUSIVE"
 msgid "Exclusive"
-msgstr "Exklúzív"
+msgstr "Exkluzív"
 
 msgctxt "IDS_ARS_SHARED"
 msgid "Shared"
@@ -5058,7 +5058,7 @@ msgstr "Formátum:"
 
 msgctxt "IDS_ARS_SAMPLERATE"
 msgid "Sample rate:"
-msgstr "Minta ráta:"
+msgstr "Mintavételi frekvencia:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
@@ -5070,7 +5070,7 @@ msgstr "Alapértelmezett"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "Az audioeszköz maradjon aktív a lejátszás szüneteltetésekor "
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -5087,7 +5087,7 @@ msgstr ""
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "A renderelő  nem hallható zajt küld az eszköznek."
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"

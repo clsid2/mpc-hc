@@ -268,7 +268,7 @@ msgstr "&Włącz"
 
 msgctxt "POPUP"
 msgid "&Input Type"
-msgstr "&Format wejściowy"
+msgstr "&Typ wejścia"
 
 msgctxt "ID_VIEW_CM_INPUT_AUTO"
 msgid "&Auto-Detect"
@@ -336,15 +336,15 @@ msgstr "&Dokładna synchronizacja pionowa"
 
 msgctxt "ID_VIEW_ALTERNATIVEVSYNC"
 msgid "A&lternative VSync"
-msgstr "&Alternatywna"
+msgstr "&Alternatywna synchronizacja pionowa"
 
 msgctxt "ID_VIEW_VSYNCOFFSET_DECREASE"
 msgid "&Decrease VSync Offset"
-msgstr "&Zmniejsz przesunięcie"
+msgstr "&Zmniejsz przesunięcie synchronizacji pionowej"
 
 msgctxt "ID_VIEW_VSYNCOFFSET_INCREASE"
 msgid "&Increase VSync Offset"
-msgstr "&Zwiększ przesunięcie"
+msgstr "&Zwiększ przesunięcie synchronizacji pionowej"
 
 msgctxt "POPUP"
 msgid "&GPU Control"

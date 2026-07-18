@@ -702,7 +702,7 @@ msgstr "Jos (Sca&de volumul)"
 
 msgctxt "ID_VOLUME_MUTE"
 msgid "&Mute"
-msgstr "&Mut (Silențios)"
+msgstr "&Mut (Fără sonor / Silențios)"
 
 msgctxt "POPUP"
 msgid "Af&ter Playback"

@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
+"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2026\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
@@ -493,7 +493,7 @@ msgstr "Önceki haline getir"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "&Sırala"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -1435,19 +1435,19 @@ msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Solda"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Yukarıda"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Sağda"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Aşağıda"
+msgstr ""
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
@@ -2175,11 +2175,11 @@ msgstr "BD Oynat"
 
 msgctxt "IDS_OSD_DISPLAY_RENDERER_STATS"
 msgid "OSD: Display Renderer Statistics"
-msgstr "OSD: İşleyici istatistiklerini göster"
+msgstr "OSD: İşleyici istatistiğini göster"
 
 msgctxt "IDS_OSD_RESET_RENDERER_STATS"
 msgid "OSD: Reset Renderer Statistics"
-msgstr "OSD: İşleyici istatistiklerini sıfırla"
+msgstr "OSD: İşleyici istatistiğini sıfırla"
 
 msgctxt "IDD_PPAGESUBMISC"
 msgid "Subtitles::Misc"
@@ -2823,7 +2823,7 @@ msgid ""
 "- DirectShow: EVR (Custom Presenter), Sync, VMR-9 (renderless), madVR, MPC VR, or Haali VR"
 msgstr ""
 "Altyazıları yükletmek için video işleyiciyi değiştirmeniz ve dosyayı yeniden açmanız gerekiyor.\n"
-"- DirectShow: GVİ (Özel Sunucu), Eşzamanlama İ., VKİ-9 (işleyicisiz), Haali Vİ, madVR, ya da MPC Vİ"
+"- DirectShow: GVİ (Özel Sunucu), Eşzamanlama İ., VKİ-9 (işleyicisiz), Haali Vİ, madVR, veya MPC Vİ"
 
 msgctxt "IDS_SUBTITLE_FILES_FILTER"
 msgid "Subtitle files"
@@ -3079,7 +3079,7 @@ msgstr "Bilgi çubuğunu Aç/Kapat"
 
 msgctxt "IDS_AG_TOGGLE_STATS"
 msgid "Toggle Statistics"
-msgstr "İstatistikleri Aç/Kapat"
+msgstr "İstatistiği Aç/Kapat"
 
 msgctxt "IDS_AG_TOGGLE_STATUS"
 msgid "Toggle Status"
@@ -3818,7 +3818,7 @@ msgid ""
 msgstr ""
 "Güncelleştirme sunucusu bulunamadı.\n"
 "\n"
-"Lütfen internet bağlantınızı kontrol ediniz ya da daha sonra yeniden deneyiniz."
+"Lütfen internet bağlantınızı kontrol ediniz veya daha sonra yeniden deneyiniz."
 
 msgctxt "IDS_UPDATE_CLOSE"
 msgid "&Close"
@@ -4086,7 +4086,7 @@ msgid ""
 "If \"nearest keyframe\" is selected, seek to the first keyframe before or after the seek point depending on which is the closest."
 msgstr ""
 "\"En son anahtar kare\" seçildiğinde, geçerli noktadan önceki ilk anahtar kare aranacaktır.\n"
-"\"En yakın anahtar kare\" seçildiğinde, geçerli noktadan itibaren yakınlığına göre önceki ya da sonraki ilk anahtar kare aranacaktır."
+"\"En yakın anahtar kare\" seçildiğinde, geçerli noktadan itibaren yakınlığına göre önceki veya sonraki ilk anahtar kare aranacaktır."
 
 msgctxt "IDC_ASSOCIATE_ALL_FORMATS"
 msgid "Associate with all formats"
@@ -4379,7 +4379,7 @@ msgid ""
 "\"pathname\"\tThe main file or directory to be loaded\n"
 "\t\t(wildcards allowed, \"-\" denotes standard input)"
 msgstr ""
-"\"yol adı\"\t\tAçılacak ana dosya ya da klasör\n"
+"\"yol adı\"\t\tAçılacak ana dosya veya klasör\n"
 "\t\t(joker karakterler kullanılabilir, \"-\" standart girdi belirtir)"
 
 msgctxt "IDS_CMD_DUB"
@@ -4461,7 +4461,7 @@ msgstr "/standby\t\tOynatımdan sonra sistemi askıya al"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate\tOynatımdan sonra sistemi derin uyku moduna al"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4763,7 +4763,7 @@ msgstr "Olağan Biçemi Geçersiz Kılmayı Aç/Kapat"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Tüm Biçemleri Geçersiz Kılmayı Aç/Kapat"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4820,7 +4820,7 @@ msgstr "Yüzde değerini ses seviyesi kaydırıcısında göster (modern tema i�
 
 msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
 msgid "Never"
-msgstr "Asla"
+msgstr ""
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
@@ -5012,7 +5012,7 @@ msgstr "Sistem hoparlör düzenini kullan"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "Desteklenen formatın alternatif kontrolü"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -5064,7 +5064,7 @@ msgstr "Örneklem hızı:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "Kanal"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"
@@ -5072,7 +5072,7 @@ msgstr "Varsayılan"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "Duraklatıldığında ses aygıtını aktif tut"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -5088,7 +5088,7 @@ msgstr "İşleyici bazı kontrolleri atlayarak aygıtı başlatmaya çalışacak
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "İşleyici, aygıta duyulmayan bir ses sinyali gönderecektir."
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"
