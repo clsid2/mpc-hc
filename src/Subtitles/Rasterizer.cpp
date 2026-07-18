@@ -115,6 +115,95 @@ void Rasterizer::_ReallocEdgeBuffer(unsigned int edges)
     }
 }
 
+void Rasterizer::AnalyzeBezierMinMax(int ptbase, bool fBSpline, int& minx, int& maxx, int& miny, int& maxy)
+{
+    const POINT* pt0 = mpPathPoints + ptbase;
+    const POINT* pt1 = mpPathPoints + ptbase + 1;
+    const POINT* pt2 = mpPathPoints + ptbase + 2;
+    const POINT* pt3 = mpPathPoints + ptbase + 3;
+
+    double x0 = pt0->x;
+    double x1 = pt1->x;
+    double x2 = pt2->x;
+    double x3 = pt3->x;
+    double y0 = pt0->y;
+    double y1 = pt1->y;
+    double y2 = pt2->y;
+    double y3 = pt3->y;
+
+    double cx3, cx2, cx1, cx0, cy3, cy2, cy1, cy0;
+
+    if (fBSpline) {
+        double _1div6 = 1.0 / 6.0;
+
+        cx3 = _1div6 * (-  x0 + 3 * x1 - 3 * x2 + x3);
+        cx2 = _1div6 * (3 * x0 - 6 * x1 + 3 * x2);
+        cx1 = _1div6 * (-3 * x0    + 3 * x2);
+        cx0 = _1div6 * (x0 + 4 * x1 + 1 * x2);
+
+        cy3 = _1div6 * (-  y0 + 3 * y1 - 3 * y2 + y3);
+        cy2 = _1div6 * (3 * y0 - 6 * y1 + 3 * y2);
+        cy1 = _1div6 * (-3 * y0     + 3 * y2);
+        cy0 = _1div6 * (y0 + 4 * y1 + 1 * y2);
+    } else { // bezier
+        cx3 = -  x0 + 3 * x1 - 3 * x2 + x3;
+        cx2 =  3 * x0 - 6 * x1 + 3 * x2;
+        cx1 = -3 * x0 + 3 * x1;
+        cx0 = x0;
+
+        cy3 = -  y0 + 3 * y1 - 3 * y2 + y3;
+        cy2 =  3 * y0 - 6 * y1 + 3 * y2;
+        cy1 = -3 * y0 + 3 * y1;
+        cy0 = y0;
+    }
+
+    double maxaccel1 = fabs(2 * cy2) + fabs(6 * cy3);
+    double maxaccel2 = fabs(2 * cx2) + fabs(6 * cx3);
+
+    double maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
+    double h = 1.0;
+
+    if (maxaccel > 8.0) {
+        h = sqrt(8.0 / maxaccel);
+    }
+
+    for (double t = 0; t < 1.0; t += h) {
+        double x = cx0 + t * (cx1 + t * (cx2 + t * cx3));
+        double y = cy0 + t * (cy1 + t * (cy2 + t * cy3));
+        int ix = (int)x;
+        int iy = (int)y;
+        if (ix < minx) {
+            minx = ix;
+        }
+        if (ix > maxx) {
+            maxx = ix;
+        }
+        if (iy < miny) {
+            miny = iy;
+        }
+        if (iy > maxy) {
+            maxy = iy;
+        }
+    }
+
+    double x = cx0 + cx1 + cx2 + cx3;
+    double y = cy0 + cy1 + cy2 + cy3;
+    int ix = (int)x;
+    int iy = (int)y;
+    if (ix < minx) {
+        minx = ix;
+    }
+    if (ix > maxx) {
+        maxx = ix;
+    }
+    if (iy < miny) {
+        miny = iy;
+    }
+    if (iy > maxy) {
+        maxy = iy;
+    }
+}
+
 void Rasterizer::_EvaluateBezier(int ptbase, bool fBSpline)
 {
     const POINT* pt0 = mpPathPoints + ptbase;
@@ -252,6 +341,8 @@ void Rasterizer::_EvaluateLine(int x0, int y0, int x1, int y1)
     int iy = y >> 3;
 
     y1 = (y1 - 5) >> 3;
+
+    ASSERT(y1 < m_pOutlineData->mHeight);
 
     if (iy <= y1) {
         __int64 invslope = (__int64(x1 - x0) << 16) / dy;
@@ -402,9 +493,25 @@ bool Rasterizer::ScanConvert()
         int maxx = INT_MIN;
         int maxy = INT_MIN;
 
+        int bezier_idx = 0;
         for (i = 0; i < mPathPoints; ++i) {
             int ix = mpPathPoints[i].x;
             int iy = mpPathPoints[i].y;
+
+            // in case of Bezier/BSpline calculate the actual min/max
+            BYTE pt = mpPathTypes[i] & ~PT_CLOSEFIGURE;
+            if (pt == PT_BEZIERTO || pt == PT_BSPLINETO) {
+                bezier_idx++;
+                if (bezier_idx == 1 && i > 0 && (mPathPoints >= i + 3)) {
+                    AnalyzeBezierMinMax(i - 1, pt == PT_BSPLINETO, minx, maxx, miny, maxy);
+                }
+                if (bezier_idx == 3) {
+                    bezier_idx = 0;
+                }
+                continue;
+            } else {
+                bezier_idx = 0;
+            }
 
             if (ix < minx) {
                 minx = ix;
@@ -875,7 +982,8 @@ bool Rasterizer::Rasterize(int xsub, int ysub, int fBlur, double fGaussianBlur)
 
     uint64_t buffersize = m_pOverlayData->mOverlayPitch * m_pOverlayData->mOverlayHeight;
     if (buffersize > 134217728ULL) {
-        ASSERT(false);
+        TRACE(L"Skipping subtitle rasterize due to excessive overlay size\n");
+        m_pOverlayData = nullptr;
         return false;
     }
     m_pOverlayData->mpOverlayBufferBody = (byte*)_aligned_malloc(buffersize, 16);

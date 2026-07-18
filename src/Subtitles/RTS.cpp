@@ -1164,7 +1164,7 @@ CAlphaMaskSharedPtr CClipper::GetAlphaMask(const std::shared_ptr<CClipper>& clip
 
     Paint(CPoint(0, 0), CPoint(0, 0));
 
-    if (!m_pOverlayData) {
+    if (!m_pOverlayData || !m_pOverlayData->mpOverlayBufferBody) {
         return nullptr;
     }
 

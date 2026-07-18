@@ -841,7 +841,9 @@ STDMETHODIMP CStreamSwitcherInputPin::Receive(IMediaSample* pSample)
 
     CAutoLock cAutoLock(&m_csReceive);
 
-    CStreamSwitcherOutputPin* pOut = (static_cast<CStreamSwitcherFilter*>(m_pFilter))->GetOutputPin();
+    CStreamSwitcherFilter* ssf = static_cast<CStreamSwitcherFilter*>(m_pFilter);
+
+    CStreamSwitcherOutputPin* pOut = ssf->GetOutputPin();
     ASSERT(pOut->GetConnected());
 
     HRESULT hr = __super::Receive(pSample);
@@ -872,7 +874,7 @@ STDMETHODIMP CStreamSwitcherInputPin::Receive(IMediaSample* pSample)
     long cbBuffer = pSample->GetActualDataLength();
 
     CMediaType mtOut = m_mt;
-    mtOut = (static_cast<CStreamSwitcherFilter*>(m_pFilter))->CreateNewOutputMediaType(mtOut, cbBuffer);
+    mtOut = ssf->CreateNewOutputMediaType(mtOut, cbBuffer);
 
     bool fTypeChanged = false;
 
@@ -914,13 +916,13 @@ STDMETHODIMP CStreamSwitcherInputPin::Receive(IMediaSample* pSample)
 
     if (fTypeChanged) {
         pOut->SetMediaType(&mtOut);
-        (static_cast<CStreamSwitcherFilter*>(m_pFilter))->OnNewOutputMediaType(m_mt, mtOut);
+        ssf->OnNewOutputMediaType(m_mt, mtOut);
         pOutSample->SetMediaType(&mtOut);
     }
 
     // Transform
 
-    hr = (static_cast<CStreamSwitcherFilter*>(m_pFilter))->Transform(pSample, pOutSample);
+    hr = ssf->Transform(pSample, pOutSample);
 
     if (S_OK == hr) {
         hr = pOut->Deliver(pOutSample);

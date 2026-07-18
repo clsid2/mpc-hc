@@ -235,7 +235,6 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
     if (len < 0 || wfe->nSamplesPerSec == 0 || !wfeout) {
         return S_FALSE;
     }
-    int lenout = (UINT64)len * wfeout->nSamplesPerSec / wfe->nSamplesPerSec;
 
     REFERENCE_TIME rtStart, rtStop;
     if (SUCCEEDED(pIn->GetTime(&rtStart, &rtStop))) {
@@ -265,6 +264,13 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
         return __super::Transform(pIn, pOut);
     }
 
+    // len = 0 doesn't mean it's failed, return S_OK otherwise might screw the sound
+    if (len == 0) {
+        pOut->SetActualDataLength(0);
+        return S_OK;
+    }
+    int lenout = (UINT64)len * wfeout->nSamplesPerSec / wfe->nSamplesPerSec;
+
     BYTE* pDataIn = nullptr;
     BYTE* pDataOut = nullptr;
 
@@ -278,11 +284,6 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
 
     if (!pDataIn || !pDataOut) {
         return S_FALSE;
-    }
-    // len = 0 doesn't mean it's failed, return S_OK otherwise might screw the sound
-    if (len == 0) {
-        pOut->SetActualDataLength(0);
-        return S_OK;
     }
 
     if (m_fCustomChannelMapping && wfe->nChannels <= AS_MAX_CHANNELS) {
@@ -349,6 +350,7 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
     if (m_fNormalize || m_boostFactor > 1) {
         size_t samples = size_t(lenout) * wfeout->nChannels;
         double sample_mul = 1.0;
+        ASSERT((wfe->wBitsPerSample == 24 ? samples * 4 : samples * wfe->wBitsPerSample / 8) <= pOut->GetSize());
 
         if (m_fNormalize) {
             double sample_max = 0.0;

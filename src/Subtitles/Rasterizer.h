@@ -182,6 +182,7 @@ protected:
 private:
     void _TrashPath();
     void _ReallocEdgeBuffer(unsigned int edges);
+    void AnalyzeBezierMinMax(int ptbase, bool fBSpline, int& minx, int& maxx, int& miny, int& maxy);
     void _EvaluateBezier(int ptbase, bool fBSpline);
     void _EvaluateLine(int pt1idx, int pt2idx);
     void _EvaluateLine(int x0, int y0, int x1, int y1);
