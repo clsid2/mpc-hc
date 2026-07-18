@@ -849,6 +849,129 @@ void CMPlayerCApp::SetupSettingsStore()
             m_Profile.Flush(true);
         }
     }
+
+    // Apply machine-wide default settings pushed via HKLM (issue #2347).
+    ApplyHKLMDefaults();
+}
+
+// Recursively copy an HKLM defaults subtree into the user store, preserving
+// value types. `section` is the user-store section path built from the subkey
+// path ("" at the HKLM root, whose own values are control values, not settings).
+void CMPlayerCApp::ImportHKLMTree(HKEY hKey, const CStringW& section)
+{
+    if (!section.IsEmpty()) {
+        WCHAR name[512];
+        for (DWORD i = 0;; i++) {
+            DWORD nameLen = _countof(name), type = 0, dataLen = 0;
+            LONG r = RegEnumValueW(hKey, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
+            if (r == ERROR_NO_MORE_ITEMS) {
+                break;
+            }
+            if (r != ERROR_SUCCESS || dataLen == 0) {
+                continue;
+            }
+            std::vector<BYTE> data(dataLen);
+            DWORD cb = dataLen;
+            if (RegQueryValueExW(hKey, name, nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
+                continue;
+            }
+            switch (type) {
+                case REG_DWORD:
+                    if (cb >= sizeof(DWORD)) {
+                        WriteProfileInt(section, name, *reinterpret_cast<DWORD*>(data.data()));
+                    }
+                    break;
+                case REG_QWORD:
+                    if (cb >= sizeof(ULONGLONG)) {
+                        CStringW s;
+                        s.Format(_T("%I64u"), *reinterpret_cast<ULONGLONG*>(data.data()));
+                        WriteProfileString(section, name, s);
+                    }
+                    break;
+                case REG_SZ:
+                case REG_EXPAND_SZ:
+                    WriteProfileString(section, name, reinterpret_cast<LPCWSTR>(data.data()));
+                    break;
+                case REG_BINARY:
+                    WriteProfileBinary(section, name, data.data(), cb);
+                    break;
+                default:
+                    break; // unsupported types are ignored
+            }
+        }
+    }
+
+    WCHAR sub[MAX_REGKEY_LEN];
+    for (DWORD i = 0;; i++) {
+        DWORD subLen = _countof(sub);
+        LONG r = RegEnumKeyExW(hKey, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+        if (r == ERROR_NO_MORE_ITEMS) {
+            break;
+        }
+        if (r != ERROR_SUCCESS) {
+            continue;
+        }
+        HKEY hSub;
+        if (RegOpenKeyExW(hKey, sub, 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
+            CStringW child = section.IsEmpty() ? CStringW(sub) : (section + L"\\" + sub);
+            ImportHKLMTree(hSub, child);
+            RegCloseKey(hSub);
+        }
+    }
+}
+
+void CMPlayerCApp::ApplyHKLMDefaults()
+{
+    HKEY hRoot;
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, _T("Software\\MPC-HC"), 0, KEY_READ, &hRoot) != ERROR_SUCCESS) {
+        return; // no machine-wide defaults configured
+    }
+
+    // Control values live at the root of HKLM\Software\MPC-HC.
+    DWORD type = 0, cb;
+    DWORD reset = 0;
+    cb = sizeof(reset);
+    const bool hasReset = RegQueryValueExW(hRoot, _T("SettingsReset"), nullptr, &type, (BYTE*)&reset, &cb) == ERROR_SUCCESS && type == REG_DWORD;
+    ULONGLONG ts = 0;
+    cb = sizeof(ts);
+    const bool hasTs = RegQueryValueExW(hRoot, _T("SettingsTimestamp"), nullptr, &type, (BYTE*)&ts, &cb) == ERROR_SUCCESS && (type == REG_QWORD || type == REG_DWORD);
+
+    // What we've already applied (kept in the user store).
+    const DWORD appliedReset = static_cast<DWORD>(GetProfileInt(_T("HKLMState"), _T("AppliedReset"), 0));
+    const ULONGLONG appliedTs = _wcstoui64(GetProfileString(_T("HKLMState"), _T("AppliedTimestamp"), _T("0")), nullptr, 10);
+
+    const bool doReset = hasReset && reset != appliedReset;
+    const bool doImport = doReset || (hasTs && ts > appliedTs);
+
+    if (!doImport) {
+        RegCloseKey(hRoot);
+        return;
+    }
+
+    if (doReset) {
+        // Force user settings back to defaults, then re-seed from HKLM.
+        m_Profile.Clear();
+        if (m_HistoryProfile) {
+            m_HistoryProfile->Clear();
+        }
+        m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
+        m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1"));
+    }
+
+    ImportHKLMTree(hRoot, CStringW());
+
+    // Record what we applied so this runs only once per change.
+    if (hasReset) {
+        WriteProfileInt(_T("HKLMState"), _T("AppliedReset"), static_cast<int>(reset));
+    }
+    if (hasTs) {
+        CStringW s;
+        s.Format(_T("%I64u"), ts);
+        WriteProfileString(_T("HKLMState"), _T("AppliedTimestamp"), s);
+    }
+
+    FlushProfile(true);
+    RegCloseKey(hRoot);
 }
 
 bool CMPlayerCApp::GetAppSavePath(CString& path)

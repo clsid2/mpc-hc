@@ -172,6 +172,10 @@ private:
     void SetupSettingsStore();
     // Route a section to the MediaHistory store when applicable, else m_Profile.
     CProfile& ProfileForSection(LPCWSTR lpszSection);
+    // Import machine-wide default settings from HKLM\Software\MPC-HC into the
+    // user store once, gated by SettingsReset / SettingsTimestamp (issue #2347).
+    void ApplyHKLMDefaults();
+    void ImportHKLMTree(HKEY hKey, const CStringW& section);
 
 public:
     // The versioned settings store. All GetProfile*/WriteProfile* overrides
