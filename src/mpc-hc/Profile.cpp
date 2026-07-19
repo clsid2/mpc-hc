@@ -229,6 +229,78 @@ CStringW CProfile::HistoryIniPath()
     return GetExeBasePath() + HISTORY_INI_SUFFIX;
 }
 
+CStringW CProfile::VersionedIniPath(const CStringW& version)
+{
+    if (version.IsEmpty()) {
+        return GetNewIniPath();
+    }
+    return GetExeBasePath() + L"." + version + NEW_INI_SUFFIX;
+}
+
+// Enumerate an open registry key recursively into a ProfileMap, converting each
+// value to the INI textual form CProfile would use (so a registry store can seed
+// an INI fork). `section` is the path built from subkeys ("" at the root).
+static void EnumerateRegistryTree(HKEY hKey, const CStringW& section, ProfileMap& out)
+{
+    if (!section.IsEmpty()) {
+        WCHAR name[512];
+        for (DWORD i = 0;; i++) {
+            DWORD nameLen = _countof(name), type = 0, dataLen = 0;
+            LONG r = RegEnumValueW(hKey, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
+            if (r == ERROR_NO_MORE_ITEMS) {
+                break;
+            }
+            if (r != ERROR_SUCCESS || dataLen == 0) {
+                continue;
+            }
+            std::vector<BYTE> data(dataLen);
+            DWORD cb = dataLen;
+            if (RegQueryValueExW(hKey, name, nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
+                continue;
+            }
+            CStringW val;
+            switch (type) {
+                case REG_DWORD:
+                    if (cb < sizeof(DWORD)) continue;
+                    val.Format(L"%d", static_cast<int>(*reinterpret_cast<DWORD*>(data.data())));
+                    break;
+                case REG_QWORD:
+                    if (cb < sizeof(ULONGLONG)) continue;
+                    val.Format(L"%I64d", *reinterpret_cast<ULONGLONG*>(data.data()));
+                    break;
+                case REG_SZ:
+                case REG_EXPAND_SZ:
+                    val = reinterpret_cast<LPCWSTR>(data.data());
+                    break;
+                case REG_BINARY:
+                    val = CStringW(BINARY_B64_PREFIX) + BinaryToBase64(data.data(), cb);
+                    break;
+                default:
+                    continue;
+            }
+            out[section][name] = val;
+        }
+    }
+
+    WCHAR sub[256];
+    for (DWORD i = 0;; i++) {
+        DWORD subLen = _countof(sub);
+        LONG r = RegEnumKeyExW(hKey, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+        if (r == ERROR_NO_MORE_ITEMS) {
+            break;
+        }
+        if (r != ERROR_SUCCESS) {
+            continue;
+        }
+        HKEY hSub;
+        if (RegOpenKeyExW(hKey, sub, 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
+            CStringW child = section.IsEmpty() ? CStringW(sub) : (section + L"\\" + sub);
+            EnumerateRegistryTree(hSub, child, out);
+            RegCloseKey(hSub);
+        }
+    }
+}
+
 LONG CProfile::OpenRegistryKey()
 {
     LONG lResult = ERROR_SUCCESS;
@@ -1136,20 +1208,45 @@ CStringW CProfile::GetRegistryKeyPath() const
     return m_hAppRegKey ? CStringW(PROFILE_REG_KEY) : CStringW();
 }
 
-bool CProfile::ForkToLocalIni()
+bool CProfile::ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    // Capture the current store's contents first (if seeding a new fork).
+    ProfileMap seed;
+    if (seedFromCurrent) {
+        if (m_hAppRegKey) {
+            EnumerateRegistryTree(m_hAppRegKey, CStringW(), seed); // registry -> INI form
+        } else {
+            InitIni();
+            seed = m_ProfileMap; // already INI form (verbatim, incl. b64: values)
+        }
+    }
 
     if (m_hAppRegKey) {
         RegCloseKey(m_hAppRegKey); // detach only; the shared registry store is left intact
         m_hAppRegKey = nullptr;
     }
 
-    m_IniPath = GetNewIniPath();
+    m_IniPath = iniPath;
     m_ProfileMap.clear();
     m_bIniFirstInit = false; // force InitIni() to (re)read the local file if present
     m_bIniNeedFlush = false;
     InitIni();
+
+    if (seedFromCurrent && !seed.empty()) {
+        // Fill in from the seed without overwriting anything already in an
+        // existing fork file.
+        for (const auto& sec : seed) {
+            for (const auto& kv : sec.second) {
+                auto& dst = m_ProfileMap[sec.first];
+                if (dst.find(kv.first) == dst.end()) {
+                    dst[kv.first] = kv.second;
+                    m_bIniNeedFlush = true;
+                }
+            }
+        }
+    }
 
     return true;
 }

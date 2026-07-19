@@ -807,24 +807,36 @@ static int CompareVersionStrings(const CStringW& a, const CStringW& b)
     return 0;
 }
 
+// MediaHistory on-disk format version, versioned independently of the app.
+// Bump when the MediaHistory layout changes incompatibly.
+static const wchar_t* const MEDIA_HISTORY_FORMAT_VERSION = L"1.0";
+
 void CMPlayerCApp::SetupSettingsStore()
 {
-    CStringW lastWritten;
-    const bool bHasStore = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), lastWritten) && !lastWritten.IsEmpty();
+    // If this exact build previously forked to its own per-version settings file,
+    // that file is known-compatible with this build: use it directly and skip the
+    // shared-store version check.
+    const CStringW versionedPath = CProfile::VersionedIniPath(CStringW(m_strVersion));
+    if (PathUtils::Exists(versionedPath)) {
+        m_Profile.ForkToLocalIni(versionedPath); // load our own file, no seeding
+    } else {
+        CStringW lastWritten;
+        const bool bHasStore = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), lastWritten) && !lastWritten.IsEmpty();
 
-    if (!bHasStore) {
-        // First run of the new settings format: import the legacy settings
-        // (old INI / old registry key), if any. Non-destructive - the legacy
-        // store is never deleted.
-        m_Profile.MigrateFromLegacy();
-    } else if (CompareVersionStrings(CStringW(m_strVersion), lastWritten) < 0) {
-        // This build is older than the one that last wrote the settings. Offer
-        // to use a private local settings file rather than downgrade (and
-        // possibly corrupt) the newer settings.
-        int res = MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION),
-                             _T("MPC-HC"), MB_ICONWARNING | MB_YESNO);
-        if (res == IDYES) {
-            m_Profile.ForkToLocalIni();
+        if (!bHasStore) {
+            // First run of the new settings format: import the legacy settings
+            // (old INI / old registry key), if any. Non-destructive - the legacy
+            // store is never deleted.
+            m_Profile.MigrateFromLegacy();
+        } else if (CompareVersionStrings(CStringW(m_strVersion), lastWritten) < 0) {
+            // This build is older than the one that last wrote the shared store.
+            // Offer to use a private, per-version settings file (seeded from the
+            // shared store) rather than modify the newer settings.
+            int res = MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION),
+                                 _T("MPC-HC"), MB_ICONWARNING | MB_YESNO);
+            if (res == IDYES) {
+                m_Profile.ForkToLocalIni(versionedPath, true /*seedFromCurrent*/);
+            }
         }
     }
 
@@ -832,7 +844,7 @@ void CMPlayerCApp::SetupSettingsStore()
     m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
     m_Profile.Flush(true);
 
-    // Phase B: in portable (INI) mode, keep MediaHistory in its own file.
+    // Phase B: in portable (INI) mode, keep MediaHistory in its own (shared) file.
     // Registry installs keep history in the registry (no separate store).
     if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
         m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
@@ -841,9 +853,14 @@ void CMPlayerCApp::SetupSettingsStore()
         if (!m_Profile.HasEntry(_T("Version"), _T("HistorySplit"))) {
             m_Profile.MoveSectionTree(_T("MediaHistory"), *m_HistoryProfile);
             m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1"));
-            m_HistoryProfile->Flush(true);
             m_Profile.Flush(true);
         }
+
+        // Stamp the history file with its own format version plus the app version
+        // that last wrote it (written straight to the history store, not routed).
+        m_HistoryProfile->WriteString(_T("Version"), _T("MediaHistoryVersion"), MEDIA_HISTORY_FORMAT_VERSION);
+        m_HistoryProfile->WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
+        m_HistoryProfile->Flush(true);
     }
 
     // Apply machine-wide default settings pushed via HKLM (issue #2347).

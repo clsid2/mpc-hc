@@ -73,6 +73,10 @@ public:
 
     // Path of the separate MediaHistory INI (<exe-basename>.history.ini).
     static CStringW HistoryIniPath();
+    // Path of a per-version settings INI used by the downgrade fork:
+    // <exe-basename>.<version>.settings.ini (falls back to the shared
+    // <exe-basename>.settings.ini when version is empty).
+    static CStringW VersionedIniPath(const CStringW& version);
 
 private:
     LONG OpenRegistryKey();
@@ -128,12 +132,12 @@ public:
     // Used once to split MediaHistory out into its own store. INI mode.
     void MoveSectionTree(const wchar_t* root, CProfile& dst);
 
-    // Downgrade protection: when an older build opens a store last written by a
-    // newer build, switch this instance to a private INI next to the executable
-    // (loaded if it already exists, else started empty) and DETACH from the
-    // shared store WITHOUT deleting it, so the newer build's settings survive.
-    // Registry mode only needs this; a portable store is already local.
-    bool ForkToLocalIni();
+    // Downgrade protection: switch this instance to a private INI at iniPath and
+    // DETACH from the shared store WITHOUT deleting it, so the newer build's
+    // settings survive. If iniPath already exists it is loaded (used as-is). If
+    // seedFromCurrent is set and iniPath is new, the current store's contents are
+    // copied in as a starting point (registry values are converted to INI form).
+    bool ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent = false);
 
     SettingsLocation GetSettingsLocation() const;
 
