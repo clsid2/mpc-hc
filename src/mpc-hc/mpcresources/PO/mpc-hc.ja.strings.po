@@ -4717,7 +4717,7 @@ msgstr "起動時に適用する表示プリセット"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr "前回の表示プリセット"
+msgstr "終了時のプリセットを復元"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
