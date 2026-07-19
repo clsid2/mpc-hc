@@ -1417,11 +1417,11 @@ msgstr "&Ẩn trên toàn màn hình"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr "Vị trí"
+msgstr "&Vị trí"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Trái"
+msgstr "&Trái"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
