@@ -316,7 +316,7 @@ msgstr "Zuletzt geöffnete Dateien merken"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK2"
 msgid "Remember last playlist"
-msgstr "Letzte Wiedergabeliste speichern"
+msgstr "Letzte Wiedergabeliste merken"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
 msgid "Remember File position"
