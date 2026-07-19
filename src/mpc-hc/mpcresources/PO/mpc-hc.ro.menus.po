@@ -109,7 +109,7 @@ msgstr "Bara de &căutare"
 
 msgctxt "ID_VIEW_CONTROLS"
 msgid "&Controls"
-msgstr "Cont&roale"
+msgstr "Cont&roale (Comenzi)"
 
 msgctxt "ID_VIEW_INFORMATION"
 msgid "&Information"
