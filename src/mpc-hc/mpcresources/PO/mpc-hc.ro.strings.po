@@ -1977,7 +1977,7 @@ msgstr "Salvează o copie"
 
 msgctxt "IDS_FASTSEEK_LATEST"
 msgid "Latest keyframe"
-msgstr "Ultimul cadru-cheie"
+msgstr "Ultimul cadru cheie"
 
 msgctxt "IDS_FASTSEEK_NEAREST"
 msgid "Nearest keyframe"
