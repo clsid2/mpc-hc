@@ -549,7 +549,7 @@ msgstr "&Ladenie shaderov..."
 
 msgctxt "IDS_MPLAYERC_104"
 msgid "Subtitle Delay -"
-msgstr "Oneskorenie titulkov: -"
+msgstr "Oneskorenie titulkov -"
 
 msgctxt "IDS_MPLAYERC_105"
 msgid "Subtitle Delay +"
