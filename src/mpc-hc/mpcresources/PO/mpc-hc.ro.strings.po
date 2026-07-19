@@ -317,7 +317,7 @@ msgstr "Fontul (Scrisul)"
 
 msgctxt "IDS_DVD_NAV_SOME_PINS_ERROR"
 msgid "Failed to render some of the pins of the DVD Navigator filter"
-msgstr "Eșuare la randarea unora dintre pinii filtrului navigator DVD"
+msgstr "Nu s-au putut reda unele dintre pinii filtrului DVD Navigator."
 
 msgctxt "IDS_DVD_INTERFACES_ERROR"
 msgid "Failed to query the needed interfaces for DVD playback"
