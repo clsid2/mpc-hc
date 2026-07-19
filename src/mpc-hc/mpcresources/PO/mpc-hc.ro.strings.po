@@ -5,14 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
 # Mac Balls, 2022
-# Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026
+# Andrei Miloiu <miloiuandrei@gmail.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Miloiu Andrei-Valentin <miloiuandrei@gmail.com>, 2026\n"
+"Last-Translator: Andrei Miloiu <miloiuandrei@gmail.com>, 2026\n"
 "Language-Team: Romanian (https://app.transifex.com/mpchc/teams/106126/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1441,27 +1441,27 @@ msgstr "Ascunde în modul ecran complet (pe tot ecranul)"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr ""
+msgstr "&Poziție"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Stânga"
+msgstr "&Stânga"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Sus"
+msgstr "S&us"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Dreapta"
+msgstr "&Dreapta"
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Jos"
+msgstr "&Jos"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr ""
+msgstr "P&lutitor"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -2236,7 +2236,7 @@ msgstr "Vizualizare normală"
 
 msgctxt "IDS_AG_VIEW_CUSTOM"
 msgid "View Custom"
-msgstr ""
+msgstr "Vizualizează setările personalizate"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
@@ -4509,6 +4509,8 @@ msgid ""
 "/viewpreset N\tStart with a specific preset,\n"
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
 msgstr ""
+"/viewpreset N Începe cu o presetare specifică,\n"
+"unde N este una dintre următoarele: „1” Minimal, „2” Compact, „3” Normal sau „4” Personalizat"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4860,24 +4862,25 @@ msgstr "Niciodată"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "Întotdeauna"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
-msgstr ""
+msgstr "Când bara de stare este ascunsă"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr ""
+msgstr "Vizualizează presetarea de aplicat la pornire"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr ""
+msgstr "Ține minte ultima presetare"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
 "Show the time on the left side of the seekbar instead of the right side"
 msgstr ""
+"Afișează ora în partea stângă a barei de căutare în loc de partea dreaptă"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
