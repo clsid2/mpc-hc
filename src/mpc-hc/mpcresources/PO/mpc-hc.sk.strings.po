@@ -4819,7 +4819,7 @@ msgstr "Keď je stavový riadok skrytý"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr "Zobraziť použité prednastavenia pri spúšťaní"
+msgstr "Zobraziť použité prednastavenie pri spúšťaní"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
