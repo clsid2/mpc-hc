@@ -1181,7 +1181,7 @@ msgstr "Reinițializează la schimbarea ecranului"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "Ecran complet D3D"
+msgstr "Ecran complet D3D (Direct3D)"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_DSVMR9ALTERNATIVEVSYNC"
 msgid "Alternative VSync"
