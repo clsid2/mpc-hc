@@ -1429,7 +1429,7 @@ msgstr "Trên"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Phải"
+msgstr "&Phải"
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
