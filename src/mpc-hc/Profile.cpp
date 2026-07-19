@@ -37,10 +37,15 @@ static const wchar_t* const INDEX_INI_SUFFIX = L".settings.ini";           // ve
 
 // Format-versioned store names are built from SETTINGS_FORMAT_VERSION /
 // HISTORY_FORMAT_VERSION so older builds only ever touch their own version's
-// store (Settings-<ver> / History-<ver>).
+// store (Settings-<ver> / History-<ver>). The *For() variants build the names
+// for an arbitrary version (used to seed from an older store during migration).
+static CStringW SettingsRegKeyFor(const CStringW& version)
+{
+    return CStringW(COMPANY_REG_KEY) + L"\\Settings-" + version;
+}
 static CStringW SettingsRegKey()
 {
-    return CStringW(COMPANY_REG_KEY) + L"\\Settings-" + SETTINGS_FORMAT_VERSION;
+    return SettingsRegKeyFor(SETTINGS_FORMAT_VERSION);
 }
 
 // Prefix marking a NEW-format Base64 binary value in an INI. Legacy binary
@@ -59,9 +64,13 @@ static CStringW GetExeBasePath()
     return path;
 }
 
+static CStringW SettingsIniPathFor(const CStringW& version)
+{
+    return GetExeBasePath() + L".settings-" + version + L".ini";
+}
 static CStringW GetNewIniPath()
 {
-    return GetExeBasePath() + L".settings-" + SETTINGS_FORMAT_VERSION + L".ini";
+    return SettingsIniPathFor(SETTINGS_FORMAT_VERSION);
 }
 
 static CStringW GetLegacyIniPath()
@@ -1125,6 +1134,35 @@ bool CProfile::MigrateFromLegacy()
 
     InitIni(); // ensure the (new, likely empty) map is loaded before merging
     for (const auto& sec : legacyMap) {
+        for (const auto& kv : sec.second) {
+            m_ProfileMap[sec.first][kv.first] = kv.second;
+        }
+    }
+    m_bIniNeedFlush = true;
+    Flush(true);
+    return true;
+}
+
+bool CProfile::SeedFromVersion(const CStringW& fromVersion)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    if (m_hAppRegKey) {
+        HKEY hSrc = nullptr;
+        if (RegOpenKeyExW(HKEY_CURRENT_USER, SettingsRegKeyFor(fromVersion), 0, KEY_READ, &hSrc) != ERROR_SUCCESS) {
+            return false; // source store doesn't exist
+        }
+        CopyRegistryTree(hSrc, m_hAppRegKey);
+        RegCloseKey(hSrc);
+        return true;
+    }
+
+    ProfileMap srcMap;
+    if (!ReadIniFileIntoMap(SettingsIniPathFor(fromVersion), srcMap)) {
+        return false;
+    }
+    InitIni();
+    for (const auto& sec : srcMap) {
         for (const auto& kv : sec.second) {
             m_ProfileMap[sec.first][kv.first] = kv.second;
         }

@@ -133,6 +133,12 @@ public:
     // legacy-format sunset. Caller guards against re-running.
     bool MigrateFromLegacy();
 
+    // Seed this (empty, current-version) store with the full contents of the
+    // Settings-<fromVersion> store, in this store's mode (registry or INI). Used
+    // by the migration driver before applying in-place format transforms.
+    // Returns true if the source store existed and was copied.
+    bool SeedFromVersion(const CStringW& fromVersion);
+
     // Move a section and all its subsections ("root" and "root\...") into
     // another profile (preserving raw values) and remove them from this one.
     // Used once to split MediaHistory out into its own store. INI mode.

@@ -812,12 +812,14 @@ static int CompareVersionStrings(const CStringW& a, const CStringW& b)
 //
 // Each store is named by its on-disk format version (Settings-<ver> /
 // History-<ver>, see Profile.h). When the format changes incompatibly, bump
-// SETTINGS_FORMAT_VERSION and add a step below that transforms the previous
-// version's store into the new one; the driver applies the chain in order. An
-// older build only knows its own version and never touches a newer store.
+// SETTINGS_FORMAT_VERSION and add a step below. A step transforms a store IN
+// PLACE from its `from` format to `to`; the driver first seeds the new store
+// from the source version's data (CProfile::SeedFromVersion, or
+// MigrateFromLegacy for the pre-versioned 1.0 layout) and then applies the chain
+// of in-place transforms in order. An older build only knows its own version and
+// never touches a newer store.
 //
-// There is only version 1.0 today, so the table is empty and no step runs
-// (a fresh 1.0 store is populated by the legacy import instead).
+// There is only version 1.0 today, so the table is empty and no step runs.
 // ---------------------------------------------------------------------------
 typedef void (*SettingsMigrationFn)(CProfile& profile);
 struct SettingsMigrationStep {
@@ -942,17 +944,22 @@ void CMPlayerCApp::SetupSettingsStore()
     CStringW idxS, idxH;
     ReadSettingsIndex(portable, idxS, idxH);
 
-    // Populate this version's store if empty: migrate up from an older format
-    // store if one exists and a path is defined, else import the pre-versioned
-    // legacy settings. Both are non-destructive - older stores are left in place.
+    // Populate this version's store if empty: seed it from the best available
+    // older source, then apply in-place format transforms up to our version.
+    // The source is the newest existing older versioned store, or (failing that)
+    // the pre-versioned legacy settings, which are the 1.0 layout. Seeding is
+    // non-destructive - older stores are left in place.
     CStringW tmp;
     const bool bInitialized = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), tmp) && !tmp.IsEmpty();
     if (!bInitialized) {
-        if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) < 0 &&
-            ApplySettingsMigrations(m_Profile, idxS, myS) >= 0) {
-            // migrated an older format store up to ours
-        } else {
-            m_Profile.MigrateFromLegacy();
+        CStringW seededFrom;
+        if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) < 0 && m_Profile.SeedFromVersion(idxS)) {
+            seededFrom = idxS;           // seeded from an older versioned store
+        } else if (m_Profile.MigrateFromLegacy()) {
+            seededFrom = L"1.0";         // pre-versioned legacy == the 1.0 layout
+        }
+        if (!seededFrom.IsEmpty()) {
+            ApplySettingsMigrations(m_Profile, seededFrom, myS);
         }
     }
 
