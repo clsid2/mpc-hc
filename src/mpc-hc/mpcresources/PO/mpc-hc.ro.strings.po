@@ -5070,7 +5070,7 @@ msgstr "Activează îmbinarea canalelor stereo (pentru căști)"
 
 msgctxt "IDS_ARS_DUMMY_CHANNELS"
 msgid "Don't fill channels when upmixing"
-msgstr "Nu umple canalele când mixezi"
+msgstr "Nu umple canalele când mixezi (când amesteci)"
 
 msgctxt "IDS_ARS_DEVICE_PERIOD"
 msgid "Device buffer:"
