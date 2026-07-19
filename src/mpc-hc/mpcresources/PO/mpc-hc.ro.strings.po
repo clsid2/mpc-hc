@@ -695,7 +695,9 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR9RENDERLESS"
 msgid "Video Mixing Renderer 9 (renderless)"
-msgstr "VMR-9 - Randor amestecare video 9 (fără randare)"
+msgstr ""
+"Randorul de mixare (de amestecare) video 9 (Video Mixing Renderer 9 / VMR-9)"
+" (fără randare)"
 
 msgctxt "IDS_PPAGE_OUTPUT_EVR"
 msgid "Enhanced Video Renderer"
