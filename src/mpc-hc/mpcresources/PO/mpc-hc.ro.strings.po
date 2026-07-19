@@ -4,7 +4,6 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Daniel <danny3@tutanota.com>, 2022
-# Mac Balls, 2022
 # Andrei Miloiu <miloiuandrei@gmail.com>, 2026
 # 
 msgid ""
@@ -1015,7 +1014,7 @@ msgstr "Null - Fără randare video (formate necomprimate)"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_INTERNAL_REND"
 msgid "SaneAR Audio Renderer"
-msgstr "Randor audio SaneAR"
+msgstr "Randorul audio SaneAR"
 
 msgctxt "IDS_EMB_RESOURCES_VIEWER_NAME"
 msgid "Name"
