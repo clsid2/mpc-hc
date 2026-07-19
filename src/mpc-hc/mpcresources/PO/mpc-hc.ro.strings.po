@@ -446,7 +446,9 @@ msgstr "Nu se poate seta fereastra țintă pentru notificările graficului"
 
 msgctxt "IDS_DVD_NAV_ALL_PINS_ERROR"
 msgid "Failed to render all pins of the DVD Navigator filter"
-msgstr "Eșuare la randarea tuturor pinilor filtrului navigator DVD"
+msgstr ""
+"Nu s-au putut afișa toți pinii filtrului pentru navigatorul DVD-ului (DVD "
+"Navigator).."
 
 msgctxt "IDS_PLAYLIST_OPEN"
 msgid "&Open"
