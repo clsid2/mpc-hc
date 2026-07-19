@@ -157,7 +157,7 @@ msgstr "&Bình thường"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr "Tùy chỉnh - &u"
+msgstr "Tùy c&hỉnh"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
