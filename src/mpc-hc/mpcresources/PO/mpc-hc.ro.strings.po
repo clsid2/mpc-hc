@@ -153,7 +153,7 @@ msgstr "Semnal"
 
 msgctxt "IDS_STATSBAR_SIGNAL_FORMAT"
 msgid "Strength: %d dB, Quality: %ld%%"
-msgstr "Putere: %d (de) dB, Calitate: %ld%%"
+msgstr "Puterea: %d (de) dB, Calitatea: %ld%%"
 
 msgctxt "IDS_SUBTITLES_STYLES_CAPTION"
 msgid "Styles"
