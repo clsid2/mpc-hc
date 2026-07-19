@@ -941,7 +941,7 @@ msgstr "Fontul (Scrisul)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_BUTTON1"
 msgid "Font"
-msgstr "Font (Scris)"
+msgstr "Fontul (Scrisul)"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC1"
 msgid "Spacing"
