@@ -763,7 +763,8 @@ msgstr "Randator video MPC"
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
-msgstr "Randorul de mixare (de amestecare) video 7 (Video Mixing Renderer 7)"
+msgstr ""
+"Randorul de mixare (de amestecare) video 7 (Video Mixing Renderer 7 / VMR-7)"
 
 msgctxt "IDD_PPAGEACCELTBL"
 msgid "Player::Keys"
