@@ -553,7 +553,7 @@ msgstr "Oneskorenie titulkov -"
 
 msgctxt "IDS_MPLAYERC_105"
 msgid "Subtitle Delay +"
-msgstr "Oneskorenie titulkov: +"
+msgstr "Oneskorenie titulkov +"
 
 msgctxt "IDS_FILE_SAVE_THUMBNAILS"
 msgid "Save thumbnails"
