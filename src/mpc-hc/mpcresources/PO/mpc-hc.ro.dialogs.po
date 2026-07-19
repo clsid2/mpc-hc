@@ -1193,7 +1193,7 @@ msgstr "Modul de mixare (amestecare) a VMR-9"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "Preîncărcări EVR:"
+msgstr "Memorii tampon EVR:"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
