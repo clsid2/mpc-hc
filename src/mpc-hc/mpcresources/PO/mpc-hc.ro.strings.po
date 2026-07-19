@@ -681,7 +681,7 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_OVERLAYMIXER"
 msgid "Overlay Mixer Renderer"
-msgstr "Randor amestecător strat suprapus"
+msgstr "Randerol pentru amestecătorul (pentru mixerul) de suprapunere"
 
 msgctxt "IDS_ZOOM_25"
 msgid "25%"
