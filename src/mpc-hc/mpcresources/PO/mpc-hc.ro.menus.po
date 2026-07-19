@@ -145,7 +145,7 @@ msgstr "&Presetări..."
 
 msgctxt "ID_VIEW_PRESETS_MINIMAL"
 msgid "&Minimal"
-msgstr "&Minim"
+msgstr "Interfață &minimală"
 
 msgctxt "ID_VIEW_PRESETS_COMPACT"
 msgid "&Compact"
