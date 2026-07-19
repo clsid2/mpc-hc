@@ -689,7 +689,9 @@ msgstr "25%"
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR9WINDOWED"
 msgid "Video Mixing Renderer 9 (windowed)"
-msgstr "VMR-9 - Randor amestecare video 9 (în fereastră)"
+msgstr ""
+"Randorul de mixare (de amestecare) video 9 (Video Mixing Renderer 9 / VMR-9)"
+" (în fereastră)"
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR9RENDERLESS"
 msgid "Video Mixing Renderer 9 (renderless)"
