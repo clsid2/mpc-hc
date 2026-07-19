@@ -313,7 +313,7 @@ msgstr "Stilul"
 
 msgctxt "IDS_SUBRESYNC_CLN_FONT"
 msgid "Font"
-msgstr "Font (Scris)"
+msgstr "Fontul (Scrisul)"
 
 msgctxt "IDS_DVD_NAV_SOME_PINS_ERROR"
 msgid "Failed to render some of the pins of the DVD Navigator filter"
