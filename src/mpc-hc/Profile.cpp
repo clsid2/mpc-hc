@@ -30,11 +30,18 @@
 // its old location (HKCU\Software\MPC-HC\MPC-HC and <exe>.ini) untouched so
 // older builds stay downgrade-safe. FIXME: confirm final names with the team.
 // ---------------------------------------------------------------------------
-static const wchar_t* const PROFILE_REG_KEY = L"Software\\MPC-HC\\MPC-HC-settings";
-static const wchar_t* const LEGACY_REG_KEY  = L"Software\\MPC-HC\\MPC-HC"; // pre-versioning MFC key
-static const wchar_t* const NEW_INI_SUFFIX  = L".settings.ini"; // <exe-basename>.settings.ini
-static const wchar_t* const OLD_INI_SUFFIX  = L".ini";          // legacy portable ini
-static const wchar_t* const HISTORY_INI_SUFFIX = L".history.ini"; // separate MediaHistory store
+static const wchar_t* const COMPANY_REG_KEY  = L"Software\\MPC-HC";        // parent of all stores
+static const wchar_t* const LEGACY_REG_KEY   = L"Software\\MPC-HC\\MPC-HC"; // pre-versioning MFC key
+static const wchar_t* const OLD_INI_SUFFIX   = L".ini";                     // legacy portable ini
+static const wchar_t* const INDEX_INI_SUFFIX = L".settings.ini";           // version-independent index/manifest
+
+// Format-versioned store names are built from SETTINGS_FORMAT_VERSION /
+// HISTORY_FORMAT_VERSION so older builds only ever touch their own version's
+// store (Settings-<ver> / History-<ver>).
+static CStringW SettingsRegKey()
+{
+    return CStringW(COMPANY_REG_KEY) + L"\\Settings-" + SETTINGS_FORMAT_VERSION;
+}
 
 // Prefix marking a NEW-format Base64 binary value in an INI. Legacy binary
 // values are A-P encoded (only chars 'A'..'P'), so this lowercase-led prefix
@@ -54,7 +61,7 @@ static CStringW GetExeBasePath()
 
 static CStringW GetNewIniPath()
 {
-    return GetExeBasePath() + NEW_INI_SUFFIX;
+    return GetExeBasePath() + L".settings-" + SETTINGS_FORMAT_VERSION + L".ini";
 }
 
 static CStringW GetLegacyIniPath()
@@ -195,15 +202,14 @@ static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
 
 CProfile::CProfile()
 {
-    // Prefer a portable INI: the new-format file, or an existing legacy .ini
-    // next to the executable (so upgrading a portable install stays portable).
-    CStringW newIni = GetNewIniPath();
-    if (::PathFileExistsW(newIni)) {
-        m_IniPath = newIni;
-        return;
-    }
-    if (::PathFileExistsW(GetLegacyIniPath())) {
-        m_IniPath = newIni; // portable: write the new-format file alongside the legacy one
+    // Portable if any INI marker exists next to the executable: this version's
+    // settings file, the legacy .ini, or the version-independent index file.
+    // (The index persists portability across format-version bumps.)
+    const CStringW newIni = GetNewIniPath();
+    if (::PathFileExistsW(newIni) ||
+        ::PathFileExistsW(GetLegacyIniPath()) ||
+        ::PathFileExistsW(GetExeBasePath() + INDEX_INI_SUFFIX)) {
+        m_IniPath = newIni; // write this version's file (alongside any legacy one)
         return;
     }
 
@@ -226,79 +232,12 @@ CProfile::~CProfile()
 
 CStringW CProfile::HistoryIniPath()
 {
-    return GetExeBasePath() + HISTORY_INI_SUFFIX;
+    return GetExeBasePath() + L".history-" + HISTORY_FORMAT_VERSION + L".ini";
 }
 
-CStringW CProfile::VersionedIniPath(const CStringW& version)
+CStringW CProfile::SettingsIndexIniPath()
 {
-    if (version.IsEmpty()) {
-        return GetNewIniPath();
-    }
-    return GetExeBasePath() + L"." + version + NEW_INI_SUFFIX;
-}
-
-// Enumerate an open registry key recursively into a ProfileMap, converting each
-// value to the INI textual form CProfile would use (so a registry store can seed
-// an INI fork). `section` is the path built from subkeys ("" at the root).
-static void EnumerateRegistryTree(HKEY hKey, const CStringW& section, ProfileMap& out)
-{
-    if (!section.IsEmpty()) {
-        WCHAR name[512];
-        for (DWORD i = 0;; i++) {
-            DWORD nameLen = _countof(name), type = 0, dataLen = 0;
-            LONG r = RegEnumValueW(hKey, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
-            if (r == ERROR_NO_MORE_ITEMS) {
-                break;
-            }
-            if (r != ERROR_SUCCESS || dataLen == 0) {
-                continue;
-            }
-            std::vector<BYTE> data(dataLen);
-            DWORD cb = dataLen;
-            if (RegQueryValueExW(hKey, name, nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
-                continue;
-            }
-            CStringW val;
-            switch (type) {
-                case REG_DWORD:
-                    if (cb < sizeof(DWORD)) continue;
-                    val.Format(L"%d", static_cast<int>(*reinterpret_cast<DWORD*>(data.data())));
-                    break;
-                case REG_QWORD:
-                    if (cb < sizeof(ULONGLONG)) continue;
-                    val.Format(L"%I64d", *reinterpret_cast<ULONGLONG*>(data.data()));
-                    break;
-                case REG_SZ:
-                case REG_EXPAND_SZ:
-                    val = reinterpret_cast<LPCWSTR>(data.data());
-                    break;
-                case REG_BINARY:
-                    val = CStringW(BINARY_B64_PREFIX) + BinaryToBase64(data.data(), cb);
-                    break;
-                default:
-                    continue;
-            }
-            out[section][name] = val;
-        }
-    }
-
-    WCHAR sub[256];
-    for (DWORD i = 0;; i++) {
-        DWORD subLen = _countof(sub);
-        LONG r = RegEnumKeyExW(hKey, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
-        if (r == ERROR_NO_MORE_ITEMS) {
-            break;
-        }
-        if (r != ERROR_SUCCESS) {
-            continue;
-        }
-        HKEY hSub;
-        if (RegOpenKeyExW(hKey, sub, 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
-            CStringW child = section.IsEmpty() ? CStringW(sub) : (section + L"\\" + sub);
-            EnumerateRegistryTree(hSub, child, out);
-            RegCloseKey(hSub);
-        }
-    }
+    return GetExeBasePath() + INDEX_INI_SUFFIX;
 }
 
 LONG CProfile::OpenRegistryKey()
@@ -307,7 +246,7 @@ LONG CProfile::OpenRegistryKey()
 
     if (!m_hAppRegKey) {
         DWORD dwDisposition = 0;
-        lResult = RegCreateKeyExW(HKEY_CURRENT_USER, PROFILE_REG_KEY, 0, nullptr, 0,
+        lResult = RegCreateKeyExW(HKEY_CURRENT_USER, SettingsRegKey(), 0, nullptr, 0,
                                   KEY_READ | KEY_WRITE, nullptr, &m_hAppRegKey, &dwDisposition);
         ASSERT(lResult == ERROR_SUCCESS);
     }
@@ -1205,50 +1144,7 @@ bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
 
 CStringW CProfile::GetRegistryKeyPath() const
 {
-    return m_hAppRegKey ? CStringW(PROFILE_REG_KEY) : CStringW();
-}
-
-bool CProfile::ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent)
-{
-    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
-
-    // Capture the current store's contents first (if seeding a new fork).
-    ProfileMap seed;
-    if (seedFromCurrent) {
-        if (m_hAppRegKey) {
-            EnumerateRegistryTree(m_hAppRegKey, CStringW(), seed); // registry -> INI form
-        } else {
-            InitIni();
-            seed = m_ProfileMap; // already INI form (verbatim, incl. b64: values)
-        }
-    }
-
-    if (m_hAppRegKey) {
-        RegCloseKey(m_hAppRegKey); // detach only; the shared registry store is left intact
-        m_hAppRegKey = nullptr;
-    }
-
-    m_IniPath = iniPath;
-    m_ProfileMap.clear();
-    m_bIniFirstInit = false; // force InitIni() to (re)read the local file if present
-    m_bIniNeedFlush = false;
-    InitIni();
-
-    if (seedFromCurrent && !seed.empty()) {
-        // Fill in from the seed without overwriting anything already in an
-        // existing fork file.
-        for (const auto& sec : seed) {
-            for (const auto& kv : sec.second) {
-                auto& dst = m_ProfileMap[sec.first];
-                if (dst.find(kv.first) == dst.end()) {
-                    dst[kv.first] = kv.second;
-                    m_bIniNeedFlush = true;
-                }
-            }
-        }
-    }
-
-    return true;
+    return m_hAppRegKey ? SettingsRegKey() : CStringW();
 }
 
 SettingsLocation CProfile::GetSettingsLocation() const

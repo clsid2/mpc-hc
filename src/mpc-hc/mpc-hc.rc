@@ -3053,7 +3053,7 @@ BEGIN
     IDS_PLAYLIST_POSITION_RIGHT "&Right"
     IDS_PLAYLIST_POSITION_BOTTOM "&Bottom"
     IDS_PLAYLIST_POSITION_FLOAT "&Floating"
-    IDS_SETTINGS_NEWER_VERSION "These settings were last written by a newer version of MPC-HC.\n\nDo you want to use a separate local settings file for this version instead of changing the newer settings?"
+    IDS_SETTINGS_NEWER_VERSION "A newer version of MPC-HC has updated the settings. This version will keep using its own settings and ignore the newer ones."
 END
 
 STRINGTABLE

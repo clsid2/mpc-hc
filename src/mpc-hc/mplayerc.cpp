@@ -807,46 +807,174 @@ static int CompareVersionStrings(const CStringW& a, const CStringW& b)
     return 0;
 }
 
-// MediaHistory on-disk format version, versioned independently of the app.
-// Bump when the MediaHistory layout changes incompatibly.
-static const wchar_t* const MEDIA_HISTORY_FORMAT_VERSION = L"1.0";
+// ---------------------------------------------------------------------------
+// Settings format migration framework.
+//
+// Each store is named by its on-disk format version (Settings-<ver> /
+// History-<ver>, see Profile.h). When the format changes incompatibly, bump
+// SETTINGS_FORMAT_VERSION and add a step below that transforms the previous
+// version's store into the new one; the driver applies the chain in order. An
+// older build only knows its own version and never touches a newer store.
+//
+// There is only version 1.0 today, so the table is empty and no step runs
+// (a fresh 1.0 store is populated by the legacy import instead).
+// ---------------------------------------------------------------------------
+typedef void (*SettingsMigrationFn)(CProfile& profile);
+struct SettingsMigrationStep {
+    const wchar_t* from;
+    const wchar_t* to;
+    SettingsMigrationFn apply;
+};
+static const std::vector<SettingsMigrationStep> s_settingsMigrations = {
+    // { L"1.0", L"1.1", &Migrate_Settings_1_0_to_1_1 },  // example for the future
+};
 
-void CMPlayerCApp::SetupSettingsStore()
+// Number of migration steps to chain from `from` up to `to` (0 if already there),
+// or -1 if no complete chain of steps connects them.
+static int CountSettingsMigrations(const CStringW& from, const CStringW& to)
 {
-    // If this exact build previously forked to its own per-version settings file,
-    // that file is known-compatible with this build: use it directly and skip the
-    // shared-store version check.
-    const CStringW versionedPath = CProfile::VersionedIniPath(CStringW(m_strVersion));
-    if (PathUtils::Exists(versionedPath)) {
-        m_Profile.ForkToLocalIni(versionedPath); // load our own file, no seeding
-    } else {
-        CStringW lastWritten;
-        const bool bHasStore = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), lastWritten) && !lastWritten.IsEmpty();
+    CStringW cur = from;
+    int steps = 0;
+    while (CompareVersionStrings(cur, to) < 0) {
+        const SettingsMigrationStep* found = nullptr;
+        for (const auto& s : s_settingsMigrations) {
+            if (cur == s.from) {
+                found = &s;
+                break;
+            }
+        }
+        if (!found || ++steps > 100) {
+            return -1; // no path forward (or runaway guard)
+        }
+        cur = found->to;
+    }
+    return (cur == to) ? steps : -1;
+}
 
-        if (!bHasStore) {
-            // First run of the new settings format: import the legacy settings
-            // (old INI / old registry key), if any. Non-destructive - the legacy
-            // store is never deleted.
-            m_Profile.MigrateFromLegacy();
-        } else if (CompareVersionStrings(CStringW(m_strVersion), lastWritten) < 0) {
-            // This build is older than the one that last wrote the shared store.
-            // Offer to use a private, per-version settings file (seeded from the
-            // shared store) rather than modify the newer settings.
-            int res = MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION),
-                                 _T("MPC-HC"), MB_ICONWARNING | MB_YESNO);
-            if (res == IDYES) {
-                m_Profile.ForkToLocalIni(versionedPath, true /*seedFromCurrent*/);
+// Apply the chain of steps that takes `from` up to `to`. Returns the number of
+// steps applied, or -1 if there is no complete path.
+static int ApplySettingsMigrations(CProfile& profile, const CStringW& from, const CStringW& to)
+{
+    if (CountSettingsMigrations(from, to) < 0) {
+        return -1;
+    }
+    CStringW cur = from;
+    int steps = 0;
+    while (cur != to) {
+        for (const auto& s : s_settingsMigrations) {
+            if (cur == s.from) {
+                if (s.apply) {
+                    s.apply(profile);
+                }
+                cur = s.to;
+                steps++;
+                break;
             }
         }
     }
+    return steps;
+}
 
-    // Stamp this build as the last writer of the (possibly forked) store.
+// max(a, b) by version comparison, treating empty as lowest.
+static CStringW MaxVersion(const CStringW& a, const CStringW& b)
+{
+    if (a.IsEmpty()) {
+        return b;
+    }
+    if (b.IsEmpty()) {
+        return a;
+    }
+    return CompareVersionStrings(a, b) >= 0 ? a : b;
+}
+
+// The version-independent index records which settings/history format versions
+// are present, so an older build can tell that a newer store exists (and warn)
+// without scanning. Registry: values under HKCU\Software\MPC-HC. Portable: the
+// <exe>.settings.ini manifest.
+static void ReadSettingsIndex(bool portable, CStringW& settingsVer, CStringW& historyVer)
+{
+    settingsVer.Empty();
+    historyVer.Empty();
+    if (portable) {
+        CProfile index(CProfile::SettingsIndexIniPath());
+        index.ReadString(L"Version", L"Settings", settingsVer);
+        index.ReadString(L"Version", L"History", historyVer);
+    } else {
+        CRegKey key;
+        if (key.Open(HKEY_CURRENT_USER, L"Software\\MPC-HC", KEY_READ) == ERROR_SUCCESS) {
+            ULONG n = 0;
+            if (key.QueryStringValue(L"SettingsVersion", nullptr, &n) == ERROR_SUCCESS && n > 0) {
+                key.QueryStringValue(L"SettingsVersion", settingsVer.GetBufferSetLength(n - 1), &n);
+                settingsVer.ReleaseBuffer();
+            }
+            n = 0;
+            if (key.QueryStringValue(L"HistoryVersion", nullptr, &n) == ERROR_SUCCESS && n > 0) {
+                key.QueryStringValue(L"HistoryVersion", historyVer.GetBufferSetLength(n - 1), &n);
+                historyVer.ReleaseBuffer();
+            }
+        }
+    }
+}
+
+static void WriteSettingsIndex(bool portable, const CStringW& settingsVer, const CStringW& historyVer)
+{
+    if (portable) {
+        CProfile index(CProfile::SettingsIndexIniPath());
+        index.WriteString(L"Version", L"Settings", settingsVer);
+        index.WriteString(L"Version", L"History", historyVer);
+        index.Flush(true);
+    } else {
+        CRegKey key;
+        if (key.Create(HKEY_CURRENT_USER, L"Software\\MPC-HC") == ERROR_SUCCESS) {
+            key.SetStringValue(L"SettingsVersion", settingsVer);
+            key.SetStringValue(L"HistoryVersion", historyVer);
+        }
+    }
+}
+
+void CMPlayerCApp::SetupSettingsStore()
+{
+    const bool portable = (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR);
+    const CStringW myS = SETTINGS_FORMAT_VERSION;
+    const CStringW myH = HISTORY_FORMAT_VERSION;
+
+    // What the newest build here has established (empty on a first run).
+    CStringW idxS, idxH;
+    ReadSettingsIndex(portable, idxS, idxH);
+
+    // Populate this version's store if empty: migrate up from an older format
+    // store if one exists and a path is defined, else import the pre-versioned
+    // legacy settings. Both are non-destructive - older stores are left in place.
+    CStringW tmp;
+    const bool bInitialized = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), tmp) && !tmp.IsEmpty();
+    if (!bInitialized) {
+        if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) < 0 &&
+            ApplySettingsMigrations(m_Profile, idxS, myS) >= 0) {
+            // migrated an older format store up to ours
+        } else {
+            m_Profile.MigrateFromLegacy();
+        }
+    }
+
+    // If a newer settings format exists, operate on our own version and warn once
+    // (per newer version) that the newer settings are being ignored.
+    if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) > 0) {
+        CStringW warnedFor;
+        m_Profile.ReadString(_T("Version"), _T("NewerWarnedFor"), warnedFor);
+        if (warnedFor != idxS) {
+            MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION), _T("MPC-HC"), MB_ICONINFORMATION | MB_OK);
+            m_Profile.WriteString(_T("Version"), _T("NewerWarnedFor"), idxS);
+        }
+    }
+
+    // Stamp the store and raise the index to our version (never lower it).
     m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
     m_Profile.Flush(true);
+    WriteSettingsIndex(portable, MaxVersion(idxS, myS), MaxVersion(idxH, myH));
 
-    // Phase B: in portable (INI) mode, keep MediaHistory in its own (shared) file.
-    // Registry installs keep history in the registry (no separate store).
-    if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
+    // In portable (INI) mode keep MediaHistory in its own versioned file.
+    // Registry installs keep history inside the settings store.
+    if (portable) {
         m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
 
         // One-time: move any MediaHistory still in the main store into it.
@@ -856,9 +984,8 @@ void CMPlayerCApp::SetupSettingsStore()
             m_Profile.Flush(true);
         }
 
-        // Stamp the history file with its own format version plus the app version
-        // that last wrote it (written straight to the history store, not routed).
-        m_HistoryProfile->WriteString(_T("Version"), _T("MediaHistoryVersion"), MEDIA_HISTORY_FORMAT_VERSION);
+        // Self-describing history stamp (the filename already encodes the version).
+        m_HistoryProfile->WriteString(_T("Version"), _T("MediaHistoryVersion"), CStringW(HISTORY_FORMAT_VERSION));
         m_HistoryProfile->WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
         m_HistoryProfile->Flush(true);
     }

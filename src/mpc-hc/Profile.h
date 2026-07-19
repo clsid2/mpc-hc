@@ -42,6 +42,13 @@ enum SettingsLocation {
     SETS_PROGRAMDIR
 };
 
+// On-disk format versions. The store name encodes the version (Settings-<ver> /
+// History-<ver>); bump the version when the layout changes incompatibly and add
+// a migration step. Older builds only know their own version and ignore newer
+// stores. See docs/settings-versioning.md.
+inline const wchar_t* const SETTINGS_FORMAT_VERSION = L"1.0";
+inline const wchar_t* const HISTORY_FORMAT_VERSION  = L"1.0";
+
 // Sections and keys are matched case-insensitively; sections are kept ordered
 // (std::map) because EnumSectionNames() relies on the ordering to range-walk
 // subsections by "<section>\" prefix.
@@ -71,12 +78,11 @@ public:
     explicit CProfile(const CStringW& iniFilePath);
     ~CProfile();
 
-    // Path of the separate MediaHistory INI (<exe-basename>.history.ini).
+    // Path of the separate MediaHistory INI (<exe-basename>.history-<ver>.ini).
     static CStringW HistoryIniPath();
-    // Path of a per-version settings INI used by the downgrade fork:
-    // <exe-basename>.<version>.settings.ini (falls back to the shared
-    // <exe-basename>.settings.ini when version is empty).
-    static CStringW VersionedIniPath(const CStringW& version);
+    // Path of the version-independent index/manifest INI (<exe-basename>.settings.ini)
+    // that records which settings/history format versions are present.
+    static CStringW SettingsIndexIniPath();
 
 private:
     LONG OpenRegistryKey();
@@ -131,13 +137,6 @@ public:
     // another profile (preserving raw values) and remove them from this one.
     // Used once to split MediaHistory out into its own store. INI mode.
     void MoveSectionTree(const wchar_t* root, CProfile& dst);
-
-    // Downgrade protection: switch this instance to a private INI at iniPath and
-    // DETACH from the shared store WITHOUT deleting it, so the newer build's
-    // settings survive. If iniPath already exists it is loaded (used as-is). If
-    // seedFromCurrent is set and iniPath is new, the current store's contents are
-    // copied in as a starting point (registry values are converted to INI form).
-    bool ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent = false);
 
     SettingsLocation GetSettingsLocation() const;
 
