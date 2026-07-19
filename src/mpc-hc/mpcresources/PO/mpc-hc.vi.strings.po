@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Huy Võ <hoanghuy309@gmail.com>, 2026\n"
 "Language-Team: Vietnamese (https://app.transifex.com/mpchc/teams/106126/vi/)\n"
@@ -1417,7 +1417,7 @@ msgstr "&Ẩn trên toàn màn hình"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr ""
+msgstr "Vị trí"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
@@ -1437,7 +1437,7 @@ msgstr "Dưới"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr ""
+msgstr "Nổi"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -2206,7 +2206,7 @@ msgstr "Xem bình thường"
 
 msgctxt "IDS_AG_VIEW_CUSTOM"
 msgid "View Custom"
-msgstr ""
+msgstr "Xem Tùy Chỉnh"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
@@ -2892,7 +2892,7 @@ msgstr "Chuyển Nhãn&Menu"
 
 msgctxt "IDS_AG_TOGGLE_SEEKER"
 msgid "Toggle Seekbar"
-msgstr "Chuyển đổi thanh trượt"
+msgstr "Chuyển Đổi Thanh Tua"
 
 msgctxt "IDS_AG_TOGGLE_CONTROLS"
 msgid "Toggle Controls"
@@ -3182,7 +3182,7 @@ msgstr "Xem trước video"
 
 msgctxt "IDS_SEEKBAR_HOVER_TOOLTIP"
 msgid "Seek Time"
-msgstr "Thời gian tìm kiếm"
+msgstr "Thời Gian Tua"
 
 msgctxt "IDS_AG_VIDFRM_ZOOM1"
 msgid "Video Frame Zoom 1"
@@ -4465,6 +4465,8 @@ msgid ""
 "/viewpreset N\tStart with a specific preset,\n"
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
 msgstr ""
+"/viewpreset N\tBắt đầu với một cài đặt trước cụ thể,\n"
+"\t\tTrong đó N là một trong các số \"1\" Tối giản, \"2\" Nhỏ gọn, \"3\" Bình thường, or \"4\" Tùy chỉnh"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4799,28 +4801,28 @@ msgstr ""
 
 msgctxt "IDS_TIME_ON_SEEKBAR_NEVER"
 msgid "Never"
-msgstr "Không"
+msgstr "Không bao giờ"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "Luôn luôn"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
-msgstr ""
+msgstr "Khi thanh trạng thái bị ẩn"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr ""
+msgstr "Xem cài đặt trước để áp dụng khi khởi động"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr ""
+msgstr "Nhớ lần cuối"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
 "Show the time on the left side of the seekbar instead of the right side"
-msgstr ""
+msgstr "Hiển thị thời gian ở bên trái của thanh tua thay vì bên phải"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4853,7 +4855,7 @@ msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR"
 msgid "Pause playback while dragging the seekbar."
-msgstr "Tạm dừng phát lại trong khi kéo thanh tua nhanh."
+msgstr "Tạm dừng phát lại trong khi kéo thanh tua."
 
 msgctxt "IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE"
 msgid "Show confirmation prompt before deleting file"
