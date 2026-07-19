@@ -153,7 +153,7 @@ msgstr "Interfață &compactă"
 
 msgctxt "ID_VIEW_PRESETS_NORMAL"
 msgid "&Normal"
-msgstr "&Normal"
+msgstr "Interfață &normală"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
