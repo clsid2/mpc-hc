@@ -225,7 +225,7 @@ msgstr "&Prezentare"
 
 msgctxt "ID_VIEW_D3DFULLSCREEN"
 msgid "D3D Fullscreen &Mode"
-msgstr "&Modul ecran complet D3D"
+msgstr "&Modul ecran complet (pe tot ecranul) D3D"
 
 msgctxt "ID_VIEW_FULLSCREENGUISUPPORT"
 msgid "D3D Fullscreen &GUI Support"
