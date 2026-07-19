@@ -3055,7 +3055,7 @@ msgstr "Micșorează decalajul sincronizării verticale"
 
 msgctxt "IDS_MAINFRM_136"
 msgid "MPC-HC D3D Fullscreen"
-msgstr "Ecran complet MPC-HC pentru D3D"
+msgstr "Redă MPC-HC pe tot ecranul (în modul ecran complet) prin D3D"
 
 msgctxt "IDS_MAINFRM_137"
 msgid "Unknown format"
