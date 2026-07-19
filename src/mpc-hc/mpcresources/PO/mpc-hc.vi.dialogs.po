@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Huy Võ <hoanghuy309@gmail.com>, 2026\n"
 "Language-Team: Vietnamese (https://app.transifex.com/mpchc/teams/106126/vi/)\n"
@@ -1847,19 +1847,19 @@ msgstr "Màu chủ đề hiện đại:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
-msgstr "Thanh trượt"
+msgstr "Thanh tua"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC22"
 msgid "Modern Seekbar height:"
-msgstr "Chiều cao thanh trượt hiện đại:"
+msgstr "Chiều cao Thanh Tua hiện đại:"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK2"
 msgid "Show chapter marks on seekbar"
-msgstr "Hiển thị các dấu chương trên thanh trượt"
+msgstr "Hiển thị các dấu chương trên thanh tua"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr ""
+msgstr "Thời gian trên thanh tua:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
@@ -1963,7 +1963,7 @@ msgstr "Ngôn ngữ:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr ""
+msgstr "Cài Đặt Trước Tùy Chỉnh (4)"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
@@ -1975,7 +1975,7 @@ msgstr "Trạng thái"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "Thanh tìm kiếm"
+msgstr "Thanh Tua"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"
