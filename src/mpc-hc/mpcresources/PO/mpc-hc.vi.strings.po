@@ -1425,7 +1425,7 @@ msgstr "Trái"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Trên"
+msgstr "&Trên"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
