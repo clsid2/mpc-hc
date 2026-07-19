@@ -324,7 +324,7 @@ msgstr ""
 msgctxt "IDS_DVD_INTERFACES_ERROR"
 msgid "Failed to query the needed interfaces for DVD playback"
 msgstr ""
-"Eșuare la interogarea interfețelor necesare pentru redarea discului DVD"
+"Nu s-au putut interoga interfețele necesare pentru redarea DVD-urilor."
 
 msgctxt "IDS_CAPTURE_LIVE"
 msgid "Live"
