@@ -959,7 +959,7 @@ msgstr "Randorul de sincronizare"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_MPC_REND"
 msgid "MPC Audio Renderer"
-msgstr "Randor audio MPC"
+msgstr "Randorul audio MPC"
 
 msgctxt "IDS_PPAGE_OUTPUT_SURF_OFFSCREEN"
 msgid "Regular offscreen plain surface"
