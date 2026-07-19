@@ -438,7 +438,7 @@ msgstr "Implicit al sistemului"
 
 msgctxt "IDS_GRAPH_INTERFACES_ERROR"
 msgid "Failed to query the needed interfaces for playback"
-msgstr "Eșuare la interogarea interfețelor necesare pentru redare"
+msgstr "Nu s-au putut interoga interfețele necesare pentru redare"
 
 msgctxt "IDS_GRAPH_TARGET_WND_ERROR"
 msgid "Could not set target window for graph notification"
