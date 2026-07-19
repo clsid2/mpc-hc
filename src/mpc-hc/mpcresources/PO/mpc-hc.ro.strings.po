@@ -273,7 +273,7 @@ msgstr "Setări de captură"
 
 msgctxt "IDS_NAVIGATION_BAR"
 msgid "Navigation Bar"
-msgstr "Bară de Navigare"
+msgstr "Bara de navigare"
 
 msgctxt "IDS_SUBRESYNC_CAPTION"
 msgid "Subresync"
