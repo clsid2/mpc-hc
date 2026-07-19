@@ -1437,7 +1437,7 @@ msgstr "Dưới"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr "Nổi"
+msgstr "&Nổi"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
