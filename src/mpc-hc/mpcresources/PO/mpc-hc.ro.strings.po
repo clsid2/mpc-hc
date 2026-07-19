@@ -549,7 +549,7 @@ msgstr "&Selectează nuanțatoarele (Selectează shaderele)..."
 
 msgctxt "IDS_SHADERS_DEBUG"
 msgid "&Debug Shaders..."
-msgstr "&Depanează nuanțatoarele (shaderele)..."
+msgstr "&Depanează nuanțatoarele (Depanează shaderele)..."
 
 msgctxt "IDS_MPLAYERC_104"
 msgid "Subtitle Delay -"
