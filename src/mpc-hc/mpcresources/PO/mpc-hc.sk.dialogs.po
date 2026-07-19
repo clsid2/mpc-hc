@@ -1653,7 +1653,7 @@ msgstr "Aktívne shadery pre predbežnú zmenu veľkosti"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active post-resize shaders"
-msgstr "Aktivovať shadery pre dodatočnú zmenu veľkosti"
+msgstr "Aktívne shadery pre dodatočnú zmenu veľkosti"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC5"
 msgid ""
