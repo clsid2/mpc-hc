@@ -1050,6 +1050,51 @@ void CProfile::Clear()
     m_bIniNeedFlush = false;
 }
 
+// Recursively copy a registry key's values and subkeys from src to dst,
+// preserving native value types. Unlike RegCopyTree it does NOT copy security
+// descriptors, so it works with a dst handle opened only for KEY_READ|KEY_WRITE
+// (RegCopyTree needs WRITE_DAC to clone the DACL and fails with ACCESS_DENIED).
+static void CopyRegistryTree(HKEY src, HKEY dst)
+{
+    // Values at this level.
+    for (DWORD i = 0;; i++) {
+        WCHAR name[512];
+        DWORD nameLen = _countof(name), type = 0, dataLen = 0;
+        LONG r = RegEnumValueW(src, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
+        if (r == ERROR_NO_MORE_ITEMS) {
+            break;
+        }
+        if (r != ERROR_SUCCESS) {
+            continue; // e.g. name too long; skip
+        }
+        std::vector<BYTE> data(dataLen ? dataLen : 1);
+        DWORD cb = dataLen;
+        if (RegQueryValueExW(src, name, nullptr, &type, data.data(), &cb) == ERROR_SUCCESS) {
+            RegSetValueExW(dst, name, 0, type, data.data(), cb);
+        }
+    }
+    // Subkeys.
+    for (DWORD i = 0;; i++) {
+        WCHAR sub[256];
+        DWORD subLen = _countof(sub);
+        LONG r = RegEnumKeyExW(src, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+        if (r == ERROR_NO_MORE_ITEMS) {
+            break;
+        }
+        if (r != ERROR_SUCCESS) {
+            continue;
+        }
+        HKEY hSrcSub, hDstSub;
+        if (RegOpenKeyExW(src, sub, 0, KEY_READ, &hSrcSub) == ERROR_SUCCESS) {
+            if (RegCreateKeyExW(dst, sub, 0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &hDstSub, nullptr) == ERROR_SUCCESS) {
+                CopyRegistryTree(hSrcSub, hDstSub);
+                RegCloseKey(hDstSub);
+            }
+            RegCloseKey(hSrcSub);
+        }
+    }
+}
+
 bool CProfile::MigrateFromLegacy()
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
@@ -1061,9 +1106,9 @@ bool CProfile::MigrateFromLegacy()
         if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_CURRENT_USER, LEGACY_REG_KEY, 0, KEY_READ, &hLegacy)) {
             return false;
         }
-        LONG res = RegCopyTreeW(hLegacy, nullptr, m_hAppRegKey);
+        CopyRegistryTree(hLegacy, m_hAppRegKey);
         RegCloseKey(hLegacy);
-        return res == ERROR_SUCCESS;
+        return true;
     }
 
     // INI: parse the legacy <exe>.ini verbatim into the (new) map, then flush
