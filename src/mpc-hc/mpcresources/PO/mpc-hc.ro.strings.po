@@ -241,7 +241,7 @@ msgstr "%d+"
 
 msgctxt "IDS_NO_PARENTAL_RATING"
 msgid "Not rated"
-msgstr "Fără evaluare"
+msgstr "Neevaluat(ă)"
 
 msgctxt "IDS_INFOBAR_CONTENT"
 msgid "Content"
