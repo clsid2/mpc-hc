@@ -1830,6 +1830,7 @@
 #define IDS_PLAYLIST_POSITION_RIGHT     58022
 #define IDS_PLAYLIST_POSITION_BOTTOM    58023
 #define IDS_PLAYLIST_POSITION_FLOAT     58024
+#define IDS_SETTINGS_NEWER_VERSION      58025
 
 // Next default values for new objects
 // 

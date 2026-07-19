@@ -821,11 +821,7 @@ void CMPlayerCApp::SetupSettingsStore()
         // This build is older than the one that last wrote the settings. Offer
         // to use a private local settings file rather than downgrade (and
         // possibly corrupt) the newer settings.
-        // TODO: localize this prompt via a string resource (IDS_...).
-        int res = MessageBox(nullptr,
-                             _T("These settings were last written by a newer version of MPC-HC.\n\n")
-                             _T("Do you want to use a separate local settings file for this version ")
-                             _T("instead of changing the newer settings?"),
+        int res = MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION),
                              _T("MPC-HC"), MB_ICONWARNING | MB_YESNO);
         if (res == IDYES) {
             m_Profile.ForkToLocalIni();
@@ -1050,6 +1046,20 @@ bool CMPlayerCApp::ExportSettings(CString savePath, CString subKey)
 
     if (IsIniValid()) {
         success = !!CopyFile(GetIniPath(), savePath, FALSE);
+        // MediaHistory lives in a separate INI now; export it alongside as
+        // "<name>.history.ini" so a full export isn't missing the history.
+        if (success && subKey.IsEmpty() && m_HistoryProfile) {
+            CString historySrc = m_HistoryProfile->GetIniPath();
+            if (PathUtils::Exists(historySrc)) {
+                CString historyDst = savePath;
+                int dot = historyDst.ReverseFind(_T('.'));
+                if (dot >= 0) {
+                    historyDst = historyDst.Left(dot);
+                }
+                historyDst += _T(".history.ini");
+                CopyFile(historySrc, historyDst, FALSE); // best-effort companion
+            }
+        }
     } else {
         CString regKey = m_Profile.GetRegistryKeyPath();
         if (!subKey.IsEmpty()) {
