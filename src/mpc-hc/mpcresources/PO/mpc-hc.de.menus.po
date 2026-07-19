@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Maik Dießner, 2026\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
@@ -161,7 +161,7 @@ msgstr "&Normal"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr ""
+msgstr "&Benutzerdefiniert"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
