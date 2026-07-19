@@ -4470,7 +4470,7 @@ msgid ""
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
 msgstr ""
 "/viewpreset N\tSpustiť so špecifickým prednastavením,\n"
-"\t\tN jednou z možností \"1\" minimálne, \"2\" kompaktné, \"3\" normálne, or \"4\" používateľské"
+"\t\tN je jednou z možností \"1\" minimálne, \"2\" kompaktné, \"3\" normálne, or \"4\" používateľské"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
