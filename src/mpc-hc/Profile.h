@@ -46,8 +46,11 @@ enum SettingsLocation {
 // History-<ver>); bump the version when the layout changes incompatibly and add
 // a migration step. Older builds only know their own version and ignore newer
 // stores. See docs/settings-versioning.md.
-inline const wchar_t* const SETTINGS_FORMAT_VERSION = L"1.0";
-inline const wchar_t* const HISTORY_FORMAT_VERSION  = L"1.0";
+inline const wchar_t* const SETTINGS_FORMAT_VERSION = L"v1";
+inline const wchar_t* const HISTORY_FORMAT_VERSION  = L"v1";
+// The pre-versioned legacy layout is identical to the first format version, so
+// it seeds the migration chain as that version (not necessarily the current one).
+inline const wchar_t* const LEGACY_EQUIVALENT_VERSION = L"v1";
 
 // Sections and keys are matched case-insensitively; sections are kept ordered
 // (std::map) because EnumSectionNames() relies on the ordering to range-walk

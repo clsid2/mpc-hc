@@ -828,7 +828,7 @@ struct SettingsMigrationStep {
     SettingsMigrationFn apply;
 };
 static const std::vector<SettingsMigrationStep> s_settingsMigrations = {
-    // { L"1.0", L"1.1", &Migrate_Settings_1_0_to_1_1 },  // example for the future
+    // { L"v1", L"v2", &Migrate_Settings_v1_to_v2 },  // example for the future
 };
 
 // Number of migration steps to chain from `from` up to `to` (0 if already there),
@@ -956,7 +956,7 @@ void CMPlayerCApp::SetupSettingsStore()
         if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) < 0 && m_Profile.SeedFromVersion(idxS)) {
             seededFrom = idxS;           // seeded from an older versioned store
         } else if (m_Profile.MigrateFromLegacy()) {
-            seededFrom = L"1.0";         // pre-versioned legacy == the 1.0 layout
+            seededFrom = LEGACY_EQUIVALENT_VERSION;  // pre-versioned legacy == the first format
         }
         if (!seededFrom.IsEmpty()) {
             ApplySettingsMigrations(m_Profile, seededFrom, myS);
