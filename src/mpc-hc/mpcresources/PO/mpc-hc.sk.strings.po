@@ -441,7 +441,7 @@ msgstr "Nepodarilo sa nastaviť cieľové okno pre notifikáciu z grafu"
 
 msgctxt "IDS_DVD_NAV_ALL_PINS_ERROR"
 msgid "Failed to render all pins of the DVD Navigator filter"
-msgstr "Nepodarilo sa vykresliť všetky piny pre filter DVD Navigator"
+msgstr "Nepodarilo sa vykresliť všetky piny filtra DVD Navigator"
 
 msgctxt "IDS_PLAYLIST_OPEN"
 msgid "&Open"
