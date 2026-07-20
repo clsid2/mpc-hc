@@ -300,7 +300,7 @@ msgstr "Disc-Wiedergabe deaktivieren"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK9"
 msgid "Process priority above normal"
-msgstr "Prozesspriorität höher als normal"
+msgstr "Prozesspriorität \"Höher als normal\""
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK14"
 msgid "Enable cover-art support"
