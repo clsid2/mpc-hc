@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-14 23:03:06+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -1439,7 +1439,7 @@ msgstr "Elrejtés Teljes képernyős módban"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr ""
+msgstr "&Pozíció"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
@@ -1447,7 +1447,7 @@ msgstr "Bal"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Felső"
+msgstr "Felül"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
@@ -1455,11 +1455,11 @@ msgstr "Jobb"
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Alsó"
+msgstr "Alul"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr ""
+msgstr "Lebegő"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -2223,7 +2223,7 @@ msgstr "Normál nézet"
 
 msgctxt "IDS_AG_VIEW_CUSTOM"
 msgid "View Custom"
-msgstr ""
+msgstr "Egyéni nézet"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
@@ -4485,6 +4485,8 @@ msgid ""
 "/viewpreset N\tStart with a specific preset,\n"
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
 msgstr ""
+"/viewpreset N\tEgy adott beállítással indítás,\n"
+"\t\tahol N \"1\" (Minimális), \"2\" (Kompakt), \"3\" (Normál) vagy \"4\" (Egyéni) értékek közül az egyik"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4824,24 +4826,24 @@ msgstr "Soha"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "Mindig"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
-msgstr ""
+msgstr "Amikor az állapotsor el van rejtve"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr ""
+msgstr "Indításkor alkalmazandó beállítás megtekintése"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr ""
+msgstr "Emlékezzen az utolsóra"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
 "Show the time on the left side of the seekbar instead of the right side"
-msgstr ""
+msgstr "Az időt a keresősáv jobb oldala helyett a bal oldalon mutassa"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
