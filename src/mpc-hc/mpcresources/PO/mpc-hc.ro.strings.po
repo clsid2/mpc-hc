@@ -766,7 +766,7 @@ msgstr "&Canale"
 
 msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
-msgstr "Randator video MPC"
+msgstr "Randorul video MPC (MPC Video Renderer)"
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
