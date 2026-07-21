@@ -2606,7 +2606,7 @@ msgstr "Nu se pot salva subtitrările"
 
 msgctxt "IDS_AG_FRAMERATE"
 msgid "Frame rate"
-msgstr "Rată de cadre"
+msgstr "Rata de cadre"
 
 msgctxt "IDS_MAINFRM_6"
 msgid "drawn: %d, dropped: %d"
