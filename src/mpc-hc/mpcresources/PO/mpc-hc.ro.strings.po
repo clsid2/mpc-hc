@@ -1131,7 +1131,7 @@ msgstr "Comută bara de navigare"
 
 msgctxt "IDS_AG_VSYNCACCURATE"
 msgid "Accurate VSync"
-msgstr "Sincronizare verticală precisă"
+msgstr "Sincronizare verticală precisă (VSync precis)"
 
 msgctxt "IDC_CHECK_RELATIVETO"
 msgid ""
