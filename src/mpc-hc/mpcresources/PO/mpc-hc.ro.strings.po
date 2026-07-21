@@ -1945,7 +1945,7 @@ msgstr "Mergi la"
 
 msgctxt "IDS_AG_INCREASE_RATE"
 msgid "Increase Rate"
-msgstr "Mărește rata"
+msgstr "Mărește rata de redare (Crește viteza)"
 
 msgctxt "IDS_CONTENT_SHOW_GAMESHOW"
 msgid "Show/Game show"
