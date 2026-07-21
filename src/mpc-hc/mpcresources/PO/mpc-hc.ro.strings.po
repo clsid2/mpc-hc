@@ -2100,7 +2100,7 @@ msgstr "Eroare BDA (placa tunerului)"
 
 msgctxt "IDS_AG_DECREASE_RATE"
 msgid "Decrease Rate"
-msgstr "Micșorează rata"
+msgstr "Micșorează rata de redare (Scade viteza)"
 
 msgctxt "IDS_AG_RESET_RATE"
 msgid "Reset Rate"
