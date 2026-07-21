@@ -382,7 +382,7 @@ msgstr "Disc"
 
 msgctxt "IDS_SUBDL_DLG_TITLES_COL"
 msgid "Title(s)"
-msgstr "Titlu/Titluri"
+msgstr "Titlu (Titluri)"
 
 msgctxt "IDS_SUBRESYNC_CLN_CHARSET"
 msgid "CharSet"
