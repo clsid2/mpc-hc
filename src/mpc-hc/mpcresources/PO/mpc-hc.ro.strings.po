@@ -2104,7 +2104,7 @@ msgstr "Micșorează rata de redare (Scade viteza)"
 
 msgctxt "IDS_AG_RESET_RATE"
 msgid "Reset Rate"
-msgstr "Resetează rata"
+msgstr "Resetează rata de redare (Resetează viteza)"
 
 msgctxt "IDS_MPLAYERC_21"
 msgid "Audio Delay +10 ms"
