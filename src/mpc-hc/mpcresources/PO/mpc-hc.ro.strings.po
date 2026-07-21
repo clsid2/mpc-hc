@@ -966,7 +966,7 @@ msgstr "Randorul audio MPC (MPC Audio Renderer)"
 
 msgctxt "IDS_PPAGE_OUTPUT_SURF_OFFSCREEN"
 msgid "Regular offscreen plain surface"
-msgstr "Suprafață netedă offscreen obișnuită"
+msgstr "Suprafață plană obișnuită în afara ecranului"
 
 msgctxt "IDS_PPAGE_OUTPUT_SURF_2D"
 msgid "2D surfaces"
