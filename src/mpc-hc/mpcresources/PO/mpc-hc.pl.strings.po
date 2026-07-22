@@ -1069,7 +1069,7 @@ msgctxt "IDC_DSVMR9ALTERNATIVEVSYNC"
 msgid "Reduces tearing by bypassing the default VSync built into D3D."
 msgstr ""
 "Zmniejsza efekt rozrywania obrazu przez pominięcie domyślnej synchronizacji "
-"VSync w D3D."
+"pionowej w D3D."
 
 msgctxt "IDS_NAVIGATE_TUNERSCAN"
 msgid "Tuner scan"
