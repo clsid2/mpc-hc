@@ -845,7 +845,7 @@ msgid ""
 "MPC-HC for subtitling. Overlay video mirroring MIGHT work. \"True Color\" "
 "desktop color space recommended."
 msgstr ""
-"Bietet im Unterschied zum VMR-9 (windowed) eine Unterstützung für "
+"Bietet im Unterschied zum VMR-9 (Windowed) eine Unterstützung für "
 "Untertitel. Die gespiegelte Darstellung eines Overlay-Videos KÖNNTE "
 "funktionieren. Desktop-Farbtiefe sollte auf Echtfarben eingestellt sein."
 
