@@ -1973,7 +1973,7 @@ msgstr "Sprache:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr "Benutzerdefiniertes Profil (4)"
+msgstr "Benutzerdefiniertes Fenster-Profil"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
