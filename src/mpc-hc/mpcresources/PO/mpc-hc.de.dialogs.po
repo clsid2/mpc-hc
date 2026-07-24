@@ -1152,7 +1152,7 @@ msgstr "Untertitel-Renderer"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "VMR-9 (renderless) and EVR (CP) settings"
-msgstr "Einstellungen für VMR-9 (renderless) und EVR (CP)"
+msgstr "Einstellungen für VMR-9 (Renderless) und EVR (CP)"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Surface:"
