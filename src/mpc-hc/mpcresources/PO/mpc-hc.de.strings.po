@@ -847,7 +847,7 @@ msgid ""
 msgstr ""
 "Bietet im Unterschied zum VMR-9 (Windowed) eine Unterstützung für "
 "Untertitel. Die gespiegelte Darstellung eines Overlay-Videos KÖNNTE "
-"funktionieren. Desktop-Farbtiefe sollte auf Echtfarben eingestellt sein."
+"funktionieren."
 
 msgctxt "IDC_DSDXR"
 msgid ""
