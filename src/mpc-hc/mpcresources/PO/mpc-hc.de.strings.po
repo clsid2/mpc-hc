@@ -950,7 +950,7 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
-msgstr "Sync-Renderer (EVR-CP)"
+msgstr "Sync-Renderer (EVR Custom Presenter)"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_MPC_REND"
 msgid "MPC Audio Renderer"
