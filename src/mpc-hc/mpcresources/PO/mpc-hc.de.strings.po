@@ -938,7 +938,7 @@ msgid ""
 "its property page will work and it will use a separate worker thread to "
 "renderer frames."
 msgstr ""
-"Versetzt den VMR-9 (renderless) in den Mixer-Modus, bei dem ein separater "
+"Versetzt den VMR-9 (Renderless) in den Mixer-Modus, bei dem ein separater "
 "Thread für das Rendering genutzt wird. Kann mit den meisten Ausgabe-Optionen"
 " verwendet werden."
 
