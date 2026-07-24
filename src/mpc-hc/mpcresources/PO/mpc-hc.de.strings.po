@@ -2823,7 +2823,7 @@ msgid ""
 "- DirectShow: EVR (Custom Presenter), Sync, VMR-9 (renderless), madVR, MPC VR, or Haali VR"
 msgstr ""
 "Zum Laden von Untertiteln müssen Sie den Typ des Video-Renderers ändern und die Datei erneut öffnen.\n"
-"- DirectShow: EVR (custom presenter), Sync, VMR-9 (renderless), madVR, MPC VR oder Haali VR"
+"- DirectShow: EVR (Custom Presenter), Sync, VMR-9 (renderless), madVR, MPC VR oder Haali VR"
 
 msgctxt "IDS_SUBTITLE_FILES_FILTER"
 msgid "Subtitle files"
