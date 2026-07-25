@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
-# Cyril Provence <ywa78408@eveav.com>, 2025
 # tmtisfree <tmtisfree@free.fr>, 2026
+# Cyril Provence <ywa78408@eveav.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: tmtisfree <tmtisfree@free.fr>, 2026\n"
+"Last-Translator: Cyril Provence <ywa78408@eveav.com>, 2026\n"
 "Language-Team: French (https://app.transifex.com/mpchc/teams/106126/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1878,7 +1878,7 @@ msgstr "Afficher la position des chapitres"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr ""
+msgstr "Durée écoulée:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
@@ -1982,7 +1982,7 @@ msgstr "Langue :"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr ""
+msgstr "Présélection personnalisée (4)"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
