@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2022
-# Cyril Provence <ywa78408@eveav.com>, 2025
 # tmtisfree <tmtisfree@free.fr>, 2026
+# Cyril Provence <ywa78408@eveav.com>, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-01-20 04:47:07+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: tmtisfree <tmtisfree@free.fr>, 2026\n"
+"Last-Translator: Cyril Provence <ywa78408@eveav.com>, 2026\n"
 "Language-Team: French (https://app.transifex.com/mpchc/teams/106126/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -493,7 +493,7 @@ msgstr "&Restaurer"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "&Trier"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -1442,27 +1442,27 @@ msgstr "Mas&quer la liste de lecture en plein écran"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr ""
+msgstr "&Position"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "Gauche"
+msgstr "&Gauche"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "Haut"
+msgstr "&Haut"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "Droite"
+msgstr "&Droite"
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "Bas"
+msgstr "&Bas"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr ""
+msgstr "&Flottante"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -2234,7 +2234,7 @@ msgstr "Vue normale"
 
 msgctxt "IDS_AG_VIEW_CUSTOM"
 msgid "View Custom"
-msgstr ""
+msgstr "Vue personnalisée"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
@@ -4373,6 +4373,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"Impossible de se connecter à opensubtitles.com avec le nom d'utilisateur \"%1\".\n"
+"\n"
+"Le nom d'utilisateur ou le mot de passe est incorrect.\n"
+"\n"
+"Ne pas utiliser un compte provenant de l'ancien site .org."
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4472,6 +4477,8 @@ msgstr "/standby\t\tMet la machine en veille après la lecture"
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
 msgstr ""
+"/hibernate\t\tMet le système d'exploitation en veille prolongée après la "
+"lecture"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4494,6 +4501,8 @@ msgid ""
 "/viewpreset N\tStart with a specific preset,\n"
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
 msgstr ""
+"/viewpreset N\tDémarre avec un pré-réglage particulier,\n"
+"\t\toù N est soit \"1\" Minimal, \"2\" Compact, \"3\" Normal ou \"4\" Personnalisé"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4774,7 +4783,7 @@ msgstr "Activer l'écrasement du style par défaut"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "Activer l'écrasement de tous les styles"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4841,24 +4850,26 @@ msgstr "Jamais"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "Toujours"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
-msgstr ""
+msgstr "Quand la barre d'état est cachée"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr ""
+msgstr "Présélection d'affichage appliquée au démarrage"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr ""
+msgstr "Se souvenir de la dernière"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
 "Show the time on the left side of the seekbar instead of the right side"
 msgstr ""
+"Afficher la durée écoulée sur le côté gauche de la barre de lecture plutôt "
+"que sur le côté droit"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -5034,7 +5045,7 @@ msgstr "Utiliser la disposition des canaux du système"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "Vérification alternative du format pris en charge"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -5086,7 +5097,7 @@ msgstr "Fréquence d'échantillonnage :"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "Canaux"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"
@@ -5094,7 +5105,7 @@ msgstr "Par défaut"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "Maintenir le périphérique audio actif en pause"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -5112,7 +5123,7 @@ msgstr ""
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "Le moteur de rendu enverra un bruit inaudible au périphérique."
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"
@@ -5184,4 +5195,4 @@ msgstr "Lecture aléatoire : désactivée"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "Copyright 2002-%s clsid2 et al."
+msgstr "Copyright 2002-%sclsid2 et d'autres"
