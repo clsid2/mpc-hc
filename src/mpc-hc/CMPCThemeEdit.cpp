@@ -311,7 +311,7 @@ LRESULT CMPCThemeEdit::ResizeSupport(WPARAM wParam, LPARAM lParam) {
 
 void CMPCThemeEdit::PreSubclassWindow()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CRect r;
         GetClientRect(r);
         r.DeflateRect(2, 2); //some default padding for those spaceless fonts

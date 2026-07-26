@@ -20,7 +20,7 @@ END_MESSAGE_MAP()
 
 void CMPCThemeMaskedEdit::PreSubclassWindow()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         ModifyStyleEx(WS_EX_CLIENTEDGE, WS_EX_STATICEDGE, SWP_FRAMECHANGED);
         CRect r;
         GetClientRect(r);
@@ -33,7 +33,7 @@ void CMPCThemeMaskedEdit::PreSubclassWindow()
 
 void CMPCThemeMaskedEdit::OnNcPaint()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CWindowDC dc(this);
 
         CRect rect;
