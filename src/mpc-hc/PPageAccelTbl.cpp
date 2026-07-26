@@ -1383,20 +1383,14 @@ HBRUSH CPPageAccelTbl::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
     HBRUSH hbr = __super::OnCtlColor(pDC, pWnd, nCtlColor);
 
-    const CAppSettings& s = AfxGetAppSettings();
-    if (AppIsThemeLoaded()) {
-        return hbr; //should have already been handled inside themed ctlcolor
-    }
-    int status = -1;
-
     if (*pWnd == m_WinLircEdit) {
-        status = s.WinLircClient.GetStatus();
-    }
-
-    if (status == 0 || status == 2 && (m_counter & 1)) {
-        pDC->SetTextColor(0x0000ff);
-    } else if (status == 1) {
-        pDC->SetTextColor(0x008000);
+        //must be applied after the base handler, which sets the default text color for every control on the page
+        int status = AfxGetAppSettings().WinLircClient.GetStatus();
+        if (status == 0 || (status == 2 && (m_counter & 1))) {
+            pDC->SetTextColor(RGB(255, 0, 0));
+        } else if (status == 1) {
+            pDC->SetTextColor(RGB(0, 128, 0));
+        }
     }
 
     return hbr;
