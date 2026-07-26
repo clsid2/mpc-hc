@@ -149,7 +149,7 @@ void CMPCThemeButton::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
     *pResult = CDRF_DODEFAULT;
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         if (pNMCD->dwDrawStage == CDDS_PREERASE) {
             drawButton(pNMCD->hdc, pNMCD->rc, pNMCD->uItemState);
             *pResult = CDRF_SKIPDEFAULT;
