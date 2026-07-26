@@ -717,7 +717,7 @@ msgstr "Null Video Device (anything)"
 
 msgctxt "IDS_PPAGE_OUTPUT_NULL_UNCOMP"
 msgid "Null (uncompressed)"
-msgstr "Null Video Device (uncompressed)"
+msgstr "Null Video Device (Unkomprimiert)"
 
 msgctxt "IDS_PPAGE_OUTPUT_MADVR"
 msgid "madVR"
