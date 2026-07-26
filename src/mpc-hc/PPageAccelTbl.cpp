@@ -1094,14 +1094,14 @@ void CPPageAccelTbl::GetCustomTextColors(INT_PTR nItem, int iSubItem, COLORREF& 
         || iSubItem == COL_KEY && (dup & DUP_KEY)
         || iSubItem == COL_APPCMD && (dup & DUP_APPCMD)
         || iSubItem == COL_RMCMD && (dup & DUP_RMCMD)) {
-        if (AppIsThemeLoaded()) {
+        if (AppNeedsThemedControls()) {
             clrTextBk = CMPCTheme::ListCtrlErrorColor;
             overrideSelectedBG = true;
         } else {
             clrTextBk = RGB(255, 130, 120);
         }
     } else {
-        if (AppIsThemeLoaded()) {
+        if (AppNeedsThemedControls()) {
             clrTextBk = CMPCTheme::ContentBGColor;
         } else {
             clrTextBk = GetSysColor(COLOR_WINDOW);
@@ -1115,7 +1115,7 @@ void CPPageAccelTbl::GetCustomGridColors(int nItem, COLORREF& horzGridColor, COL
 }
 
 void CPPageAccelTbl::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult) {
-    //this custom draw is used only in classic mode
+    //this custom draw is used in classic and light modes; dark draws via CMPCThemePlayerListCtrl
     *pResult = CDRF_DODEFAULT;
     if (!AppNeedsThemedControls()) {
         NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
