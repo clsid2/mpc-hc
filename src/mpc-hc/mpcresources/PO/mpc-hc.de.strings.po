@@ -713,7 +713,7 @@ msgstr "Haali Video Renderer"
 
 msgctxt "IDS_PPAGE_OUTPUT_NULL_COMP"
 msgid "Null (anything)"
-msgstr "Null Video Device (anything)"
+msgstr "Null Video Device (Alles)"
 
 msgctxt "IDS_PPAGE_OUTPUT_NULL_UNCOMP"
 msgid "Null (uncompressed)"
