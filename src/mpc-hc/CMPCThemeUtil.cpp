@@ -1144,7 +1144,7 @@ void CMPCThemeUtil::drawParentDialogBGClr(CWnd* wnd, CDC* pDC, CRect r, bool fil
 
 void CMPCThemeUtil::fulfillThemeReqs(CProgressCtrl* ctl)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         SetWindowTheme(ctl->GetSafeHwnd(), _T(""), _T(""));
         ctl->SetBarColor(CMPCTheme::ProgressBarColor);
         ctl->SetBkColor(CMPCTheme::ProgressBarBGColor);
