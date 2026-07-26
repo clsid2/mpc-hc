@@ -71,7 +71,7 @@ void CMPCThemeToolTipCtrl::paintTT(CDC& dc, CMPCThemeToolTipCtrl* tt)
 
 void CMPCThemeToolTipCtrl::OnPaint()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CPaintDC dc(this);
         paintTT(dc, this);
     } else {
@@ -82,7 +82,7 @@ void CMPCThemeToolTipCtrl::OnPaint()
 
 BOOL CMPCThemeToolTipCtrl::OnEraseBkgnd(CDC* pDC)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         return TRUE;
     } else {
         return __super::OnEraseBkgnd(pDC);
@@ -115,7 +115,7 @@ void CMPCThemeToolTipCtrl::RedrawIfVisible() {
 void CMPCThemeToolTipCtrl::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 {
     CToolTipCtrl::OnWindowPosChanging(lpwndpos);
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         //hack to make it fit if fonts differ from parent. can be manually avoided
         //if the parent widget is set to same font (see CMPCThemePlayerListCtrl using MessageFont now)
         CString text;

@@ -185,7 +185,7 @@ void CMPCThemeUtil::makeThemed(CWnd* pObject, CWnd* tChild)
 
 void CMPCThemeUtil::EnableThemedDialogTooltips(CDialog* wnd)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         if (themedDialogToolTip.m_hWnd) {
             themedDialogToolTip.DestroyWindow();
         }
@@ -205,7 +205,7 @@ void CMPCThemeUtil::EnableThemedDialogTooltips(CDialog* wnd)
 }
 
 void CMPCThemeUtil::RedrawDialogTooltipIfVisible() {
-    if (AppIsThemeLoaded() && themedDialogToolTip.m_hWnd) {
+    if (AppNeedsThemedControls() && themedDialogToolTip.m_hWnd) {
         themedDialogToolTip.RedrawIfVisible();
     } else {
         AFX_MODULE_THREAD_STATE* pModuleThreadState = AfxGetModuleThreadState();
@@ -218,7 +218,7 @@ void CMPCThemeUtil::RedrawDialogTooltipIfVisible() {
 
 void CMPCThemeUtil::PlaceThemedDialogTooltip(UINT_PTR nID)
 {
-    if (AppIsThemeLoaded() && IsWindow(themedDialogToolTip)) {
+    if (AppNeedsThemedControls() && IsWindow(themedDialogToolTip)) {
         if (::IsWindow(themedDialogToolTipParent->GetSafeHwnd())) {
             CWnd* controlWnd = themedDialogToolTipParent->GetDlgItem(nID);
             themedDialogToolTip.SetHoverPosition(controlWnd);
@@ -228,7 +228,7 @@ void CMPCThemeUtil::PlaceThemedDialogTooltip(UINT_PTR nID)
 
 void CMPCThemeUtil::RelayThemedDialogTooltip(MSG* pMsg)
 {
-    if (AppIsThemeLoaded() && IsWindow(themedDialogToolTip)) {
+    if (AppNeedsThemedControls() && IsWindow(themedDialogToolTip)) {
         themedDialogToolTip.RelayEvent(pMsg);
     }
 }
