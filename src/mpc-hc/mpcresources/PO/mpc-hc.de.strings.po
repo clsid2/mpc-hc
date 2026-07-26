@@ -1006,7 +1006,7 @@ msgstr "Null Audio Device (anything)"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_UNCOMP"
 msgid "Null (uncompressed)"
-msgstr "Null Audio Device (uncompressed)"
+msgstr "Null Audio Device (Unkomprimiert)"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_INTERNAL_REND"
 msgid "SaneAR Audio Renderer"
