@@ -89,7 +89,9 @@ void CMPCThemeUtil::fulfillThemeReqs(CWnd* wnd, SpecialThemeCases specialCase /*
                 } else if (0 == _tcsicmp(windowClass, WC_BUTTON) && buttonType == BS_GROUPBOX) {
                     CMPCThemeGroupBox* pObject = DEBUG_NEW CMPCThemeGroupBox();
                     makeThemed(pObject, tChild);
-                    SetWindowTheme(tChild->GetSafeHwnd(), L"", L"");
+                    if (AppNeedsThemedControls()) { //only strip the visual style when we take over the painting
+                        SetWindowTheme(tChild->GetSafeHwnd(), L"", L"");
+                    }
                 } else if (0 == _tcsicmp(windowClass, WC_STATIC) && SS_ICON == staticStyle) { //don't touch icons for now
                 } else if (0 == _tcsicmp(windowClass, WC_STATIC) && SS_BITMAP == staticStyle) { //don't touch BITMAPS for now
                 } else if (0 == _tcsicmp(windowClass, WC_STATIC) && SS_OWNERDRAW == staticStyle) { //don't touch OWNERDRAW for now
