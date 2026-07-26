@@ -689,7 +689,7 @@ CMPlayerCApp::~CMPlayerCApp()
 int CMPlayerCApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType,
                                UINT nIDPrompt)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CWnd* pParentWnd = CWnd::GetActiveWindow();
         if (pParentWnd == NULL) {
             pParentWnd = GetMainWnd();
