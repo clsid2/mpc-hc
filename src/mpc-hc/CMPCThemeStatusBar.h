@@ -15,7 +15,6 @@ public:
     DECLARE_MESSAGE_MAP()
 protected:
     std::map<int, CString> texts;
-    int numParts;
     CWnd* m_pProgressBar;
     int m_nProgressPane;
     void UpdateProgressBarLayout();

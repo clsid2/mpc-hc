@@ -47,7 +47,6 @@ void CMPCThemeStatusBar::SetText(LPCTSTR lpszText, int nPane, int nType)
 BOOL CMPCThemeStatusBar::SetParts(int nParts, int* pWidths)
 {
     CStatusBarCtrl& ctrl = GetStatusBarCtrl();
-    numParts = nParts;
     BOOL result = ctrl.SetParts(nParts, pWidths);
     UpdateProgressBarLayout();
     Invalidate();
@@ -102,6 +101,7 @@ void CMPCThemeStatusBar::OnNcPaint()
 
         int nHorz, nVert, nSpacing;
         GetStatusBarCtrl().GetBorders(nHorz, nVert, nSpacing);
+        int numParts = ctrl.GetParts(0, nullptr);
         for (int item = 0; item < numParts; item++) { //don't touch the status bar elements; they are painted in DrawItem
             CRect rc;
             if (GetRect(item, rc)) {
@@ -160,7 +160,8 @@ void CMPCThemeStatusBar::OnPaint()
     dc.SetBkColor(CMPCTheme::StatusBarBGColor);
     dc.SetTextColor(CMPCTheme::TextFGColor);
 
-    // Paint each part
+    // Paint each part (queried live; the pane count is owned by the control, not cached here)
+    int numParts = GetStatusBarCtrl().GetParts(0, nullptr);
     for (int item = 0; item < numParts; item++) {
         CRect rc;
         if (GetRect(item, rc)) {
