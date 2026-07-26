@@ -446,7 +446,7 @@ HBRUSH CMPCThemeUtil::getCtlColorFileDialog(HDC hDC, UINT nCtlColor)
 
 HBRUSH CMPCThemeUtil::getCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         initHelperObjects();
         LRESULT lResult;
         if (pWnd->SendChildNotifyLastMsg(&lResult)) {
@@ -467,7 +467,7 @@ HBRUSH CMPCThemeUtil::getCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 bool CMPCThemeUtil::MPCThemeEraseBkgnd(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CRect rect;
         pWnd->GetClientRect(rect);
         if (CTLCOLOR_DLG == nCtlColor) { //only supported "class" for now

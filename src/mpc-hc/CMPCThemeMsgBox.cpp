@@ -36,7 +36,7 @@ END_MESSAGE_MAP()
 
 HBRUSH CMPCThemeMsgBox::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         return getCtlColor(pDC, pWnd, nCtlColor);
     } else {
         HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
@@ -47,7 +47,7 @@ HBRUSH CMPCThemeMsgBox::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 BOOL CMPCThemeMsgBox::OnEraseBkgnd(CDC* pDC)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CRect rect, messageArea, buttonArea;
         GetClientRect(&rect);
         messageArea = rect;

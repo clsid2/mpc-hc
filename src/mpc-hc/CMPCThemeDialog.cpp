@@ -35,7 +35,7 @@ BOOL CMPCThemeDialog::OnInitDialog()
 
 HBRUSH CMPCThemeDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         return getCtlColor(pDC, pWnd, nCtlColor);
     } else {
         HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
