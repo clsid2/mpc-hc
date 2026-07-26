@@ -52,7 +52,7 @@ END_MESSAGE_MAP()
 
 void CMPCThemeRadioOrCheck::OnPaint()
 {
-    if (AppIsThemeLoaded() && CMPCTheme::drawThemedControls) {
+    if (AppNeedsThemedControls()) {
         DWORD buttonStyle = GetWindowLongPtr(GetSafeHwnd(), GWL_STYLE);
 
         CPaintDC dc(this);
@@ -241,7 +241,7 @@ void CMPCThemeRadioOrCheck::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CMPCThemeRadioOrCheck::OnEnable(BOOL bEnable)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         SetRedraw(FALSE);
         __super::OnEnable(bEnable);
         SetRedraw(TRUE);
@@ -254,6 +254,10 @@ void CMPCThemeRadioOrCheck::OnEnable(BOOL bEnable)
 
 BOOL CMPCThemeRadioOrCheck::OnEraseBkgnd(CDC* pDC)
 {
+    if (!AppNeedsThemedControls() && !isFileDialogChild) { //must match the OnPaint condition; this class is also used as a dialog member in classic mode
+        return __super::OnEraseBkgnd(pDC);
+    }
+
     CRect r;
     GetClientRect(r);
     if (isFileDialogChild) {
