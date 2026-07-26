@@ -25,7 +25,7 @@ BOOL CMPCThemePPageBase::OnInitDialog()
 
 void CMPCThemePPageBase::SetMPCThemeButtonIcon(UINT nIDButton, IconDef iconDef, ImageGrayer::mpcColorStyle colorStyle)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         if (!m_buttonIcons.count(iconDef)) {
             CImage img, imgEnabled, imgDisabled;
             if (iconDef.svgTargetWidth) {
