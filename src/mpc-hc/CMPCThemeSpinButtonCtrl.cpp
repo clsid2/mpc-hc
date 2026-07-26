@@ -107,7 +107,7 @@ void CMPCThemeSpinButtonCtrl::drawSpinArrow(CDC& dc, COLORREF arrowClr, CRect ar
 
 void CMPCThemeSpinButtonCtrl::OnPaint()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CWnd* buddy = GetBuddy();
         bool hasBuddy = false;
         CMPCThemeEdit* buddyEdit;
@@ -228,7 +228,7 @@ void CMPCThemeSpinButtonCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 
 BOOL CMPCThemeSpinButtonCtrl::OnEraseBkgnd(CDC* pDC)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         return TRUE;
     } else {
         return __super::OnEraseBkgnd(pDC);
