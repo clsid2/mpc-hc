@@ -18,7 +18,7 @@ CMPCThemeStatusBar::~CMPCThemeStatusBar()
 
 void CMPCThemeStatusBar::PreSubclassWindow()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         ModifyStyleEx(WS_BORDER, WS_EX_STATICEDGE, 0);
     } else {
         __super::PreSubclassWindow();
@@ -35,7 +35,7 @@ END_MESSAGE_MAP()
 
 void CMPCThemeStatusBar::SetText(LPCTSTR lpszText, int nPane, int nType)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         texts[nPane] = lpszText;
         Invalidate();
     } else {
@@ -88,7 +88,7 @@ BOOL CMPCThemeStatusBar::GetRect(int nPane, LPRECT lpRect)
 
 void CMPCThemeStatusBar::OnNcPaint()
 {
-    if (!AppIsThemeLoaded()) {
+    if (!AppNeedsThemedControls()) {
         return __super::OnNcPaint();
     } else {
         CWindowDC dc(this);
@@ -128,7 +128,7 @@ void CMPCThemeStatusBar::OnNcPaint()
 
 BOOL CMPCThemeStatusBar::OnEraseBkgnd(CDC* pDC)
 {
-    if (!AppIsThemeLoaded()) {
+    if (!AppNeedsThemedControls()) {
         return __super::OnEraseBkgnd(pDC);
     } else {
         // Paint the entire client area background
@@ -141,7 +141,7 @@ BOOL CMPCThemeStatusBar::OnEraseBkgnd(CDC* pDC)
 
 void CMPCThemeStatusBar::OnPaint()
 {
-    if (!AppIsThemeLoaded()) {
+    if (!AppNeedsThemedControls()) {
         return __super::OnPaint();
     }
 
