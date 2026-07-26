@@ -148,7 +148,7 @@ CMPCThemeTreeCtrl* CPPageSheet::CreatePageTreeObject()
 
 void CPPageSheet::SetTreeCtrlTheme(CTreeCtrl* ctrl)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         ((CMPCThemeTreeCtrl*)ctrl)->fulfillThemeReqs();
     } else {
         __super::SetTreeCtrlTheme(ctrl);
