@@ -1002,7 +1002,7 @@ msgstr "Der gewählte Renderer ist nicht verfügbar."
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"
 msgid "Null (anything)"
-msgstr "Null Audio Device (anything)"
+msgstr "Null Audio Device (Alles)"
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_UNCOMP"
 msgid "Null (uncompressed)"
