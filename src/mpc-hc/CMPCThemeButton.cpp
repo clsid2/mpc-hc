@@ -24,7 +24,7 @@ END_MESSAGE_MAP()
 LRESULT CMPCThemeButton::setShieldIcon(WPARAM wParam, LPARAM lParam)
 {
     drawShield = (BOOL)lParam;
-    return 1; //pass it along
+    return Default(); //pass it along so the native button draws the shield when we don't paint it ourselves
 }
 
 void CMPCThemeButton::drawButtonBase(CDC* pDC, CRect rect, CString strText, bool selected, bool highLighted, bool focused, bool disabled, bool thin, bool shield, HWND accelWindow)
