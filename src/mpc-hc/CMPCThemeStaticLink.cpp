@@ -26,7 +26,7 @@ END_MESSAGE_MAP()
 
 void CMPCThemeStaticLink::OnPaint()
 {
-    if (AppIsThemeLoaded()) {  //only reason for custom paint is disabled statics do not honor ctlcolor and draw greyed text which looks terrible on other bgs
+    if (AppNeedsThemedControls()) {  //only reason for custom paint is disabled statics do not honor ctlcolor and draw greyed text which looks terrible on other bgs
         CPaintDC dc(this); // device context for painting
         COLORREF oldBkClr = dc.GetBkColor();
         COLORREF oldTextClr = dc.GetTextColor();
@@ -77,7 +77,7 @@ void CMPCThemeStaticLink::OnPaint()
 
 HBRUSH CMPCThemeStaticLink::CtlColor(CDC* pDC, UINT nCtlColor)   //avoid overridden cstaticlink ctlcolor
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         return NULL;
     } else {
         return __super::CtlColor(pDC, nCtlColor);
@@ -87,7 +87,7 @@ HBRUSH CMPCThemeStaticLink::CtlColor(CDC* pDC, UINT nCtlColor)   //avoid overrid
 
 void CMPCThemeStaticLink::OnEnable(BOOL bEnable)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         SetRedraw(FALSE);
         __super::OnEnable(bEnable);
         SetRedraw(TRUE);
