@@ -21,7 +21,7 @@ END_MESSAGE_MAP()
 LRESULT CMPCThemeProgressCtrl::OnSetPos(WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = DefWindowProc(PBM_SETPOS, wParam, lParam);
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         Invalidate(FALSE);
     }
     return result;
@@ -30,7 +30,7 @@ LRESULT CMPCThemeProgressCtrl::OnSetPos(WPARAM wParam, LPARAM lParam)
 LRESULT CMPCThemeProgressCtrl::OnStepIt(WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = DefWindowProc(PBM_STEPIT, wParam, lParam);
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         Invalidate(FALSE);
     }
     return result;
@@ -39,7 +39,7 @@ LRESULT CMPCThemeProgressCtrl::OnStepIt(WPARAM wParam, LPARAM lParam)
 LRESULT CMPCThemeProgressCtrl::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = DefWindowProc(WM_DPICHANGED, wParam, lParam);
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
     }
     return result;
@@ -47,7 +47,7 @@ LRESULT CMPCThemeProgressCtrl::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 
 void CMPCThemeProgressCtrl::OnPaint()
 {
-    if (!AppIsThemeLoaded()) {
+    if (!AppNeedsThemedControls()) {
         return __super::OnPaint();
     }
 
