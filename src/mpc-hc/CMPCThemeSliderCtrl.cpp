@@ -17,7 +17,7 @@ CMPCThemeSliderCtrl::~CMPCThemeSliderCtrl()
 
 void CMPCThemeSliderCtrl::PreSubclassWindow()
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CToolTipCtrl* pTip = GetToolTips();
         if (nullptr != pTip) {
             themedToolTip.SubclassWindow(pTip->m_hWnd);
@@ -41,7 +41,7 @@ void CMPCThemeSliderCtrl::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
     LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
     LRESULT lr = CDRF_DODEFAULT;
 
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         switch (pNMCD->dwDrawStage) {
             case CDDS_PREPAINT:
                 lr = CDRF_NOTIFYITEMDRAW;
