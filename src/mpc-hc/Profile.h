@@ -142,6 +142,11 @@ public:
     // Returns true if the source store existed and was copied.
     bool SeedFromVersion(const CStringW& fromVersion);
 
+    // Format versions for which a Settings-<ver> store currently exists, in this
+    // store's mode (registry subkeys / <exe>.settings-<ver>.ini files). Used to
+    // pick the best older store to seed/migrate from.
+    void EnumSettingsStoreVersions(std::vector<CStringW>& versions);
+
     // Move a section and all its subsections ("root" and "root\...") into
     // another profile (preserving raw values) and remove them from this one.
     // Used once to split MediaHistory out into its own store. INI mode.

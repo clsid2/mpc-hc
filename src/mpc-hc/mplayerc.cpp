@@ -788,8 +788,9 @@ bool CMPlayerCApp::IsIniValid() const
     return m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR;
 }
 
-// Compare two dotted version strings (e.g. "2.3.1.234"), numerically per
-// component. Returns <0 if a<b, 0 if equal, >0 if a>b.
+// Compare two version tokens numerically per component, ignoring non-digit
+// characters (so "v1"/"v2"/"v11" and dotted "2.3.1.234" both work); e.g.
+// "v2" < "v11". Returns <0 if a<b, 0 if equal, >0 if a>b.
 static int CompareVersionStrings(const CStringW& a, const CStringW& b)
 {
     int ia = 0, ib = 0;
@@ -815,11 +816,11 @@ static int CompareVersionStrings(const CStringW& a, const CStringW& b)
 // SETTINGS_FORMAT_VERSION and add a step below. A step transforms a store IN
 // PLACE from its `from` format to `to`; the driver first seeds the new store
 // from the source version's data (CProfile::SeedFromVersion, or
-// MigrateFromLegacy for the pre-versioned 1.0 layout) and then applies the chain
+// MigrateFromLegacy for the pre-versioned v1 layout) and then applies the chain
 // of in-place transforms in order. An older build only knows its own version and
 // never touches a newer store.
 //
-// There is only version 1.0 today, so the table is empty and no step runs.
+// There is only version v1 today, so the table is empty and no step runs.
 // ---------------------------------------------------------------------------
 typedef void (*SettingsMigrationFn)(CProfile& profile);
 struct SettingsMigrationStep {
@@ -939,21 +940,29 @@ void CMPlayerCApp::SetupSettingsStore()
     const bool portable = (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR);
     const CStringW myS = SETTINGS_FORMAT_VERSION;
 
-    // What the newest build here has established (empty on a first run).
-    CStringW idxS, idxH;
-    ReadSettingsIndex(portable, idxS, idxH);
-
     // Populate this version's store if empty: seed it from the best available
     // older source, then apply in-place format transforms up to our version.
     // The source is the newest existing older versioned store, or (failing that)
-    // the pre-versioned legacy settings, which are the 1.0 layout. Seeding is
+    // the pre-versioned legacy settings, which are the v1 layout. Seeding is
     // non-destructive - older stores are left in place.
     CStringW tmp;
     const bool bInitialized = m_Profile.ReadString(_T("Version"), _T("LastWrittenBy"), tmp) && !tmp.IsEmpty();
     if (!bInitialized) {
+        // Find the highest existing versioned store strictly below ours to seed
+        // from (there may be several, and the index only records the max — which
+        // could be a newer store we must not read). Fall back to the legacy store.
+        std::vector<CStringW> existing;
+        m_Profile.EnumSettingsStoreVersions(existing);
+        CStringW best;
+        for (const auto& v : existing) {
+            if (CompareVersionStrings(v, myS) < 0 && (best.IsEmpty() || CompareVersionStrings(v, best) > 0)) {
+                best = v;
+            }
+        }
+
         CStringW seededFrom;
-        if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) < 0 && m_Profile.SeedFromVersion(idxS)) {
-            seededFrom = idxS;           // seeded from an older versioned store
+        if (!best.IsEmpty() && m_Profile.SeedFromVersion(best)) {
+            seededFrom = best;           // seeded from the best older versioned store
         } else if (m_Profile.MigrateFromLegacy()) {
             seededFrom = LEGACY_EQUIVALENT_VERSION;  // pre-versioned legacy == the first format
         }
@@ -1036,11 +1045,20 @@ void CMPlayerCApp::ApplySettingsPolicies()
 // path ("" at the HKLM root, whose own values are control values, not settings).
 void CMPlayerCApp::ImportHKLMTree(HKEY hKey, const CStringW& section)
 {
+    // Size name buffers from the key's maxima so long value/subkey names aren't
+    // silently dropped (RegEnumValue returns ERROR_MORE_DATA on a short buffer).
+    DWORD maxValueName = 0, maxSubKeyName = 0;
+    if (RegQueryInfoKeyW(hKey, nullptr, nullptr, nullptr, nullptr, &maxSubKeyName,
+                         nullptr, nullptr, &maxValueName, nullptr, nullptr, nullptr) != ERROR_SUCCESS) {
+        maxValueName = 16383;
+        maxSubKeyName = 255;
+    }
+
     if (!section.IsEmpty()) {
-        WCHAR name[512];
+        std::vector<WCHAR> name(maxValueName + 1);
         for (DWORD i = 0;; i++) {
-            DWORD nameLen = _countof(name), type = 0, dataLen = 0;
-            LONG r = RegEnumValueW(hKey, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
+            DWORD nameLen = static_cast<DWORD>(name.size()), type = 0, dataLen = 0;
+            LONG r = RegEnumValueW(hKey, i, name.data(), &nameLen, nullptr, &type, nullptr, &dataLen);
             if (r == ERROR_NO_MORE_ITEMS) {
                 break;
             }
@@ -1049,28 +1067,45 @@ void CMPlayerCApp::ImportHKLMTree(HKEY hKey, const CStringW& section)
             }
             std::vector<BYTE> data(dataLen);
             DWORD cb = dataLen;
-            if (RegQueryValueExW(hKey, name, nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
+            if (RegQueryValueExW(hKey, name.data(), nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
                 continue;
             }
             switch (type) {
                 case REG_DWORD:
                     if (cb >= sizeof(DWORD)) {
-                        WriteProfileInt(section, name, *reinterpret_cast<DWORD*>(data.data()));
+                        WriteProfileInt(section, name.data(), *reinterpret_cast<DWORD*>(data.data()));
                     }
                     break;
                 case REG_QWORD:
                     if (cb >= sizeof(ULONGLONG)) {
                         CStringW s;
                         s.Format(_T("%I64u"), *reinterpret_cast<ULONGLONG*>(data.data()));
-                        WriteProfileString(section, name, s);
+                        WriteProfileString(section, name.data(), s);
                     }
                     break;
                 case REG_SZ:
-                case REG_EXPAND_SZ:
-                    WriteProfileString(section, name, reinterpret_cast<LPCWSTR>(data.data()));
+                case REG_EXPAND_SZ: {
+                    // Registry strings are not guaranteed NUL-terminated; build a
+                    // bounded string from cb bytes and trim at any embedded NUL.
+                    CStringW s(reinterpret_cast<LPCWSTR>(data.data()), static_cast<int>(cb / sizeof(WCHAR)));
+                    int nul = s.Find(L'\0');
+                    if (nul >= 0) {
+                        s.Truncate(nul);
+                    }
+                    if (type == REG_EXPAND_SZ) {
+                        DWORD need = ExpandEnvironmentStringsW(s, nullptr, 0);
+                        if (need > 0) {
+                            CStringW expanded;
+                            ExpandEnvironmentStringsW(s, expanded.GetBufferSetLength(need - 1), need);
+                            expanded.ReleaseBuffer();
+                            s = expanded;
+                        }
+                    }
+                    WriteProfileString(section, name.data(), s);
                     break;
+                }
                 case REG_BINARY:
-                    WriteProfileBinary(section, name, data.data(), cb);
+                    WriteProfileBinary(section, name.data(), data.data(), cb);
                     break;
                 default:
                     break; // unsupported types are ignored
@@ -1078,10 +1113,10 @@ void CMPlayerCApp::ImportHKLMTree(HKEY hKey, const CStringW& section)
         }
     }
 
-    WCHAR sub[MAX_REGKEY_LEN];
+    std::vector<WCHAR> sub(maxSubKeyName + 1);
     for (DWORD i = 0;; i++) {
-        DWORD subLen = _countof(sub);
-        LONG r = RegEnumKeyExW(hKey, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+        DWORD subLen = static_cast<DWORD>(sub.size());
+        LONG r = RegEnumKeyExW(hKey, i, sub.data(), &subLen, nullptr, nullptr, nullptr, nullptr);
         if (r == ERROR_NO_MORE_ITEMS) {
             break;
         }
@@ -1089,8 +1124,8 @@ void CMPlayerCApp::ImportHKLMTree(HKEY hKey, const CStringW& section)
             continue;
         }
         HKEY hSub;
-        if (RegOpenKeyExW(hKey, sub, 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
-            CStringW child = section.IsEmpty() ? CStringW(sub) : (section + L"\\" + sub);
+        if (RegOpenKeyExW(hKey, sub.data(), 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
+            CStringW child = section.IsEmpty() ? CStringW(sub.data()) : (section + L"\\" + sub.data());
             ImportHKLMTree(hSub, child);
             RegCloseKey(hSub);
         }

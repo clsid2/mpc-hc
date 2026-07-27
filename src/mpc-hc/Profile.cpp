@@ -22,13 +22,13 @@
 #include "Profile.h"
 #include "FileHandle.h" // GetModulePath
 #include "Utils.h"      // StrToInt32/UInt32/Int64/Double, StrHexToUInt32
-#include "text.h"       // StartsWith
+#include "text.h"       // StartsWithNoCase
 #include "base64/base64.h"
 
 // ---------------------------------------------------------------------------
-// NEW-format store names. These live ALONGSIDE the legacy store, which keeps
-// its old location (HKCU\Software\MPC-HC\MPC-HC and <exe>.ini) untouched so
-// older builds stay downgrade-safe. FIXME: confirm final names with the team.
+// Versioned store names. These live ALONGSIDE the legacy store, which keeps its
+// old location (HKCU\Software\MPC-HC\MPC-HC and <exe>.ini) untouched so older
+// builds stay downgrade-safe.
 // ---------------------------------------------------------------------------
 static const wchar_t* const COMPANY_REG_KEY  = L"Software\\MPC-HC";        // parent of all stores
 static const wchar_t* const LEGACY_REG_KEY   = L"Software\\MPC-HC\\MPC-HC"; // pre-versioning MFC key
@@ -911,16 +911,20 @@ void CProfile::EnumSectionNames(const wchar_t* section, std::vector<CStringW>& s
         CStringW prefix(section);
         prefix += L'\\';
 
+        // The map is ordered case-insensitively (IgnoreCaseLess), so prefix
+        // matches are contiguous only when compared case-insensitively.
         auto it = m_ProfileMap.cbegin();
-        while (it != m_ProfileMap.cend() && !StartsWith(it->first, prefix)) {
+        while (it != m_ProfileMap.cend() && !StartsWithNoCase(it->first, prefix)) {
             ++it;
         }
 
-        while (it != m_ProfileMap.cend() && StartsWith(it->first, prefix)) {
-            if (it->first.GetLength() > prefix.GetLength()) {
-                sectionnames.emplace_back(it->first.Mid(prefix.GetLength()));
+        for (; it != m_ProfileMap.cend() && StartsWithNoCase(it->first, prefix); ++it) {
+            CStringW child = it->first.Mid(prefix.GetLength());
+            // Immediate children only, matching the registry branch and the
+            // original GetSectionSubKeys semantics (skip deeper "a\b").
+            if (!child.IsEmpty() && child.Find(L'\\') == -1) {
+                sectionnames.emplace_back(child);
             }
-            ++it;
         }
     }
 }
@@ -972,20 +976,18 @@ bool CProfile::DeleteSection(const wchar_t* section)
         const CStringW mainsection(section);
         const CStringW prefix(mainsection + L'\\');
 
-        auto start = m_ProfileMap.cbegin();
-        while (start != m_ProfileMap.cend() && start->first != mainsection && !StartsWith(start->first, prefix)) {
-            ++start;
-        }
-
-        if (start != m_ProfileMap.cend()) {
-            auto end = std::next(start);
-            while (end != m_ProfileMap.cend() && StartsWith(end->first, prefix)) {
-                ++end;
+        // Erase the section and every subsection. Iterate-and-erase rather than a
+        // contiguous range: a sibling like "Foo0" can sort between "Foo" and
+        // "Foo\bar" under case-insensitive ordering, so the matches are not
+        // guaranteed contiguous.
+        for (auto it = m_ProfileMap.begin(); it != m_ProfileMap.end();) {
+            if (it->first.CompareNoCase(mainsection) == 0 || StartsWithNoCase(it->first, prefix)) {
+                it = m_ProfileMap.erase(it);
+                m_bIniNeedFlush = true;
+                ret = true;
+            } else {
+                ++it;
             }
-
-            m_ProfileMap.erase(start, end);
-            m_bIniNeedFlush = true;
-            ret = true;
         }
     }
 
@@ -1063,30 +1065,48 @@ void CProfile::Clear()
 // preserving native value types. Unlike RegCopyTree it does NOT copy security
 // descriptors, so it works with a dst handle opened only for KEY_READ|KEY_WRITE
 // (RegCopyTree needs WRITE_DAC to clone the DACL and fails with ACCESS_DENIED).
+// Buffer sizes (in WCHARs, incl. NUL) for enumerating a key's value and subkey
+// names, from RegQueryInfoKey. Registry value names can be up to 16383 chars and
+// key names up to 255, so fixed buffers would silently drop long names.
+static void RegNameBufferSizes(HKEY key, DWORD& valueNameChars, DWORD& subKeyNameChars)
+{
+    DWORD maxValueName = 0, maxSubKeyName = 0;
+    if (RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, &maxSubKeyName,
+                         nullptr, nullptr, &maxValueName, nullptr, nullptr, nullptr) != ERROR_SUCCESS) {
+        maxValueName = 16383;
+        maxSubKeyName = 255;
+    }
+    valueNameChars = maxValueName + 1;
+    subKeyNameChars = maxSubKeyName + 1;
+}
+
 static void CopyRegistryTree(HKEY src, HKEY dst)
 {
+    DWORD valueNameChars, subKeyNameChars;
+    RegNameBufferSizes(src, valueNameChars, subKeyNameChars);
+    std::vector<WCHAR> name(valueNameChars);
+    std::vector<WCHAR> sub(subKeyNameChars);
+
     // Values at this level.
     for (DWORD i = 0;; i++) {
-        WCHAR name[512];
-        DWORD nameLen = _countof(name), type = 0, dataLen = 0;
-        LONG r = RegEnumValueW(src, i, name, &nameLen, nullptr, &type, nullptr, &dataLen);
+        DWORD nameLen = static_cast<DWORD>(name.size()), type = 0, dataLen = 0;
+        LONG r = RegEnumValueW(src, i, name.data(), &nameLen, nullptr, &type, nullptr, &dataLen);
         if (r == ERROR_NO_MORE_ITEMS) {
             break;
         }
         if (r != ERROR_SUCCESS) {
-            continue; // e.g. name too long; skip
+            continue;
         }
         std::vector<BYTE> data(dataLen ? dataLen : 1);
         DWORD cb = dataLen;
-        if (RegQueryValueExW(src, name, nullptr, &type, data.data(), &cb) == ERROR_SUCCESS) {
-            RegSetValueExW(dst, name, 0, type, data.data(), cb);
+        if (RegQueryValueExW(src, name.data(), nullptr, &type, data.data(), &cb) == ERROR_SUCCESS) {
+            RegSetValueExW(dst, name.data(), 0, type, data.data(), cb);
         }
     }
     // Subkeys.
     for (DWORD i = 0;; i++) {
-        WCHAR sub[256];
-        DWORD subLen = _countof(sub);
-        LONG r = RegEnumKeyExW(src, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+        DWORD subLen = static_cast<DWORD>(sub.size());
+        LONG r = RegEnumKeyExW(src, i, sub.data(), &subLen, nullptr, nullptr, nullptr, nullptr);
         if (r == ERROR_NO_MORE_ITEMS) {
             break;
         }
@@ -1094,8 +1114,8 @@ static void CopyRegistryTree(HKEY src, HKEY dst)
             continue;
         }
         HKEY hSrcSub, hDstSub;
-        if (RegOpenKeyExW(src, sub, 0, KEY_READ, &hSrcSub) == ERROR_SUCCESS) {
-            if (RegCreateKeyExW(dst, sub, 0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &hDstSub, nullptr) == ERROR_SUCCESS) {
+        if (RegOpenKeyExW(src, sub.data(), 0, KEY_READ, &hSrcSub) == ERROR_SUCCESS) {
+            if (RegCreateKeyExW(dst, sub.data(), 0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &hDstSub, nullptr) == ERROR_SUCCESS) {
                 CopyRegistryTree(hSrcSub, hDstSub);
                 RegCloseKey(hDstSub);
             }
@@ -1170,6 +1190,55 @@ bool CProfile::SeedFromVersion(const CStringW& fromVersion)
     m_bIniNeedFlush = true;
     Flush(true);
     return true;
+}
+
+void CProfile::EnumSettingsStoreVersions(std::vector<CStringW>& versions)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+    versions.clear();
+
+    if (m_hAppRegKey) {
+        CRegKey parent;
+        if (parent.Open(HKEY_CURRENT_USER, COMPANY_REG_KEY, KEY_READ) == ERROR_SUCCESS) {
+            const CStringW pfx(L"Settings-");
+            WCHAR sub[256];
+            for (DWORD i = 0;; i++) {
+                DWORD subLen = _countof(sub); // key names are <= 255 chars
+                LONG r = RegEnumKeyExW(parent.m_hKey, i, sub, &subLen, nullptr, nullptr, nullptr, nullptr);
+                if (r == ERROR_NO_MORE_ITEMS) {
+                    break;
+                }
+                if (r != ERROR_SUCCESS) {
+                    continue;
+                }
+                CStringW name(sub);
+                if (name.GetLength() > pfx.GetLength() && name.Left(pfx.GetLength()) == pfx) {
+                    versions.emplace_back(name.Mid(pfx.GetLength()));
+                }
+            }
+            parent.Close();
+        }
+    } else {
+        // <exe>.settings-<ver>.ini (the dash distinguishes it from the
+        // version-independent <exe>.settings.ini index file).
+        const CStringW pattern = GetExeBasePath() + L".settings-*.ini";
+        WIN32_FIND_DATAW fd;
+        HANDLE h = FindFirstFileW(pattern, &fd);
+        if (h != INVALID_HANDLE_VALUE) {
+            do {
+                CStringW fn(fd.cFileName);
+                int a = fn.Find(L".settings-");
+                if (a >= 0) {
+                    CStringW rest = fn.Mid(a + 10); // after ".settings-"
+                    int b = rest.ReverseFind(L'.'); // strip ".ini"
+                    if (b > 0) {
+                        versions.emplace_back(rest.Left(b));
+                    }
+                }
+            } while (FindNextFileW(h, &fd));
+            FindClose(h);
+        }
+    }
 }
 
 void CProfile::MoveSectionTree(const wchar_t* root, CProfile& dst)
