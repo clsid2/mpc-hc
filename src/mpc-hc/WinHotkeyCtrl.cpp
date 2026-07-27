@@ -144,7 +144,7 @@ void CWinHotkeyCtrl::SetWinHotkey(UINT vkCode, UINT fModifiers)
 
 void CWinHotkeyCtrl::DrawButton(CRect rectButton)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) {
         CWindowDC dc(this);
         bool disabled = 0 != (GetStyle() & (ES_READONLY | WS_DISABLED));
         bool selected = GetButtonThemeState() == PBS_PRESSED;
