@@ -167,9 +167,16 @@ public:
     bool ExportSettings(CString savePath, CString subKey = _T(""));
 
 private:
-    // Import legacy settings on first run and protect newer settings from
-    // being clobbered by an older build (downgrade fork). See mplayerc.cpp.
+    // Set up the versioned settings store: detect location, import legacy
+    // settings on first run, migrate older formats forward, stamp the store.
     void SetupSettingsStore();
+    // User-visible settings policies deferred until a normal launch is committed
+    // (skipped for /help, /close, file-association and other utility switches):
+    // the "newer settings exist" warning and the HKLM machine-defaults import.
+    void ApplySettingsPolicies();
+    // Mark the current store as initialized (version stamp + index) so the next
+    // launch does not treat it as a first run and re-import legacy settings.
+    void StampSettingsStoreInitialized();
     // Route a section to the MediaHistory store when applicable, else m_Profile.
     CProfile& ProfileForSection(LPCWSTR lpszSection);
     // Import machine-wide default settings from HKLM\Software\MPC-HC into the

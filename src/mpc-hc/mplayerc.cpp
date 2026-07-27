@@ -938,7 +938,6 @@ void CMPlayerCApp::SetupSettingsStore()
 {
     const bool portable = (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR);
     const CStringW myS = SETTINGS_FORMAT_VERSION;
-    const CStringW myH = HISTORY_FORMAT_VERSION;
 
     // What the newest build here has established (empty on a first run).
     CStringW idxS, idxH;
@@ -963,22 +962,6 @@ void CMPlayerCApp::SetupSettingsStore()
         }
     }
 
-    // If a newer settings format exists, operate on our own version and warn once
-    // (per newer version) that the newer settings are being ignored.
-    if (!idxS.IsEmpty() && CompareVersionStrings(idxS, myS) > 0) {
-        CStringW warnedFor;
-        m_Profile.ReadString(_T("Version"), _T("NewerWarnedFor"), warnedFor);
-        if (warnedFor != idxS) {
-            MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION), _T("MPC-HC"), MB_ICONINFORMATION | MB_OK);
-            m_Profile.WriteString(_T("Version"), _T("NewerWarnedFor"), idxS);
-        }
-    }
-
-    // Stamp the store and raise the index to our version (never lower it).
-    m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
-    m_Profile.Flush(true);
-    WriteSettingsIndex(portable, MaxVersion(idxS, myS), MaxVersion(idxH, myH));
-
     // In portable (INI) mode keep MediaHistory in its own versioned file.
     // Registry installs keep history inside the settings store.
     if (portable) {
@@ -990,11 +973,58 @@ void CMPlayerCApp::SetupSettingsStore()
             m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1"));
             m_Profile.Flush(true);
         }
+    }
 
+    // Stamp the store as initialized (version + index + history stamps). The
+    // "newer settings" warning and the HKLM import are user-visible policies and
+    // run later (ApplySettingsPolicies), only for a committed normal launch.
+    StampSettingsStoreInitialized();
+}
+
+// Mark the current store as initialized so the next launch does not treat it as
+// a first run and re-import legacy settings over the current ones. Shared by
+// SetupSettingsStore and ChangeSettingsLocation.
+void CMPlayerCApp::StampSettingsStoreInitialized()
+{
+    const bool portable = (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR);
+
+    CStringW idxS, idxH;
+    ReadSettingsIndex(portable, idxS, idxH);
+
+    m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
+    m_Profile.Flush(true);
+
+    // Raise the index to our version, never lower it (a newer store may exist).
+    WriteSettingsIndex(portable, MaxVersion(idxS, SETTINGS_FORMAT_VERSION), MaxVersion(idxH, HISTORY_FORMAT_VERSION));
+
+    if (portable && m_HistoryProfile) {
         // Self-describing history stamp (the filename already encodes the version).
         m_HistoryProfile->WriteString(_T("Version"), _T("MediaHistoryVersion"), CStringW(HISTORY_FORMAT_VERSION));
         m_HistoryProfile->WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
         m_HistoryProfile->Flush(true);
+    }
+}
+
+// User-visible settings policies, deferred until a normal interactive launch is
+// committed (so utility invocations like /help, /close, /regvid, /admin don't
+// pop a modal or apply machine policy). See InitInstance.
+void CMPlayerCApp::ApplySettingsPolicies()
+{
+    const bool portable = (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR);
+
+    CStringW idxS, idxH;
+    ReadSettingsIndex(portable, idxS, idxH);
+
+    // If a newer settings format exists, operate on our own version and warn
+    // once (per newer version) that the newer settings are being ignored.
+    if (!idxS.IsEmpty() && CompareVersionStrings(idxS, CStringW(SETTINGS_FORMAT_VERSION)) > 0) {
+        CStringW warnedFor;
+        m_Profile.ReadString(_T("Version"), _T("NewerWarnedFor"), warnedFor);
+        if (warnedFor != idxS) {
+            MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION), _T("MPC-HC"), MB_ICONINFORMATION | MB_OK);
+            m_Profile.WriteString(_T("Version"), _T("NewerWarnedFor"), idxS);
+            m_Profile.Flush(true);
+        }
     }
 
     // Apply machine-wide default settings pushed via HKLM (issue #2347).
@@ -1175,6 +1205,11 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     } else {
         m_HistoryProfile.reset(); // registry keeps history in the registry
     }
+
+    // Stamp the new store as initialized. Without this the next launch would see
+    // an empty Version/LastWrittenBy, treat the store as a first run, and
+    // re-import the (still-present) legacy settings over the current ones.
+    StampSettingsStoreInitialized();
 
     // Save favorites to the new location
     m_s->SetFav(FAV_FILE, filesFav);
@@ -2157,6 +2192,12 @@ BOOL CMPlayerCApp::InitInstance()
             key.SetStringValue(_T("ExePath"), PathUtils::GetProgramPath(true));
         }
     }
+
+    // Now that a normal interactive launch is committed (utility switches and
+    // single-instance forwarding have returned above), apply the deferred
+    // settings policies (newer-version warning + HKLM machine defaults) before
+    // settings are read.
+    ApplySettingsPolicies();
 
     m_s->MigrateSettings(); // migrate old settings
     m_s->LoadSettings();    // read settings
