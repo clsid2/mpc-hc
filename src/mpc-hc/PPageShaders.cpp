@@ -177,7 +177,7 @@ CString CShaderListBox::GetTitle(const Shader& shader)
 void CShaderListBox::PreSubclassWindow()
 {
     CMPCThemeListBox::PreSubclassWindow();
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedControls()) { //only suppress the standard tooltips where CMPCThemeToolTipCtrl replaces them
         EnableToolTips(FALSE);
     } else {
         EnableToolTips(TRUE);
