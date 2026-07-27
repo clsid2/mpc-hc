@@ -2,6 +2,7 @@
 #include "CMPCThemePropPageFrame.h"
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
+#include "mplayerc.h"
 #include "TreePropSheet/PropPageFrameDefault.h"
 #include "../DSUtil/WinAPIUtils.h"
 
@@ -86,13 +87,17 @@ void CMPCThemePropPageFrame::OnPaint()
 
 BOOL CMPCThemePropPageFrame::OnEraseBkgnd(CDC* pDC)
 {
-    bool ret = CMPCThemeUtil::MPCThemeEraseBkgnd(pDC, this, CTLCOLOR_DLG);
-    if (ret) {
+    BOOL ret;
+    if (CMPCThemeUtil::MPCThemeEraseBkgnd(pDC, this, CTLCOLOR_DLG)) {
+        ret = TRUE;
+    } else {
+        ret = __super::OnEraseBkgnd(pDC); //light erases to match its native pages
+    }
+
+    if (AppIsThemeLoaded()) { //the caption is themed in light too, so keep the matching frame border
         CRect rect;
         GetClientRect(rect);
         pDC->FrameRect(rect, &mpcThemeBorderBrush);
-        return ret;
-    } else {
-        return __super::OnEraseBkgnd(pDC);
     }
+    return ret;
 }
