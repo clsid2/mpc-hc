@@ -180,7 +180,10 @@ EXIT /B
 
 
 :End
-IF %ERRORLEVEL% NEQ 0 EXIT /B
+REM A bare "EXIT /B" at the outermost script level (run via cmd /c) returns 0 to
+REM the caller regardless of ERRORLEVEL, masking build failures. Propagate the
+REM real code explicitly so CI and callers see a non-zero exit on failure.
+IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
 TITLE Compiling MPC-HC %COMPILER% [FINISHED]
 SET END_TIME=%TIME%
 CALL "%COMMON%" :SubGetDuration
@@ -514,7 +517,7 @@ TITLE Compiling MPC-HC %COMPILER% [ERROR]
 ECHO Not all build dependencies were found.
 ECHO.
 ECHO See "docs\Compilation.md" for more information.
-CALL "%COMMON%" :SubMsg "ERROR" "Compilation failed!" & EXIT /B
+CALL "%COMMON%" :SubMsg "ERROR" "Compilation failed!" & EXIT /B 1
 
 
 :UnsupportedSwitch
@@ -524,4 +527,4 @@ ECHO.
 ECHO "%~nx0 %*"
 ECHO.
 ECHO Run "%~nx0 help" for details about the commandline switches.
-CALL "%COMMON%" :SubMsg "ERROR" "Compilation failed!" & EXIT /B
+CALL "%COMMON%" :SubMsg "ERROR" "Compilation failed!" & EXIT /B 1
