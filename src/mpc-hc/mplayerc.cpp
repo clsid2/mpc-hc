@@ -782,7 +782,14 @@ bool CMPlayerCApp::StoreSettingsToRegistry()
 
 CString CMPlayerCApp::GetIniPath() const
 {
-    return m_Profile.GetIniPath();
+    // In registry mode the live ini path is empty; return the prospective path
+    // (where a portable ini would be created) so callers like the "store to ini"
+    // option's write-permission check have a real target to test.
+    CString path = m_Profile.GetIniPath();
+    if (path.IsEmpty()) {
+        path = CProfile::DefaultIniPath();
+    }
+    return path;
 }
 
 bool CMPlayerCApp::IsIniValid() const

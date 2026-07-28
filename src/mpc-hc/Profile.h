@@ -91,6 +91,10 @@ public:
     // Path of the version-independent index/manifest INI (<exe-basename>.settings.ini)
     // that records which settings/history format versions are present.
     static CStringW SettingsIndexIniPath();
+    // Path where a portable settings INI would be created for this build. Used to
+    // report a prospective target even in registry mode (e.g. for the "store to
+    // ini" option's write-permission check), where GetIniPath() is empty.
+    static CStringW DefaultIniPath();
 
 private:
     LONG OpenRegistryKey();

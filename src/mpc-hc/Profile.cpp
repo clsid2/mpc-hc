@@ -251,6 +251,11 @@ CStringW CProfile::SettingsIndexIniPath()
     return GetExeBasePath() + INDEX_INI_SUFFIX;
 }
 
+CStringW CProfile::DefaultIniPath()
+{
+    return GetNewIniPath();
+}
+
 LONG CProfile::OpenRegistryKey()
 {
     LONG lResult = ERROR_SUCCESS;
