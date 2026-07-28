@@ -86,11 +86,12 @@ public:
     explicit CProfile(const CStringW& iniFilePath);
     ~CProfile();
 
-    // Path of the separate MediaHistory INI (<exe-basename>.history-<ver>.ini).
-    static CStringW HistoryIniPath();
-    // Path of the version-independent index/manifest INI (<exe-basename>.settings.ini)
-    // that records which settings/history format versions are present.
-    static CStringW SettingsIndexIniPath();
+    // Paths of the separate MediaHistory INI and its downgrade-fork counterpart.
+    static CStringW HistoryIniPath();       // <exe-basename>.history.ini
+    static CStringW HistoryLocalIniPath();  // <exe-basename>.history.local.ini
+    // Downgrade-fork settings file (<exe-basename>.settings.local.ini), used when
+    // this build finds a store written in a newer format than it understands.
+    static CStringW LocalIniPath();
     // Path where a portable settings INI would be created for this build. Used to
     // report a prospective target even in registry mode (e.g. for the "store to
     // ini" option's write-permission check), where GetIniPath() is empty.
@@ -145,16 +146,12 @@ public:
     // legacy-format sunset. Caller guards against re-running.
     bool MigrateFromLegacy();
 
-    // Seed this (empty, current-version) store with the full contents of the
-    // Settings-<fromVersion> store, in this store's mode (registry or INI). Used
-    // by the migration driver before applying in-place format transforms.
-    // Returns true if the source store existed and was copied.
-    bool SeedFromVersion(const CStringW& fromVersion);
-
-    // Format versions for which a Settings-<ver> store currently exists, in this
-    // store's mode (registry subkeys / <exe>.settings-<ver>.ini files). Used to
-    // pick the best older store to seed/migrate from.
-    void EnumSettingsStoreVersions(std::vector<CStringW>& versions);
+    // Downgrade protection: switch this instance to a private INI at iniPath and
+    // DETACH from the shared store WITHOUT deleting it, so a newer-format store
+    // written by a newer build survives. If iniPath already exists it is loaded;
+    // if seedFromCurrent is set and iniPath is new, the current store's contents
+    // are copied in (registry values converted to INI form).
+    bool ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent = false);
 
     // Move a section and all its subsections ("root" and "root\...") into
     // another profile (preserving raw values) and remove them from this one.

@@ -171,6 +171,12 @@ private:
     // Set up the versioned settings store: detect location, import legacy
     // settings on first run, migrate older formats forward, stamp the store.
     void SetupSettingsStore();
+    // Set up the separate MediaHistory store (portable/INI mode) incl. the
+    // one-time split and newer-format fork.
+    void SetupHistoryStore();
+    // Set when setup forked away from a newer-format store; ApplySettingsPolicies
+    // shows the one-time notice on the next committed normal launch.
+    bool m_bWarnNewerFormat = false;
     // User-visible settings policies deferred until a normal launch is committed
     // (skipped for /help, /close, file-association and other utility switches):
     // the "newer settings exist" warning and the HKLM machine-defaults import.
