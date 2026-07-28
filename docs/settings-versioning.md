@@ -97,8 +97,11 @@ entirely, so they never touch this one). When a build finds `Format` **newer**
 than it understands, it must not clobber it:
 
 - `CProfile::ForkToLocalIni()` detaches from the shared store **without deleting
-  it** and switches this instance to a private `<exe-basename>.settings.local.ini`
-  (history: `.history.local.ini`).
+  it** and switches this instance to a private, **version-qualified** local file
+  `<exe-basename>.settings.<thisFormat>.local.ini` (history:
+  `.history.<thisFormat>.local.ini`). Putting this build's own format version in
+  the fork name keeps two different older builds from colliding on one file and
+  makes each fork self-identifying.
 - If that local file already exists (this build forked before) it is loaded and
   reused silently. If it's new, it is **seeded from the current store** (registry
   values converted to INI form) so the older build starts from the newer data it
@@ -146,7 +149,7 @@ invocations neither pop a modal nor apply machine policy.
 
 - `SETTINGS_FORMAT_VERSION` / `HISTORY_FORMAT_VERSION` / `LEGACY_EQUIVALENT_VERSION` (`Profile.h`) — bump the first to introduce a new format
 - Stores: `HKCU\Software\MPC-HC\Settings` / `<exe>.settings.ini`; legacy `…\MPC-HC` / `<exe>.ini`
-- Fork files: `<exe>.settings.local.ini`, `<exe>.history.local.ini`
+- Fork files (version-qualified): `<exe>.settings.<ver>.local.ini`, `<exe>.history.<ver>.local.ini`
 - Fields: `[Version] Format`, `[Version] LastWrittenBy`, `[Version] HistorySplit`
 - `CMPlayerCApp::SetupSettingsStore()` / `SetupHistoryStore()` / `StampSettingsStoreInitialized()` / `ApplySettingsPolicies()`
 - `CProfile::MigrateFromLegacy()` — one-time pre-versioned import (non-destructive)

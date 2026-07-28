@@ -38,8 +38,9 @@ static const wchar_t* const SETTINGS_REG_KEY   = L"Software\\MPC-HC\\Settings"; 
 static const wchar_t* const OLD_INI_SUFFIX     = L".ini";                       // legacy portable ini
 static const wchar_t* const NEW_INI_SUFFIX     = L".settings.ini";             // <exe-basename>.settings.ini
 static const wchar_t* const HISTORY_INI_SUFFIX = L".history.ini";              // <exe-basename>.history.ini
-static const wchar_t* const LOCAL_INI_SUFFIX   = L".settings.local.ini";       // downgrade fork (settings)
-static const wchar_t* const HISTORY_LOCAL_SUFFIX = L".history.local.ini";      // downgrade fork (history)
+// Downgrade-fork files carry THIS build's format version in the name, so two
+// different older builds forking from the same newer store don't collide and
+// each file is self-identifying: <exe>.settings.<ver>.local.ini / .history.<ver>.local.ini
 
 // Prefix marking a NEW-format Base64 binary value in an INI. Legacy binary
 // values are A-P encoded (only chars 'A'..'P'), so this lowercase-led prefix
@@ -63,7 +64,7 @@ static CStringW GetNewIniPath()
 }
 static CStringW GetLocalIniPath()
 {
-    return GetExeBasePath() + LOCAL_INI_SUFFIX;
+    return GetExeBasePath() + L".settings." + SETTINGS_FORMAT_VERSION + L".local.ini";
 }
 
 static CStringW GetLegacyIniPath()
@@ -237,7 +238,7 @@ CStringW CProfile::HistoryIniPath()
 
 CStringW CProfile::HistoryLocalIniPath()
 {
-    return GetExeBasePath() + HISTORY_LOCAL_SUFFIX;
+    return GetExeBasePath() + L".history." + HISTORY_FORMAT_VERSION + L".local.ini";
 }
 
 CStringW CProfile::DefaultIniPath()

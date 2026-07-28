@@ -122,8 +122,8 @@ safe since both are the same format) and erases them from the settings store. Th
   new mode, then `SaveSettings(true)` rewrites the full in-memory history into the
   new location in the correct format (no cross-mode value copy, so no corruption).
 - **Newer history format:** `SetupHistoryStore()` forks to
-  `<exe>.history.local.ini` if `history.ini` declares a `Format` newer than this
-  build understands (same protection as the settings store).
+  `<exe>.history.<thisFormat>.local.ini` if `history.ini` declares a `Format`
+  newer than this build understands (same protection as the settings store).
 
 ## Export
 
@@ -145,7 +145,7 @@ safe since both are the same format) and erases them from the settings store. Th
 
 ## Key identifiers (quick reference)
 
-- `CProfile::HistoryIniPath()` → `<exe-basename>.history.ini`; `HistoryLocalIniPath()` → `.history.local.ini`
+- `CProfile::HistoryIniPath()` → `<exe-basename>.history.ini`; `HistoryLocalIniPath()` → `.history.<ver>.local.ini`
 - `CMPlayerCApp::m_HistoryProfile` — the history store (null in registry mode)
 - `CMPlayerCApp::SetupHistoryStore()` — creates the store, forks, one-time split
 - `ProfileForSection(section)` / `IsMediaHistorySection(section)` — routing
