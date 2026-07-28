@@ -165,6 +165,7 @@ public:
     bool IsIniValid() const;
     bool ChangeSettingsLocation(bool useIni);
     bool ExportSettings(CString savePath, CString subKey = _T(""));
+    bool ExportSettingsZip(const CString& zipPath);
 
 private:
     // Set up the versioned settings store: detect location, import legacy

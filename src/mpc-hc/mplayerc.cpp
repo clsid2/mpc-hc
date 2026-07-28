@@ -39,6 +39,8 @@
 #include "WebServer.h"
 #include "WinAPIUtils.h"
 #include "mpc-hc_config.h"
+#include "zlib/minizip/zip.h"
+#include "zlib/minizip/iowin32.h"
 #include "winddk/ntddcdvd.h"
 #include <afxsock.h>
 #include <atlsync.h>
@@ -1260,26 +1262,72 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     return success;
 }
 
+// Add one on-disk file to an open zip under nameInZip (ASCII). Returns false on
+// any I/O error. Best-effort skip if the source file is missing.
+static bool AddFileToZip(zipFile zf, const CStringW& srcPath, const CStringA& nameInZip)
+{
+    CFile src;
+    if (!src.Open(srcPath, CFile::modeRead | CFile::shareDenyWrite | CFile::typeBinary)) {
+        return true; // nothing to add (e.g. history file not created yet)
+    }
+    zip_fileinfo zi = {};
+    if (zipOpenNewFileInZip(zf, nameInZip, &zi, nullptr, 0, nullptr, 0, nullptr,
+                            Z_DEFLATED, Z_DEFAULT_COMPRESSION) != ZIP_OK) {
+        return false;
+    }
+    bool ok = true;
+    BYTE buf[64 * 1024];
+    UINT n;
+    while ((n = src.Read(buf, sizeof(buf))) > 0) {
+        if (zipWriteInFileInZip(zf, buf, n) != ZIP_OK) {
+            ok = false;
+            break;
+        }
+    }
+    zipCloseFileInZip(zf);
+    return ok;
+}
+
+// Bundle the settings store and the separate MediaHistory store into one zip,
+// each stored under its real (versioned) filename so restoring a backup is just
+// "extract into the program folder" - no renaming, and neither file is missed.
+bool CMPlayerCApp::ExportSettingsZip(const CString& zipPath)
+{
+    zlib_filefunc64_def ffunc;
+    fill_win32_filefunc64W(&ffunc); // Unicode-safe archive path
+    zipFile zf = zipOpen2_64(zipPath.GetString(), APPEND_STATUS_CREATE, nullptr, &ffunc);
+    if (!zf) {
+        return false;
+    }
+
+    const CStringW settingsSrc = GetIniPath();
+    CStringA settingsName(settingsSrc.Mid(settingsSrc.ReverseFind(L'\\') + 1));
+    bool ok = AddFileToZip(zf, settingsSrc, settingsName);
+
+    if (ok && m_HistoryProfile) {
+        const CStringW histSrc = m_HistoryProfile->GetIniPath();
+        CStringA histName(histSrc.Mid(histSrc.ReverseFind(L'\\') + 1));
+        ok = AddFileToZip(zf, histSrc, histName);
+    }
+
+    zipClose(zf, nullptr);
+    if (!ok) {
+        DeleteFile(zipPath);
+    }
+    return ok;
+}
+
 bool CMPlayerCApp::ExportSettings(CString savePath, CString subKey)
 {
     bool success = false;
     m_s->SaveSettings();
 
     if (IsIniValid()) {
-        success = !!CopyFile(GetIniPath(), savePath, FALSE);
-        // MediaHistory lives in a separate INI now; export it alongside as
-        // "<name>.history.ini" so a full export isn't missing the history.
-        if (success && subKey.IsEmpty() && m_HistoryProfile) {
-            CString historySrc = m_HistoryProfile->GetIniPath();
-            if (PathUtils::Exists(historySrc)) {
-                CString historyDst = savePath;
-                int dot = historyDst.ReverseFind(_T('.'));
-                if (dot >= 0) {
-                    historyDst = historyDst.Left(dot);
-                }
-                historyDst += _T(".history.ini");
-                CopyFile(historySrc, historyDst, FALSE); // best-effort companion
-            }
+        if (subKey.IsEmpty()) {
+            // Full export: bundle settings + separate MediaHistory into one zip.
+            success = ExportSettingsZip(savePath);
+        } else {
+            success = !!CopyFile(GetIniPath(), savePath, FALSE);
         }
     } else {
         CString regKey = m_Profile.GetRegistryKeyPath();

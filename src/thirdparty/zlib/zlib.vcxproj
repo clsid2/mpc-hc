@@ -60,7 +60,9 @@
     <ClCompile Include="inflate.c" />
     <ClCompile Include="inftrees.c" />
     <ClCompile Include="minizip\ioapi.c" />
+    <ClCompile Include="minizip\iowin32.c" />
     <ClCompile Include="minizip\unzip.c" />
+    <ClCompile Include="minizip\zip.c" />
     <ClCompile Include="trees.c" />
     <ClCompile Include="uncompr.c" />
     <ClCompile Include="zutil.c" />

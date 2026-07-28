@@ -241,7 +241,9 @@ void CPPageMisc::OnExportSettings()
         }
     }
 
-    CString ext = AfxGetMyApp()->IsIniValid() ? _T("ini") : _T("reg");
+    // In INI mode the settings live in two files (settings + MediaHistory), so
+    // they are exported together as a .zip; in registry mode a single .reg.
+    CString ext = AfxGetMyApp()->IsIniValid() ? _T("zip") : _T("reg");
     CFileDialog fileSaveDialog(FALSE, ext, _T("mpc-hc-settings.") + ext);
 
     if (fileSaveDialog.DoModal() == IDOK) {
