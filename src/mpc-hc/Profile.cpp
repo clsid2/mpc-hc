@@ -222,7 +222,9 @@ CProfile::CProfile()
         return;
     }
 
-    OpenRegistryKey();
+    // Registry mode. Do NOT create the key here (this ctor runs at static-init
+    // time for the global theApp); it is opened lazily on first access.
+    m_bRegistryMode = true;
 }
 
 CProfile::CProfile(const CStringW& iniFilePath)
@@ -267,7 +269,7 @@ void CProfile::InitIni()
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
         return;
     }
 
@@ -292,7 +294,7 @@ bool CProfile::StoreSettingsTo(const SettingsLocation newLocation)
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
     if (newLocation == SETS_REGISTRY) {
-        if (m_hAppRegKey) {
+        if (m_bRegistryMode) {
             return true; // already in the registry
         }
 
@@ -301,24 +303,29 @@ bool CProfile::StoreSettingsTo(const SettingsLocation newLocation)
             return false; // ini can not be deleted; transfer canceled
         }
 
+        m_bRegistryMode = true;
         OpenRegistryKey();
         if (m_hAppRegKey) {
             m_IniPath.Empty();
             return true;
         }
-
+        m_bRegistryMode = false; // key creation failed; remain in INI mode
         return false;
     }
 
     // SETS_PROGRAMDIR
-    if (!m_IniPath.IsEmpty() && !m_hAppRegKey) {
+    if (!m_bRegistryMode && !m_IniPath.IsEmpty()) {
         return true; // already stored in the program folder
     }
 
-    if (m_hAppRegKey) {
-        RegDeleteTreeW(m_hAppRegKey, nullptr);
-        RegCloseKey(m_hAppRegKey);
-        m_hAppRegKey = nullptr;
+    if (m_bRegistryMode) {
+        OpenRegistryKey(); // ensure the handle so the registry store can be removed
+        if (m_hAppRegKey) {
+            RegDeleteTreeW(m_hAppRegKey, nullptr);
+            RegCloseKey(m_hAppRegKey);
+            m_hAppRegKey = nullptr;
+        }
+        m_bRegistryMode = false;
     }
 
     const CStringW newIniPath = GetNewIniPath();
@@ -357,7 +364,8 @@ bool CProfile::ReadInt(const wchar_t* section, const wchar_t* entry, int& value)
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             if (ERROR_SUCCESS == regkey.QueryDWORDValue(entry, *(DWORD*)&value)) {
@@ -400,7 +408,8 @@ bool CProfile::ReadUInt(const wchar_t* section, const wchar_t* entry, unsigned& 
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             if (ERROR_SUCCESS == regkey.QueryDWORDValue(entry, *(DWORD*)&value)) {
@@ -443,7 +452,8 @@ bool CProfile::ReadInt64(const wchar_t* section, const wchar_t* entry, __int64& 
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             if (ERROR_SUCCESS == regkey.QueryQWORDValue(entry, *(ULONGLONG*)&value)) {
@@ -486,7 +496,8 @@ bool CProfile::ReadDouble(const wchar_t* section, const wchar_t* entry, double& 
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             ULONG nChars = 0;
@@ -533,7 +544,8 @@ bool CProfile::ReadHex32(const wchar_t* section, const wchar_t* entry, unsigned&
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             if (ERROR_SUCCESS == regkey.QueryDWORDValue(entry, *(DWORD*)&value)) {
@@ -561,7 +573,8 @@ bool CProfile::ReadString(const wchar_t* section, const wchar_t* entry, CStringW
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             ULONG nChars = 0;
@@ -593,7 +606,8 @@ bool CProfile::ReadBinary(const wchar_t* section, const wchar_t* entry, BYTE** p
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             if (ERROR_SUCCESS == regkey.QueryBinaryValue(entry, nullptr, (ULONG*)&nbytes)) {
@@ -640,7 +654,8 @@ bool CProfile::WriteInt(const wchar_t* section, const wchar_t* entry, const int 
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetDWORDValue(entry, (DWORD)value)) {
@@ -669,7 +684,8 @@ bool CProfile::WriteUInt(const wchar_t* section, const wchar_t* entry, const uns
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetDWORDValue(entry, (DWORD)value)) {
@@ -698,7 +714,8 @@ bool CProfile::WriteInt64(const wchar_t* section, const wchar_t* entry, const __
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetQWORDValue(entry, (ULONGLONG)value)) {
@@ -731,7 +748,8 @@ bool CProfile::WriteDouble(const wchar_t* section, const wchar_t* entry, const d
     CStringW valueStr;
     valueStr.Format(L"%.4f", value);
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetStringValue(entry, valueStr)) {
@@ -758,7 +776,8 @@ bool CProfile::WriteHex32(const wchar_t* section, const wchar_t* entry, const un
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetDWORDValue(entry, (DWORD)value)) {
@@ -787,7 +806,8 @@ bool CProfile::WriteString(const wchar_t* section, const wchar_t* entry, const C
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetStringValue(entry, value)) {
@@ -814,7 +834,8 @@ bool CProfile::WriteBinary(const wchar_t* section, const wchar_t* entry, const B
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Create(m_hAppRegKey, section)) {
             if (ERROR_SUCCESS == regkey.SetBinaryValue(entry, pdata, nbytes)) {
@@ -845,7 +866,8 @@ void CProfile::EnumValueNames(const wchar_t* section, std::vector<CStringW>& val
 
     valuenames.clear();
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             DWORD cValues     = 0;
@@ -884,7 +906,8 @@ void CProfile::EnumSectionNames(const wchar_t* section, std::vector<CStringW>& s
 
     sectionnames.clear();
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             DWORD cSubKeys    = 0;
@@ -935,7 +958,8 @@ bool CProfile::DeleteValue(const wchar_t* section, const wchar_t* entry)
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_WRITE)) {
             if (ERROR_SUCCESS == regkey.DeleteValue(entry)) {
@@ -963,7 +987,8 @@ bool CProfile::DeleteSection(const wchar_t* section)
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, L"", KEY_WRITE)) {
             if (ERROR_SUCCESS == regkey.RecurseDeleteKey(section)) {
@@ -996,7 +1021,7 @@ bool CProfile::DeleteSection(const wchar_t* section)
 
 void CProfile::Flush(bool bForce)
 {
-    if (m_hAppRegKey || (!bForce && !m_bIniNeedFlush)) {
+    if (m_bRegistryMode || (!bForce && !m_bIniNeedFlush)) {
         return;
     }
 
@@ -1046,8 +1071,11 @@ void CProfile::Clear()
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    if (m_hAppRegKey) {
-        RegDeleteTreeW(m_hAppRegKey, nullptr);
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
+        if (m_hAppRegKey) {
+            RegDeleteTreeW(m_hAppRegKey, nullptr);
+        }
     } else {
         ASSERT(!m_IniPath.IsEmpty());
         CFile file;
@@ -1128,13 +1156,14 @@ bool CProfile::MigrateFromLegacy()
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
         // Registry: recursively copy the legacy MFC key into the new key,
         // preserving native value types (REG_DWORD/REG_SZ/REG_BINARY/...).
         HKEY hLegacy = nullptr;
         if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_CURRENT_USER, LEGACY_REG_KEY, 0, KEY_READ, &hLegacy)) {
             return false;
         }
+        OpenRegistryKey();
         CopyRegistryTree(hLegacy, m_hAppRegKey);
         RegCloseKey(hLegacy);
         return true;
@@ -1167,11 +1196,12 @@ bool CProfile::SeedFromVersion(const CStringW& fromVersion)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
         HKEY hSrc = nullptr;
         if (RegOpenKeyExW(HKEY_CURRENT_USER, SettingsRegKeyFor(fromVersion), 0, KEY_READ, &hSrc) != ERROR_SUCCESS) {
             return false; // source store doesn't exist
         }
+        OpenRegistryKey();
         CopyRegistryTree(hSrc, m_hAppRegKey);
         RegCloseKey(hSrc);
         return true;
@@ -1197,7 +1227,8 @@ void CProfile::EnumSettingsStoreVersions(std::vector<CStringW>& versions)
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
     versions.clear();
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        // Read-only enumeration of the parent key; does not create our own store.
         CRegKey parent;
         if (parent.Open(HKEY_CURRENT_USER, COMPANY_REG_KEY, KEY_READ) == ERROR_SUCCESS) {
             const CStringW pfx(L"Settings-");
@@ -1245,7 +1276,7 @@ void CProfile::MoveSectionTree(const wchar_t* root, CProfile& dst)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
         return; // the MediaHistory split only applies in INI mode
     }
 
@@ -1277,7 +1308,8 @@ bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
 
     bool ret = false;
 
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
+        OpenRegistryKey();
         CRegKey regkey;
         if (ERROR_SUCCESS == regkey.Open(m_hAppRegKey, section, KEY_READ)) {
             ret = (ERROR_SUCCESS == RegQueryValueExW(regkey.m_hKey, entry, nullptr, nullptr, nullptr, nullptr));
@@ -1296,12 +1328,12 @@ bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
 
 CStringW CProfile::GetRegistryKeyPath() const
 {
-    return m_hAppRegKey ? SettingsRegKey() : CStringW();
+    return m_bRegistryMode ? SettingsRegKey() : CStringW();
 }
 
 SettingsLocation CProfile::GetSettingsLocation() const
 {
-    if (m_hAppRegKey) {
+    if (m_bRegistryMode) {
         return SETS_REGISTRY;
     }
     return SETS_PROGRAMDIR;

@@ -63,7 +63,12 @@ class CProfile
 private:
     std::recursive_mutex m_Mutex;
 
-    // registry
+    // registry. m_bRegistryMode is the store-location flag decided (read-only) at
+    // construction; m_hAppRegKey is opened/created LAZILY on first actual access
+    // (OpenRegistryKey), so no registry key is materialized at static-init time -
+    // only when the running app truly reads/writes settings. Registry-branch code
+    // must gate on m_bRegistryMode (not the handle) and call OpenRegistryKey().
+    bool m_bRegistryMode = false;
     HKEY m_hAppRegKey = nullptr;
 
     // INI file
