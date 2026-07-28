@@ -50,10 +50,6 @@ LastWrittenBy = 2.7.3.44 ; MPC-HC build that last wrote the store (informational
 - `CompareVersionStrings` compares these tokens numerically (`v2 < v11`), so any
   monotonic `v1 → v2 → …` sequence orders correctly. Always keep the `v` prefix.
 
-This replaces the earlier scheme that put the version in the store name
-(`Settings-v1` / `<exe>.settings-v1.ini`) plus a separate index file — that was
-removed as redundant and confusing.
-
 ---
 
 ## Startup — `SetupSettingsStore()`
