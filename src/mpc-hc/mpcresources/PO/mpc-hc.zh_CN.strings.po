@@ -8,15 +8,17 @@
 # Jackson Chen, 2022
 # CyanVesper <SharpNight93@gmail.com>, 2024
 # lychichem <leichixian@outlook.com>, 2025
-# YuanHao Du, 2025
 # KaiHuaDou, 2026
+# Fentanyl, 2026
+# Phonebook3599, 2026
+# YuanHao Du, 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2025-11-27 15:27:16+0000\n"
+"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: KaiHuaDou, 2026\n"
+"Last-Translator: YuanHao Du, 2026\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -487,7 +489,7 @@ msgstr "还原(&E)"
 
 msgctxt "IDS_PLAYLIST_SORT"
 msgid "&Sort"
-msgstr ""
+msgstr "排序(&S)"
 
 msgctxt "IDS_SUBRESYNC_SEPARATOR"
 msgid "&Separator"
@@ -1366,27 +1368,27 @@ msgstr "在全屏幕中隐藏(&H)"
 
 msgctxt "IDS_PLAYLIST_POSITION"
 msgid "&Position"
-msgstr ""
+msgstr "&位置"
 
 msgctxt "IDS_PLAYLIST_POSITION_LEFT"
 msgid "&Left"
-msgstr "左侧"
+msgstr "&左侧"
 
 msgctxt "IDS_PLAYLIST_POSITION_TOP"
 msgid "&Top"
-msgstr "顶部"
+msgstr "&顶部"
 
 msgctxt "IDS_PLAYLIST_POSITION_RIGHT"
 msgid "&Right"
-msgstr "右侧"
+msgstr "&右侧"
 
 msgctxt "IDS_PLAYLIST_POSITION_BOTTOM"
 msgid "&Bottom"
-msgstr "底部"
+msgstr "&底部"
 
 msgctxt "IDS_PLAYLIST_POSITION_FLOAT"
 msgid "&Floating"
-msgstr ""
+msgstr "&分离"
 
 msgctxt "IDS_CONTROLS_STOPPED"
 msgid "Stopped"
@@ -2131,7 +2133,7 @@ msgstr "普通视图"
 
 msgctxt "IDS_AG_VIEW_CUSTOM"
 msgid "View Custom"
-msgstr ""
+msgstr "预设视图"
 
 msgctxt "IDS_AG_FULLSCREEN"
 msgid "Fullscreen"
@@ -4076,13 +4078,13 @@ msgstr "就绪..."
 
 msgctxt "IDS_CMD_PNS"
 msgid "/pns \"name\"\tSpecify PnS Frame Adjust Preset to use (for example: /pns \"%s\")"
-msgstr ""
+msgstr "/pns \"name\" 指定使用的画面平移与缩放 (PnS) 预设(例如：/pns \"1%\")"
 
 msgctxt "IDS_CMD_PNS_VALUES"
 msgid ""
 "/pns \"px,py,zx,zy\"\tSpecify direct position and zoom values in the format "
 "\"px,py,zx,zy\""
-msgstr ""
+msgstr "/pns \"px,py,zx,zy\" 以 \"px,py,zx,zy\" 格式直接指定位置和缩放值"
 
 msgctxt "IDS_CMD_ICONASSOC"
 msgid "/iconsassoc\tReassociate format icons"
@@ -4249,6 +4251,11 @@ msgid ""
 "\n"
 "Do not use account from old .org website."
 msgstr ""
+"使用用户名 \"%1\" 登录 opensubtitles.com 失败。\n"
+"\n"
+"用户名或密码不正确。\n"
+"\n"
+"请勿使用旧版 .org 网站的账户。"
 
 msgctxt "IDS_SUB_AUTODL_IGNORE_TOOLTIP"
 msgid ""
@@ -4339,7 +4346,7 @@ msgstr "/standby\t\t播放完毕后将操作系统置于待机模式"
 
 msgctxt "IDS_CMD_HIBERNATE"
 msgid "/hibernate\t\tHibernate operating system after playback"
-msgstr ""
+msgstr "/hibernate 播放完毕后操作系统将进入休眠"
 
 msgctxt "IDS_CMD_LOGOFF"
 msgid "/logoff\t\tLog off after playback"
@@ -4361,7 +4368,7 @@ msgctxt "IDS_CMD_VIEWPRESET"
 msgid ""
 "/viewpreset N\tStart with a specific preset,\n"
 "\t\twhere N is one of \"1\" Minimal, \"2\" Compact, \"3\" Normal, or \"4\" Custom"
-msgstr ""
+msgstr "/viewpreset N 启动时应用指定视图预设 (\"N\"可为：\"1\" 极简、\"2\" 紧凑、\"3\" 常规、\"4\" 自定义)"
 
 msgctxt "IDS_CMD_MUTE"
 msgid "/mute\t\tMute the audio"
@@ -4622,7 +4629,7 @@ msgstr "开关默认样式覆盖"
 
 msgctxt "IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES"
 msgid "Toggle Override All Styles"
-msgstr ""
+msgstr "切换覆盖所有样式"
 
 msgctxt "IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE"
 msgid "Loop back to first file in folder after playing the last file."
@@ -4679,24 +4686,24 @@ msgstr "从不"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_ALWAYS"
 msgid "Always"
-msgstr ""
+msgstr "总是"
 
 msgctxt "IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN"
 msgid "When status bar is hidden"
-msgstr ""
+msgstr "当状态栏隐藏时"
 
 msgctxt "IDS_PPAGEADVANCED_STARTUP_PRESET"
 msgid "View preset to apply at startup"
-msgstr ""
+msgstr "启动时应用的预设视图"
 
 msgctxt "IDS_STARTUP_PRESET_REMEMBER"
 msgid "Remember last"
-msgstr ""
+msgstr "记住最后"
 
 msgctxt "IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT"
 msgid ""
 "Show the time on the left side of the seekbar instead of the right side"
-msgstr ""
+msgstr "在进度条的左侧显示时间，而不是右侧。"
 
 msgctxt "IDS_PPAGEADVANCED_SHOW_LANG_STATUSBAR"
 msgid "Display current audio and subtitle language in status bar"
@@ -4844,7 +4851,7 @@ msgstr "使用系统布局通道"
 
 msgctxt "IDS_ARS_ALT_CHECK_FORMAT"
 msgid "Alternative check of supported format"
-msgstr ""
+msgstr "备用格式检测"
 
 msgctxt "IDS_ARS_SOUND_DEVICE"
 msgid "Sound Device:"
@@ -4896,7 +4903,7 @@ msgstr "采样率:"
 
 msgctxt "IDS_ARS_CHANNELS"
 msgid "Channels"
-msgstr ""
+msgstr "频道"
 
 msgctxt "IDS_AG_DEFAULT"
 msgid "Default"
@@ -4904,7 +4911,7 @@ msgstr "默认"
 
 msgctxt "IDS_ARS_PAUSE_KEEP_ACTIVE"
 msgid "Keep audio device active when paused"
-msgstr ""
+msgstr "暂停时保持音频设备激活"
 
 msgctxt "IDS_ARS_TIP_BITEXACT_OUTPUT"
 msgid ""
@@ -4918,7 +4925,7 @@ msgstr "渲染器将会尝试初始化设备来跳过一些检测"
 
 msgctxt "IDS_ARS_TIP_PAUSE_KEEP_ACTIVE"
 msgid "The renderer will send inaudible noise to the device."
-msgstr ""
+msgstr "渲染器会向设备发送人耳听不到的噪音。"
 
 msgctxt "IDS_CMD_THUMBNAILS"
 msgid "/thumbnails\tCreate thumbnails"
@@ -4990,4 +4997,4 @@ msgstr "乱序：关"
 
 msgctxt "IDS_ABOUT_COPYRIGHT"
 msgid "Copyright 2002-%s clsid2 and others"
-msgstr "版权所有 2002-%s clsid2 和其他开发者"
+msgstr "Copyright 2002-%s clsid2 与其他贡献者"
