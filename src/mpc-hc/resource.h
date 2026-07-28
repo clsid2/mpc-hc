@@ -515,6 +515,7 @@
 #define IDC_EDITLIST                    12028
 #define IDC_CHECK_SUB_AR_COMPENSATION   12029
 #define IDC_CHECK_ALLOW_DROPPING_SUBPIC 12030
+#define IDC_DSSYSDEF                    12099
 #define IDC_DSVMR7                      12100
 #define IDC_DSEVR                       12101
 #define IDC_DSOVERLAYMIXER              12102
@@ -1831,14 +1832,17 @@
 #define IDS_PLAYLIST_POSITION_RIGHT     58022
 #define IDS_PLAYLIST_POSITION_BOTTOM    58023
 #define IDS_PLAYLIST_POSITION_FLOAT     58024
+#define IDS_AG_FASTFORWARD_HOLD         58025
+#define ID_PLAY_FASTFORWARD_HOLD        33465
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20076
-#define _APS_NEXT_COMMAND_VALUE         33464
+#define _APS_NEXT_COMMAND_VALUE         33466
 #define _APS_NEXT_CONTROL_VALUE         22101
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif
+

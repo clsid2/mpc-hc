@@ -554,6 +554,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_PLAY_PLAYBACKRATE_START, ID_PLAY_PLAYBACKRATE_END, OnPlayChangeRate)
     ON_UPDATE_COMMAND_UI_RANGE(ID_PLAY_PLAYBACKRATE_START, ID_PLAY_PLAYBACKRATE_END, OnUpdatePlayChangeRate)
     ON_COMMAND(ID_PLAY_RESETRATE, OnPlayResetRate)
+    ON_COMMAND(ID_PLAY_FASTFORWARD_HOLD, OnPlayFastForwardHold)
     ON_UPDATE_COMMAND_UI(ID_PLAY_RESETRATE, OnUpdatePlayResetRate)
     ON_COMMAND_RANGE(ID_PLAY_INCAUDDELAY, ID_PLAY_DECAUDDELAY, OnPlayChangeAudDelay)
     ON_UPDATE_COMMAND_UI_RANGE(ID_PLAY_INCAUDDELAY, ID_PLAY_DECAUDDELAY, OnUpdatePlayChangeAudDelay)
@@ -1509,6 +1510,72 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
         return FALSE;
     }
 
+    if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN) {
+        BYTE fVirt = FVIRTKEY;
+        if (GetKeyState(VK_CONTROL) < 0) fVirt |= FCONTROL;
+        if (GetKeyState(VK_MENU) < 0) fVirt |= FALT;
+        if (GetKeyState(VK_SHIFT) < 0) fVirt |= FSHIFT;
+
+        bool isAutoRepeat = (pMsg->lParam & (1 << 30)) != 0;
+
+        if (m_bHoldTimerActive || m_isKeyHeld) {
+            if (pMsg->wParam == m_holdVK) {
+                return TRUE;
+            }
+        }
+
+        if (!isAutoRepeat && pMsg->wParam != 0) {
+            const CAppSettings& s = AfxGetAppSettings();
+            WORD cmdTap = 0;
+            WORD cmdHold = 0;
+
+            POSITION pos = s.wmcmds.GetHeadPosition();
+            while (pos) {
+                const wmcmd& wc = s.wmcmds.GetNext(pos);
+                if (wc.key != 0 && wc.key == pMsg->wParam &&
+                    (wc.fVirt & (FCONTROL | FALT | FSHIFT)) == (fVirt & (FCONTROL | FALT | FSHIFT))) {
+                    if (wc.cmd == ID_PLAY_FASTFORWARD_HOLD) {
+                        cmdHold = ID_PLAY_FASTFORWARD_HOLD;
+                    } else if (cmdTap == 0) {
+                        cmdTap = wc.cmd;
+                    }
+                }
+                if (wc.keyHold != 0 && wc.keyHold == pMsg->wParam &&
+                    (wc.fVirtHold & (FCONTROL | FALT | FSHIFT)) == (fVirt & (FCONTROL | FALT | FSHIFT))) {
+                    cmdHold = wc.cmd;
+                }
+            }
+
+            if (cmdHold != 0) {
+                m_bHoldTimerActive = true;
+                m_isKeyHeld = false;
+                m_holdVK = (UINT)pMsg->wParam;
+                m_holdVirt = fVirt;
+                m_holdTapCmd = cmdTap;
+                m_holdActionCmd = cmdHold;
+                SetTimer(TIMER_KEY_HOLD, 200, nullptr);
+                return TRUE;
+            }
+        }
+    } else if (pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP) {
+        if ((m_bHoldTimerActive || m_isKeyHeld) && pMsg->wParam == m_holdVK) {
+            if (m_bHoldTimerActive) {
+                KillTimer(TIMER_KEY_HOLD);
+                m_bHoldTimerActive = false;
+                if (m_holdTapCmd != 0) {
+                    PostMessage(WM_COMMAND, m_holdTapCmd);
+                }
+            } else if (m_isKeyHeld) {
+                m_isKeyHeld = false;
+                if (m_holdActionCmd == ID_PLAY_FASTFORWARD_HOLD) {
+                    SetPlayingRate(m_dPreHoldRate);
+                }
+            }
+            m_holdVK = 0;
+            return TRUE;
+        }
+    }
+
     return __super::PreTranslateMessage(pMsg);
 }
 
@@ -2071,6 +2138,20 @@ void CMainFrame::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 {
     __super::OnActivateApp(bActive, dwThreadID);
 
+    if (!bActive && (m_bHoldTimerActive || m_isKeyHeld)) {
+        if (m_bHoldTimerActive) {
+            KillTimer(TIMER_KEY_HOLD);
+            m_bHoldTimerActive = false;
+        }
+        if (m_isKeyHeld) {
+            m_isKeyHeld = false;
+            if (m_holdActionCmd == ID_PLAY_FASTFORWARD_HOLD) {
+                SetPlayingRate(m_dPreHoldRate);
+            }
+        }
+        m_holdVK = 0;
+    }
+
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::PLACE_FULLSCREEN_UNDER_ACTIVE_WINDOW);
 
     if (IsFullScreenMainFrame()) {
@@ -2229,6 +2310,18 @@ double g_dRate = 1.0;
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
     switch (nIDEvent) {
+        case TIMER_KEY_HOLD:
+            KillTimer(TIMER_KEY_HOLD);
+            m_bHoldTimerActive = false;
+            m_isKeyHeld = true;
+
+            if (m_holdActionCmd == ID_PLAY_FASTFORWARD_HOLD) {
+                m_dPreHoldRate = m_dSpeedRate;
+                SetPlayingRate(2.0);
+            } else if (m_holdActionCmd != 0) {
+                PostMessage(WM_COMMAND, m_holdActionCmd);
+            }
+            break;
         case TIMER_WINDOW_FULLSCREEN:
             if (AfxGetAppSettings().iFullscreenDelay > 0 && IsWindows8OrGreater()) {//DWMWA_CLOAK not supported on 7
                 BOOL setEnabled = FALSE;
@@ -10024,11 +10117,18 @@ void CMainFrame::OnPlayResetRate()
 
     if (SUCCEEDED(hr)) {
         m_dSpeedRate = 1.0;
-
         CString strODSMessage;
         strODSMessage.Format(IDS_OSD_SPEED, m_dSpeedRate);
         m_OSD.DisplayMessage(OSD_TOPRIGHT, strODSMessage);
     }
+}
+
+void CMainFrame::OnPlayFastForwardHold()
+{
+    if (GetLoadState() != MLS::LOADED) {
+        return;
+    }
+    SetPlayingRate(2.0);
 }
 
 void CMainFrame::OnUpdatePlayResetRate(CCmdUI* pCmdUI)

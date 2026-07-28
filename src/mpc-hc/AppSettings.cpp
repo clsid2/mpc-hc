@@ -603,6 +603,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_PLAY_INCRATE,                  VK_UP, FCONTROL,          IDS_AG_INCREASE_RATE },
     { ID_PLAY_DECRATE,                VK_DOWN, FCONTROL,          IDS_AG_DECREASE_RATE },
     { ID_PLAY_RESETRATE,                  'R', FCONTROL,          IDS_AG_RESET_RATE },
+    { ID_PLAY_FASTFORWARD_HOLD,             VK_SPACE, 0,                 IDS_AG_FASTFORWARD_HOLD },
     { ID_PLAY_INCAUDDELAY,             VK_ADD, 0,                 IDS_MPLAYERC_21 },
     { ID_PLAY_DECAUDDELAY,        VK_SUBTRACT, 0,                 IDS_MPLAYERC_22 },
     { ID_PLAY_SEEKFORWARDSMALL,             0, 0,                 IDS_MPLAYERC_23 },
@@ -1209,9 +1210,10 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
             str.Format(_T("CommandMod%d"), i);
             // mouse and mouseVirt are written twice for backwards compatibility with old versions
             CString str2;
-            str2.Format(_T("%hu %hx %hx \"%S\" %d %hhu %u %hhu %hhu %hhu"),
+            str2.Format(_T("%hu %hx %hx \"%S\" %d %hhu %u %hhu %hhu %hhu %hx %hx"),
                         wc.cmd, (WORD)wc.fVirt, wc.key, wc.rmcmd.GetString(),
-                        wc.rmrepcnt, wc.mouse, wc.appcmd, wc.mouse, wc.mouseVirt, wc.mouseVirt);
+                        wc.rmrepcnt, wc.mouse, wc.appcmd, wc.mouse, wc.mouseVirt, wc.mouseVirt,
+                        (WORD)wc.fVirtHold, wc.keyHold);
             pApp->WriteProfileString(IDS_R_COMMANDS, str, str2);
             i++;
         }
@@ -2038,16 +2040,24 @@ void CAppSettings::LoadSettings()
         wmcmd tmp;
         int n;
         int fVirt = 0;
+        int fVirtHold = 0;
+        WORD keyHold = 0;
         BYTE ignore;
-        if (5 > (n = _stscanf_s(str2, _T("%hu %x %hx %S %d %hhu %u %hhu %hhu %hhu"),
+        if (5 > (n = _stscanf_s(str2, _T("%hu %x %hx %S %d %hhu %u %hhu %hhu %hhu %x %hx"),
                                 &tmp.cmd, &fVirt, &tmp.key, tmp.rmcmd.GetBuffer(128), 128,
                                 &tmp.rmrepcnt, &tmp.mouse, &tmp.appcmd, &ignore,
-                                &tmp.mouseVirt, &ignore))) {
+                                &tmp.mouseVirt, &ignore, &fVirtHold, &keyHold))) {
             break;
         }
         tmp.rmcmd.ReleaseBuffer();
         if (n >= 2) {
             tmp.fVirt = (BYTE)fVirt;
+        }
+        if (n >= 11) {
+            tmp.fVirtHold = (BYTE)fVirtHold;
+        }
+        if (n >= 12) {
+            tmp.keyHold = keyHold;
         }
         if (POSITION pos = wmcmds.Find(tmp)) {
             wmcmd& wc = wmcmds.GetAt(pos);
@@ -2062,6 +2072,12 @@ void CAppSettings::LoadSettings()
             }
             if (n >= 9) {
                 wc.mouseVirt = tmp.mouseVirt;
+            }
+            if (n >= 11) {
+                wc.fVirtHold = tmp.fVirtHold;
+            }
+            if (n >= 12) {
+                wc.keyHold = tmp.keyHold;
             }
             wc.rmcmd = tmp.rmcmd.Trim('\"');
             wc.rmrepcnt = tmp.rmrepcnt;

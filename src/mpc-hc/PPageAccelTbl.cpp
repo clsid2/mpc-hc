@@ -130,8 +130,13 @@ void CPPageAccelTbl::UpdateKeyDupFlags()
             POSITION pos = m_wmcmds.GetHeadPosition();
             for (; pos; m_wmcmds.GetNext(pos)) {
                 if (itemData->index == pos) { continue; }
+                const wmcmd& otherWc = m_wmcmds.GetAt(pos);
 
-                if (wc.key == m_wmcmds.GetAt(pos).key && (wc.fVirt & (FCONTROL | FALT | FSHIFT)) == (m_wmcmds.GetAt(pos).fVirt & (FCONTROL | FALT | FSHIFT))) {
+                if (wc.cmd == ID_PLAY_FASTFORWARD_HOLD || otherWc.cmd == ID_PLAY_FASTFORWARD_HOLD) {
+                    continue;
+                }
+
+                if (wc.key == otherWc.key && (wc.fVirt & (FCONTROL | FALT | FSHIFT)) == (otherWc.fVirt & (FCONTROL | FALT | FSHIFT))) {
                     itemData->flag |= DUP_KEY;
                     break;
                 }

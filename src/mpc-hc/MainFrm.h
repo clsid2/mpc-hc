@@ -221,6 +221,7 @@ private:
         TIMER_HIDER,
         TIMER_WINDOW_FULLSCREEN,
         TIMER_DELAYEDSEEK,
+        TIMER_KEY_HOLD,
         TIMER_ONETIME_START,
         TIMER_ONETIME_END = TIMER_ONETIME_START + 127,
     };
@@ -239,6 +240,14 @@ private:
     typedef std::map<int, float> PlaybackRateMap;
     static PlaybackRateMap filePlaybackRates;
     static PlaybackRateMap dvdPlaybackRates;
+
+    bool m_bHoldTimerActive = false;
+    bool m_isKeyHeld = false;
+    UINT m_holdVK = 0;
+    BYTE m_holdVirt = 0;
+    WORD m_holdTapCmd = 0;
+    WORD m_holdActionCmd = 0;
+    double m_dPreHoldRate = 1.0;
 
     friend class CPPageFileInfoSheet;
     friend class CPPageLogo;
@@ -1148,6 +1157,7 @@ public:
     afx_msg void OnPlayChangeRate(UINT nID);
     afx_msg void OnUpdatePlayChangeRate(CCmdUI* pCmdUI);
     afx_msg void OnPlayResetRate();
+    afx_msg void OnPlayFastForwardHold();
     afx_msg void OnUpdatePlayResetRate(CCmdUI* pCmdUI);
     afx_msg void OnPlayChangeAudDelay(UINT nID);
     afx_msg void OnUpdatePlayChangeAudDelay(CCmdUI* pCmdUI);
