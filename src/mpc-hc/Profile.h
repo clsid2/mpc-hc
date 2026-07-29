@@ -19,16 +19,14 @@
  */
 
 // Settings store engine for MPC-HC, adapted from MPC-BE's CProfile
-// (src/DSUtil/Profile.{h,cpp}). This is the NEW versioned settings format;
-// the pre-existing inline profile code in CMPlayerCApp remains the LEGACY
-// format and is imported once (see the legacy importer, added separately).
-//
-// New-format store locations (see Profile.cpp for the name constants):
-//   - Program-dir INI  : a NEW .ini file next to the executable (portable).
-//   - Registry         : a NEW key SIBLING to the legacy one, under the
-//                        shared HKCU\Software\MPC-HC parent.
-// The legacy store (old .ini / old registry key) is left untouched so older
-// MPC-HC builds keep working (downgrade-safe).
+// (src/DSUtil/Profile.{h,cpp}). It replaces the old inline profile code in
+// CMPlayerCApp but keeps the SAME on-disk location and format, so external
+// tools and older builds keep reading the settings unchanged:
+//   - Registry  : HKCU\Software\MPC-HC\MPC-HC
+//   - Portable  : <exe-basename>.ini next to the executable
+// Binary values use the legacy A-P encoding for byte compatibility. The only
+// relocation is MediaHistory, which moves to <exe-basename>.history.ini in
+// portable mode (see mplayerc.cpp / SetupHistoryStore).
 
 #pragma once
 
@@ -41,16 +39,6 @@ enum SettingsLocation {
     SETS_REGISTRY,
     SETS_PROGRAMDIR
 };
-
-// On-disk format versions. The store name encodes the version (Settings-<ver> /
-// History-<ver>); bump the version when the layout changes incompatibly and add
-// a migration step. Older builds only know their own version and ignore newer
-// stores. See docs/settings-versioning.md.
-inline const wchar_t* const SETTINGS_FORMAT_VERSION = L"v1";
-inline const wchar_t* const HISTORY_FORMAT_VERSION  = L"v1";
-// The pre-versioned legacy layout is identical to the first format version, so
-// it seeds the migration chain as that version (not necessarily the current one).
-inline const wchar_t* const LEGACY_EQUIVALENT_VERSION = L"v1";
 
 // Sections and keys are matched case-insensitively; sections are kept ordered
 // (std::map) because EnumSectionNames() relies on the ordering to range-walk
@@ -86,12 +74,8 @@ public:
     explicit CProfile(const CStringW& iniFilePath);
     ~CProfile();
 
-    // Paths of the separate MediaHistory INI and its downgrade-fork counterpart.
+    // Path of the separate MediaHistory INI.
     static CStringW HistoryIniPath();       // <exe-basename>.history.ini
-    static CStringW HistoryLocalIniPath();  // <exe-basename>.history.local.ini
-    // Downgrade-fork settings file (<exe-basename>.settings.local.ini), used when
-    // this build finds a store written in a newer format than it understands.
-    static CStringW LocalIniPath();
     // Path where a portable settings INI would be created for this build. Used to
     // report a prospective target even in registry mode (e.g. for the "store to
     // ini" option's write-permission check), where GetIniPath() is empty.
@@ -137,21 +121,6 @@ public:
 
     void Flush(bool bForce);
     void Clear();
-
-    // One-time legacy import: copy the OLD MPC-HC settings (legacy registry key
-    // or legacy <exe>.ini) into this (new) store, in the matching storage mode.
-    // Registry is copied with native value types; INI is copied verbatim (old
-    // A-P binary values are read back via the un-prefixed path in ReadBinary).
-    // Returns true if a legacy store was found and imported. Deletable at the
-    // legacy-format sunset. Caller guards against re-running.
-    bool MigrateFromLegacy();
-
-    // Downgrade protection: switch this instance to a private INI at iniPath and
-    // DETACH from the shared store WITHOUT deleting it, so a newer-format store
-    // written by a newer build survives. If iniPath already exists it is loaded;
-    // if seedFromCurrent is set and iniPath is new, the current store's contents
-    // are copied in (registry values converted to INI form).
-    bool ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent = false);
 
     // Move a section and all its subsections ("root" and "root\...") into
     // another profile (preserving raw values) and remove them from this one.

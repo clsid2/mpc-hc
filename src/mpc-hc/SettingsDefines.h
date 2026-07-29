@@ -312,6 +312,16 @@
 #define IDS_RS_COUNTRY                      _T("Country")
 
 #define IDS_R_DVB                           _T("DVBConfiguration")
+// Version-qualified home for saved DVB channels, under the top-level "v2"
+// namespace ("v2\<section>") that old builds never read or write. Kept at the
+// top level (not a subkey of the data section) so the legacy section stays a
+// plain leaf key: old builds clear it with MFC's non-recursive RegDeleteKey,
+// which would fail if we nested a subkey inside it. The channel serialization
+// carries a format-version token and an older build THROWS on a newer token,
+// drops the channel, and overwrites it on save. New builds store channels only
+// under v2; the legacy channel entries are left frozen so a downgrade keeps
+// its own channels instead of losing the newer ones.
+#define IDS_R_DVB_V2                        _T("v2\\") IDS_R_DVB
 //#define IDS_RS_BDA_NETWORKPROVIDER          _T("BDANetworkProvider")
 #define IDS_RS_BDA_TUNER                    _T("BDATuner")
 #define IDS_RS_BDA_RECEIVER                 _T("BDAReceiver")

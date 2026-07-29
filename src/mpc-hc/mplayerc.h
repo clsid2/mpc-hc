@@ -168,22 +168,16 @@ public:
     bool ExportSettingsZip(const CString& zipPath);
 
 private:
-    // Set up the versioned settings store: detect location, import legacy
-    // settings on first run, migrate older formats forward, stamp the store.
+    // Set up the settings store: in portable (INI) mode, create the separate
+    // MediaHistory store and perform the one-time split out of the main file.
     void SetupSettingsStore();
     // Set up the separate MediaHistory store (portable/INI mode) incl. the
-    // one-time split and newer-format fork.
+    // one-time split of MediaHistory out of the main settings file.
     void SetupHistoryStore();
-    // Set when setup forked away from a newer-format store; ApplySettingsPolicies
-    // shows the one-time notice on the next committed normal launch.
-    bool m_bWarnNewerFormat = false;
     // User-visible settings policies deferred until a normal launch is committed
     // (skipped for /help, /close, file-association and other utility switches):
-    // the "newer settings exist" warning and the HKLM machine-defaults import.
+    // currently just the HKLM machine-defaults import.
     void ApplySettingsPolicies();
-    // Mark the current store as initialized (version stamp + index) so the next
-    // launch does not treat it as a first run and re-import legacy settings.
-    void StampSettingsStoreInitialized();
     // Route a section to the MediaHistory store when applicable, else m_Profile.
     CProfile& ProfileForSection(LPCWSTR lpszSection);
     // Import machine-wide default settings from HKLM\Software\MPC-HC into the
@@ -192,8 +186,9 @@ private:
     void ImportHKLMTree(HKEY hKey, const CStringW& section);
 
 public:
-    // The versioned settings store. All GetProfile*/WriteProfile* overrides
-    // below delegate to it (via ProfileForSection).
+    // The settings store (HKCU\Software\MPC-HC\MPC-HC or <exe>.ini). All
+    // GetProfile*/WriteProfile* overrides below delegate to it (via
+    // ProfileForSection).
     CProfile m_Profile;
     // Separate MediaHistory store (INI mode only; registry installs keep
     // history in the registry). Null in registry mode.

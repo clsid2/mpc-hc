@@ -797,147 +797,26 @@ bool CMPlayerCApp::IsIniValid() const
     return m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR;
 }
 
-// Compare two version tokens numerically per component, ignoring non-digit
-// characters (so "v1"/"v2"/"v11" and dotted "2.3.1.234" both work); e.g.
-// "v2" < "v11". Returns <0 if a<b, 0 if equal, >0 if a>b.
-static int CompareVersionStrings(const CStringW& a, const CStringW& b)
-{
-    int ia = 0, ib = 0;
-    const int la = a.GetLength(), lb = b.GetLength();
-    while (ia < la || ib < lb) {
-        int va = 0, vb = 0;
-        while (ia < la && a[ia] >= L'0' && a[ia] <= L'9') { va = va * 10 + (a[ia] - L'0'); ia++; }
-        while (ib < lb && b[ib] >= L'0' && b[ib] <= L'9') { vb = vb * 10 + (b[ib] - L'0'); ib++; }
-        if (va != vb) {
-            return va < vb ? -1 : 1;
-        }
-        while (ia < la && (a[ia] < L'0' || a[ia] > L'9')) { ia++; } // skip separators
-        while (ib < lb && (b[ib] < L'0' || b[ib] > L'9')) { ib++; }
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// Settings format migration framework.
-//
-// A store records its on-disk format version in a [Version] Format field. When
-// the format changes incompatibly, bump SETTINGS_FORMAT_VERSION and add a step
-// below that transforms a store IN PLACE from its `from` format to `to`; the
-// driver applies the chain in order. A build that finds a store with an OLDER
-// Format upgrades it in place; one that finds a NEWER Format forks to a private
-// local file (see SetupSettingsStore) so the newer store is never corrupted.
-//
-// There is only version v1 today, so the table is empty and no step runs.
-// ---------------------------------------------------------------------------
-typedef void (*SettingsMigrationFn)(CProfile& profile);
-struct SettingsMigrationStep {
-    const wchar_t* from;
-    const wchar_t* to;
-    SettingsMigrationFn apply;
-};
-static const std::vector<SettingsMigrationStep> s_settingsMigrations = {
-    // { L"v1", L"v2", &Migrate_Settings_v1_to_v2 },  // example for the future
-};
-
-// Number of migration steps to chain from `from` up to `to` (0 if already there),
-// or -1 if no complete chain of steps connects them.
-static int CountSettingsMigrations(const CStringW& from, const CStringW& to)
-{
-    CStringW cur = from;
-    int steps = 0;
-    while (CompareVersionStrings(cur, to) < 0) {
-        const SettingsMigrationStep* found = nullptr;
-        for (const auto& s : s_settingsMigrations) {
-            if (cur == s.from) {
-                found = &s;
-                break;
-            }
-        }
-        if (!found || ++steps > 100) {
-            return -1; // no path forward (or runaway guard)
-        }
-        cur = found->to;
-    }
-    return (cur == to) ? steps : -1;
-}
-
-// Apply the chain of steps that takes `from` up to `to`. Returns the number of
-// steps applied, or -1 if there is no complete path.
-static int ApplySettingsMigrations(CProfile& profile, const CStringW& from, const CStringW& to)
-{
-    if (CountSettingsMigrations(from, to) < 0) {
-        return -1;
-    }
-    CStringW cur = from;
-    int steps = 0;
-    while (cur != to) {
-        for (const auto& s : s_settingsMigrations) {
-            if (cur == s.from) {
-                if (s.apply) {
-                    s.apply(profile);
-                }
-                cur = s.to;
-                steps++;
-                break;
-            }
-        }
-    }
-    return steps;
-}
-
 void CMPlayerCApp::SetupSettingsStore()
 {
-    const CStringW myS = SETTINGS_FORMAT_VERSION;
-
-    // Read the store's declared format (empty => uninitialized / first run).
-    CStringW fmt;
-    const bool haveStore = m_Profile.ReadString(_T("Version"), _T("Format"), fmt) && !fmt.IsEmpty();
-
-    if (!haveStore) {
-        // First run of the new format: import the pre-versioned legacy settings
-        // (which are the v1 layout), if any, then migrate up. Non-destructive -
-        // the legacy store is left in place.
-        if (m_Profile.MigrateFromLegacy()) {
-            ApplySettingsMigrations(m_Profile, CStringW(LEGACY_EQUIVALENT_VERSION), myS);
-        }
-    } else if (CompareVersionStrings(fmt, myS) < 0) {
-        // Older format: upgrade this store in place.
-        ApplySettingsMigrations(m_Profile, fmt, myS);
-    } else if (CompareVersionStrings(fmt, myS) > 0) {
-        // Newer format than we understand: fork to a private local file so the
-        // newer store (written by a newer build) is never corrupted. Reuse an
-        // existing fork if present (and don't re-warn); otherwise create one
-        // seeded from the current store and warn (deferred to a normal launch).
-        const CStringW localPath = CProfile::LocalIniPath();
-        const bool localExisted = PathUtils::Exists(localPath);
-        m_Profile.ForkToLocalIni(localPath, !localExisted);
-        m_bWarnNewerFormat = !localExisted;
-    }
-
-    // MediaHistory: a separate file in portable (INI) mode; in registry mode it
-    // stays inside the settings key. A fork above turns the store portable, so
-    // GetSettingsLocation() reflects the effective mode here.
+    // The store stays at its historical location (HKCU\Software\MPC-HC\MPC-HC or
+    // <exe>.ini) so external tools and older builds keep reading it unchanged.
+    // Scalar settings evolve additively; the one format-fragile composite field
+    // (saved DVB channels) is version-qualified at its own call sites, so no
+    // store-wide format/migration machinery is needed here.
+    //
+    // MediaHistory is the one structural change: in portable (INI) mode it moves
+    // to a separate file; in registry mode it stays inside the settings key.
     if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
         SetupHistoryStore();
     }
-
-    // Stamp the (possibly migrated/forked) store as initialized.
-    StampSettingsStoreInitialized();
 }
 
-// Set up the separate MediaHistory store (portable/INI mode). Forks to a local
-// file if it finds a newer history format, and performs the one-time split of
-// MediaHistory out of the main settings store.
+// Set up the separate MediaHistory store (portable/INI mode) and perform the
+// one-time split of MediaHistory out of the main settings file.
 void CMPlayerCApp::SetupHistoryStore()
 {
     m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
-
-    CStringW fmt;
-    if (m_HistoryProfile->ReadString(_T("Version"), _T("Format"), fmt) && !fmt.IsEmpty() &&
-        CompareVersionStrings(fmt, CStringW(HISTORY_FORMAT_VERSION)) > 0) {
-        const CStringW localPath = CProfile::HistoryLocalIniPath();
-        m_HistoryProfile->ForkToLocalIni(localPath, !PathUtils::Exists(localPath));
-    }
 
     // One-time: move any MediaHistory still in the main settings store into it.
     if (!m_Profile.HasEntry(_T("Version"), _T("HistorySplit"))) {
@@ -947,35 +826,11 @@ void CMPlayerCApp::SetupHistoryStore()
     }
 }
 
-// Mark the current store(s) as initialized so the next launch does not treat
-// them as a first run and re-import legacy settings. Records the on-disk format
-// version and the app version that last wrote it. Shared by SetupSettingsStore
-// and ChangeSettingsLocation.
-void CMPlayerCApp::StampSettingsStoreInitialized()
-{
-    m_Profile.WriteString(_T("Version"), _T("Format"), CStringW(SETTINGS_FORMAT_VERSION));
-    m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
-    m_Profile.Flush(true);
-
-    if (m_HistoryProfile) {
-        m_HistoryProfile->WriteString(_T("Version"), _T("Format"), CStringW(HISTORY_FORMAT_VERSION));
-        m_HistoryProfile->WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
-        m_HistoryProfile->Flush(true);
-    }
-}
-
 // User-visible settings policies, deferred until a normal interactive launch is
 // committed (so utility invocations like /help, /close, /regvid, /admin don't
 // pop a modal or apply machine policy). See InitInstance.
 void CMPlayerCApp::ApplySettingsPolicies()
 {
-    // We forked away from a newer-format store during setup - tell the user once
-    // that this older build is now using its own separate settings file.
-    if (m_bWarnNewerFormat) {
-        m_bWarnNewerFormat = false;
-        MessageBox(nullptr, ResStr(IDS_SETTINGS_NEWER_VERSION), _T("MPC-HC"), MB_ICONINFORMATION | MB_OK);
-    }
-
     // Apply machine-wide default settings pushed via HKLM (issue #2347).
     ApplyHKLMDefaults();
 }
@@ -1106,8 +961,7 @@ void CMPlayerCApp::ApplyHKLMDefaults()
         if (m_HistoryProfile) {
             m_HistoryProfile->Clear();
         }
-        m_Profile.WriteString(_T("Version"), _T("Format"), CStringW(SETTINGS_FORMAT_VERSION));
-        m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), CStringW(m_strVersion));
+        // Keep the split marker so the (now-empty) main store isn't re-split.
         m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1"));
     }
 
@@ -1177,15 +1031,11 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     // below re-writes the full in-memory history there in the correct format.
     if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
         m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
-        m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1"));
+        m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1")); // history is separate here
     } else {
         m_HistoryProfile.reset(); // registry keeps history in the registry
     }
-
-    // Stamp the new store as initialized. Without this the next launch would see
-    // an empty Version/LastWrittenBy, treat the store as a first run, and
-    // re-import the (still-present) legacy settings over the current ones.
-    StampSettingsStoreInitialized();
+    m_Profile.Flush(true);
 
     // Save favorites to the new location
     m_s->SetFav(FAV_FILE, filesFav);
@@ -1228,7 +1078,7 @@ static bool AddFileToZip(zipFile zf, const CStringW& srcPath, const CStringA& na
 }
 
 // Bundle the settings store and the separate MediaHistory store into one zip,
-// each stored under its real (versioned) filename so restoring a backup is just
+// each stored under its real filename so restoring a backup is just
 // "extract into the program folder" - no renaming, and neither file is missed.
 bool CMPlayerCApp::ExportSettingsZip(const CString& zipPath)
 {
@@ -2018,9 +1868,8 @@ BOOL CMPlayerCApp::InitInstance()
 
     PreProcessCommandLine();
 
-    // The versioned settings store auto-detects its location (portable INI or
-    // registry) on construction. Import legacy settings on first run and guard
-    // against an older build clobbering newer settings.
+    // The settings store auto-detects its location (portable INI or registry) on
+    // construction. In portable mode this splits MediaHistory into its own file.
     SetupSettingsStore();
 
     m_s->ParseCommandLine(m_cmdln);
@@ -2047,11 +1896,9 @@ BOOL CMPlayerCApp::InitInstance()
             }
         }
 
-        // Remove the settings, then re-stamp the format/writer version so the next
-        // run does not treat this as a fresh install and re-import legacy settings.
+        // Remove the settings, then re-mark the history split so the next run
+        // does not try to re-split an already-empty store.
         m_Profile.Clear();
-        m_Profile.WriteString(_T("Version"), _T("Format"), CStringW(SETTINGS_FORMAT_VERSION));
-        m_Profile.WriteString(_T("Version"), _T("LastWrittenBy"), m_strVersion);
         m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1")); // history is separate; don't re-split
         m_Profile.Flush(true);
         if (m_HistoryProfile) {

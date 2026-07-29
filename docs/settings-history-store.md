@@ -10,8 +10,9 @@ Relevant code:
 - `src/mpc-hc/AppSettings.cpp` — the MediaHistory reader/writer
   (`CRecentFileListWithMoreInfo`), unchanged by this feature.
 
-See also [`settings-versioning.md`](settings-versioning.md) for the shared
-versioning/migration model these stores use.
+See also [`settings-versioning.md`](settings-versioning.md) for the overall
+storage model (the store keeps its historical location; only these two things —
+MediaHistory and the downgrade-protected `v2` subsections — move).
 
 ---
 
@@ -32,12 +33,12 @@ key fine, and it keeps the design minimal).
 
 | Member | Backing | Lifetime |
 |---|---|---|
-| `m_Profile` | Main settings store: `<exe-basename>.settings.ini` or `HKCU\Software\MPC-HC\Settings`. | Always present. |
+| `m_Profile` | Main settings store: `<exe-basename>.ini` or `HKCU\Software\MPC-HC\MPC-HC`. | Always present. |
 | `m_HistoryProfile` (`unique_ptr`) | MediaHistory store: a second INI-mode `CProfile` at `<exe-basename>.history.ini`. | Created **only in portable/INI mode**; **null in registry mode**. |
 
 The history store is a full `CProfile`, so `history.ini` uses the same on-disk
 format as the settings INI (UTF-8 with BOM-sniffing on read, `[section]` /
-`key=value`, `b64:`-prefixed Base64 for binary).
+`key=value`, A-P-encoded binary values).
 
 ## Section routing
 
@@ -58,7 +59,7 @@ and for any subsection starting with `"MediaHistory\"`. So:
 - **INI mode:** any read/write of a `MediaHistory[...]` section transparently hits
   `m_HistoryProfile` (`history.ini`).
 - **Registry mode:** `m_HistoryProfile` is null, so those calls fall through to
-  `m_Profile` (the registry `Settings` key), exactly as everything else.
+  `m_Profile` (the registry `MPC-HC` key), exactly as everything else.
 
 Because the routing lives inside the generic accessors, the MediaHistory code in
 `AppSettings.cpp` needs **no changes** — it already calls `theApp.GetProfile*/
@@ -73,23 +74,8 @@ CMPlayerCApp::GetProfileString ── ProfileForSection("MediaHistory\\<hash>")
         │ (registry mode / non-history)     │ (INI mode + history section)
         ▼                                   ▼
      m_Profile                        *m_HistoryProfile
-  (registry Settings / settings.ini)   (<exe>.history.ini)
+  (registry MPC-HC key / <exe>.ini)    (<exe>.history.ini)
 ```
-
-## Version stamp
-
-Like the settings store, the history file carries its own `[Version]` section,
-versioned **independently** of the settings and of the app:
-
-```
-[Version]
-Format        = v1        ; HISTORY_FORMAT_VERSION - MediaHistory on-disk format
-LastWrittenBy = 2.7.3.44  ; MPC-HC build that last wrote it (informational)
-```
-
-Bump `HISTORY_FORMAT_VERSION` (in `Profile.h`) on an incompatible MediaHistory
-layout change. These are written straight to `m_HistoryProfile` (not through the
-routed `WriteProfile*`), because `[Version]` is not a `MediaHistory` section.
 
 ## One-time split (migration)
 
@@ -98,7 +84,6 @@ portable run it is moved out once, in `SetupHistoryStore()`:
 
 ```cpp
 m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
-// (fork if the history file is a newer format - see settings-versioning.md)
 if (!m_Profile.HasEntry(L"Version", L"HistorySplit")) {
     m_Profile.MoveSectionTree(L"MediaHistory", *m_HistoryProfile);  // move + subsections
     m_Profile.WriteString(L"Version", L"HistorySplit", L"1");        // done marker
@@ -111,33 +96,35 @@ if (!m_Profile.HasEntry(L"Version", L"HistorySplit")) {
 safe since both are the same format) and erases them from the settings store. The
 `[Version] HistorySplit = 1` marker in the settings store makes it run once.
 
+An older build that later runs in the same folder simply doesn't know about
+`history.ini`; it regenerates its own `MediaHistory` inside `<exe>.ini` as it
+always did. That's non-critical (history, not configuration) and can't corrupt
+anything — the two histories just diverge.
+
 ## Lifecycle
 
 - **Flush:** `FlushProfile()` flushes both stores (each writes only if dirty), on
   the same cadence as before (`OnIdle`, `SaveSettings`).
 - **Reset** (`/reset` or HKLM `SettingsReset`): clears both stores, then re-stamps
-  `[Version] Format` / `LastWrittenBy` / `HistorySplit` in the settings store.
+  `[Version] HistorySplit = 1` in the settings store.
 - **Change settings location** (Options → Player → "Store settings in .ini file"):
   `ChangeSettingsLocation()` re-points/creates or drops `m_HistoryProfile` for the
   new mode, then `SaveSettings(true)` rewrites the full in-memory history into the
-  new location in the correct format (no cross-mode value copy, so no corruption).
-- **Newer history format:** `SetupHistoryStore()` forks to
-  `<exe>.history.<thisFormat>.local.ini` if `history.ini` declares a `Format`
-  newer than this build understands (same protection as the settings store).
+  new location (no cross-mode value copy, so no corruption).
 
 ## Export
 
-- **INI mode:** a full export (`ExportSettings`) bundles `settings.ini` **and**
+- **INI mode:** a full export (`ExportSettings`) bundles `<exe>.ini` **and**
   `history.ini` into a single `.zip` (under their real names), so a restore
   ("extract into the program folder") can't miss either file.
-- **Registry mode:** exports one `.reg` of the whole `Settings` key, which already
+- **Registry mode:** exports one `.reg` of the whole `MPC-HC` key, which already
   contains MediaHistory — no zip needed.
 
 ## Registry vs INI — summary
 
 | Aspect | INI (portable) | Registry (installed) |
 |---|---|---|
-| History location | `<exe>.history.ini` (separate file) | `HKCU\Software\MPC-HC\Settings` (same key) |
+| History location | `<exe>.history.ini` (separate file) | `HKCU\Software\MPC-HC\MPC-HC` (same key) |
 | `m_HistoryProfile` | non-null | null |
 | Routing for `MediaHistory[...]` | `*m_HistoryProfile` | `m_Profile` |
 | One-time split | performed | not applicable |
@@ -145,10 +132,9 @@ safe since both are the same format) and erases them from the settings store. Th
 
 ## Key identifiers (quick reference)
 
-- `CProfile::HistoryIniPath()` → `<exe-basename>.history.ini`; `HistoryLocalIniPath()` → `.history.<ver>.local.ini`
+- `CProfile::HistoryIniPath()` → `<exe-basename>.history.ini`
 - `CMPlayerCApp::m_HistoryProfile` — the history store (null in registry mode)
-- `CMPlayerCApp::SetupHistoryStore()` — creates the store, forks, one-time split
+- `CMPlayerCApp::SetupHistoryStore()` — creates the store and runs the one-time split
 - `ProfileForSection(section)` / `IsMediaHistorySection(section)` — routing
 - `CProfile::MoveSectionTree(root, dst)` — the one-time move
 - `[Version] HistorySplit = 1` (settings store) — split-done marker
-- `[Version] Format` (history file) — history format version (`HISTORY_FORMAT_VERSION`)

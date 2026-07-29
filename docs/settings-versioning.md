@@ -1,159 +1,155 @@
-# Versioned settings
+# Settings storage & downgrade protection
 
-How MPC-HC's settings are stored, versioned, migrated, and protected against
-older builds. Introduced for issue #2347.
+How MPC-HC's settings are stored and how a few format-fragile values are
+protected against being clobbered by an older build. Reworked for issue #2347.
 
 Relevant code:
 - `src/mpc-hc/Profile.{h,cpp}` — the `CProfile` store engine (INI + registry
-  backends, legacy import, fork-to-local, binary encoding).
-- `src/mpc-hc/mplayerc.cpp` — `CMPlayerCApp::SetupSettingsStore()` and helpers
-  (the version/migration logic), plus the `GetProfile*`/`WriteProfile*` overrides.
+  backends, binary encoding).
+- `src/mpc-hc/mplayerc.cpp` — `CMPlayerCApp::SetupSettingsStore()` / helpers and
+  the `GetProfile*`/`WriteProfile*` overrides that delegate to `CProfile`.
 
 Related: [`settings-history-store.md`](settings-history-store.md) (the separate
 MediaHistory store) and the HKLM machine-defaults import (`ApplyHKLMDefaults`).
 
 ---
 
-## The store
+## The store stays where it always was
 
-Settings live in a single store whose **name has no version in it**:
+External tools read MPC-HC's settings directly (for example madVR reads some
+player values), so this rework **keeps the on-disk location and byte format
+unchanged**:
 
-| | Legacy (pre-#2347) | Current |
-|---|---|---|
-| Registry | `HKCU\Software\MPC-HC\MPC-HC` | `HKCU\Software\MPC-HC\Settings` |
-| Portable INI | `<exe-basename>.ini` | `<exe-basename>.settings.ini` |
+| | Location |
+|---|---|
+| Registry (installed) | `HKCU\Software\MPC-HC\MPC-HC` |
+| Portable INI | `<exe-basename>.ini` next to the executable |
 
-The legacy store is **never modified** — it's only read once, to import
-pre-#2347 settings (below), so an old MPC-HC build keeps working unchanged.
+`CProfile` replaces the old hand-rolled profile code in `CMPlayerCApp`, but it is
+a drop-in: it reads/writes the same sections and keys, and binary values use the
+legacy **A-P encoding** (two chars per byte, low nibble first, `'A'`+nibble) so
+the bytes are identical to what MFC's `WriteProfileBinary` produced. An older
+build, and any external reader, keeps reading the store unchanged.
 
-`CProfile` picks the location at construction: if a settings INI (new or legacy)
-sits next to the executable it runs **portable/INI**, otherwise **registry**. In
-registry mode the key is opened/created **lazily** on first access (never at
-static-init time — the store object is a member of the global `theApp`).
+`CProfile` picks the location at construction: if `<exe-basename>.ini` sits next
+to the executable it runs **portable/INI**, otherwise **registry**. In registry
+mode the key is opened/created **lazily** on first access — never at static-init
+time, because the store object is a member of the global `theApp`.
 
-## The format version is a field, not the filename
+The one relocation is **MediaHistory**, which moves to a separate file in
+portable mode — see [`settings-history-store.md`](settings-history-store.md).
 
-The on-disk *format* version is recorded **inside** the store, in a `[Version]`
-section:
+## Scalar migration is unchanged
 
-```
-[Version]
-Format       = v1      ; on-disk format version (SETTINGS_FORMAT_VERSION)
-LastWrittenBy = 2.7.3.44 ; MPC-HC build that last wrote the store (informational)
-```
+There is **no whole-store format version and no store-level migration
+framework** in this design. Ordinary settings evolve the way they always have:
 
-- `Format` is the constant `SETTINGS_FORMAT_VERSION` in `Profile.h` (currently
-  `"v1"`). It is bumped **only** on an incompatible layout change — not per
-  release. Within a format version, all app versions interoperate; changes are
-  additive (a new key an old build ignores) or, if a value's format must change,
-  it goes under a **new key**.
-- `CompareVersionStrings` compares these tokens numerically (`v2 < v11`), so any
-  monotonic `v1 → v2 → …` sequence orders correctly. Always keep the `v` prefix.
+- New settings are additive — an old build simply ignores a key it doesn't know.
+- Scalar migrations that must transform an existing value are handled by the
+  pre-existing `CAppSettings::MigrateSettings()`, keyed on `[Settings]
+  SettingsVersion` (`IDS_R_VERSION`) versus `APPSETTINGS_VERSION`. That mechanism
+  predates #2347 and is untouched here.
+
+An empirical sweep of ~45 archived official releases confirmed that scalar
+settings only ever change **additively** — no in-place type or encoding change of
+an existing key has ever shipped — so no store-wide versioning is needed to keep
+old and new builds interoperating on scalars.
 
 ---
 
-## Startup — `SetupSettingsStore()`
+## Downgrade protection — the `v2` namespace
 
-Runs early in `InitInstance`, after the store location is detected and before
-`LoadSettings()`. It reads the store's `[Version] Format` and acts on it:
+The sweep found exactly **one** value that needs physical separation: the saved
+DVB channels. Their serialization is pipe-delimited with a leading
+format-version token, and it has changed shape repeatedly (tokens 0…6 so far);
+an older build **throws** on a newer token, drops the channel, and — because
+channels are rewritten on **every** `SaveSettings` — overwrites the newer list
+just by running. Only a key an old build never touches can prevent that.
 
-```cpp
-CStringW fmt;
-bool haveStore = m_Profile.ReadString(L"Version", L"Format", fmt) && !fmt.IsEmpty();
+The new build stores channels under a **top-level `v2` namespace**:
 
-if (!haveStore) {
-    // (1) first run: import pre-versioned legacy settings, then migrate up
-    if (m_Profile.MigrateFromLegacy())
-        ApplySettingsMigrations(m_Profile, LEGACY_EQUIVALENT_VERSION, myS);
-} else if (CompareVersionStrings(fmt, myS) < 0) {
-    // (2) older format: upgrade this store in place
-    ApplySettingsMigrations(m_Profile, fmt, myS);
-} else if (CompareVersionStrings(fmt, myS) > 0) {
-    // (3) newer format: fork to a private local file (see below)
-    const CStringW local = CProfile::LocalIniPath();
-    bool existed = PathUtils::Exists(local);
-    m_Profile.ForkToLocalIni(local, !existed);   // seed from current if new
-    m_bWarnNewerFormat = !existed;               // warn once, later
-}
-// history store (portable mode) + stamp Format/LastWrittenBy
+```
+IDS_R_DVB_V2 = "v2\DVBConfiguration"   (SettingsDefines.h)
 ```
 
-Cases:
+`v2` sits at the top level (the versioned section lives *under* it) rather than
+as a subkey of the data section. Besides reading naturally — one versioned
+namespace that future format-fragile values can also live in — this keeps the
+legacy section a plain leaf key: old builds clear `DVBConfiguration` on every
+save with MFC's non-recursive `RegDeleteKey`, which would fail if a `v2` subkey
+were nested inside it (leaving stale channel entries a downgrade would read back
+as phantom channels).
 
-1. **First run (no store):** `MigrateFromLegacy()` copies the pre-#2347 settings
-   into the new store (registry: recursive key copy with native value types; INI:
-   verbatim parse+merge). Legacy is the `v1` layout, so the migration chain runs
-   from `LEGACY_EQUIVALENT_VERSION`. Non-destructive.
-2. **Older format:** the migration chain transforms the store in place up to our
-   version, then the `Format` stamp is updated.
-3. **Newer format (downgrade protection):** see below.
+Rules:
 
-## Downgrade protection — fork to a local file
+- **Write:** the new build writes channels **only** under `v2\DVBConfiguration`,
+  clearing that section first (so a shrunken channel list leaves no stale
+  trailing entries). The format-stable BDA scalars stay in the shared
+  `DVBConfiguration` section and are overwritten in place. The legacy channel
+  entries in `DVBConfiguration` are **left frozen** — deliberately not cleared.
+- **Read + one-time migrate:** the new build reads `v2` once the `[Version]
+  DVBChannelsV2 = 1` marker is present (set on the first save); before that it
+  reads the legacy entries so they migrate forward. Gating on a marker rather
+  than "does `v2` have a channel" means clearing all channels in a new build
+  can't resurrect the frozen legacy list on the next load.
+- **Old builds** only ever read/write the legacy entries, never `v2`, so they
+  can't see or corrupt the new-format data. A downgrade keeps operating on its
+  own frozen legacy copy.
 
-Because the store name is now version-independent, an **older build opens the
-same file a newer build wrote**. That is safe *only because every #2347-era build
-checks `[Version] Format`* (the pre-#2347 legacy builds use a different store
-entirely, so they never touch this one). When a build finds `Format` **newer**
-than it understands, it must not clobber it:
+The accepted tradeoff: after upgrading and re-saving, a subsequent downgrade sees
+its **pre-upgrade** channels (the frozen legacy snapshot), not any rescan done by
+the newer build. Nothing is lost or corrupted in either direction.
 
-- `CProfile::ForkToLocalIni()` detaches from the shared store **without deleting
-  it** and switches this instance to a private, **version-qualified** local file
-  `<exe-basename>.settings.<thisFormat>.local.ini` (history:
-  `.history.<thisFormat>.local.ini`). Putting this build's own format version in
-  the fork name keeps two different older builds from colliding on one file and
-  makes each fork self-identifying.
-- If that local file already exists (this build forked before) it is loaded and
-  reused silently. If it's new, it is **seeded from the current store** (registry
-  values converted to INI form) so the older build starts from the newer data it
-  can read, and the user is told **once** (`IDS_SETTINGS_NEWER_VERSION`, shown by
-  `ApplySettingsPolicies` on the next committed normal launch).
+### Why the toolbar layout does *not* get this treatment
 
-The newer build is never modified; each older build keeps its own local file.
+`Toolbars\PlayerToolBar → ButtonSequence` looked like a candidate (its shape
+changed once, in 2.5.5.30), but it already carries **in-band versioning** — the
+companion `ButtonLayoutRevision` key — and current builds read every shipped
+revision correctly. Two further properties make physical separation unnecessary,
+and in fact harmful:
 
-## Migration framework
+- Old builds rewrite the layout **only when the user customizes the toolbar**
+  (`SaveToolbarState` fires from the customization handlers only) — there is no
+  passive overwrite-on-every-save like the DVB channels.
+- Today's builds all write the identical revision-1 format, so a split key would
+  protect nothing while making a downgrade show a stale frozen layout it could
+  have read perfectly.
 
-Format upgrades are an ordered table in `mplayerc.cpp`:
+If the layout format changes again, it stays self-contained: bump
+`ButtonLayoutRevision` and handle the older revisions in the reader, exactly as
+the revision-0 → revision-1 transition already does. The revision key *is* the
+upgrade process — no new keys or namespace needed.
 
-```cpp
-struct SettingsMigrationStep { const wchar_t* from; const wchar_t* to; SettingsMigrationFn apply; };
-static const std::vector<SettingsMigrationStep> s_settingsMigrations = {
-    // { L"v1", L"v2", &Migrate_Settings_v1_to_v2 },   // added when v2 ships
-};
-```
+## Unrelated hardening — validated binary reads
 
-Each step transforms a store **in place** from `from` to `to`.
-`ApplySettingsMigrations(profile, from, to)` walks the chain;
-`CountSettingsMigrations` returns the step count or `-1` if no path exists. The
-table is **empty today** (only `v1`), so no step runs. To introduce `v2`: bump
-`SETTINGS_FORMAT_VERSION` and add `{ L"v1", L"v2", fn }`; existing `v1` stores
-then upgrade in place, and `v1` builds fork away from `v2` stores.
+`CAppSettings` reads a few audio-renderer `double`s straight from a binary blob.
+Those reads now guard on `dSize == sizeof(double)` before dereferencing, so a
+truncated or foreign value can't be misread. This is defensive only; it is not
+tied to any format version.
 
-## Interaction with reset
+---
 
-`/reset` and an HKLM `SettingsReset` clear the store and immediately re-stamp
-`[Version] Format`, `LastWrittenBy`, and `HistorySplit`, so the next launch does
-not treat the cleared store as a fresh install and re-import legacy settings.
+## Interaction with reset and HKLM defaults
 
-## Command-line / policy timing
-
-`SetupSettingsStore()` runs for every launch (it must, before `LoadSettings`),
-but the **user-visible policies** — the newer-format notice and the HKLM
-machine-defaults import — are deferred to `ApplySettingsPolicies()`, called only
-once a **normal interactive launch** is committed (after `/help`, `/close`,
-`/regvid`, `/admin`, and single-instance forwarding have returned). So utility
-invocations neither pop a modal nor apply machine policy.
+- `/reset` and an HKLM `SettingsReset` clear the store and re-stamp
+  `[Version] HistorySplit = 1`, so the next launch doesn't treat the cleared
+  store as a fresh install and re-run the MediaHistory split.
+- The **HKLM machine-defaults import** (`ApplyHKLMDefaults`, issue #2347) is
+  deferred to `ApplySettingsPolicies()`, called only once a **normal interactive
+  launch** is committed (after `/help`, `/close`, `/regvid`, `/admin`, and
+  single-instance forwarding have returned) so utility invocations don't apply
+  machine policy. See the source for the `SettingsReset` / `SettingsTimestamp`
+  gating.
 
 ---
 
 ## Key identifiers (quick reference)
 
-- `SETTINGS_FORMAT_VERSION` / `HISTORY_FORMAT_VERSION` / `LEGACY_EQUIVALENT_VERSION` (`Profile.h`) — bump the first to introduce a new format
-- Stores: `HKCU\Software\MPC-HC\Settings` / `<exe>.settings.ini`; legacy `…\MPC-HC` / `<exe>.ini`
-- Fork files (version-qualified): `<exe>.settings.<ver>.local.ini`, `<exe>.history.<ver>.local.ini`
-- Fields: `[Version] Format`, `[Version] LastWrittenBy`, `[Version] HistorySplit`
-- `CMPlayerCApp::SetupSettingsStore()` / `SetupHistoryStore()` / `StampSettingsStoreInitialized()` / `ApplySettingsPolicies()`
-- `CProfile::MigrateFromLegacy()` — one-time pre-versioned import (non-destructive)
-- `CProfile::ForkToLocalIni(iniPath, seedFromCurrent)` — downgrade fork
-- `s_settingsMigrations` + `CountSettingsMigrations` / `ApplySettingsMigrations`
-- `CompareVersionStrings()` — numeric `vN` compare
-- `IDS_SETTINGS_NEWER_VERSION` — the "newer settings, using a separate file" notice
+- Store: `HKCU\Software\MPC-HC\MPC-HC` / `<exe>.ini` (unchanged location, A-P binary)
+- `CProfile` — the store engine; `AfxGetProfile()` reaches the app's instance
+- `IDS_R_DVB_V2` (`SettingsDefines.h`) — downgrade-protected DVB channels under the top-level `v2` namespace
+- `[Version] DVBChannelsV2 = 1` — DVB-channels-migrated-to-v2 marker
+- `[Version] HistorySplit = 1` — MediaHistory split-done marker
+- `CAppSettings::MigrateSettings()` + `[Settings] SettingsVersion` (`IDS_R_VERSION`) — pre-existing scalar migration (unchanged)
+- `CMPlayerCApp::SetupSettingsStore()` / `SetupHistoryStore()` / `ApplySettingsPolicies()`
+- `ApplyHKLMDefaults()` / `ImportHKLMTree()` — HKLM machine-defaults import (#2347)

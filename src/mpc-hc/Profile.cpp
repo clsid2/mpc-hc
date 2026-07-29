@@ -26,25 +26,19 @@
 #include "base64/base64.h"
 
 // ---------------------------------------------------------------------------
-// Versioned store names. These live ALONGSIDE the legacy store, which keeps its
-// old location (HKCU\Software\MPC-HC\MPC-HC and <exe>.ini) untouched so older
-// builds stay downgrade-safe.
+// Store location. MPC-HC keeps its historical settings location so external
+// tools (e.g. madVR) and older builds keep reading it: the HKCU registry key
+// below, or <exe-basename>.ini next to the executable in portable mode. Only
+// MediaHistory is relocated, into <exe-basename>.history.ini (portable mode).
 // ---------------------------------------------------------------------------
-// The on-disk format version is NOT in the store name; each store records it in
-// a [Version] Format field. The new stores live ALONGSIDE the pre-versioning
-// legacy store (HKCU\Software\MPC-HC\MPC-HC and <exe>.ini), which is untouched.
-static const wchar_t* const LEGACY_REG_KEY     = L"Software\\MPC-HC\\MPC-HC";   // pre-versioning MFC key
-static const wchar_t* const SETTINGS_REG_KEY   = L"Software\\MPC-HC\\Settings"; // format in [Version]Format
-static const wchar_t* const OLD_INI_SUFFIX     = L".ini";                       // legacy portable ini
-static const wchar_t* const NEW_INI_SUFFIX     = L".settings.ini";             // <exe-basename>.settings.ini
-static const wchar_t* const HISTORY_INI_SUFFIX = L".history.ini";              // <exe-basename>.history.ini
-// Downgrade-fork files carry THIS build's format version in the name, so two
-// different older builds forking from the same newer store don't collide and
-// each file is self-identifying: <exe>.settings.<ver>.local.ini / .history.<ver>.local.ini
+static const wchar_t* const REG_KEY            = L"Software\\MPC-HC\\MPC-HC"; // HKCU settings key
+static const wchar_t* const INI_SUFFIX         = L".ini";                     // <exe-basename>.ini (portable)
+static const wchar_t* const HISTORY_INI_SUFFIX = L".history.ini";            // <exe-basename>.history.ini
 
-// Prefix marking a NEW-format Base64 binary value in an INI. Legacy binary
-// values are A-P encoded (only chars 'A'..'P'), so this lowercase-led prefix
-// can never collide with a legacy value -> ReadBinary disambiguates by it.
+// Binary INI values are written in the legacy A-P encoding (two chars 'A'..'P'
+// per byte) so the file stays byte-compatible with what stock MPC-HC builds
+// read and write. A "b64:"-prefixed Base64 form is still accepted on read for
+// forward-compatibility, but never written.
 static const wchar_t* const BINARY_B64_PREFIX = L"b64:";
 
 static CStringW GetExeBasePath()
@@ -58,29 +52,13 @@ static CStringW GetExeBasePath()
     return path;
 }
 
-static CStringW GetNewIniPath()
+static CStringW GetIniFilePath()
 {
-    return GetExeBasePath() + NEW_INI_SUFFIX;
-}
-static CStringW GetLocalIniPath()
-{
-    return GetExeBasePath() + L".settings." + SETTINGS_FORMAT_VERSION + L".local.ini";
-}
-
-static CStringW GetLegacyIniPath()
-{
-    return GetExeBasePath() + OLD_INI_SUFFIX;
+    return GetExeBasePath() + INI_SUFFIX;
 }
 
 // Base64 helpers bridging BYTE[] <-> CStringW using the ASCII Base64 codec
 // in include/base64/base64.h.
-static CStringW BinaryToBase64(const BYTE* pdata, unsigned nbytes)
-{
-    std::string bytes(reinterpret_cast<const char*>(pdata), nbytes);
-    std::string b64 = Base64::encode(bytes);
-    return CStringW(CStringA(b64.c_str(), static_cast<int>(b64.size())));
-}
-
 static unsigned Base64ToBinary(const CStringW& str, BYTE** ppdata)
 {
     *ppdata = nullptr;
@@ -125,6 +103,23 @@ static unsigned APToBinary(const CStringW& valueStr, BYTE** ppdata)
         (*ppdata)[i] = BYTE((valueStr[i * 2] - L'A') | ((valueStr[i * 2 + 1] - L'A') << 4));
     }
     return nbytes;
+}
+
+// Encode bytes in the legacy A-P form (inverse of APToBinary): two chars
+// 'A'..'P' per byte, low nibble first. Matches stock MPC-HC's INI binary format
+// exactly, so old builds read our binary values unchanged.
+static CStringW BinaryToAP(const BYTE* pdata, unsigned nbytes)
+{
+    CStringW out;
+    if (nbytes) {
+        wchar_t* buf = out.GetBuffer(static_cast<int>(nbytes) * 2);
+        for (unsigned i = 0; i < nbytes; i++) {
+            buf[i * 2]     = wchar_t(L'A' + (pdata[i] & 0x0F));
+            buf[i * 2 + 1] = wchar_t(L'A' + ((pdata[i] >> 4) & 0x0F));
+        }
+        out.ReleaseBuffer(static_cast<int>(nbytes) * 2);
+    }
+    return out;
 }
 
 // Open and parse an INI file (BOM-sniffing UNICODE, falling back to ANSI) into
@@ -205,10 +200,10 @@ static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
 
 CProfile::CProfile()
 {
-    // Portable if a settings INI (new or legacy) exists next to the executable.
-    const CStringW newIni = GetNewIniPath();
-    if (::PathFileExistsW(newIni) || ::PathFileExistsW(GetLegacyIniPath())) {
-        m_IniPath = newIni; // write the new-format file (alongside any legacy one)
+    // Portable if <exe-basename>.ini exists next to the executable.
+    const CStringW iniPath = GetIniFilePath();
+    if (::PathFileExistsW(iniPath)) {
+        m_IniPath = iniPath;
         return;
     }
 
@@ -236,19 +231,9 @@ CStringW CProfile::HistoryIniPath()
     return GetExeBasePath() + HISTORY_INI_SUFFIX;
 }
 
-CStringW CProfile::HistoryLocalIniPath()
-{
-    return GetExeBasePath() + L".history." + HISTORY_FORMAT_VERSION + L".local.ini";
-}
-
 CStringW CProfile::DefaultIniPath()
 {
-    return GetNewIniPath();
-}
-
-CStringW CProfile::LocalIniPath()
-{
-    return GetLocalIniPath();
+    return GetIniFilePath();
 }
 
 LONG CProfile::OpenRegistryKey()
@@ -257,7 +242,7 @@ LONG CProfile::OpenRegistryKey()
 
     if (!m_hAppRegKey) {
         DWORD dwDisposition = 0;
-        lResult = RegCreateKeyExW(HKEY_CURRENT_USER, SETTINGS_REG_KEY, 0, nullptr, 0,
+        lResult = RegCreateKeyExW(HKEY_CURRENT_USER, REG_KEY, 0, nullptr, 0,
                                   KEY_READ | KEY_WRITE, nullptr, &m_hAppRegKey, &dwDisposition);
         ASSERT(lResult == ERROR_SUCCESS);
     }
@@ -328,7 +313,7 @@ bool CProfile::StoreSettingsTo(const SettingsLocation newLocation)
         m_bRegistryMode = false;
     }
 
-    const CStringW newIniPath = GetNewIniPath();
+    const CStringW newIniPath = GetIniFilePath();
     CFile file;
     if (file.Open(newIniPath, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate)) {
         file.Close();
@@ -844,9 +829,10 @@ bool CProfile::WriteBinary(const wchar_t* section, const wchar_t* entry, const B
             regkey.Close();
         }
     } else {
-        CStringW base64 = BinaryToBase64(pdata, nbytes);
-        if (!base64.IsEmpty()) {
-            CStringW value = BINARY_B64_PREFIX + base64;
+        // Write in the legacy A-P form so the INI stays byte-compatible with
+        // stock MPC-HC builds (which read/write binary values this way).
+        CStringW value = BinaryToAP(pdata, nbytes);
+        if (!value.IsEmpty()) {
             InitIni();
             CStringW& old = m_ProfileMap[section][entry];
             if (old != value) {
@@ -1089,224 +1075,6 @@ void CProfile::Clear()
     m_bIniNeedFlush = false;
 }
 
-// Recursively copy a registry key's values and subkeys from src to dst,
-// preserving native value types. Unlike RegCopyTree it does NOT copy security
-// descriptors, so it works with a dst handle opened only for KEY_READ|KEY_WRITE
-// (RegCopyTree needs WRITE_DAC to clone the DACL and fails with ACCESS_DENIED).
-// Buffer sizes (in WCHARs, incl. NUL) for enumerating a key's value and subkey
-// names, from RegQueryInfoKey. Registry value names can be up to 16383 chars and
-// key names up to 255, so fixed buffers would silently drop long names.
-static void RegNameBufferSizes(HKEY key, DWORD& valueNameChars, DWORD& subKeyNameChars)
-{
-    DWORD maxValueName = 0, maxSubKeyName = 0;
-    if (RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, &maxSubKeyName,
-                         nullptr, nullptr, &maxValueName, nullptr, nullptr, nullptr) != ERROR_SUCCESS) {
-        maxValueName = 16383;
-        maxSubKeyName = 255;
-    }
-    valueNameChars = maxValueName + 1;
-    subKeyNameChars = maxSubKeyName + 1;
-}
-
-static void CopyRegistryTree(HKEY src, HKEY dst)
-{
-    DWORD valueNameChars, subKeyNameChars;
-    RegNameBufferSizes(src, valueNameChars, subKeyNameChars);
-    std::vector<WCHAR> name(valueNameChars);
-    std::vector<WCHAR> sub(subKeyNameChars);
-
-    // Values at this level.
-    for (DWORD i = 0;; i++) {
-        DWORD nameLen = static_cast<DWORD>(name.size()), type = 0, dataLen = 0;
-        LONG r = RegEnumValueW(src, i, name.data(), &nameLen, nullptr, &type, nullptr, &dataLen);
-        if (r == ERROR_NO_MORE_ITEMS) {
-            break;
-        }
-        if (r != ERROR_SUCCESS) {
-            continue;
-        }
-        std::vector<BYTE> data(dataLen ? dataLen : 1);
-        DWORD cb = dataLen;
-        if (RegQueryValueExW(src, name.data(), nullptr, &type, data.data(), &cb) == ERROR_SUCCESS) {
-            RegSetValueExW(dst, name.data(), 0, type, data.data(), cb);
-        }
-    }
-    // Subkeys.
-    for (DWORD i = 0;; i++) {
-        DWORD subLen = static_cast<DWORD>(sub.size());
-        LONG r = RegEnumKeyExW(src, i, sub.data(), &subLen, nullptr, nullptr, nullptr, nullptr);
-        if (r == ERROR_NO_MORE_ITEMS) {
-            break;
-        }
-        if (r != ERROR_SUCCESS) {
-            continue;
-        }
-        HKEY hSrcSub, hDstSub;
-        if (RegOpenKeyExW(src, sub.data(), 0, KEY_READ, &hSrcSub) == ERROR_SUCCESS) {
-            if (RegCreateKeyExW(dst, sub.data(), 0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &hDstSub, nullptr) == ERROR_SUCCESS) {
-                CopyRegistryTree(hSrcSub, hDstSub);
-                RegCloseKey(hDstSub);
-            }
-            RegCloseKey(hSrcSub);
-        }
-    }
-}
-
-// Enumerate a registry key recursively into a ProfileMap, converting each value
-// to the INI textual form CProfile uses (so a registry store can seed an INI
-// fork). `section` is the path built from subkeys ("" at the root).
-static void EnumerateRegistryTreeToMap(HKEY hKey, const CStringW& section, ProfileMap& out)
-{
-    DWORD valueNameChars, subKeyNameChars;
-    RegNameBufferSizes(hKey, valueNameChars, subKeyNameChars);
-    std::vector<WCHAR> name(valueNameChars);
-    std::vector<WCHAR> sub(subKeyNameChars);
-
-    if (!section.IsEmpty()) {
-        for (DWORD i = 0;; i++) {
-            DWORD nameLen = static_cast<DWORD>(name.size()), type = 0, dataLen = 0;
-            LONG r = RegEnumValueW(hKey, i, name.data(), &nameLen, nullptr, &type, nullptr, &dataLen);
-            if (r == ERROR_NO_MORE_ITEMS) {
-                break;
-            }
-            if (r != ERROR_SUCCESS || dataLen == 0) {
-                continue;
-            }
-            std::vector<BYTE> data(dataLen);
-            DWORD cb = dataLen;
-            if (RegQueryValueExW(hKey, name.data(), nullptr, &type, data.data(), &cb) != ERROR_SUCCESS) {
-                continue;
-            }
-            CStringW val;
-            switch (type) {
-                case REG_DWORD:
-                    if (cb < sizeof(DWORD)) continue;
-                    val.Format(L"%d", static_cast<int>(*reinterpret_cast<DWORD*>(data.data())));
-                    break;
-                case REG_QWORD:
-                    if (cb < sizeof(ULONGLONG)) continue;
-                    val.Format(L"%I64d", *reinterpret_cast<ULONGLONG*>(data.data()));
-                    break;
-                case REG_SZ:
-                case REG_EXPAND_SZ:
-                    val = CStringW(reinterpret_cast<LPCWSTR>(data.data()), static_cast<int>(cb / sizeof(WCHAR)));
-                    { int nul = val.Find(L'\0'); if (nul >= 0) val.Truncate(nul); }
-                    break;
-                case REG_BINARY:
-                    val = CStringW(BINARY_B64_PREFIX) + BinaryToBase64(data.data(), cb);
-                    break;
-                default:
-                    continue;
-            }
-            out[section][name.data()] = val;
-        }
-    }
-
-    for (DWORD i = 0;; i++) {
-        DWORD subLen = static_cast<DWORD>(sub.size());
-        LONG r = RegEnumKeyExW(hKey, i, sub.data(), &subLen, nullptr, nullptr, nullptr, nullptr);
-        if (r == ERROR_NO_MORE_ITEMS) {
-            break;
-        }
-        if (r != ERROR_SUCCESS) {
-            continue;
-        }
-        HKEY hSub;
-        if (RegOpenKeyExW(hKey, sub.data(), 0, KEY_READ, &hSub) == ERROR_SUCCESS) {
-            CStringW child = section.IsEmpty() ? CStringW(sub.data()) : (section + L"\\" + sub.data());
-            EnumerateRegistryTreeToMap(hSub, child, out);
-            RegCloseKey(hSub);
-        }
-    }
-}
-
-bool CProfile::MigrateFromLegacy()
-{
-    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
-
-    if (m_bRegistryMode) {
-        // Registry: recursively copy the legacy MFC key into the new key,
-        // preserving native value types (REG_DWORD/REG_SZ/REG_BINARY/...).
-        HKEY hLegacy = nullptr;
-        if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_CURRENT_USER, LEGACY_REG_KEY, 0, KEY_READ, &hLegacy)) {
-            return false;
-        }
-        OpenRegistryKey();
-        CopyRegistryTree(hLegacy, m_hAppRegKey);
-        RegCloseKey(hLegacy);
-        return true;
-    }
-
-    // INI: parse the legacy <exe>.ini verbatim into the (new) map, then flush
-    // it to the new file. Old A-P binary values are read back later via the
-    // un-prefixed path in ReadBinary().
-    const CStringW legacyIni = GetLegacyIniPath();
-    if (legacyIni.CompareNoCase(m_IniPath) == 0) {
-        return false; // defensive: never import a file onto itself
-    }
-    ProfileMap legacyMap;
-    if (!ReadIniFileIntoMap(legacyIni, legacyMap)) {
-        return false;
-    }
-
-    InitIni(); // ensure the (new, likely empty) map is loaded before merging
-    for (const auto& sec : legacyMap) {
-        for (const auto& kv : sec.second) {
-            m_ProfileMap[sec.first][kv.first] = kv.second;
-        }
-    }
-    m_bIniNeedFlush = true;
-    Flush(true);
-    return true;
-}
-
-bool CProfile::ForkToLocalIni(const CStringW& iniPath, bool seedFromCurrent)
-{
-    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
-
-    // Capture the current store's contents first (if seeding a fresh fork).
-    ProfileMap seed;
-    if (seedFromCurrent) {
-        if (m_bRegistryMode) {
-            OpenRegistryKey();
-            if (m_hAppRegKey) {
-                EnumerateRegistryTreeToMap(m_hAppRegKey, CStringW(), seed);
-            }
-        } else {
-            InitIni();
-            seed = m_ProfileMap;
-        }
-    }
-
-    // Detach from the shared store WITHOUT deleting it (the newer store survives).
-    if (m_hAppRegKey) {
-        RegCloseKey(m_hAppRegKey);
-        m_hAppRegKey = nullptr;
-    }
-    m_bRegistryMode = false;
-    m_IniPath = iniPath;
-    m_ProfileMap.clear();
-    m_bIniFirstInit = false; // force InitIni() to (re)read the local file if present
-    m_bIniNeedFlush = false;
-    InitIni();
-
-    // Fill in from the seed without overwriting anything already in an existing
-    // local fork file.
-    if (seedFromCurrent && !seed.empty()) {
-        for (const auto& sec : seed) {
-            for (const auto& kv : sec.second) {
-                auto& dst = m_ProfileMap[sec.first];
-                if (dst.find(kv.first) == dst.end()) {
-                    dst[kv.first] = kv.second;
-                    m_bIniNeedFlush = true;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 void CProfile::MoveSectionTree(const wchar_t* root, CProfile& dst)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
@@ -1363,7 +1131,7 @@ bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
 
 CStringW CProfile::GetRegistryKeyPath() const
 {
-    return m_bRegistryMode ? CStringW(SETTINGS_REG_KEY) : CStringW();
+    return m_bRegistryMode ? CStringW(REG_KEY) : CStringW();
 }
 
 SettingsLocation CProfile::GetSettingsLocation() const

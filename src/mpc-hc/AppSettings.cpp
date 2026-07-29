@@ -1162,9 +1162,10 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileString(IDS_R_CAPTURE, IDS_RS_AUDIO_DISP_NAME, strAnalogAudio);
     pApp->WriteProfileInt(IDS_R_CAPTURE, IDS_RS_COUNTRY, iAnalogCountry);
 
-    // Save digital capture settings (BDA)
-    pApp->WriteProfileString(IDS_R_DVB, nullptr, nullptr); // Ensure the section is cleared before saving the new settings
-
+    // Save digital capture settings (BDA). The BDA scalars are format-stable, so
+    // they stay in the shared (unversioned) section and are overwritten in place.
+    // We intentionally do NOT clear IDS_R_DVB: the legacy channel entries ("0"..)
+    // are left frozen there as a last-known-good snapshot for an older build.
     //pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_NETWORKPROVIDER, strBDANetworkProvider);
     pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_TUNER, strBDATuner);
     pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_RECEIVER, strBDAReceiver);
@@ -1180,11 +1181,19 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_DVB_REBUILD_FG, nDVBRebuildFilterGraph);
     pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_DVB_STOP_FG, nDVBStopFilterGraph);
 
+    // Saved channels use a format-versioned serialization an older build rejects,
+    // so they are stored only under the top-level v2 namespace. Clear that
+    // section first so a shrunken channel list leaves no stale trailing entries.
+    pApp->WriteProfileString(IDS_R_DVB_V2, nullptr, nullptr);
     for (size_t i = 0; i < m_DVBChannels.size(); i++) {
         CString numChannel;
         numChannel.Format(_T("%Iu"), i);
-        pApp->WriteProfileString(IDS_R_DVB, numChannel, m_DVBChannels[i].ToString());
+        pApp->WriteProfileString(IDS_R_DVB_V2, numChannel, m_DVBChannels[i].ToString());
     }
+    // Mark that channels now live under the v2 namespace. Once set, we never read
+    // the frozen legacy channels again, so clearing all channels here can't
+    // resurrect them on the next load.
+    pApp->WriteProfileString(_T("Version"), _T("DVBChannelsV2"), _T("1"));
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DVDPOS, fRememberDVDPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, fRememberFilePos);
@@ -2217,10 +2226,17 @@ void CAppSettings::LoadSettings()
     nDVBRebuildFilterGraph = (DVB_RebuildFilterGraph) pApp->GetProfileInt(IDS_R_DVB, IDS_RS_DVB_REBUILD_FG, DVB_STOP_FG_ALWAYS);
     nDVBStopFilterGraph = (DVB_StopFilterGraph) pApp->GetProfileInt(IDS_R_DVB, IDS_RS_DVB_STOP_FG, DVB_STOP_FG_ALWAYS);
 
+    // Read channels from the v2 namespace once migration has run
+    // (the marker is written on the first save). Before that, read the legacy
+    // entries written by an older build so they migrate forward. Gating on the
+    // marker rather than "does v2 have a channel" means clearing all channels in
+    // a new build doesn't resurrect the frozen legacy list on the next load.
+    LPCTSTR dvbChannelsSection =
+        AfxGetMyApp()->HasProfileEntry(_T("Version"), _T("DVBChannelsV2")) ? IDS_R_DVB_V2 : IDS_R_DVB;
     for (int iChannel = 0; ; iChannel++) {
         CString strTemp;
         strTemp.Format(_T("%d"), iChannel);
-        CString strChannel = pApp->GetProfileString(IDS_R_DVB, strTemp);
+        CString strChannel = pApp->GetProfileString(dvbChannelsSection, strTemp);
         if (strChannel.IsEmpty()) {
             break;
         }
@@ -2522,17 +2538,25 @@ void CAppSettings::UpdateRenderersData(bool fSave)
 
         double* dPtr;
         UINT dSize;
+        // Guard the size before dereferencing: a truncated/foreign blob must not
+        // be read as a double (the writer stores exactly sizeof(double) bytes).
         if (pApp->GetProfileBinary(IDS_R_SETTINGS, _T("CycleDelta"), (LPBYTE*)&dPtr, &dSize)) {
-            ars.fCycleDelta = *dPtr;
+            if (dSize == sizeof(double)) {
+                ars.fCycleDelta = *dPtr;
+            }
             delete [] dPtr;
         }
 
         if (pApp->GetProfileBinary(IDS_R_SETTINGS, _T("TargetSyncOffset"), (LPBYTE*)&dPtr, &dSize)) {
-            ars.fTargetSyncOffset = *dPtr;
+            if (dSize == sizeof(double)) {
+                ars.fTargetSyncOffset = *dPtr;
+            }
             delete [] dPtr;
         }
         if (pApp->GetProfileBinary(IDS_R_SETTINGS, _T("ControlLimit"), (LPBYTE*)&dPtr, &dSize)) {
-            ars.fControlLimit = *dPtr;
+            if (dSize == sizeof(double)) {
+                ars.fControlLimit = *dPtr;
+            }
             delete [] dPtr;
         }
 
