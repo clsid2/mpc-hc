@@ -236,6 +236,7 @@ private:
         SHOW_VOLUME_PERCENTAGE,
         STARTUP_PRESET,
         TIME_ON_SEEKBAR_LEFT,
+        HISTORY_IN_APPDATA,
     };
 
     enum {

@@ -298,6 +298,7 @@ CAppSettings::CAppSettings()
     , bPauseWhileDraggingSeekbar(true)
     , bConfirmFileDelete(true)
     , bShowVolumePercentage(true)
+    , bHistoryInAppData(false)
     , LastGPUCheck(0)
     , gpuid1(L"")
     , gpuid2(L"")
@@ -1407,6 +1408,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, bPauseWhileDraggingSeekbar);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, bConfirmFileDelete);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, bShowVolumePercentage);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, bHistoryInAppData);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", LastGPUCheck);
     pApp->WriteProfileString(IDS_R_SETTINGS, L"GPUID1", gpuid1);
@@ -1887,6 +1889,7 @@ void CAppSettings::LoadSettings()
     bPauseWhileDraggingSeekbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, TRUE);
     bConfirmFileDelete = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, TRUE);
     bShowVolumePercentage = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, TRUE);
+    bHistoryInAppData = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, FALSE);
 
     fClosedCaptions = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CLOSEDCAPTIONS, FALSE);
     {

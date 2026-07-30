@@ -168,6 +168,14 @@ public:
     bool ExportSettingsZip(const CString& zipPath);
 
 private:
+    // True when the HistoryInAppData option is set in the settings store. Reads
+    // the raw value so it works before LoadSettings() has run.
+    bool UseAppDataForHistory();
+    // Resolved location of the MediaHistory INI (portable mode): next to the
+    // executable by default, %APPDATA%\MPC-HC when the HistoryInAppData option
+    // is set or the program folder is not writable. Carries an existing file
+    // over when the location changes.
+    CStringW ResolveHistoryIniPath();
     // Set up the settings store: in portable (INI) mode, create the separate
     // MediaHistory store and perform the one-time split out of the main file.
     void SetupSettingsStore();
@@ -210,6 +218,10 @@ public:
 
     bool GetAppSavePath(CString& path);
     bool GetAppDataPath(CString& path);
+    // Folder for the saved playlist (default.mpcpl). Follows the MediaHistory
+    // store's folder in portable mode, so the HistoryInAppData option (and the
+    // unwritable-program-folder fallback) relocates both together.
+    bool GetPlaylistSavePath(CString& path);
 
     bool m_fClosingState;
     bool m_bThemeLoaded;

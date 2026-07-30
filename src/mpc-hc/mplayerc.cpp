@@ -816,7 +816,7 @@ void CMPlayerCApp::SetupSettingsStore()
 // one-time split of MediaHistory out of the main settings file.
 void CMPlayerCApp::SetupHistoryStore()
 {
-    m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
+    m_HistoryProfile = std::make_unique<CProfile>(ResolveHistoryIniPath());
 
     // One-time: move any MediaHistory still in the main settings store into it.
     if (!m_Profile.HasEntry(_T("Version"), _T("HistorySplit"))) {
@@ -981,6 +981,68 @@ void CMPlayerCApp::ApplyHKLMDefaults()
     RegCloseKey(hRoot);
 }
 
+bool CMPlayerCApp::UseAppDataForHistory()
+{
+    // Read the raw option value so this works before LoadSettings() has run.
+    bool inAppData = false;
+    m_Profile.ReadBool(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, inAppData);
+    return inAppData;
+}
+
+CStringW CMPlayerCApp::ResolveHistoryIniPath()
+{
+    const CStringW programPath = CProfile::HistoryIniPath();
+
+    CString appDataDir;
+    if (!GetAppDataPath(appDataDir)) {
+        return programPath;
+    }
+    CPath historyFileName(programPath);
+    historyFileName.StripPath(); // filename incl. extension (PathUtils::FileName drops the extension)
+    const CStringW appDataPath = PathUtils::CombinePaths(appDataDir, historyFileName);
+
+    bool useAppData = UseAppDataForHistory();
+    if (!useAppData && !PathUtils::Exists(programPath)) {
+        // Fall back to %APPDATA% when the history file cannot be created next
+        // to the executable (e.g. installed in a read-only folder but running
+        // portable off a shared settings INI).
+        HANDLE hProbe = ::CreateFileW(programPath, GENERIC_WRITE, 0, nullptr,
+                                      CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hProbe == INVALID_HANDLE_VALUE) {
+            useAppData = true;
+        } else {
+            ::CloseHandle(hProbe);
+            ::DeleteFileW(programPath); // probe only, leave no empty file behind
+        }
+    }
+
+    const CStringW target = useAppData ? appDataPath : programPath;
+    const CStringW other  = useAppData ? programPath : appDataPath;
+    if (useAppData) {
+        ::CreateDirectoryW(appDataDir, nullptr);
+    }
+    // Carry an existing history file over when the location changes (option
+    // toggled, or the fallback newly triggered), so history is not lost.
+    if (!PathUtils::Exists(target) && PathUtils::Exists(other)) {
+        if (!::MoveFileExW(other, target, MOVEFILE_COPY_ALLOWED)) {
+            ::CopyFileW(other, target, TRUE); // source not deletable; copy is enough
+        }
+    }
+
+    return target;
+}
+
+bool CMPlayerCApp::GetPlaylistSavePath(CString& path)
+{
+    // The saved playlist lives next to the MediaHistory store, so the
+    // HistoryInAppData option (and the unwritable-folder fallback) moves both.
+    if (m_HistoryProfile) {
+        path = PathUtils::DirName(m_HistoryProfile->GetIniPath());
+        return !path.IsEmpty();
+    }
+    return GetAppSavePath(path);
+}
+
 bool CMPlayerCApp::GetAppSavePath(CString& path)
 {
     if (IsIniValid()) { // If settings ini file found, store stuff in the same folder as the exe file
@@ -1030,7 +1092,7 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     // Point the MediaHistory store at the new location before SaveSettings()
     // below re-writes the full in-memory history there in the correct format.
     if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
-        m_HistoryProfile = std::make_unique<CProfile>(CProfile::HistoryIniPath());
+        m_HistoryProfile = std::make_unique<CProfile>(ResolveHistoryIniPath());
         m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1")); // history is separate here
     } else {
         m_HistoryProfile.reset(); // registry keeps history in the registry
@@ -1907,7 +1969,7 @@ BOOL CMPlayerCApp::InitInstance()
 
         // Remove the current playlist if it exists
         CString strSavePath;
-        if (GetAppSavePath(strSavePath)) {
+        if (GetPlaylistSavePath(strSavePath)) {
             CPath playlistPath;
             playlistPath.Combine(strSavePath, _T("default.mpcpl"));
 

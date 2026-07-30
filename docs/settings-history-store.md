@@ -77,6 +77,23 @@ CMPlayerCApp::GetProfileString ── ProfileForSection("MediaHistory\\<hash>")
   (registry MPC-HC key / <exe>.ini)    (<exe>.history.ini)
 ```
 
+## Location option and fallback (`HistoryInAppData`)
+
+By default the history INI sits next to the executable. Two things relocate it
+to `%APPDATA%\MPC-HC\<exe-basename>.history.ini` instead:
+
+- the **`HistoryInAppData`** advanced option (Options → Advanced) — e.g. a
+  shared/portable install where each user should keep private history;
+- automatically, when the history file **cannot be created** in the player
+  folder (read-only install running off a settings INI).
+
+The option lives in the main settings store, which is read before the history
+store is set up, so `ResolveHistoryIniPath()` (mplayerc.cpp) can honor it during
+startup; it also carries an existing history file over when the location
+changes, so toggling the option doesn't lose history. The **saved playlist**
+(`default.mpcpl`) follows the history file's folder (`GetPlaylistSavePath()`),
+so both relocate together.
+
 ## One-time split (migration)
 
 MediaHistory has always lived in the main settings store, so on the first

@@ -1029,6 +1029,9 @@ public:
     bool bCaptureDeinterlace;
     bool bConfirmFileDelete;
     bool bShowVolumePercentage;
+    // Portable mode: keep the MediaHistory INI and the saved playlist in
+    // %APPDATA%\MPC-HC instead of the player folder (issue #2347 follow-up).
+    bool bHistoryInAppData;
 
     int LastGPUCheck;
     CString gpuid1;

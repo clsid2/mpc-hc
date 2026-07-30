@@ -1741,7 +1741,7 @@ void CPlayerPlaylistBar::LoadPlaylist(LPCTSTR filename)
 
     m_list.SetRedraw(FALSE);
 
-    if (AfxGetMyApp()->GetAppSavePath(base)) {
+    if (AfxGetMyApp()->GetPlaylistSavePath(base)) {
         CPath p;
         p.Combine(base, _T("default.mpcpl"));
 
@@ -1774,7 +1774,7 @@ void CPlayerPlaylistBar::SavePlaylist(bool can_delay /* = false*/)
 {
     CString base;
 
-    if (AfxGetMyApp()->GetAppSavePath(base)) {
+    if (AfxGetMyApp()->GetPlaylistSavePath(base)) {
         CPath p;
         p.Combine(base, _T("default.mpcpl"));
 

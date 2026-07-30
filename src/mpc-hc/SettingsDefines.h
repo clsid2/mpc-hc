@@ -132,6 +132,7 @@
 #define IDS_RS_CONFIRM_FILE_DELETE          _T("ConfirmFileDelete")
 #define IDS_RS_LIBASS_FOR_SRT               _T("UseLibassForSRT")
 #define IDS_RS_SHOW_VOLUME_PERCENTAGE       _T("ShowVolumePercentage")
+#define IDS_RS_HISTORY_IN_APPDATA           _T("HistoryInAppData")
 #define IDS_RS_TIME_ON_SEEKBAR              _T("TimeOnSeekBar")
 #define IDS_RS_TIME_ON_SEEKBAR_LEFT         _T("TimeOnSeekBarLeft")
 #define IDS_RS_CUSTOM_PRESET_CONTROLSTATE   _T("CustomPresetControlState")

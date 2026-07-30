@@ -193,6 +193,7 @@ void CPPageAdvanced::InitSettings()
         { StrRes(IDS_STARTUP_PRESET_REMEMBER), StrRes(IDS_AG_VIEW_MINIMAL), StrRes(IDS_AG_VIEW_COMPACT), StrRes(IDS_AG_VIEW_NORMAL), StrRes(IDS_AG_VIEW_CUSTOM) },
         StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
     addBoolItem(TIME_ON_SEEKBAR_LEFT, IDS_RS_TIME_ON_SEEKBAR_LEFT, false, s.bTimeOnSeekBarLeft, StrRes(IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT));
+    addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, L"Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart.");
 }
 
 BOOL CPPageAdvanced::OnApply()
