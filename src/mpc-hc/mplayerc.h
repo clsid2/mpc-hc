@@ -163,13 +163,22 @@ public:
     bool StoreSettingsToRegistry();
     CString GetIniPath() const;
     bool IsIniValid() const;
+    // True when settings are stored in the registry (as opposed to an INI file).
+    bool IsUsingRegistry() const;
+    // Keep the cached HistoryInAppData option in sync when it is changed
+    // through the advanced options (see UseAppDataForHistory).
+    void SetHistoryInAppData(bool inAppData);
     bool ChangeSettingsLocation(bool useIni);
     bool ExportSettings(CString savePath, CString subKey = _T(""));
     bool ExportSettingsZip(const CString& zipPath);
 
 private:
-    // True when the HistoryInAppData option is set in the settings store. Reads
-    // the raw value so it works before LoadSettings() has run.
+    // Cached HistoryInAppData option; -1 until first read.
+    int m_iHistoryInAppData = -1;
+    // True when the HistoryInAppData option is set in the settings store. The
+    // first call reads the raw value (it happens before LoadSettings() has
+    // run); afterwards the cached copy is used, kept in sync by
+    // SetHistoryInAppData().
     bool UseAppDataForHistory();
     // Resolved location of the MediaHistory INI (portable mode): next to the
     // executable by default, %APPDATA%\MPC-HC when the HistoryInAppData option

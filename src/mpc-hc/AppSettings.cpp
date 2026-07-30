@@ -1163,38 +1163,31 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileString(IDS_R_CAPTURE, IDS_RS_AUDIO_DISP_NAME, strAnalogAudio);
     pApp->WriteProfileInt(IDS_R_CAPTURE, IDS_RS_COUNTRY, iAnalogCountry);
 
-    // Save digital capture settings (BDA). The BDA scalars are format-stable, so
-    // they stay in the shared (unversioned) section and are overwritten in place.
-    // We intentionally do NOT clear IDS_R_DVB: the legacy channel entries ("0"..)
-    // are left frozen there as a last-known-good snapshot for an older build.
-    //pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_NETWORKPROVIDER, strBDANetworkProvider);
-    pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_TUNER, strBDATuner);
-    pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_RECEIVER, strBDAReceiver);
-    //pApp->WriteProfileString(IDS_R_DVB, IDS_RS_BDA_STANDARD, strBDAStandard);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_SCAN_FREQ_START, iBDAScanFreqStart);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_SCAN_FREQ_END, iBDAScanFreqEnd);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_BANDWIDTH, iBDABandwidth);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_SYMBOLRATE, iBDASymbolRate);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_USE_OFFSET, fBDAUseOffset);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_OFFSET, iBDAOffset);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_BDA_IGNORE_ENCRYPTED_CHANNELS, fBDAIgnoreEncryptedChannels);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_DVB_LAST_CHANNEL, nDVBLastChannel);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_DVB_REBUILD_FG, nDVBRebuildFilterGraph);
-    pApp->WriteProfileInt(IDS_R_DVB, IDS_RS_DVB_STOP_FG, nDVBStopFilterGraph);
+    // Save digital capture settings (BDA) to the replacement section (see
+    // IDS_R_DVB2 in SettingsDefines.h). The legacy section is deliberately left
+    // frozen as a last-known-good snapshot for older builds. Clear the section
+    // first so a shrunken channel list leaves no stale trailing entries.
+    pApp->WriteProfileString(IDS_R_DVB2, nullptr, nullptr);
+    //pApp->WriteProfileString(IDS_R_DVB2, IDS_RS_BDA_NETWORKPROVIDER, strBDANetworkProvider);
+    pApp->WriteProfileString(IDS_R_DVB2, IDS_RS_BDA_TUNER, strBDATuner);
+    pApp->WriteProfileString(IDS_R_DVB2, IDS_RS_BDA_RECEIVER, strBDAReceiver);
+    //pApp->WriteProfileString(IDS_R_DVB2, IDS_RS_BDA_STANDARD, strBDAStandard);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_SCAN_FREQ_START, iBDAScanFreqStart);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_SCAN_FREQ_END, iBDAScanFreqEnd);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_BANDWIDTH, iBDABandwidth);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_SYMBOLRATE, iBDASymbolRate);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_USE_OFFSET, fBDAUseOffset);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_OFFSET, iBDAOffset);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_BDA_IGNORE_ENCRYPTED_CHANNELS, fBDAIgnoreEncryptedChannels);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_DVB_LAST_CHANNEL, nDVBLastChannel);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_DVB_REBUILD_FG, nDVBRebuildFilterGraph);
+    pApp->WriteProfileInt(IDS_R_DVB2, IDS_RS_DVB_STOP_FG, nDVBStopFilterGraph);
 
-    // Saved channels use a format-versioned serialization an older build rejects,
-    // so they are stored only under the top-level v2 namespace. Clear that
-    // section first so a shrunken channel list leaves no stale trailing entries.
-    pApp->WriteProfileString(IDS_R_DVB_V2, nullptr, nullptr);
     for (size_t i = 0; i < m_DVBChannels.size(); i++) {
         CString numChannel;
         numChannel.Format(_T("%Iu"), i);
-        pApp->WriteProfileString(IDS_R_DVB_V2, numChannel, m_DVBChannels[i].ToString());
+        pApp->WriteProfileString(IDS_R_DVB2, numChannel, m_DVBChannels[i].ToString());
     }
-    // Mark that channels now live under the v2 namespace. Once set, we never read
-    // the frozen legacy channels again, so clearing all channels here can't
-    // resurrect them on the next load.
-    pApp->WriteProfileString(_T("Version"), _T("DVBChannelsV2"), _T("1"));
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DVDPOS, fRememberDVDPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, fRememberFilePos);
@@ -1409,6 +1402,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, bConfirmFileDelete);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, bShowVolumePercentage);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, bHistoryInAppData);
+    pApp->SetHistoryInAppData(bHistoryInAppData); // keep the app's cached copy in sync
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", LastGPUCheck);
     pApp->WriteProfileString(IDS_R_SETTINGS, L"GPUID1", gpuid1);
@@ -1890,6 +1884,7 @@ void CAppSettings::LoadSettings()
     bConfirmFileDelete = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, TRUE);
     bShowVolumePercentage = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, TRUE);
     bHistoryInAppData = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, FALSE);
+    AfxGetMyApp()->SetHistoryInAppData(bHistoryInAppData);
 
     fClosedCaptions = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CLOSEDCAPTIONS, FALSE);
     {
@@ -2214,32 +2209,33 @@ void CAppSettings::LoadSettings()
     strAnalogAudio        = pApp->GetProfileString(IDS_R_CAPTURE, IDS_RS_AUDIO_DISP_NAME, _T("dummy"));
     iAnalogCountry        = pApp->GetProfileInt(IDS_R_CAPTURE, IDS_RS_COUNTRY, 1);
 
-    //strBDANetworkProvider = pApp->GetProfileString(IDS_R_DVB, IDS_RS_BDA_NETWORKPROVIDER);
-    strBDATuner           = pApp->GetProfileString(IDS_R_DVB, IDS_RS_BDA_TUNER);
-    strBDAReceiver        = pApp->GetProfileString(IDS_R_DVB, IDS_RS_BDA_RECEIVER);
-    //sBDAStandard        = pApp->GetProfileString(IDS_R_DVB, IDS_RS_BDA_STANDARD);
-    iBDAScanFreqStart     = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_SCAN_FREQ_START, 474000);
-    iBDAScanFreqEnd       = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_SCAN_FREQ_END, 858000);
-    iBDABandwidth         = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_BANDWIDTH, 8);
-    iBDASymbolRate        = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_SYMBOLRATE, 0);
-    fBDAUseOffset         = !!pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_USE_OFFSET, FALSE);
-    iBDAOffset            = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_OFFSET, 166);
-    fBDAIgnoreEncryptedChannels = !!pApp->GetProfileInt(IDS_R_DVB, IDS_RS_BDA_IGNORE_ENCRYPTED_CHANNELS, FALSE);
-    nDVBLastChannel       = pApp->GetProfileInt(IDS_R_DVB, IDS_RS_DVB_LAST_CHANNEL, INT_ERROR);
-    nDVBRebuildFilterGraph = (DVB_RebuildFilterGraph) pApp->GetProfileInt(IDS_R_DVB, IDS_RS_DVB_REBUILD_FG, DVB_STOP_FG_ALWAYS);
-    nDVBStopFilterGraph = (DVB_StopFilterGraph) pApp->GetProfileInt(IDS_R_DVB, IDS_RS_DVB_STOP_FG, DVB_STOP_FG_ALWAYS);
+    // DVB settings live in the replacement section (see IDS_R_DVB2). Probe
+    // BDASymbolRate there with a default of -1 (never a legitimate stored
+    // value): -1 means the section has not been written yet — first run after
+    // an upgrade — so read everything once from the legacy section; the next
+    // save migrates it. After that the frozen legacy entries are never read
+    // again, so clearing all channels can't resurrect them on the next load.
+    LPCTSTR dvbSection =
+        pApp->GetProfileInt(IDS_R_DVB2, IDS_RS_BDA_SYMBOLRATE, -1) != -1 ? IDS_R_DVB2 : IDS_R_DVB;
+    //strBDANetworkProvider = pApp->GetProfileString(dvbSection, IDS_RS_BDA_NETWORKPROVIDER);
+    strBDATuner           = pApp->GetProfileString(dvbSection, IDS_RS_BDA_TUNER);
+    strBDAReceiver        = pApp->GetProfileString(dvbSection, IDS_RS_BDA_RECEIVER);
+    //sBDAStandard        = pApp->GetProfileString(dvbSection, IDS_RS_BDA_STANDARD);
+    iBDAScanFreqStart     = pApp->GetProfileInt(dvbSection, IDS_RS_BDA_SCAN_FREQ_START, 474000);
+    iBDAScanFreqEnd       = pApp->GetProfileInt(dvbSection, IDS_RS_BDA_SCAN_FREQ_END, 858000);
+    iBDABandwidth         = pApp->GetProfileInt(dvbSection, IDS_RS_BDA_BANDWIDTH, 8);
+    iBDASymbolRate        = pApp->GetProfileInt(dvbSection, IDS_RS_BDA_SYMBOLRATE, 0);
+    fBDAUseOffset         = !!pApp->GetProfileInt(dvbSection, IDS_RS_BDA_USE_OFFSET, FALSE);
+    iBDAOffset            = pApp->GetProfileInt(dvbSection, IDS_RS_BDA_OFFSET, 166);
+    fBDAIgnoreEncryptedChannels = !!pApp->GetProfileInt(dvbSection, IDS_RS_BDA_IGNORE_ENCRYPTED_CHANNELS, FALSE);
+    nDVBLastChannel       = pApp->GetProfileInt(dvbSection, IDS_RS_DVB_LAST_CHANNEL, INT_ERROR);
+    nDVBRebuildFilterGraph = (DVB_RebuildFilterGraph) pApp->GetProfileInt(dvbSection, IDS_RS_DVB_REBUILD_FG, DVB_STOP_FG_ALWAYS);
+    nDVBStopFilterGraph = (DVB_StopFilterGraph) pApp->GetProfileInt(dvbSection, IDS_RS_DVB_STOP_FG, DVB_STOP_FG_ALWAYS);
 
-    // Read channels from the v2 namespace once migration has run
-    // (the marker is written on the first save). Before that, read the legacy
-    // entries written by an older build so they migrate forward. Gating on the
-    // marker rather than "does v2 have a channel" means clearing all channels in
-    // a new build doesn't resurrect the frozen legacy list on the next load.
-    LPCTSTR dvbChannelsSection =
-        AfxGetMyApp()->HasProfileEntry(_T("Version"), _T("DVBChannelsV2")) ? IDS_R_DVB_V2 : IDS_R_DVB;
     for (int iChannel = 0; ; iChannel++) {
         CString strTemp;
         strTemp.Format(_T("%d"), iChannel);
-        CString strChannel = pApp->GetProfileString(dvbChannelsSection, strTemp);
+        CString strChannel = pApp->GetProfileString(dvbSection, strTemp);
         if (strChannel.IsEmpty()) {
             break;
         }

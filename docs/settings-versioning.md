@@ -57,7 +57,7 @@ old and new builds interoperating on scalars.
 
 ---
 
-## Downgrade protection — the `v2` namespace
+## Downgrade protection — `DVBConfiguration2`
 
 The sweep found exactly **one** value that needs physical separation: the saved
 DVB channels. Their serialization is pipe-delimited with a leading
@@ -66,39 +66,38 @@ an older build **throws** on a newer token, drops the channel, and — because
 channels are rewritten on **every** `SaveSettings` — overwrites the newer list
 just by running. Only a key an old build never touches can prevent that.
 
-The new build stores channels under a **top-level `v2` namespace**:
+The new build stores the whole DVB configuration (BDA scalars + channels) in a
+**replacement section** old builds don't know about, following the same pattern
+`Commands2` and `FileFormats2` used when their formats changed:
 
 ```
-IDS_R_DVB_V2 = "v2\DVBConfiguration"   (SettingsDefines.h)
+IDS_R_DVB2 = "DVBConfiguration2"   (SettingsDefines.h)
 ```
 
-`v2` sits at the top level (the versioned section lives *under* it) rather than
-as a subkey of the data section. Besides reading naturally — one versioned
-namespace that future format-fragile values can also live in — this keeps the
-legacy section a plain leaf key: old builds clear `DVBConfiguration` on every
-save with MFC's non-recursive `RegDeleteKey`, which would fail if a `v2` subkey
-were nested inside it (leaving stale channel entries a downgrade would read back
-as phantom channels).
+A *sibling* section (not a subkey of the legacy one) keeps `DVBConfiguration` a
+plain leaf key: old builds clear it on every save with MFC's non-recursive
+`RegDeleteKey`, which would fail if a subkey were nested inside it (leaving
+stale channel entries a downgrade would read back as phantom channels).
 
 Rules:
 
-- **Write:** the new build writes channels **only** under `v2\DVBConfiguration`,
-  clearing that section first (so a shrunken channel list leaves no stale
-  trailing entries). The format-stable BDA scalars stay in the shared
-  `DVBConfiguration` section and are overwritten in place. The legacy channel
-  entries in `DVBConfiguration` are **left frozen** — deliberately not cleared.
-- **Read + one-time migrate:** the new build reads `v2` once the `[Version]
-  DVBChannelsV2 = 1` marker is present (set on the first save); before that it
-  reads the legacy entries so they migrate forward. Gating on a marker rather
-  than "does `v2` have a channel" means clearing all channels in a new build
-  can't resurrect the frozen legacy list on the next load.
-- **Old builds** only ever read/write the legacy entries, never `v2`, so they
-  can't see or corrupt the new-format data. A downgrade keeps operating on its
-  own frozen legacy copy.
+- **Write:** the new build writes **only** to `DVBConfiguration2`, clearing it
+  first (so a shrunken channel list leaves no stale trailing entries). The
+  legacy `DVBConfiguration` section is **left frozen** — deliberately not
+  written or cleared.
+- **Read + one-time migrate:** the new build probes `BDASymbolRate` in
+  `DVBConfiguration2` with a default of `-1` (never a legitimate stored value).
+  `-1` means the section hasn't been written yet — first run after an upgrade —
+  so everything is read once from the legacy section and the next save migrates
+  it. Once the section exists, the legacy entries are never read again, so
+  clearing all channels in a new build can't resurrect the frozen legacy list.
+- **Old builds** only ever read/write the legacy section, never
+  `DVBConfiguration2`, so they can't see or corrupt the new-format data. A
+  downgrade keeps operating on its own frozen legacy copy.
 
 The accepted tradeoff: after upgrading and re-saving, a subsequent downgrade sees
-its **pre-upgrade** channels (the frozen legacy snapshot), not any rescan done by
-the newer build. Nothing is lost or corrupted in either direction.
+its **pre-upgrade** DVB settings (the frozen legacy snapshot), not any changes
+made by the newer build. Nothing is lost or corrupted in either direction.
 
 ### Why the toolbar layout does *not* get this treatment
 
@@ -147,8 +146,7 @@ tied to any format version.
 
 - Store: `HKCU\Software\MPC-HC\MPC-HC` / `<exe>.ini` (unchanged location, A-P binary)
 - `CProfile` — the store engine; `AfxGetProfile()` reaches the app's instance
-- `IDS_R_DVB_V2` (`SettingsDefines.h`) — downgrade-protected DVB channels under the top-level `v2` namespace
-- `[Version] DVBChannelsV2 = 1` — DVB-channels-migrated-to-v2 marker
+- `IDS_R_DVB2` = `DVBConfiguration2` (`SettingsDefines.h`) — downgrade-protected replacement section for the DVB settings (`BDASymbolRate` probe with default `-1` detects first run after upgrade)
 - `[Version] HistorySplit = 1` — MediaHistory split-done marker
 - `CAppSettings::MigrateSettings()` + `[Settings] SettingsVersion` (`IDS_R_VERSION`) — pre-existing scalar migration (unchanged)
 - `CMPlayerCApp::SetupSettingsStore()` / `SetupHistoryStore()` / `ApplySettingsPolicies()`

@@ -794,7 +794,12 @@ CString CMPlayerCApp::GetIniPath() const
 
 bool CMPlayerCApp::IsIniValid() const
 {
-    return m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR;
+    return !IsUsingRegistry();
+}
+
+bool CMPlayerCApp::IsUsingRegistry() const
+{
+    return m_Profile.GetSettingsLocation() == SETS_REGISTRY;
 }
 
 void CMPlayerCApp::SetupSettingsStore()
@@ -802,12 +807,13 @@ void CMPlayerCApp::SetupSettingsStore()
     // The store stays at its historical location (HKCU\Software\MPC-HC\MPC-HC or
     // <exe>.ini) so external tools and older builds keep reading it unchanged.
     // Scalar settings evolve additively; the one format-fragile composite field
-    // (saved DVB channels) is version-qualified at its own call sites, so no
-    // store-wide format/migration machinery is needed here.
+    // (saved DVB channels) moved to a replacement section (DVBConfiguration2)
+    // at its own call sites, so no store-wide format/migration machinery is
+    // needed here.
     //
     // MediaHistory is the one structural change: in portable (INI) mode it moves
     // to a separate file; in registry mode it stays inside the settings key.
-    if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
+    if (!IsUsingRegistry()) {
         SetupHistoryStore();
     }
 }
@@ -983,10 +989,19 @@ void CMPlayerCApp::ApplyHKLMDefaults()
 
 bool CMPlayerCApp::UseAppDataForHistory()
 {
-    // Read the raw option value so this works before LoadSettings() has run.
-    bool inAppData = false;
-    m_Profile.ReadBool(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, inAppData);
-    return inAppData;
+    if (m_iHistoryInAppData < 0) {
+        // First call happens before LoadSettings() has run, so read the raw
+        // option value once; later calls use the cached copy.
+        bool inAppData = false;
+        m_Profile.ReadBool(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, inAppData);
+        m_iHistoryInAppData = inAppData ? 1 : 0;
+    }
+    return m_iHistoryInAppData > 0;
+}
+
+void CMPlayerCApp::SetHistoryInAppData(bool inAppData)
+{
+    m_iHistoryInAppData = inAppData ? 1 : 0;
 }
 
 CStringW CMPlayerCApp::ResolveHistoryIniPath()
@@ -1091,7 +1106,7 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
 
     // Point the MediaHistory store at the new location before SaveSettings()
     // below re-writes the full in-memory history there in the correct format.
-    if (m_Profile.GetSettingsLocation() == SETS_PROGRAMDIR) {
+    if (!IsUsingRegistry()) {
         m_HistoryProfile = std::make_unique<CProfile>(ResolveHistoryIniPath());
         m_Profile.WriteString(_T("Version"), _T("HistorySplit"), _T("1")); // history is separate here
     } else {
