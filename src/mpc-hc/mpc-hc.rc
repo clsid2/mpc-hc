@@ -2853,7 +2853,7 @@ BEGIN
     IDC_DSOVERLAYMIXER      "Very old renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nAlways renders in overlay. Generally only YUV formats are allowed, but they are presented directly without any color conversion to RGB. This is the fastest rendering method of all and the only where you can be sure about fullscreen video mirroring to tv-out activating."
     IDC_DSVMR9WIN           "Old VMR-9 renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation."
     IDC_DSVMR9REN           "Old VMR-9 renderer from Windows. Modified to be compatible with all player functionality.\nDoes not support HDR video."
-    IDC_DSDXR               "Old custom video renderer implementation by Haali.\nDoes not fully support all player functionality.\nDoes not support HDR video.\nSuitable for old hardware.."
+    IDC_DSDXR               "Old custom video renderer implementation by Haali.\nDoes not fully support all player functionality.\nDoes not support HDR video.\nSuitable for old hardware."
     IDC_DSNULL_COMP         "Connects to any video-like media type and will send the incoming samples to nowhere. Use it when you don't need the video display and want to save the CPU from working unnecessarily."
     IDC_DSNULL_UNCOMP       "Same as the normal Null renderer, but this will only connect to uncompressed types."
     IDC_DSEVR_CUSTOM        "The standard video renderer of Windows. Modified to be compatible with all player functionality.\nThis is the recommended choice for old hardware.\nDoes not support HDR video."
