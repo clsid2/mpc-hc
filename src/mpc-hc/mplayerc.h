@@ -159,7 +159,7 @@ public:
 
     void ShowCmdlnSwitches() const;
 
-    bool StoreSettingsToIni();
+    bool StoreSettingsToIni(bool bKeepRegistryCopy = false);
     bool StoreSettingsToRegistry();
     CString GetIniPath() const;
     bool IsIniValid() const;

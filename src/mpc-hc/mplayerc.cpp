@@ -770,9 +770,9 @@ CMPlayerCApp theApp; // The one and only CMPlayerCApp object
 
 HWND g_hWnd = nullptr;
 
-bool CMPlayerCApp::StoreSettingsToIni()
+bool CMPlayerCApp::StoreSettingsToIni(bool bKeepRegistryCopy)
 {
-    return m_Profile.StoreSettingsTo(SETS_PROGRAMDIR);
+    return m_Profile.StoreSettingsTo(SETS_PROGRAMDIR, bKeepRegistryCopy);
 }
 
 bool CMPlayerCApp::StoreSettingsToRegistry()
@@ -1104,10 +1104,21 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     m_s->GetFav(FAV_DEVICE, devicesFav);
 
     if (useIni) {
-        success = StoreSettingsToIni();
+        // Offer to leave the old registry settings in place as a backup copy
+        // (useful when running multiple copies of the player). A present INI
+        // file is what selects portable mode, so the copy can't cause the
+        // wrong store to be picked up.
+        bool keepRegistryCopy = false;
+        if (IsUsingRegistry()) {
+            keepRegistryCopy = AfxMessageBox(IDS_SETTINGS_KEEP_REGISTRY_COPY, MB_ICONQUESTION | MB_YESNO) == IDYES;
+        }
+        success = StoreSettingsToIni(keepRegistryCopy);
         // No need to delete old mpc-hc.ini,
         // as it will be overwritten during CAppSettings::SaveSettings()
     } else {
+        // StoreSettingsToRegistry also removes the portable-mode MediaHistory
+        // INI; the full history is rewritten into the registry by
+        // SaveSettings(true) below.
         success = StoreSettingsToRegistry();
         _tremove(GetIniPath());
     }

@@ -3054,6 +3054,7 @@ BEGIN
     IDS_PLAYLIST_POSITION_RIGHT "&Right"
     IDS_PLAYLIST_POSITION_BOTTOM "&Bottom"
     IDS_PLAYLIST_POSITION_FLOAT "&Floating"
+    IDS_SETTINGS_KEEP_REGISTRY_COPY "Keep a copy of the settings in the Registry? This is useful as backup, and recommended if you want to use multiple copies of MPC-HC."
 END
 
 STRINGTABLE

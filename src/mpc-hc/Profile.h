@@ -87,7 +87,11 @@ private:
     void InitIni();
 
 public:
-    bool StoreSettingsTo(const SettingsLocation newLocation);
+    // Move the store to newLocation. bKeepOldStore leaves the old registry
+    // values in place as a backup copy when switching to INI (ignored when
+    // switching to the registry: a present INI file is what selects portable
+    // mode, so it must always be removed).
+    bool StoreSettingsTo(const SettingsLocation newLocation, const bool bKeepOldStore = false);
 
     bool ReadBool  (const wchar_t* section, const wchar_t* entry, bool&     value);
     bool ReadInt   (const wchar_t* section, const wchar_t* entry, int&      value);

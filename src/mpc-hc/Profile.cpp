@@ -274,7 +274,7 @@ void CProfile::InitIni()
     m_IniLastAccessTick = GetTickCount64(); // reading the file can take a long time
 }
 
-bool CProfile::StoreSettingsTo(const SettingsLocation newLocation)
+bool CProfile::StoreSettingsTo(const SettingsLocation newLocation, const bool bKeepOldStore)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
@@ -306,7 +306,7 @@ bool CProfile::StoreSettingsTo(const SettingsLocation newLocation)
     if (m_bRegistryMode) {
         OpenRegistryKey(); // ensure the handle so the registry store can be removed
         if (m_hAppRegKey) {
-            if (AfxMessageBox(_T("Keep a copy of the settings in the Registry? This is useful as backup, and recommended if you want to use multiple copies of MPC-HC."), MB_YESNO) == IDNO) {
+            if (!bKeepOldStore) {
                 RegDeleteTreeW(m_hAppRegKey, nullptr);
             }
             RegCloseKey(m_hAppRegKey);
