@@ -3718,15 +3718,24 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFil
         pApp->WriteProfileStringW(subSection, L"SubtitleTrackIndex", nullptr);
     }
 
-    if (updateLastOpened || isNewEntry || r.lastOpened.IsEmpty()) {
-        auto now = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
+
+    // Only stamp a new time when the entry is actually being opened, or when we
+    // have no time for it at all. An entry missing from the store is NOT reason
+    // enough: rewriting the whole history into a different store (switching
+    // between registry and ini) makes every entry look new, and restamping them
+    // all with the current time would collapse them onto near-identical
+    // timestamps and scramble the recent files order.
+    if (updateLastOpened || r.lastOpened.IsEmpty()) {
         auto nowISO = date::format<wchar_t>(L"%FT%TZ", date::floor<std::chrono::milliseconds>(now));
         r.lastOpened = CStringW(nowISO.c_str());
+    }
+    if (updateLastOpened || isNewEntry || pApp->GetProfileStringW(subSection, L"LastOpened", L"") != r.lastOpened) {
         pApp->WriteProfileStringW(subSection, L"LastOpened", r.lastOpened);
-        if (isNewEntry) {
-            rfe_last_added = (int)std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count();
-            pApp->WriteProfileInt(m_section, L"LastAdded", rfe_last_added);
-        }
+    }
+    if (isNewEntry) {
+        rfe_last_added = (int)std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count();
+        pApp->WriteProfileInt(m_section, L"LastAdded", rfe_last_added);
     }
     listModifySequence++;
 }
