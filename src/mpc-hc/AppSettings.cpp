@@ -71,6 +71,8 @@ CAppSettings::CAppSettings()
     , fTitleBarTextTitle(false)
     , fKeepHistory(true)
     , iRecentFilesNumber(100)
+    , sHistoryExcludeFilter()
+    , sHistoryExcludeFilterPrivate()
     , MRU(L"MediaHistory", iRecentFilesNumber)
     , MRUDub(0, _T("Recent Dub List"), _T("Dub%d"), 20)
     , fRememberDVDPos(false)
@@ -1010,6 +1012,8 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ASPECTRATIO_Y, sizeAspectRatio.cy);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_KEEPHISTORY, fKeepHistory);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_RECENT_FILES_NUMBER, iRecentFilesNumber);
+    pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER, sHistoryExcludeFilter);
+    pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER_PRIVATE, sHistoryExcludeFilterPrivate);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, iDSVideoRendererType);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHUFFLEPLAYLISTITEMS, bShufflePlaylistItems);
@@ -1846,6 +1850,8 @@ void CAppSettings::LoadSettings()
     fileAssoc.SetNoRecentDocs(!fKeepHistory);
     iRecentFilesNumber = std::max(0, (int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_RECENT_FILES_NUMBER, 100));
     MRU.SetSize(iRecentFilesNumber);
+    sHistoryExcludeFilter = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""));
+    sHistoryExcludeFilterPrivate = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER_PRIVATE, _T(""));
 
     if (pApp->GetProfileBinary(IDS_R_SETTINGS, IDS_RS_LASTWINDOWRECT, &ptr, &len)) {
         if (len == sizeof(CRect)) {
@@ -2989,7 +2995,8 @@ void CAppSettings::CRecentFileAndURLList::Add(LPCTSTR lpszPathName)
     ASSERT(lpszPathName != nullptr);
     ASSERT(AfxIsValidString(lpszPathName));
 
-    if (m_nSize <= 0 || CString(lpszPathName).MakeLower().Find(_T("@device:")) >= 0) {
+    if (m_nSize <= 0 || CString(lpszPathName).MakeLower().Find(_T("@device:")) >= 0
+            || AfxGetAppSettings().IsExcludedFromHistory(lpszPathName)) {
         return;
     }
 
@@ -3109,6 +3116,34 @@ CStringW getRFEHash(ULONGLONG llDVDGuid) {
     CStringW hash;
     hash.Format(L"DVD%llu", llDVDGuid);
     return hash;
+}
+
+// Does lowerPath contain any of the semicolon-separated substrings of filter?
+static bool MatchesHistoryExcludeFilter(const CStringW& lowerPath, const CStringW& filter) {
+    int pos = 0;
+    while (pos >= 0) {
+        CStringW token = filter.Tokenize(L";", pos);
+        token.Trim();
+        if (token.IsEmpty()) {
+            continue;
+        }
+        token.MakeLower();
+        if (lowerPath.Find(token) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Matching is case-insensitive: correct for local paths, and the friendlier choice for URLs.
+bool CAppSettings::IsExcludedFromHistory(LPCWSTR path) const {
+    if (sHistoryExcludeFilter.IsEmpty() && sHistoryExcludeFilterPrivate.IsEmpty()) {
+        return false;
+    }
+    CStringW lowerPath(path);
+    lowerPath.MakeLower();
+    return MatchesHistoryExcludeFilter(lowerPath, sHistoryExcludeFilter)
+           || MatchesHistoryExcludeFilter(lowerPath, sHistoryExcludeFilterPrivate);
 }
 
 CStringW getRFEHash(RecentFileEntry &r) {
@@ -3290,6 +3325,19 @@ void CAppSettings::CRecentFileListWithMoreInfo::Add(RecentFileEntry r, bool curr
     }
     if (CString(r.fns.GetHead()).MakeLower().Find(_T("@device:")) >= 0) {
         return;
+    }
+
+    const auto& s = AfxGetAppSettings();
+    POSITION fnPos = r.fns.GetHeadPosition();
+    while (fnPos) {
+        if (s.IsExcludedFromHistory(r.fns.GetNext(fnPos))) {
+            if (current_open) {
+                // Nothing is current anymore, so playback of this file updates no entry.
+                current_rfe_hash.Empty();
+                persistedFilePosition = 0;
+            }
+            return;
+        }
     }
 
     if (r.hash.IsEmpty()) {

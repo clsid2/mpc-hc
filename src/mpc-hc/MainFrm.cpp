@@ -14358,7 +14358,9 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
                             r.fns.RemoveAll();
                             r.fns.AddHeadList(&pli.m_fns);
                         }
-                        SHAddToRecentDocs(SHARD_PATH, fn);
+                        if (!s.IsExcludedFromHistory(fn)) {
+                            SHAddToRecentDocs(SHARD_PATH, fn);
+                        }
                     }
                     if (pli.m_cue) {
                         r.cue = pli.m_cue_filename;
@@ -14868,7 +14870,9 @@ void CMainFrame::OpenDVD(OpenDVDData* pODD)
             auto* pMRU = &s.MRU;
             pMRU->Add(pODD->title, llDVDGuid);
         }
-        SHAddToRecentDocs(SHARD_PATH, pODD->title);
+        if (!s.IsExcludedFromHistory(pODD->title)) {
+            SHAddToRecentDocs(SHARD_PATH, pODD->title);
+        }
     }
 
     // TODO: resetdvd

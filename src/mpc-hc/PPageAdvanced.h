@@ -237,6 +237,7 @@ private:
         STARTUP_PRESET,
         TIME_ON_SEEKBAR_LEFT,
         HISTORY_IN_APPDATA,
+        HISTORY_EXCLUDE_FILTER,
     };
 
     enum {

@@ -605,6 +605,12 @@ public:
     bool            fTitleBarTextTitle;
     bool            fKeepHistory;
     int             iRecentFilesNumber;
+    // Semicolon-separated substrings: a file/URL containing any of them is kept out of the
+    // history. The two lists are equivalent, but the private one is deliberately not exposed
+    // in the options UI, so it can hold terms the user does not want on screen.
+    CString         sHistoryExcludeFilter;
+    CString         sHistoryExcludeFilterPrivate;
+    bool            IsExcludedFromHistory(LPCWSTR path) const;
     CRecentFileListWithMoreInfo MRU;
     CRecentFileAndURLList MRUDub;
     bool            fRememberDVDPos;

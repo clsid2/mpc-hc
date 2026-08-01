@@ -138,6 +138,8 @@
 #define IDS_RS_CUSTOM_PRESET_CONTROLSTATE   _T("CustomPresetControlState")
 #define IDS_RS_CUSTOM_PRESET_CAPTION        _T("CustomPresetCaption")
 #define IDS_RS_STARTUP_PRESET               _T("StartupPreset")
+#define IDS_RS_HISTORY_EXCLUDE_FILTER       _T("HistoryExcludeFilter")
+#define IDS_RS_HISTORY_EXCLUDE_FILTER_PRIVATE _T("HistoryExcludeFilterPrivate")
 
 // Audio
 #define IDS_RS_VOLUME                       _T("Volume")
