@@ -2064,3 +2064,87 @@ msgstr "^"
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
 msgstr "v"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
+msgid "Sync video to display"
+msgstr "Синхронизировать видео с дисплеем"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
+msgid "Frequency adjustment:"
+msgstr "Коррекция частоты:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
+msgid "Sync display to video"
+msgstr "Синхронизировать дисплей с видео"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
+msgid "Frequency adjustment:"
+msgstr "Коррекция частоты:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
+msgid "lines"
+msgstr "линии"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
+msgid "columns"
+msgstr "колонки"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
+msgid "Present at nearest VSync"
+msgstr "Вывод на ближайшей VSync"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
+msgid "Target sync offset:"
+msgstr "Целевое смещение:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
+msgid "ms"
+msgstr "мс"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
+msgid "Control limits:"
+msgstr "Лимиты управления:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
+msgid "+/-"
+msgstr "+/-"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC9"
+msgid "ms"
+msgstr "мс"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
+msgid "Changes take effect after the playback has been closed and restarted."
+msgstr "Изменения вступят в силу после перезапуска воспроизведения."
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
+msgid "Cache compiled Shaders"
+msgstr "Кешировать скомпилированные шейдеры"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
+msgid "EVR Buffers:"
+msgstr "Буферы EVR:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Resizer:"
+msgstr "Интерполяция:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
+msgid "Reinitialize when changing display"
+msgstr "Реинициализация при смене дисплея"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
+msgid "VMR-9 Mixer Mode"
+msgstr "Режим VMR-9 Mixer"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
+msgid "D3D Fullscreen"
+msgstr "Полноэкранный D3D-режим"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Surface:"
+msgstr "Поверхность:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Sync Renderer"
+msgstr "Sync Renderer"

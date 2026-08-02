@@ -2030,3 +2030,39 @@ msgstr ""
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
 msgstr ""
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
+msgid "lines"
+msgstr "ਲਾਈਨਾਂ"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
+msgid "columns"
+msgstr "ਕਾਲਮ"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
+msgid "ms"
+msgstr "ਮਿ.ਸ."
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
+msgid "Control limits:"
+msgstr "ਕੰਟਰੋਲ ਲਿਮਟ:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
+msgid "+/-"
+msgstr "+/-"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC9"
+msgid "ms"
+msgstr "ਮਿ.ਸ."
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
+msgid "D3D Fullscreen"
+msgstr "D3D ਪੂਰੀ-ਸਕਰੀਨ"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Surface:"
+msgstr "ਸਰਫੇਸ:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Sync Renderer"
+msgstr "ਸਿੰਕ ਰੈਂਡਰਰ"

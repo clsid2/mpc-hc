@@ -2073,3 +2073,89 @@ msgstr "^"
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
 msgstr "v"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
+msgid "Sync video to display"
+msgstr "Videoyu ekran ile eşzamanla"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
+msgid "Frequency adjustment:"
+msgstr "Frekans düzeltmesi:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
+msgid "Sync display to video"
+msgstr "Ekranı video ile eşzamanla"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
+msgid "Frequency adjustment:"
+msgstr "Frekans düzeltmesi:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
+msgid "lines"
+msgstr "satır"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
+msgid "columns"
+msgstr "sütun"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
+msgid "Present at nearest VSync"
+msgstr "En yakın VSync'de sunum yap"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
+msgid "Target sync offset:"
+msgstr "Hedef eşitleme kayması:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
+msgid "ms"
+msgstr "ms"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
+msgid "Control limits:"
+msgstr "Kontrol sınırı:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
+msgid "+/-"
+msgstr "+/-"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC9"
+msgid "ms"
+msgstr "ms"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
+msgid "Changes take effect after the playback has been closed and restarted."
+msgstr ""
+"Değişiklikler, oynatım kapatıldıktan ve uygulama yeniden başlatıldıktan "
+"sonra geçerli olacaktır."
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
+msgid "Cache compiled Shaders"
+msgstr "Derlenmiş tonlayıcıları önbelleğe al"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
+msgid "EVR Buffers:"
+msgstr "GVİ Tamponları:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Resizer:"
+msgstr "Boyutlandırıcı:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
+msgid "Reinitialize when changing display"
+msgstr "Ekranı değiştirirken sıfırla"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
+msgid "VMR-9 Mixer Mode"
+msgstr "VKİ-9 karıştırıcı tipi"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
+msgid "D3D Fullscreen"
+msgstr "D3D Tam ekran"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Surface:"
+msgstr "Yüzey:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Sync Renderer"
+msgstr "Eşzamanlama İşleyici"

@@ -2059,3 +2059,88 @@ msgstr ""
 msgctxt "IDD_PPAGETOOLBARLAYOUT_IDC_BUTTON6"
 msgid "v"
 msgstr ""
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
+msgid "Sync video to display"
+msgstr "Segerak video untuk paparan"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
+msgid "Frequency adjustment:"
+msgstr "Pelarasan frekuensi:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
+msgid "Sync display to video"
+msgstr "Segerak paparan ke video"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
+msgid "Frequency adjustment:"
+msgstr "Pelajaran frekuensi:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
+msgid "lines"
+msgstr "baris"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
+msgid "columns"
+msgstr "lajur"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
+msgid "Present at nearest VSync"
+msgstr "Hadir pada VSync terhampir"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
+msgid "Target sync offset:"
+msgstr "Ofset segerak sasaran:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
+msgid "ms"
+msgstr "ms"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
+msgid "Control limits:"
+msgstr "Had kawalan:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
+msgid "+/-"
+msgstr "+/-"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC9"
+msgid "ms"
+msgstr "ms"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
+msgid "Changes take effect after the playback has been closed and restarted."
+msgstr ""
+"Perubahan berkesan selepas main balik telah ditutup dan dimulakan semula."
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
+msgid "Cache compiled Shaders"
+msgstr "Cache Pelorek terkompil"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
+msgid "EVR Buffers:"
+msgstr "Penimbal EVR:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Resizer:"
+msgstr "Pensaiz semula:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
+msgid "Reinitialize when changing display"
+msgstr "Awalkan semula bila menukar paparan"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
+msgid "VMR-9 Mixer Mode"
+msgstr "Mod Pengadun VMR-9"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
+msgid "D3D Fullscreen"
+msgstr "Skrin Penuh D3D"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Surface:"
+msgstr "Permukaan:"
+
+msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
+msgid "Sync Renderer"
+msgstr "Penerap Segerak"
