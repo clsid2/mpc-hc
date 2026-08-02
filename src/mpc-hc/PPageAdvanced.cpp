@@ -194,7 +194,7 @@ void CPPageAdvanced::InitSettings()
         StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
     addBoolItem(TIME_ON_SEEKBAR_LEFT, IDS_RS_TIME_ON_SEEKBAR_LEFT, false, s.bTimeOnSeekBarLeft, StrRes(IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT));
     addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, L"Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart.");
-    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, L"Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com\nA second list, which is not shown here, can be set in the settings file (registry value or INI entry) \"HistoryExcludeFilterPrivate\". Both lists are applied.");
+    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, L"Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com");
 }
 
 BOOL CPPageAdvanced::OnApply()
