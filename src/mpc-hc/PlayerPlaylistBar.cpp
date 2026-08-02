@@ -1882,7 +1882,15 @@ void CPlayerPlaylistBar::ResizeListColumn()
         m_list.SetColumnWidth(COL_NAME, 0);
         m_list.MoveWindow(listR, FALSE);
         m_list.GetClientRect(r);
-        m_list.SetColumnWidth(COL_NAME, std::max(0, r.Width() - m_nTimeColWidth));
+        int width = r.Width();
+        // The list does not update its scrollbars while redraw is disabled, so when items were
+        // added in that state (playlist restored at startup) the client rect still reports the
+        // full width. Reserve room for the vertical scrollbar that is about to appear, else the
+        // name column ends up too wide and a spurious horizontal scrollbar is shown.
+        if (width == listR.Width() && m_list.GetItemCount() > m_list.GetCountPerPage()) {
+            width -= m_pMainFrame->m_dpi.GetSystemMetricsDPI(SM_CXVSCROLL);
+        }
+        m_list.SetColumnWidth(COL_NAME, std::max(0, width - m_nTimeColWidth));
         m_list.SetRedraw(TRUE);
 
         Invalidate();
