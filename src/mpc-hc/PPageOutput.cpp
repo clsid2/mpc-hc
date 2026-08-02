@@ -255,6 +255,7 @@ BOOL CPPageOutput::OnInitDialog()
 
     m_wndToolTip.AddTool(GetDlgItem(IDC_VIDRND_COMBO), L"");
     m_wndToolTip.AddTool(GetDlgItem(IDC_VIDRND_SUPPORT_ICON), L"");
+    m_wndToolTip.AddTool(GetDlgItem(IDC_VIDRND_SUPPORT_NOTE), L"");
 
     OnDSRendererChange();
 
@@ -487,34 +488,46 @@ UINT CPPageOutput::GetRendererTooltipID() const
 
 void CPPageOutput::UpdateStatusIcon()
 {
-    // Single feature-support indicator for the selected video renderer:
-    // green tick    - supports all player functionality including HDR (MPCVR/madVR)
+    // Feature-support indicator below the renderer dropdown:
+    // green tick     - supports all player functionality including HDR (MPCVR/madVR)
     // yellow warning - supports all player functionality except HDR (EVR CP/Sync)
-    // red cross     - old renderer with limited functionality
+    // red cross      - old renderer with limited functionality
     // The tooltip carries the detailed capability description of the renderer.
     HICON icon;
+    UINT noteID;
     switch (m_iDSVideoRendererType) {
         case VIDRNDT_DS_MPCVR:
         case VIDRNDT_DS_MADVR:
             icon = m_tick;
+            noteID = IDS_PPAGE_OUTPUT_SUPPORT_ALL_HDR;
             break;
         case VIDRNDT_DS_EVR_CUSTOM:
         case VIDRNDT_DS_SYNC:
             icon = m_warn;
+            noteID = IDS_PPAGE_OUTPUT_SUPPORT_NO_HDR;
             break;
         case VIDRNDT_DS_NULL_COMP:
         case VIDRNDT_DS_NULL_UNCOMP:
             icon = nullptr; // no video rendered at all, a capability warning makes no sense
+            noteID = 0;
             break;
         default:
             icon = m_cross;
+            noteID = IDS_PPAGE_OUTPUT_SUPPORT_LIMITED;
             break;
     }
 
     m_iDSSupportIcon.SetIcon(icon);
     m_iDSSupportIcon.ShowWindow(icon ? SW_SHOW : SW_HIDE);
+
+    CWnd* pNote = GetDlgItem(IDC_VIDRND_SUPPORT_NOTE);
+    pNote->SetWindowText(noteID ? ResStr(noteID) : CString());
+    pNote->ShowWindow(noteID ? SW_SHOW : SW_HIDE);
+
     UINT tipID = GetRendererTooltipID();
-    m_wndToolTip.UpdateTipText(tipID ? ResStr(tipID) : CString(), GetDlgItem(IDC_VIDRND_SUPPORT_ICON));
+    CString tip = tipID ? ResStr(tipID) : CString();
+    m_wndToolTip.UpdateTipText(tip, GetDlgItem(IDC_VIDRND_SUPPORT_ICON));
+    m_wndToolTip.UpdateTipText(tip, pNote);
 }
 
 void CPPageOutput::OnAudioRendererChange() {
