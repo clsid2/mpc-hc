@@ -2282,6 +2282,14 @@ BOOL CMPlayerCApp::InitInstance()
         UpdateChecker::CheckForUpdate(true);
     }
 
+    if (!m_pMainWnd) {
+        // The first-run "enable automatic update checks?" prompt above is modal, so it pumps
+        // messages. If the user closed the player while it was up, the main frame is already
+        // destroyed and MFC has cleared m_pMainWnd. Abort startup instead of dereferencing it;
+        // AfxWinMain skips Run() and calls ExitInstance(), so the settings still get saved.
+        return FALSE;
+    }
+
     SendCommandLine(m_pMainWnd->m_hWnd);
     RegisterHotkeys();
 
