@@ -286,7 +286,7 @@
     <ClCompile Include="PPageSubtitles.cpp">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClCompile>
-    <ClCompile Include="PPageSync.cpp">
+    <ClCompile Include="PPageVideoRenderer.cpp">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClCompile>
     <ClCompile Include="PPageTweaks.cpp">
@@ -844,7 +844,7 @@
     <ClInclude Include="PPageSubtitles.h">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClInclude>
-    <ClInclude Include="PPageSync.h">
+    <ClInclude Include="PPageVideoRenderer.h">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClInclude>
     <ClInclude Include="PPageTweaks.h">

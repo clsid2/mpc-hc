@@ -35,6 +35,7 @@ class CPPageBase : public CCmdUIPropertyPage
 protected:
     CMPCThemeToolTipCtrl m_wndToolTip;
     std::map<IconDef, CImageList, icomp> m_buttonIcons;
+    bool m_bPopupHosted = false; // page is hosted in a standalone popup sheet, not the options tree
 
     static bool FillComboToolTip(CComboBox& comboBox, TOOLTIPTEXT* pTTT);
 

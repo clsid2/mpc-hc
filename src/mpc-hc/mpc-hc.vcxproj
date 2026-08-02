@@ -291,7 +291,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="PPageSubMisc.cpp" />
     <ClCompile Include="PPageSubStyle.cpp" />
     <ClCompile Include="PPageSubtitles.cpp" />
-    <ClCompile Include="PPageSync.cpp" />
+    <ClCompile Include="PPageVideoRenderer.cpp" />
     <ClCompile Include="PPageTheme.cpp" />
     <ClCompile Include="PPageToolBar.cpp" />
     <ClCompile Include="PPageToolBarLayout.cpp" />
@@ -497,7 +497,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="PPageSubMisc.h" />
     <ClInclude Include="PPageSubStyle.h" />
     <ClInclude Include="PPageSubtitles.h" />
-    <ClInclude Include="PPageSync.h" />
+    <ClInclude Include="PPageVideoRenderer.h" />
     <ClInclude Include="PPageTheme.h" />
     <ClInclude Include="PPageToolBar.h" />
     <ClInclude Include="PPageToolBarLayout.h" />

@@ -35,51 +35,31 @@ class CPPageOutput : public CMPCThemePPageBase
 
 private:
     CStringArray m_AudioRendererDisplayNames;
-    CStringArray m_D3D9GUIDNames;
     CImageList m_tickcross;
-    HICON m_tick, m_cross;
+    HICON m_tick, m_cross, m_warn;
 
     CMPCThemeComboBox m_iDSVideoRendererTypeCtrl;
     CMPCThemeComboBox m_iAudioRendererTypeCtrl;
     CMPCThemeComboBox m_SubtitleRendererCtrl;
-    CMPCThemeComboBox m_iD3D9RenderDeviceCtrl;
-    CMPCThemeComboBox m_APSurfaceUsageCtrl;
-    CMPCThemeComboBox m_DX9ResizerCtrl;
-    CMPCThemeComboBox m_EVRBuffersCtrl;
 
-    CStatic m_iDSDXVASupport;
-    CStatic m_iDSSubtitleSupport;
-    CStatic m_iDSSaveImageSupport;
-    CStatic m_iDSShaderSupport;
-    CStatic m_iDSRotationSupport;
-
-    void UpdateSubtitleSupport();
+    CStatic m_iDSSupportIcon;
 
     void UpdateSubtitleRendererList();
+
+    UINT GetRendererTooltipID() const;
+    void UpdateStatusIcon();
 
 public:
     CPPageOutput();
     virtual ~CPPageOutput();
 
-    void UpdateAudioRenderer(CString audioRendererStr);
-
     // Dialog Data
     enum { IDD = IDD_PPAGEOUTPUT };
     int m_iDSVideoRendererType;
-    int m_iAPSurfaceUsage;
     int m_iAudioRendererType;
     int m_iMPCAudioRendererType;
+    int m_iSaneAudioRendererType;
     CAppSettings::SubtitleRenderer m_lastSubrenderer;
-    int m_iDX9Resizer;
-    BOOL m_fVMR9MixerMode;
-    BOOL m_fD3DFullscreen;
-    BOOL m_fVMR9AlterativeVSync;
-    BOOL m_fResetDevice;
-    BOOL m_fCacheShaders;
-    CString m_iEvrBuffers;
-
-    BOOL m_fD3D9RenderDevice;
-    int m_iD3D9RenderDevice;
     const CString& GetAudioRendererDisplayName();
 
 protected:
@@ -94,10 +74,7 @@ public:
     afx_msg void OpenVideoRendererSettings();
     afx_msg void OnUpdateAudioRendererSettings(CCmdUI* pCmdUI);
     afx_msg void OpenAudioRendererSettings();
-    afx_msg void OnSurfaceChange();
     afx_msg void OnDSRendererChange();
     afx_msg void OnAudioRendererChange();
     afx_msg void OnSubtitleRendererChange();
-    afx_msg void OnFullscreenCheck();
-    afx_msg void OnD3D9DeviceCheck();
 };

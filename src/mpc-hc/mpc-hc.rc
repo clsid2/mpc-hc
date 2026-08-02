@@ -718,39 +718,15 @@ IDD_PPAGEOUTPUT DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Video Renderer",IDC_STATIC,6,6,343,52
+    GROUPBOX        "Video Renderer",IDC_STATIC,6,6,343,36
     COMBOBOX        IDC_VIDRND_COMBO,13,19,260,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Settings",IDC_BUTTON1,282,19,61,13
-    LTEXT           "DXVA",IDC_STATIC,29,41,36,8
-    ICON            "",IDC_VIDRND_DXVA_SUPPORT,12,40,24,20
-    LTEXT           "Subtitles",IDC_STATIC,83,41,54,8
-    ICON            "",IDC_VIDRND_SUBTITLE_SUPPORT,65,40,24,20
-    LTEXT           "Screenshot",IDC_STATIC,155,41,54,8
-    ICON            "",IDC_VIDRND_SAVEIMAGE_SUPPORT,137,40,24,20
-    LTEXT           "Shaders",IDC_STATIC,227,41,42,8
-    ICON            "",IDC_VIDRND_SHADER_SUPPORT,209,40,24,20
-    LTEXT           "Rotation",IDC_STATIC,288,41,54,8
-    ICON            "",IDC_VIDRND_ROTATION_SUPPORT,270,40,24,20
-    GROUPBOX        "Audio Renderer",IDC_STATIC,6,60,343,36
-    COMBOBOX        IDC_AUDRND_COMBO,13,74,260,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Settings",IDC_BUTTON2,282,74,61,13
-    GROUPBOX        "Subtitle Renderer",IDC_STATIC,6,98,343,36
-    COMBOBOX        IDC_COMBO1,13,113,331,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "VMR-9 (renderless) and EVR (CP) settings",IDC_STATIC,6,184,343,100
-    RTEXT           "Surface:",IDC_STATIC,143,220,70,8
-    COMBOBOX        IDC_DX_SURFACE,217,217,126,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Resizer:",IDC_STATIC,144,239,70,8
-    COMBOBOX        IDC_DX9RESIZER_COMBO,217,236,126,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Select D3D9 Render Device",IDC_D3D9DEVICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,200,160,8
-    COMBOBOX        IDC_D3D9DEVICE_COMBO,176,198,167,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Reinitialize when changing display",IDC_RESETDEVICE,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,252,202,8
-    CONTROL         "D3D Fullscreen",IDC_FULLSCREEN_MONITOR_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,239,130,8
-    CONTROL         "Alternative VSync",IDC_DSVMR9ALTERNATIVEVSYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,226,130,8
-    CONTROL         "VMR-9 Mixer Mode",IDC_DSVMR9LOADMIXER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,213,130,8
-    RTEXT           "EVR Buffers:",IDC_EVR_BUFFERS_TXT,218,259,81,8
-    COMBOBOX        IDC_EVR_BUFFERS,302,256,41,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Cache compiled Shaders",IDC_CACHESHADERS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,265,202,8
+    PUSHBUTTON      "",IDC_BUTTON1,282,17,16,16
+    ICON            "",IDC_VIDRND_SUPPORT_ICON,313,17,24,20
+    GROUPBOX        "Audio Renderer",IDC_STATIC,6,44,343,36
+    COMBOBOX        IDC_AUDRND_COMBO,13,57,260,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "",IDC_BUTTON2,282,55,16,16
+    GROUPBOX        "Subtitle Renderer",IDC_STATIC,6,82,343,36
+    COMBOBOX        IDC_COMBO1,13,95,331,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PPAGEWEBSERVER DIALOGEX 0, 0, 355, 289
@@ -891,30 +867,47 @@ BEGIN
     COMBOBOX        IDC_COMBO7,101,245,241,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PPAGESYNC DIALOGEX 0, 0, 355, 289
+IDD_PPAGEVIDEORENDERER DIALOGEX 0, 0, 355, 332
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "",IDC_STATIC,6,6,343,98
-    CONTROL         "Sync video to display",IDC_SYNCVIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,20,336,8
-    LTEXT           "Frequency adjustment:",IDC_STATIC1,24,37,102,8
-    EDITTEXT        IDC_CYCLEDELTA,131,35,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    CONTROL         "Sync display to video",IDC_SYNCDISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,55,336,8
-    LTEXT           "Frequency adjustment:",IDC_STATIC2,24,72,102,8
-    EDITTEXT        IDC_LINEDELTA,131,70,48,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "lines",IDC_STATIC3,184,72,36,8
-    EDITTEXT        IDC_COLUMNDELTA,224,70,48,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "columns",IDC_STATIC4,277,72,36,8
-    CONTROL         "Present at nearest VSync",IDC_SYNCNEAREST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,90,336,8
-    GROUPBOX        "",IDC_STATIC,6,109,343,52
-    LTEXT           "Target sync offset:",IDC_STATIC5,12,126,144,8
-    EDITTEXT        IDC_TARGETSYNCOFFSET,161,124,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "ms",IDC_STATIC6,214,126,29,8
-    LTEXT           "Control limits:",IDC_STATIC7,12,143,132,8
-    LTEXT           "+/-",IDC_STATIC8,144,143,12,8
-    EDITTEXT        IDC_CONTROLLIMIT,161,140,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "ms",IDC_STATIC9,214,143,29,8
-    LTEXT           "Changes take effect after the playback has been closed and restarted.",IDC_STATIC10,12,166,331,18
+    GROUPBOX        "Common",IDC_STATIC,6,6,343,46
+    RTEXT           "Resizer:",IDC_STATIC,12,22,70,8
+    COMBOBOX        IDC_DX9RESIZER_COMBO,86,19,126,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reinitialize when changing display",IDC_RESETDEVICE,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,12,37,160,8
+    CONTROL         "Cache compiled Shaders",IDC_CACHESHADERS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,180,37,160,8
+    GROUPBOX        "VMR-9 (renderless)",IDC_STATIC,6,58,343,62
+    RTEXT           "Surface:",IDC_STATIC,12,74,70,8
+    COMBOBOX        IDC_DX_SURFACE,86,71,126,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "VMR-9 Mixer Mode",IDC_DSVMR9LOADMIXER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,224,73,119,8
+    CONTROL         "Alternative VSync (also EVR (CP))",IDC_DSVMR9ALTERNATIVEVSYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,90,200,8
+    CONTROL         "Select D3D9 Render Device (also EVR (CP))",IDC_D3D9DEVICE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,105,168,8
+    COMBOBOX        IDC_D3D9DEVICE_COMBO,186,103,157,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "EVR (CP) / Sync Renderer",IDC_STATIC,6,126,343,34
+    RTEXT           "EVR Buffers:",IDC_EVR_BUFFERS_TXT,12,142,70,8
+    COMBOBOX        IDC_EVR_BUFFERS,86,139,41,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "D3D Fullscreen",IDC_FULLSCREEN_MONITOR_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,224,141,119,8
+    GROUPBOX        "Sync Renderer",IDC_STATIC,6,166,343,160
+    CONTROL         "Sync video to display",IDC_SYNCVIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,180,331,8
+    LTEXT           "Frequency adjustment:",IDC_STATIC1,24,197,102,8
+    EDITTEXT        IDC_CYCLEDELTA,131,195,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    CONTROL         "Sync display to video",IDC_SYNCDISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,215,331,8
+    LTEXT           "Frequency adjustment:",IDC_STATIC2,24,232,102,8
+    EDITTEXT        IDC_LINEDELTA,131,230,48,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "lines",IDC_STATIC3,184,232,36,8
+    EDITTEXT        IDC_COLUMNDELTA,224,230,48,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "columns",IDC_STATIC4,277,232,36,8
+    CONTROL         "Present at nearest VSync",IDC_SYNCNEAREST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,250,331,8
+    LTEXT           "Target sync offset:",IDC_STATIC5,12,268,144,8
+    EDITTEXT        IDC_TARGETSYNCOFFSET,161,266,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "ms",IDC_STATIC6,214,268,29,8
+    LTEXT           "Control limits:",IDC_STATIC7,12,285,132,8
+    LTEXT           "+/-",IDC_STATIC8,144,285,12,8
+    EDITTEXT        IDC_CONTROLLIMIT,161,283,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "ms",IDC_STATIC9,214,285,29,8
+    LTEXT           "Changes take effect after the playback has been closed and restarted.",IDC_STATIC10,12,303,331,18
 END
 
 IDD_PPAGEFULLSCREEN DIALOGEX 0, 0, 355, 289
@@ -1060,26 +1053,24 @@ IDD_PPAGEAUDIORENDERER DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    CONTROL         "SaneAR Audio Renderer Enabled",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,6,343,8
-    GROUPBOX        "Device",IDC_STATIC5,6,24,343,40
-    COMBOBOX        IDC_COMBO1,24,40,307,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Options",IDC_STATIC6,6,70,343,100
-    CONTROL         "Exclusive mode",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,84,126,8
+    GROUPBOX        "Device",IDC_STATIC5,6,6,343,40
+    COMBOBOX        IDC_COMBO1,24,22,307,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Options",IDC_STATIC6,6,52,343,100
+    CONTROL         "Exclusive mode",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,66,126,8
     CONTROL         "Ignore system channel mixer (always ignored in exclusive WASAPI mode)",IDC_CHECK4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,99,323,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,81,323,8
     CONTROL         "Enable stereo crossfeed (for headphones)",IDC_CHECK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,114,307,8
-    PUSHBUTTON      "C. Moy",IDC_BUTTON1,24,134,65,14
-    PUSHBUTTON      "J. Meier",IDC_BUTTON2,95,134,65,14
-    LTEXT           "Cut-off:",IDC_STATIC1,188,126,56,8,0,WS_EX_RIGHT
-    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,250,125,50,12
-    LTEXT           "",IDC_STATIC2,300,126,36,8
-    LTEXT           "Level:",IDC_STATIC3,188,146,56,8,0,WS_EX_RIGHT
-    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,250,143,50,12
-    LTEXT           "",IDC_STATIC4,300,146,36,8
-    GROUPBOX        "Note",IDC_STATIC7,6,176,343,58
-    LTEXT           "To minimize audio distortion, it is recommended to keep player volume at around 85% when playing loud lossy-encoded content.",IDC_STATIC8,16,190,323,33
-    PUSHBUTTON      "MPC Audio Renderer Settings",IDC_BUTTON3,7,260,147,15
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,96,307,8
+    PUSHBUTTON      "C. Moy",IDC_BUTTON1,24,116,65,14
+    PUSHBUTTON      "J. Meier",IDC_BUTTON2,95,116,65,14
+    LTEXT           "Cut-off:",IDC_STATIC1,188,108,56,8,0,WS_EX_RIGHT
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,250,107,50,12
+    LTEXT           "",IDC_STATIC2,300,108,36,8
+    LTEXT           "Level:",IDC_STATIC3,188,128,56,8,0,WS_EX_RIGHT
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,250,125,50,12
+    LTEXT           "",IDC_STATIC4,300,128,36,8
+    GROUPBOX        "Note",IDC_STATIC7,6,158,343,58
+    LTEXT           "To minimize audio distortion, it is recommended to keep player volume at around 85% when playing loud lossy-encoded content.",IDC_STATIC8,16,172,323,33
 END
 
 IDD_CMD_LINE_HELP DIALOGEX 0, 0, 309, 177
@@ -1422,11 +1413,6 @@ BEGIN
     BEGIN
         VERTGUIDE, 10
         VERTGUIDE, 84
-    END
-
-    IDD_PPAGESYNC, DIALOG
-    BEGIN
-        VERTGUIDE, 10
     END
 
     IDD_PPAGEFULLSCREEN, DIALOG
@@ -2556,6 +2542,11 @@ BEGIN
     0
 END
 
+IDD_PPAGEVIDEORENDERER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 IDD_FAVADD AFX_DIALOG_LAYOUT
 BEGIN
     0
@@ -2791,9 +2782,7 @@ BEGIN
     IDD_PPAGEMISC           "Miscellaneous"
     IDD_FILEMEDIAINFO       "MediaInfo"
     IDD_PPAGECAPTURE        "Playback::Capture"
-    IDD_PPAGESYNC           "Playback::Sync Renderer Settings"
     IDD_PPAGEFULLSCREEN     "Playback::Fullscreen"
-    IDD_PPAGEAUDIORENDERER  "Internal Filters::Audio Renderer"
 END
 
 STRINGTABLE
@@ -2849,19 +2838,19 @@ END
 
 STRINGTABLE
 BEGIN
-    IDC_DSVMR7              "Very old VMR-7 renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation."
-    IDC_DSOVERLAYMIXER      "Very old renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nAlways renders in overlay. Generally only YUV formats are allowed, but they are presented directly without any color conversion to RGB. This is the fastest rendering method of all and the only where you can be sure about fullscreen video mirroring to tv-out activating."
-    IDC_DSVMR9WIN           "Old VMR-9 renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation."
-    IDC_DSVMR9REN           "Old VMR-9 renderer from Windows. Modified to be compatible with all player functionality.\nDoes not support HDR video."
-    IDC_DSDXR               "Old custom video renderer implementation by Haali.\nDoes not fully support all player functionality.\nDoes not support HDR video.\nSuitable for old hardware."
+    IDC_DSVMR7              "Very old VMR-7 renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nDoes not support DXVA hardware decoding and HDR video.\nSupports screenshots."
+    IDC_DSOVERLAYMIXER      "Very old renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nAlways renders in overlay. Generally only YUV formats are allowed, but they are presented directly without any color conversion to RGB. This is the fastest rendering method of all and the only where you can be sure about fullscreen video mirroring to tv-out activating.\nDoes not support DXVA hardware decoding, screenshots, and HDR video."
+    IDC_DSVMR9WIN           "Old VMR-9 renderer from Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nDoes not support DXVA hardware decoding and HDR video.\nSupports screenshots."
+    IDC_DSVMR9REN           "Old VMR-9 renderer from Windows. Modified to be compatible with all player functionality.\nDoes not support HDR video.\nDoes not support DXVA hardware decoding.\nPixelshaders and rotation require the 3D surface setting."
+    IDC_DSDXR               "Old custom video renderer implementation by Haali.\nDoes not fully support all player functionality.\nDoes not support HDR video.\nDoes not support DXVA hardware decoding.\nSuitable for old hardware."
     IDC_DSNULL_COMP         "Connects to any video-like media type and will send the incoming samples to nowhere. Use it when you don't need the video display and want to save the CPU from working unnecessarily."
     IDC_DSNULL_UNCOMP       "Same as the normal Null renderer, but this will only connect to uncompressed types."
-    IDC_DSEVR_CUSTOM        "The standard video renderer of Windows. Modified to be compatible with all player functionality.\nThis is the recommended choice for old hardware.\nDoes not support HDR video."
+    IDC_DSEVR_CUSTOM        "The standard video renderer of Windows. Modified to be compatible with all player functionality.\nThis is the recommended choice for old hardware.\nDoes not support HDR video.\nSupports DXVA hardware decoding, screenshots, and all other player functionality."
 END
 
 STRINGTABLE
 BEGIN
-    IDC_DSEVR               "The standard video renderer of Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nIf you wish to use EVR, the custom presenter variant is preferred for more functionality."
+    IDC_DSEVR               "The standard video renderer of Windows. Has limited functionality.\nNot compatible with internal subtitle renderer, pixelshaders, and rotation.\nIf you wish to use EVR, the custom presenter variant is preferred for more functionality.\nSupports DXVA hardware decoding and screenshots.\nDoes not support HDR video."
     IDC_DSMADVR             "Advanced high quality video renderer.\nProvides advanced upscaling and HDR tonemapping settings. Is difficult to configure, so not recommended for novice users.\nSupports HDR video.\nSupports all player functionality such as subtitles, pixelshaders and rotation."
     IDC_DSSYNC              "Same as the EVR (CP), but offers several options to synchronize the video frame rate with the display refresh rate to eliminate skipped or duplicated video frames."
     IDC_REGULARSURF         "Video surface will be allocated as a regular offscreen surface."
@@ -4266,6 +4255,10 @@ BEGIN
     IDS_AG_DISABLE_REPEAT   "Disable Repeat"
     IDS_SHUFFLE_ON          "Shuffle: On"
     IDS_SHUFFLE_OFF         "Shuffle: Off"
+    IDS_PPAGE_OUTPUT_VIDEO_RENDERER_SETTINGS "Video Renderer Settings"
+    IDS_PPAGE_OUTPUT_AUDIO_RENDERER_SETTINGS "Audio Renderer Settings"
+    IDS_PPAGE_VIDEORENDERER_TITLE "Renderer Settings"
+    IDS_PPAGE_AUDIORENDERER_TITLE "SaneAR Audio Renderer"
 END
 
 STRINGTABLE

@@ -78,6 +78,7 @@
 #define IDF_SVG_BUTTONS32               707
 #define IDF_SVG_BUTTONS48               708
 #define IDF_SVG_BUTTONS64               709
+#define IDF_SVG_GEAR                    710
 #define ID_FILE_OPENMEDIA               800
 #define ID_FILE_OPENDVDBD               801
 #define ID_FILE_OPENDEVICE              802
@@ -373,7 +374,6 @@
 #define IDD_PPAGEMISC                   10052
 #define IDD_FILEMEDIAINFO               10053
 #define IDD_PPAGECAPTURE                10054
-#define IDD_PPAGESYNC                   10055
 #define IDD_PPAGEFULLSCREEN             10056
 #define IDD_RFS_FILELIST_EXT            10057
 #define IDD_PPAGEAUDIORENDERER          10058
@@ -635,6 +635,10 @@
 #define IDS_SUB_OVERRIDE_ALL_STYLES     14216
 #define IDS_SHUFFLE_ON                  14217
 #define IDS_SHUFFLE_OFF                 14218
+#define IDS_PPAGE_OUTPUT_VIDEO_RENDERER_SETTINGS 14219
+#define IDS_PPAGE_OUTPUT_AUDIO_RENDERER_SETTINGS 14220
+#define IDS_PPAGE_VIDEORENDERER_TITLE   14221
+#define IDS_PPAGE_AUDIORENDERER_TITLE   14222
 #define IDD_TUNER_SCAN                  20002
 #define IDS_OSD_DISPLAY_RENDERER_STATS  20003
 #define IDD_PPAGELOGO2                  20003
@@ -656,6 +660,7 @@
 #define IDD_ADDCOMMAND_DLG              20020
 #define IDD_PPAGETOOLBAR                20021
 #define IDD_PPAGETOOLBARLAYOUT          20022
+#define IDD_PPAGEVIDEORENDERER          20076
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052
@@ -729,11 +734,7 @@
 #define IDC_CHECK_LCD                   22059
 #define IDC_VIDRND_COMBO                22060
 #define IDC_AUDRND_COMBO                22063
-#define IDC_VIDRND_DXVA_SUPPORT         22064
-#define IDC_VIDRND_SHADER_SUPPORT       22065
-#define IDC_VIDRND_SUBTITLE_SUPPORT     22066
-#define IDC_VIDRND_SAVEIMAGE_SUPPORT    22067
-#define IDC_VIDRND_ROTATION_SUPPORT     22068
+#define IDC_VIDRND_SUPPORT_ICON         22064
 #define IDC_VOLUMESTEP                  22073
 #define IDC_VOLUMESTEP_SPIN             22074
 #define IDC_SPEEDSTEP                   22075
@@ -1837,7 +1838,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        20076
+#define _APS_NEXT_RESOURCE_VALUE        20077
 #define _APS_NEXT_COMMAND_VALUE         33464
 #define _APS_NEXT_CONTROL_VALUE         22101
 #define _APS_NEXT_SYMED_VALUE           24052

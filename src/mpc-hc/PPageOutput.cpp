@@ -27,6 +27,8 @@
 #include "MPCPngImage.h"
 #include <WinapiFunc.h>
 #include "PPageAudioRenderer.h"
+#include "PPageVideoRenderer.h"
+#include "CMPCThemePropertySheet.h"
 #include "FGFilter.h"
 #include "MainFrm.h"
 #include <mvrInterfaces.h>
@@ -43,19 +45,12 @@ CPPageOutput::CPPageOutput()
     : CMPCThemePPageBase(CPPageOutput::IDD, CPPageOutput::IDD)
     , m_tick(nullptr)
     , m_cross(nullptr)
+    , m_warn(nullptr)
     , m_iDSVideoRendererType(VIDRNDT_DS_VMR7)
-    , m_iAPSurfaceUsage(0)
     , m_iAudioRendererType(0)
+    , m_iMPCAudioRendererType(-1)
+    , m_iSaneAudioRendererType(-1)
     , m_lastSubrenderer(CAppSettings::SubtitleRenderer::INTERNAL)
-    , m_iDX9Resizer(0)
-    , m_fVMR9MixerMode(FALSE)
-    , m_fD3DFullscreen(FALSE)
-    , m_fVMR9AlterativeVSync(FALSE)
-    , m_fResetDevice(FALSE)
-    , m_fCacheShaders(FALSE)
-    , m_iEvrBuffers(_T("5"))
-    , m_fD3D9RenderDevice(FALSE)
-    , m_iD3D9RenderDevice(-1)
 {
 }
 
@@ -63,17 +58,8 @@ CPPageOutput::~CPPageOutput()
 {
     DestroyIcon(m_tick);
     DestroyIcon(m_cross);
-}
-
-void CPPageOutput::UpdateAudioRenderer(CString audioRendererStr)
-{
-    for (int i = 0; i < m_AudioRendererDisplayNames.GetCount(); i++) {
-        if (m_AudioRendererDisplayNames[i] == audioRendererStr) {
-            if (i != m_iAudioRendererType) {
-                m_iAudioRendererType = i;
-            }
-            break;
-        }
+    if (m_warn) {
+        DestroyIcon(m_warn);
     }
 }
 
@@ -83,26 +69,8 @@ void CPPageOutput::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_VIDRND_COMBO, m_iDSVideoRendererTypeCtrl);
     DDX_Control(pDX, IDC_AUDRND_COMBO, m_iAudioRendererTypeCtrl);
     DDX_Control(pDX, IDC_COMBO1, m_SubtitleRendererCtrl);
-    DDX_Control(pDX, IDC_D3D9DEVICE_COMBO, m_iD3D9RenderDeviceCtrl);
-    DDX_Control(pDX, IDC_DX_SURFACE, m_APSurfaceUsageCtrl);
-    DDX_Control(pDX, IDC_DX9RESIZER_COMBO, m_DX9ResizerCtrl);
-    DDX_Control(pDX, IDC_EVR_BUFFERS, m_EVRBuffersCtrl);
-    DDX_Control(pDX, IDC_VIDRND_DXVA_SUPPORT, m_iDSDXVASupport);
-    DDX_Control(pDX, IDC_VIDRND_SUBTITLE_SUPPORT, m_iDSSubtitleSupport);
-    DDX_Control(pDX, IDC_VIDRND_SAVEIMAGE_SUPPORT, m_iDSSaveImageSupport);
-    DDX_Control(pDX, IDC_VIDRND_SHADER_SUPPORT, m_iDSShaderSupport);
-    DDX_Control(pDX, IDC_VIDRND_ROTATION_SUPPORT, m_iDSRotationSupport);
+    DDX_Control(pDX, IDC_VIDRND_SUPPORT_ICON, m_iDSSupportIcon);
     DDX_CBIndex(pDX, IDC_AUDRND_COMBO, m_iAudioRendererType);
-    DDX_CBIndex(pDX, IDC_DX_SURFACE, m_iAPSurfaceUsage);
-    DDX_CBIndex(pDX, IDC_DX9RESIZER_COMBO, m_iDX9Resizer);
-    DDX_CBIndex(pDX, IDC_D3D9DEVICE_COMBO, m_iD3D9RenderDevice);
-    DDX_Check(pDX, IDC_D3D9DEVICE, m_fD3D9RenderDevice);
-    DDX_Check(pDX, IDC_RESETDEVICE, m_fResetDevice);
-    DDX_Check(pDX, IDC_CACHESHADERS, m_fCacheShaders);
-    DDX_Check(pDX, IDC_FULLSCREEN_MONITOR_CHECK, m_fD3DFullscreen);
-    DDX_Check(pDX, IDC_DSVMR9ALTERNATIVEVSYNC, m_fVMR9AlterativeVSync);
-    DDX_Check(pDX, IDC_DSVMR9LOADMIXER, m_fVMR9MixerMode);
-    DDX_CBString(pDX, IDC_EVR_BUFFERS, m_iEvrBuffers);
 }
 
 BEGIN_MESSAGE_MAP(CPPageOutput, CMPCThemePPageBase)
@@ -113,9 +81,6 @@ BEGIN_MESSAGE_MAP(CPPageOutput, CMPCThemePPageBase)
     ON_CBN_SELCHANGE(IDC_VIDRND_COMBO, OnDSRendererChange)
     ON_CBN_SELCHANGE(IDC_AUDRND_COMBO, OnAudioRendererChange)
     ON_CBN_SELCHANGE(IDC_COMBO1, OnSubtitleRendererChange)
-    ON_CBN_SELCHANGE(IDC_DX_SURFACE, OnSurfaceChange)
-    ON_BN_CLICKED(IDC_D3D9DEVICE, OnD3D9DeviceCheck)
-    ON_BN_CLICKED(IDC_FULLSCREEN_MONITOR_CHECK, OnFullscreenCheck)
 END_MESSAGE_MAP()
 
 // CPPageOutput message handlers
@@ -127,40 +92,11 @@ BOOL CPPageOutput::OnInitDialog()
     SetHandCursor(m_hWnd, IDC_AUDRND_COMBO);
 
     CAppSettings& s = AfxGetAppSettings();
-    const CRenderersSettings& r = s.m_RenderersSettings;
 
     m_iDSVideoRendererType  = s.iDSVideoRendererType;
     m_lastSubrenderer = s.GetSubtitleRenderer();
 
-    m_APSurfaceUsageCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_SURF_OFFSCREEN));
-    m_APSurfaceUsageCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_SURF_2D));
-    m_APSurfaceUsageCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_SURF_3D));
-    CorrectComboListWidth(m_APSurfaceUsageCtrl);
-    m_iAPSurfaceUsage       = r.iAPSurfaceUsage;
-
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZE_NN));
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZER_BILIN));
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZER_BIL_PS));
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZER_BICUB1));
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZER_BICUB2));
-    m_DX9ResizerCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_RESIZER_BICUB3));
-    m_iDX9Resizer           = r.iDX9Resizer;
-
-    m_fVMR9MixerMode        = r.fVMR9MixerMode;
-    m_fVMR9AlterativeVSync  = r.m_AdvRendSets.bVMR9AlterativeVSync;
-    m_fD3DFullscreen        = s.fD3DFullscreen;
-
-    int EVRBuffers[] = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50, 55, 60 };
-    CString EVRBuffer;
-    for (size_t i = 0; i < _countof(EVRBuffers); i++) {
-        EVRBuffer.Format(_T("%d"), EVRBuffers[i]);
-        m_EVRBuffersCtrl.AddString(EVRBuffer);
-    }
-    m_iEvrBuffers.Format(_T("%d"), r.iEvrBuffers);
-
     m_iAudioRendererTypeCtrl.SetRedraw(FALSE);
-    m_fResetDevice = s.m_RenderersSettings.fResetDevice;
-    m_fCacheShaders = s.m_RenderersSettings.m_AdvRendSets.bCacheShaders;
 
     // System default
     m_AudioRendererDisplayNames.Add(_T(""));
@@ -169,8 +105,9 @@ BOOL CPPageOutput::OnInitDialog()
     // SaneAR
     m_AudioRendererDisplayNames.Add(AUDRNDT_INTERNAL);
     m_iAudioRendererTypeCtrl.AddString(ResStr(IDS_PPAGE_OUTPUT_AUD_INTERNAL_REND).GetString());
+    m_iSaneAudioRendererType = m_iAudioRendererTypeCtrl.GetCount() - 1;
     if (s.strAudioRendererDisplayName == AUDRNDT_INTERNAL && m_iAudioRendererType == 0) {
-        m_iAudioRendererType = m_iAudioRendererTypeCtrl.GetCount() - 1;
+        m_iAudioRendererType = m_iSaneAudioRendererType;
     }
     // MPC AR
     m_AudioRendererDisplayNames.Add(AUDRNDT_MPC);
@@ -216,44 +153,6 @@ BOOL CPPageOutput::OnInitDialog()
     m_iAudioRendererTypeCtrl.UpdateWindow();
 
     UpdateSubtitleRendererList();
-
-    IDirect3D9* pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);
-    if (pD3D9) {
-        TCHAR strGUID[50];
-        CString cstrGUID;
-        CString d3ddevice_str = _T("");
-
-        D3DADAPTER_IDENTIFIER9 adapterIdentifier;
-
-        for (UINT adp = 0; adp < pD3D9->GetAdapterCount(); ++adp) {
-            if (SUCCEEDED(pD3D9->GetAdapterIdentifier(adp, 0, &adapterIdentifier))) {
-                d3ddevice_str = adapterIdentifier.Description;
-                d3ddevice_str += _T(" - ");
-                d3ddevice_str += adapterIdentifier.DeviceName;
-                cstrGUID = _T("");
-                if (::StringFromGUID2(adapterIdentifier.DeviceIdentifier, strGUID, 50) > 0) {
-                    cstrGUID = strGUID;
-                }
-                if (!cstrGUID.IsEmpty()) {
-                    boolean m_find = false;
-                    for (INT_PTR j = 0; !m_find && (j < m_D3D9GUIDNames.GetCount()); j++) {
-                        if (m_D3D9GUIDNames.GetAt(j) == cstrGUID) {
-                            m_find = true;
-                        }
-                    }
-                    if (!m_find) {
-                        m_iD3D9RenderDeviceCtrl.AddString(d3ddevice_str);
-                        m_D3D9GUIDNames.Add(cstrGUID);
-                        if (r.D3D9RenderDevice == cstrGUID) {
-                            m_iD3D9RenderDevice = m_iD3D9RenderDeviceCtrl.GetCount() - 1;
-                        }
-                    }
-                }
-            }
-        }
-        pD3D9->Release();
-    }
-    CorrectComboListWidth(m_iD3D9RenderDeviceCtrl);
 
     auto addRenderer = [&](int nID) {
         WORD resName;
@@ -345,35 +244,19 @@ BOOL CPPageOutput::OnInitDialog()
     m_tickcross.Add(&tickcross, (CBitmap*)nullptr);
     m_tick = m_tickcross.ExtractIcon(0);
     m_cross = m_tickcross.ExtractIcon(1);
+    LoadIconMetric(nullptr, (PCWSTR)IDI_WARNING, LIM_SMALL, &m_warn);
+
+    CRect brc;
+    GetDlgItem(IDC_BUTTON1)->GetWindowRect(brc);
+    SetMPCThemeButtonIcon(IDC_BUTTON1, { IDF_SVG_GEAR, int(0.7f * brc.Width()) });
+    SetMPCThemeButtonIcon(IDC_BUTTON2, { IDF_SVG_GEAR, int(0.7f * brc.Width()) });
 
     CreateToolTip();
 
     m_wndToolTip.AddTool(GetDlgItem(IDC_VIDRND_COMBO), L"");
-    m_wndToolTip.AddTool(GetDlgItem(IDC_DX_SURFACE), ResStr(IDC_REGULARSURF));
+    m_wndToolTip.AddTool(GetDlgItem(IDC_VIDRND_SUPPORT_ICON), L"");
 
     OnDSRendererChange();
-    OnSurfaceChange();
-
-    CheckDlgButton(IDC_D3D9DEVICE, BST_CHECKED);
-    GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(TRUE);
-    GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(TRUE);
-
-    if ((m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS || m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM) && (m_iD3D9RenderDeviceCtrl.GetCount() > 1)) {
-        GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(TRUE);
-        GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(FALSE);
-        CheckDlgButton(IDC_D3D9DEVICE, BST_UNCHECKED);
-        if (m_iD3D9RenderDevice != -1) {
-            CheckDlgButton(IDC_D3D9DEVICE, BST_CHECKED);
-            GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(TRUE);
-        }
-    } else {
-        GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(FALSE);
-        GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(FALSE);
-        if (m_iD3D9RenderDevice == -1) {
-            CheckDlgButton(IDC_D3D9DEVICE, BST_UNCHECKED);
-        }
-    }
-    UpdateData(TRUE);
 
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
@@ -491,7 +374,6 @@ BOOL CPPageOutput::OnApply()
 
     s.iDSVideoRendererType                  = m_iDSVideoRendererType;
     s.strAudioRendererDisplayName           = GetAudioRendererDisplayName();
-    s.fD3DFullscreen                        = m_fD3DFullscreen ? true : false;
 
     if (m_SubtitleRendererCtrl.IsWindowEnabled()) {
         auto subrenderer = static_cast<CAppSettings::SubtitleRenderer>(m_SubtitleRendererCtrl.GetItemData(m_SubtitleRendererCtrl.GetCurSel()));
@@ -499,30 +381,28 @@ BOOL CPPageOutput::OnApply()
         s.SetSubtitleRenderer(subrenderer);
     }
 
-    CRenderersSettings& r                   = s.m_RenderersSettings;
-    r.iAPSurfaceUsage                       = m_iAPSurfaceUsage;
-    r.iDX9Resizer                           = m_iDX9Resizer;
-    r.fVMR9MixerMode                        = !!m_fVMR9MixerMode;
-    r.m_AdvRendSets.bVMR9AlterativeVSync    = m_fVMR9AlterativeVSync != FALSE;
-    r.fResetDevice = !!m_fResetDevice;
-    r.m_AdvRendSets.bCacheShaders = !!m_fCacheShaders;
-    if (m_iEvrBuffers.IsEmpty() || _stscanf_s(m_iEvrBuffers, _T("%d"), &r.iEvrBuffers) != 1) {
-        r.iEvrBuffers = 5;
-    }
-    if (m_fD3D9RenderDevice) {
-        r.D3D9RenderDevice = m_D3D9GUIDNames[m_iD3D9RenderDevice];
-    } else {
-        r.D3D9RenderDevice.Empty();
-    }
-
     return __super::OnApply();
 }
 
 void CPPageOutput::OnUpdateVideoRendererSettings(CCmdUI* pCmdUI) {
-    pCmdUI->Enable(m_iDSVideoRendererType == VIDRNDT_DS_MPCVR || m_iDSVideoRendererType == VIDRNDT_DS_MADVR);
+    pCmdUI->Enable(m_iDSVideoRendererType == VIDRNDT_DS_MPCVR || m_iDSVideoRendererType == VIDRNDT_DS_MADVR
+                   || m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
+                   || m_iDSVideoRendererType == VIDRNDT_DS_SYNC);
 }
 
 void CPPageOutput::OpenVideoRendererSettings() {
+    if (m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
+            || m_iDSVideoRendererType == VIDRNDT_DS_SYNC) {
+        CPPageVideoRenderer page;
+        CMPCThemePropertySheet dlg(IDS_PPAGE_OUTPUT_VIDEO_RENDERER_SETTINGS, this);
+        dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+        dlg.AddPage(&page);
+        if (dlg.DoModal() == IDOK) {
+            OnDSRendererChange(); // refresh status icon; the surface setting may have changed
+        }
+        return;
+    }
+
     GUID clsid;
     if (m_iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
         clsid = CLSID_MPCVR;
@@ -549,44 +429,19 @@ void CPPageOutput::OpenVideoRendererSettings() {
 }
 
 void CPPageOutput::OnUpdateAudioRendererSettings(CCmdUI* pCmdUI) {
-    pCmdUI->Enable(m_iAudioRendererType == m_iMPCAudioRendererType);
+    pCmdUI->Enable(m_iAudioRendererType == m_iMPCAudioRendererType || m_iAudioRendererType == m_iSaneAudioRendererType);
 }
 
 void CPPageOutput::OpenAudioRendererSettings() {
     if (m_iAudioRendererType == m_iMPCAudioRendererType) {
         ShowPPage(CFGManager::GetMpcAudioRendererInstance);
+    } else if (m_iAudioRendererType == m_iSaneAudioRendererType) {
+        CPPageAudioRenderer page;
+        CMPCThemePropertySheet dlg(IDS_PPAGE_OUTPUT_AUDIO_RENDERER_SETTINGS, this);
+        dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+        dlg.AddPage(&page);
+        dlg.DoModal();
     }
-}
-
-void CPPageOutput::OnSurfaceChange()
-{
-    UpdateData();
-
-    switch (m_iAPSurfaceUsage) {
-        case VIDRNDT_AP_SURFACE:
-            if (m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS) {
-                m_iDSShaderSupport.SetIcon(m_cross);
-                m_iDSRotationSupport.SetIcon(m_cross);
-            }
-            m_wndToolTip.UpdateTipText(ResStr(IDC_REGULARSURF), GetDlgItem(IDC_DX_SURFACE));
-            break;
-        case VIDRNDT_AP_TEXTURE2D:
-            if (m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS) {
-                m_iDSShaderSupport.SetIcon(m_cross);
-                m_iDSRotationSupport.SetIcon(m_cross);
-            }
-            m_wndToolTip.UpdateTipText(ResStr(IDC_TEXTURESURF2D), GetDlgItem(IDC_DX_SURFACE));
-            break;
-        case VIDRNDT_AP_TEXTURE3D:
-            if (m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS) {
-                m_iDSShaderSupport.SetIcon(m_tick);
-                m_iDSRotationSupport.SetIcon(m_tick);
-            }
-            m_wndToolTip.UpdateTipText(ResStr(IDC_TEXTURESURF3D), GetDlgItem(IDC_DX_SURFACE));
-            break;
-    }
-
-    SetModified();
 }
 
 void CPPageOutput::OnDSRendererChange()
@@ -602,152 +457,68 @@ void CPPageOutput::OnDSRendererChange()
         }
     }
 
-    GetDlgItem(IDC_DX_SURFACE)->EnableWindow(FALSE);
-    GetDlgItem(IDC_DX9RESIZER_COMBO)->EnableWindow(FALSE);
-    GetDlgItem(IDC_FULLSCREEN_MONITOR_CHECK)->EnableWindow(FALSE);
-    GetDlgItem(IDC_DSVMR9LOADMIXER)->EnableWindow(FALSE);
-    GetDlgItem(IDC_DSVMR9ALTERNATIVEVSYNC)->EnableWindow(FALSE);
-    GetDlgItem(IDC_RESETDEVICE)->EnableWindow(FALSE);
-    GetDlgItem(IDC_CACHESHADERS)->EnableWindow(FALSE);
-    GetDlgItem(IDC_EVR_BUFFERS)->EnableWindow(m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM);
-    GetDlgItem(IDC_EVR_BUFFERS_TXT)->EnableWindow(m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM);
+    UINT tipID = GetRendererTooltipID();
+    m_wndToolTip.UpdateTipText(tipID ? ResStr(tipID) : CString(), GetDlgItem(IDC_VIDRND_COMBO));
 
-    GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(FALSE);
-    GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(FALSE);
+    UpdateStatusIcon();
 
-    m_iDSDXVASupport.SetRedraw(FALSE);
-    m_iDSSaveImageSupport.SetRedraw(FALSE);
-    m_iDSShaderSupport.SetRedraw(FALSE);
-    m_iDSRotationSupport.SetRedraw(FALSE);
+    UpdateSubtitleRendererList();
+    SetModified();
+}
 
-    m_iDSDXVASupport.SetIcon(m_cross);
-    m_iDSSaveImageSupport.SetIcon(m_cross);
-    m_iDSShaderSupport.SetIcon(m_cross);
-    m_iDSRotationSupport.SetIcon(m_cross);
-
+UINT CPPageOutput::GetRendererTooltipID() const
+{
     switch (m_iDSVideoRendererType) {
-        case VIDRNDT_DS_VMR7:
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSVMR7), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_OVERLAYMIXER:
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSOVERLAYMIXER), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_VMR9WINDOWED:
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSVMR9WIN), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_EVR:
-            m_iDSDXVASupport.SetIcon(m_tick);
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSEVR), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_NULL_COMP:
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSNULL_COMP), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_NULL_UNCOMP:
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSNULL_UNCOMP), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_VMR9RENDERLESS:
-            GetDlgItem(IDC_DSVMR9LOADMIXER)->EnableWindow(TRUE);
-            GetDlgItem(IDC_DSVMR9ALTERNATIVEVSYNC)->EnableWindow(TRUE);
-            GetDlgItem(IDC_RESETDEVICE)->EnableWindow(TRUE);
-            GetDlgItem(IDC_CACHESHADERS)->EnableWindow(TRUE);
-            GetDlgItem(IDC_DX_SURFACE)->EnableWindow(TRUE);
-            GetDlgItem(IDC_DX9RESIZER_COMBO)->EnableWindow(TRUE);
+        case VIDRNDT_DS_VMR7:           return IDC_DSVMR7;
+        case VIDRNDT_DS_OVERLAYMIXER:   return IDC_DSOVERLAYMIXER;
+        case VIDRNDT_DS_VMR9WINDOWED:   return IDC_DSVMR9WIN;
+        case VIDRNDT_DS_EVR:            return IDC_DSEVR;
+        case VIDRNDT_DS_NULL_COMP:      return IDC_DSNULL_COMP;
+        case VIDRNDT_DS_NULL_UNCOMP:    return IDC_DSNULL_UNCOMP;
+        case VIDRNDT_DS_VMR9RENDERLESS: return IDC_DSVMR9REN;
+        case VIDRNDT_DS_EVR_CUSTOM:     return IDC_DSEVR_CUSTOM;
+        case VIDRNDT_DS_SYNC:           return IDC_DSSYNC;
+        case VIDRNDT_DS_MADVR:          return IDC_DSMADVR;
+        case VIDRNDT_DS_DXR:            return IDC_DSDXR;
+        case VIDRNDT_DS_MPCVR:          return IDC_DSMPCVR;
+        default:                        return 0;
+    }
+}
 
-            if (m_iAPSurfaceUsage == VIDRNDT_AP_TEXTURE3D) {
-                m_iDSShaderSupport.SetIcon(m_tick);
-                m_iDSRotationSupport.SetIcon(m_tick);
-            }
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSVMR9REN), GetDlgItem(IDC_VIDRND_COMBO));
+void CPPageOutput::UpdateStatusIcon()
+{
+    // Single feature-support indicator for the selected video renderer:
+    // green tick    - supports all player functionality including HDR (MPCVR/madVR)
+    // yellow warning - supports all player functionality except HDR (EVR CP/Sync)
+    // red cross     - old renderer with limited functionality
+    // The tooltip carries the detailed capability description of the renderer.
+    HICON icon;
+    switch (m_iDSVideoRendererType) {
+        case VIDRNDT_DS_MPCVR:
+        case VIDRNDT_DS_MADVR:
+            icon = m_tick;
             break;
         case VIDRNDT_DS_EVR_CUSTOM:
-            if (m_iD3D9RenderDeviceCtrl.GetCount() > 1) {
-                GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(TRUE);
-                GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(IsDlgButtonChecked(IDC_D3D9DEVICE));
-            }
-
-            GetDlgItem(IDC_DX9RESIZER_COMBO)->EnableWindow(TRUE);
-            GetDlgItem(IDC_FULLSCREEN_MONITOR_CHECK)->EnableWindow(TRUE);
-            GetDlgItem(IDC_DSVMR9ALTERNATIVEVSYNC)->EnableWindow(TRUE);
-            GetDlgItem(IDC_RESETDEVICE)->EnableWindow(TRUE);
-            GetDlgItem(IDC_CACHESHADERS)->EnableWindow(TRUE);
-
-            // Force 3D surface with EVR Custom
-            GetDlgItem(IDC_DX_SURFACE)->EnableWindow(FALSE);
-            ((CComboBox*)GetDlgItem(IDC_DX_SURFACE))->SetCurSel(2);
-
-            m_iDSDXVASupport.SetIcon(m_tick);
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_iDSShaderSupport.SetIcon(m_tick);
-            m_iDSRotationSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSEVR_CUSTOM), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
         case VIDRNDT_DS_SYNC:
-            GetDlgItem(IDC_EVR_BUFFERS)->EnableWindow(TRUE);
-            GetDlgItem(IDC_EVR_BUFFERS_TXT)->EnableWindow(TRUE);
-            GetDlgItem(IDC_DX9RESIZER_COMBO)->EnableWindow(TRUE);
-            GetDlgItem(IDC_FULLSCREEN_MONITOR_CHECK)->EnableWindow(TRUE);
-            GetDlgItem(IDC_RESETDEVICE)->EnableWindow(TRUE);
-            GetDlgItem(IDC_CACHESHADERS)->EnableWindow(TRUE);
-
-            // Force 3D surface with EVR Sync
-            GetDlgItem(IDC_DX_SURFACE)->EnableWindow(FALSE);
-            ((CComboBox*)GetDlgItem(IDC_DX_SURFACE))->SetCurSel(2);
-
-            m_iDSDXVASupport.SetIcon(m_tick);
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_iDSShaderSupport.SetIcon(m_tick);
-            m_iDSRotationSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSSYNC), GetDlgItem(IDC_VIDRND_COMBO));
+            icon = m_warn;
             break;
-        case VIDRNDT_DS_MADVR:
-            m_iDSDXVASupport.SetIcon(m_tick);
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_iDSShaderSupport.SetIcon(m_tick);
-            m_iDSRotationSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSMADVR), GetDlgItem(IDC_VIDRND_COMBO));
+        case VIDRNDT_DS_NULL_COMP:
+        case VIDRNDT_DS_NULL_UNCOMP:
+            icon = nullptr; // no video rendered at all, a capability warning makes no sense
             break;
-        case VIDRNDT_DS_DXR:
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSDXR), GetDlgItem(IDC_VIDRND_COMBO));
-            break;
-        case VIDRNDT_DS_MPCVR:
-            m_iDSDXVASupport.SetIcon(m_tick);
-            m_iDSSaveImageSupport.SetIcon(m_tick);
-            m_iDSShaderSupport.SetIcon(m_tick);
-            m_iDSRotationSupport.SetIcon(m_tick);
-            m_wndToolTip.UpdateTipText(ResStr(IDC_DSMPCVR), GetDlgItem(IDC_VIDRND_COMBO));
+        default:
+            icon = m_cross;
             break;
     }
 
-    m_iDSDXVASupport.SetRedraw(TRUE);
-    m_iDSDXVASupport.Invalidate();
-    m_iDSDXVASupport.UpdateWindow();
-    m_iDSSaveImageSupport.SetRedraw(TRUE);
-    m_iDSSaveImageSupport.Invalidate();
-    m_iDSSaveImageSupport.UpdateWindow();
-    m_iDSShaderSupport.SetRedraw(TRUE);
-    m_iDSShaderSupport.Invalidate();
-    m_iDSShaderSupport.UpdateWindow();
-    m_iDSRotationSupport.SetRedraw(TRUE);
-    m_iDSRotationSupport.Invalidate();
-    m_iDSRotationSupport.UpdateWindow();
-
-    UpdateSubtitleRendererList();
-    UpdateSubtitleSupport();
-    SetModified();
+    m_iDSSupportIcon.SetIcon(icon);
+    m_iDSSupportIcon.ShowWindow(icon ? SW_SHOW : SW_HIDE);
+    UINT tipID = GetRendererTooltipID();
+    m_wndToolTip.UpdateTipText(tipID ? ResStr(tipID) : CString(), GetDlgItem(IDC_VIDRND_SUPPORT_ICON));
 }
 
 void CPPageOutput::OnAudioRendererChange() {
     UpdateData();
-    CPPageAudioRenderer* pAR = static_cast<CPPageAudioRenderer*>(FindSiblingPage(RUNTIME_CLASS(CPPageAudioRenderer)));
-    if (pAR) { //audio renderer page visible, so we have to update it, too
-        pAR->SetCurAudioRenderer(GetAudioRendererDisplayName());
-    }
     SetModified();
 }
 
@@ -758,34 +529,9 @@ const CString& CPPageOutput::GetAudioRendererDisplayName() {
 void CPPageOutput::OnSubtitleRendererChange()
 {
     UpdateData();
-    UpdateSubtitleSupport();
     SetModified();
 
     m_lastSubrenderer = static_cast<CAppSettings::SubtitleRenderer>(m_SubtitleRendererCtrl.GetItemData(m_SubtitleRendererCtrl.GetCurSel()));
-}
-
-void CPPageOutput::OnFullscreenCheck()
-{
-    UpdateData();
-    if (m_fD3DFullscreen && CMPCThemeMsgBox::MessageBoxW(this, ResStr(IDS_D3DFS_WARNING), nullptr, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2) == IDNO) {
-        m_fD3DFullscreen = false;
-        UpdateData(FALSE);
-    } else {
-        SetModified();
-    }
-}
-
-void CPPageOutput::UpdateSubtitleSupport()
-{
-    auto subrenderer = static_cast<CAppSettings::SubtitleRenderer>(m_SubtitleRendererCtrl.GetItemData(m_SubtitleRendererCtrl.GetCurSel()));
-
-    bool supported = (m_iDSVideoRendererType != VIDRNDT_DS_NULL_COMP &&
-                      m_iDSVideoRendererType != VIDRNDT_DS_NULL_UNCOMP &&
-                      subrenderer != CAppSettings::SubtitleRenderer::NONE &&
-                      CAppSettings::IsSubtitleRendererRegistered(subrenderer) &&
-                      CAppSettings::IsSubtitleRendererSupported(subrenderer, m_iDSVideoRendererType));
-
-    m_iDSSubtitleSupport.SetIcon(supported ? m_tick : m_cross);
 }
 
 void CPPageOutput::UpdateSubtitleRendererList()
@@ -841,11 +587,4 @@ void CPPageOutput::UpdateSubtitleRendererList()
     m_SubtitleRendererCtrl.SetRedraw(TRUE);
     m_SubtitleRendererCtrl.Invalidate();
     m_SubtitleRendererCtrl.UpdateWindow();
-}
-
-void CPPageOutput::OnD3D9DeviceCheck()
-{
-    UpdateData();
-    GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(m_fD3D9RenderDevice);
-    SetModified();
 }

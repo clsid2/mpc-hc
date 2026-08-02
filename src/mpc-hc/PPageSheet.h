@@ -34,11 +34,9 @@
 #include "PPageDVD.h"
 #include "PPageOutput.h"
 #include "PPageFullscreen.h"
-#include "PPageSync.h"
 #include "PPageWebServer.h"
 #include "PPageInternalFilters.h"
 #include "PPageAudioSwitcher.h"
-#include "PPageAudioRenderer.h"
 #include "PPageExternalFilters.h"
 #include "PPageSubtitles.h"
 #include "PPageSubStyle.h"
@@ -107,14 +105,12 @@ private:
     CPPageOutput m_output;
     CPPageShaders m_shaders;
     CPPageFullscreen m_fullscreen;
-    CPPageSync m_sync;
     CPPageCapture m_tuner;
     CPPageDPICalc m_dpiCalc;
 #if USE_LAVFILTERS
     CPPageInternalFilters m_internalfilters;
 #endif
     CPPageAudioSwitcher m_audioswitcher;
-    CPPageAudioRenderer m_audiorenderer;
     CPPageExternalFilters m_externalfilters;
     CPPageSubtitles m_subtitles;
     CPPageSubStyle m_substyle;

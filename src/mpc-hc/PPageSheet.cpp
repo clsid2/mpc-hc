@@ -60,13 +60,11 @@ CPPageSheet::CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd
     AddPage(&m_output);
     AddPage(&m_shaders);
     AddPage(&m_fullscreen);
-    AddPage(&m_sync);
     AddPage(&m_tuner);
 #if USE_LAVFILTERS
     AddPage(&m_internalfilters);
 #endif
     AddPage(&m_audioswitcher);
-    AddPage(&m_audiorenderer);
 
     AddPage(&m_externalfilters);
     AddPage(&m_subtitles);
