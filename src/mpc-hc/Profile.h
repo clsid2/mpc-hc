@@ -131,6 +131,13 @@ public:
     // Used once to split MediaHistory out into its own store. INI mode.
     void MoveSectionTree(const wchar_t* root, CProfile& dst);
 
+    // Snapshot all values under "root" and "root\..." as raw strings, and write
+    // such a snapshot back into the current store. Used to carry sections that
+    // exist only in the profile store (e.g. the internal filter settings)
+    // across a settings location switch.
+    void ReadSectionTree(const wchar_t* root, ProfileMap& tree);
+    void WriteSectionTree(const ProfileMap& tree);
+
     SettingsLocation GetSettingsLocation() const;
 
     // Registry path ("Software\\MPC-HC\\...") of the store when in registry

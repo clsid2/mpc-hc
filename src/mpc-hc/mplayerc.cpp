@@ -1103,6 +1103,11 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     m_s->GetFav(FAV_DVD, DVDsFav);
     m_s->GetFav(FAV_DEVICE, devicesFav);
 
+    // The internal filter settings (LAV Splitter/Video/Audio, audio renderer)
+    // exist only in the profile store, so snapshot them for the new location
+    ProfileMap internalFilterSettings;
+    m_Profile.ReadSectionTree(IDS_R_INTERNAL_FILTERS, internalFilterSettings);
+
     if (useIni) {
         // Offer to leave the old registry settings in place as a backup copy
         // (useful when running multiple copies of the player). A present INI
@@ -1125,6 +1130,9 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     if (!success) {
         return false;
     }
+
+    // Restore the internal filter settings into the new store
+    m_Profile.WriteSectionTree(internalFilterSettings);
 
     // Point the MediaHistory store at the new location before SaveSettings()
     // below re-writes the full in-memory history there in the correct format.

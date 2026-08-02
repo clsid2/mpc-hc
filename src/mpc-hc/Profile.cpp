@@ -1107,6 +1107,79 @@ void CProfile::MoveSectionTree(const wchar_t* root, CProfile& dst)
     }
 }
 
+void CProfile::ReadSectionTree(const wchar_t* root, ProfileMap& tree)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    if (!m_bRegistryMode) {
+        InitIni();
+        const CStringW rootStr(root);
+        const CStringW prefix(rootStr + L"\\");
+
+        // Iterate the whole map instead of enumerating subsections level by
+        // level: an intermediate section without direct values (e.g.
+        // "root\a" when only "root\a\b" holds values) has no map entry, so
+        // it would hide the deeper sections from EnumSectionNames().
+        for (const auto& section : m_ProfileMap) {
+            if (section.first.CompareNoCase(rootStr) == 0 || StartsWithNoCase(section.first, prefix)) {
+                tree[section.first] = section.second;
+            }
+        }
+        return;
+    }
+
+    std::vector<CStringW> pending;
+    pending.emplace_back(root);
+
+    while (!pending.empty()) {
+        const CStringW section = pending.back();
+        pending.pop_back();
+
+        std::vector<CStringW> valuenames;
+        EnumValueNames(section, valuenames);
+        for (const auto& name : valuenames) {
+            // REG_SZ values are copied as-is, REG_DWORD values are stored as
+            // their decimal representation; other types are not used by the
+            // sections this is meant for.
+            CStringW str;
+            int number = 0;
+            if (ReadString(section, name, str)) {
+                tree[section][name] = str;
+            } else if (ReadInt(section, name, number)) {
+                str.Format(L"%d", number);
+                tree[section][name] = str;
+            }
+        }
+
+        std::vector<CStringW> subsections;
+        EnumSectionNames(section, subsections);
+        for (const auto& sub : subsections) {
+            pending.emplace_back(section + L"\\" + sub);
+        }
+    }
+}
+
+void CProfile::WriteSectionTree(const ProfileMap& tree)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    for (const auto& section : tree) {
+        for (const auto& kv : section.second) {
+            // Entirely numeric values become REG_DWORD, matching how the
+            // readers (GetProfileInt) expect to find them in the registry;
+            // everything else stays a string.
+            const wchar_t* str = kv.second;
+            wchar_t* end = nullptr;
+            const long number = wcstol(str, &end, 10);
+            if (m_bRegistryMode && end > str && *end == L'\0') {
+                WriteInt(section.first, kv.first, (int)number);
+            } else {
+                WriteString(section.first, kv.first, kv.second);
+            }
+        }
+    }
+}
+
 bool CProfile::HasEntry(const wchar_t* section, const wchar_t* entry)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
