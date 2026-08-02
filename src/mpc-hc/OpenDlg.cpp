@@ -145,11 +145,7 @@ void COpenDlg::OnBrowseFile()
     }
 
     m_fns.RemoveAll();
-
-    POSITION pos = fd.GetStartPosition();
-    while (pos) {
-        m_fns.AddTail(fd.GetNextPathName(pos));
-    }
+    FileDialogUtils::GetSelectedPaths(fd, m_fns);
 
     if (!m_fns.IsEmpty()) {
         if (s.fKeepHistory) {

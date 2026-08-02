@@ -25,6 +25,7 @@
 #include "mplayerc.h"
 #include "DSUtil.h"
 #include "FakeFilterMapper2.h"
+#include "OpenFileDlg.h"
 #include <initguid.h>
 #include <dmo.h>
 #include "PPageExternalFilters.h"
@@ -168,7 +169,7 @@ void CRegFilterChooserDlg::OnBnClickedButton1()
 
     if (dlg.DoModal() == IDOK) {
         CFilterMapper2 fm2(false);
-        fm2.Register(dlg.GetPathName());
+        fm2.Register(FileDialogUtils::GetSelectedPath(dlg));
         m_filters.AddTail(&fm2.m_filters);
         fm2.m_filters.RemoveAll();
 

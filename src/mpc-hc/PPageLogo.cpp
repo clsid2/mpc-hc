@@ -26,6 +26,7 @@
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
 #include "ColorProfileUtil.h"
+#include "OpenFileDlg.h"
 
 // CPPageLogo dialog
 
@@ -214,7 +215,7 @@ void CPPageLogo::OnBnClickedButton2()
                     this, 0);
 
     if (dlg.DoModal() == IDOK) {
-        m_logofn = dlg.GetPathName();
+        m_logofn = FileDialogUtils::GetSelectedPath(dlg);
         UpdateData(FALSE);
         OnBnClickedExternalRadio();
     }

@@ -4927,11 +4927,7 @@ void CMainFrame::OnFileOpenQuick()
     }
 
     CAtlList<CString> fns;
-
-    POSITION pos = fd.GetStartPosition();
-    while (pos) {
-        fns.AddTail(fd.GetNextPathName(pos));
-    }
+    FileDialogUtils::GetSelectedPaths(fd, fns);
 
     bool fMultipleFiles = false;
 
@@ -6907,16 +6903,19 @@ void CMainFrame::OnFileSubtitlesLoad()
     CFileDialog fd(TRUE, nullptr, nullptr, dwFlags, filters, GetModalParent());
 
     OPENFILENAME& ofn = fd.GetOFN();
-    // Provide a buffer big enough to hold 16 paths (which should be more than enough)
+    // Provide a buffer big enough to hold 16 paths (which should be more than enough).
+    // Only the old style dialog falls back to it, GetSelectedPaths() normally reads the
+    // selection straight from the shell interface.
     const int nBufferSize = 16 * (MAX_PATH + 1) + 1;
     CString filenames;
     ofn.lpstrFile = filenames.GetBuffer(nBufferSize);
     ofn.nMaxFile = nBufferSize;
     // Set the current file directory as default folder
     CString curfile = m_wndPlaylistBar.GetCurFileName();
+    CPathW defaultDir; // must outlive DoModal(), ofn.lpstrInitialDir points into it
     if (!PathUtils::IsURL(curfile)) {
         ExtendMaxPathLengthIfNeeded(curfile, true);
-        CPathW defaultDir(curfile);
+        defaultDir = curfile.GetString();
         defaultDir.RemoveFileSpec();
         if (!defaultDir.m_strPath.IsEmpty() && defaultDir.IsDirectory()) {
             ofn.lpstrInitialDir = defaultDir.m_strPath;
@@ -6925,9 +6924,11 @@ void CMainFrame::OnFileSubtitlesLoad()
 
     if (fd.DoModal() == IDOK) {
         bool bFirstFile = true;
-        POSITION pos = fd.GetStartPosition();
+        CAtlList<CString> subfiles;
+        FileDialogUtils::GetSelectedPaths(fd, subfiles);
+        POSITION pos = subfiles.GetHeadPosition();
         while (pos) {
-            CString subfile = fd.GetNextPathName(pos);
+            const CString& subfile = subfiles.GetNext(pos);
             if (m_pDVS) {
                 if (SUCCEEDED(m_pDVS->put_FileName((LPWSTR)(LPCWSTR)subfile))) {
                     m_pDVS->put_SelectedLanguage(0);

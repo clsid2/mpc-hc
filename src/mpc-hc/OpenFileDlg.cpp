@@ -26,6 +26,93 @@
 
 #define __DUMMY__ _T("*.*")
 
+namespace FileDialogUtils
+{
+    static void AppendPath(IShellItem* pItem, CAtlList<CString>& paths)
+    {
+        CComHeapPtr<WCHAR> path;
+        if (SUCCEEDED(pItem->GetDisplayName(SIGDN_FILESYSPATH, &path))) {
+            paths.AddTail(CString(path));
+        }
+    }
+
+    // Fallback for the old style dialog. The buffer holds a sequence of null terminated
+    // strings: either a single full path, or the folder followed by one bare file name
+    // per selected file. Note that the MSDN example for CFileDialog gets the first case
+    // wrong, it reports the path as the folder and then finds no files at all.
+    static void ParseOFNBuffer(const OPENFILENAME& ofn, CAtlList<CString>& paths)
+    {
+        const TCHAR* p = ofn.lpstrFile;
+        if (!p) {
+            return;
+        }
+
+        size_t remaining = ofn.nMaxFile;
+        size_t len = _tcsnlen(p, remaining);
+        if (len == 0 || len >= remaining) {
+            return;
+        }
+
+        CString folder(p, (int)len);
+        p += len + 1;
+        remaining -= len + 1;
+
+        len = _tcsnlen(p, remaining);
+        if (len == 0) {
+            // only one string, so it is a full path rather than a folder
+            paths.AddTail(folder);
+            return;
+        }
+
+        if (folder[folder.GetLength() - 1] != _T('\\')) {
+            folder += _T('\\');
+        }
+        while (len > 0 && len < remaining) {
+            paths.AddTail(folder + CString(p, (int)len));
+            p += len + 1;
+            remaining -= len + 1;
+            len = _tcsnlen(p, remaining);
+        }
+    }
+
+    bool GetSelectedPaths(CFileDialog& fd, CAtlList<CString>& paths)
+    {
+        // Read the result from the shell interface the dialog is built on. Unlike the
+        // OPENFILENAME buffer and CFileDialog::GetNextPathName(), IShellItem has no
+        // path length limit of its own.
+        CComPtr<IFileOpenDialog> pOpenDlg;
+        pOpenDlg.Attach(fd.GetIFileOpenDialog());
+        if (pOpenDlg) {
+            CComPtr<IShellItemArray> pItems;
+            if (SUCCEEDED(pOpenDlg->GetResults(&pItems)) && pItems) {
+                DWORD count = 0;
+                if (SUCCEEDED(pItems->GetCount(&count))) {
+                    for (DWORD i = 0; i < count; i++) {
+                        CComPtr<IShellItem> pItem;
+                        if (SUCCEEDED(pItems->GetItemAt(i, &pItem))) {
+                            AppendPath(pItem, paths);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (paths.IsEmpty()) {
+            // old style dialog, or a selection with no file system path (COpenFileDlg
+            // substitutes "*.*" when a directory was picked)
+            ParseOFNBuffer(fd.GetOFN(), paths);
+        }
+
+        return !paths.IsEmpty();
+    }
+
+    CString GetSelectedPath(CFileDialog& fd)
+    {
+        CAtlList<CString> paths;
+        return GetSelectedPaths(fd, paths) ? paths.GetHead() : CString();
+    }
+}
+
 bool COpenFileDlg::m_fAllowDirSelection = false;
 WNDPROC COpenFileDlg::m_wndProc = nullptr;
 
@@ -153,85 +240,4 @@ BOOL COpenFileDlg::OnIncludeItem(OFNOTIFYEX* pOFNEx, LRESULT* pResult)
     *pResult = mask.Find(ext) >= 0 || mask.Find(_T("*.*")) >= 0;
 
     return TRUE;
-}
-
-// override CFileDialog::GetNextPathName() and increase max path length
-CString COpenFileDlg::GetNextPathName(POSITION& pos) const
-{
-    BOOL bExplorer = m_ofn.Flags & OFN_EXPLORER;
-    TCHAR chDelimiter;
-    if (bExplorer)
-        chDelimiter = '\0';
-    else
-        chDelimiter = ' ';
-
-    LPTSTR lpsz = (LPTSTR)pos;
-    if (lpsz == m_ofn.lpstrFile) // first time
-    {
-        if ((m_ofn.Flags & OFN_ALLOWMULTISELECT) == 0)
-        {
-            pos = NULL;
-            return m_ofn.lpstrFile;
-        }
-
-        // find char pos after first Delimiter
-        while (*lpsz != chDelimiter && *lpsz != '\0')
-            lpsz = _tcsinc(lpsz);
-        lpsz = _tcsinc(lpsz);
-
-        // if single selection then return only selection
-        if (*lpsz == 0)
-        {
-            pos = NULL;
-            return m_ofn.lpstrFile;
-        }
-    }
-
-    CString strBasePath = m_ofn.lpstrFile;
-    if (!bExplorer)
-    {
-        LPTSTR lpszPath = m_ofn.lpstrFile;
-        while (*lpszPath != chDelimiter)
-            lpszPath = _tcsinc(lpszPath);
-        strBasePath = strBasePath.Left(int(lpszPath - m_ofn.lpstrFile));
-    }
-
-    LPTSTR lpszFileName = lpsz;
-    CString strFileName = lpsz;
-
-    // find char pos at next Delimiter
-    while (*lpsz != chDelimiter && *lpsz != '\0')
-        lpsz = _tcsinc(lpsz);
-
-    if (!bExplorer && *lpsz == '\0')
-        pos = NULL;
-    else
-    {
-        if (!bExplorer)
-            strFileName = strFileName.Left(int(lpsz - lpszFileName));
-
-        lpsz = _tcsinc(lpsz);
-        if (*lpsz == '\0') // if double terminated then done
-            pos = NULL;
-        else
-            pos = (POSITION)lpsz;
-    }
-
-    TCHAR strDrive[_MAX_DRIVE], strDir[4 * _MAX_DIR], strName[4 * _MAX_FNAME], strExt[_MAX_EXT];
-    Checked::tsplitpath_s(strFileName, strDrive, _MAX_DRIVE, strDir, 4 * _MAX_DIR, strName, 4 * _MAX_FNAME, strExt, _MAX_EXT);
-    TCHAR strPath[4 * _MAX_PATH];
-    if (*strDrive || *strDir)
-    {
-        Checked::tcscpy_s(strPath, _countof(strPath), strFileName);
-    } else
-    {
-        if ((strBasePath.GetLength() != 3) || (strBasePath[1] != ':') || (strBasePath[2] != '\\'))
-        {
-            strBasePath += _T("\\");
-        }
-        Checked::tsplitpath_s(strBasePath, strDrive, _MAX_DRIVE, strDir, 4 * _MAX_DIR, NULL, 0, NULL, 0);
-        Checked::tmakepath_s(strPath, 4 * _MAX_PATH, strDrive, strDir, strName, strExt);
-    }
-
-    return strPath;
 }

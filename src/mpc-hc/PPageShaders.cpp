@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "PPageShaders.h"
 #include "MainFrm.h"
+#include "OpenFileDlg.h"
 #include "PathUtils.h"
 #include "mplayerc.h"
 #undef SubclassWindow
@@ -467,6 +468,8 @@ void CPPageShaders::OnAddShaderFile()
     CFileDialog dlg(TRUE, nullptr, nullptr, dlgFlags, dlgFilter, this);
     // default buffer size is 260 chars
     // since we allow multi-select, we want it larger
+    // (only the old style dialog falls back to this buffer, GetSelectedPaths() normally
+    // reads the selection straight from the shell interface)
     CString buff;
     const DWORD bufflen = 4096;
     dlg.GetOFN().lpstrFile = buff.GetBuffer(bufflen);
@@ -474,9 +477,11 @@ void CPPageShaders::OnAddShaderFile()
 
     if (dlg.DoModal() == IDOK) {
         auto list = m_Shaders.GetList();
-        POSITION dlgPos = dlg.GetStartPosition();
+        CAtlList<CString> paths;
+        FileDialogUtils::GetSelectedPaths(dlg, paths);
+        POSITION dlgPos = paths.GetHeadPosition();
         while (dlgPos) {
-            Shader shader(dlg.GetNextPathName(dlgPos));
+            Shader shader(paths.GetNext(dlgPos));
             if (std::find(list.begin(), list.end(), shader) == std::end(list)) {
                 m_Shaders.AddShader(shader);
             }
