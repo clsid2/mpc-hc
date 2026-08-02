@@ -331,11 +331,23 @@ void CPlaylist::SortByName()
     }
 }
 
-void CPlaylist::SortByPath()
+// Sorts the items from startIndex until the end of the list, leaving the preceding items untouched.
+void CPlaylist::SortByPath(int startIndex)
 {
-    CAtlArray<plsort2_t> a;
-    a.SetCount(GetCount());
+    if (startIndex < 0) {
+        startIndex = 0;
+    }
+    if ((size_t)startIndex + 1 >= GetCount()) { // nothing to sort
+        return;
+    }
+
     POSITION pos = GetHeadPosition();
+    for (int i = 0; i < startIndex; i++) {
+        GetNext(pos);
+    }
+
+    CAtlArray<plsort2_t> a;
+    a.SetCount(GetCount() - startIndex);
     for (int i = 0; pos; i++, GetNext(pos)) {
         a[i].str = GetAt(pos).m_fns.GetHead(), a[i].pos = pos;
     }

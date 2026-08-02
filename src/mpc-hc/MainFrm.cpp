@@ -837,6 +837,7 @@ CMainFrame::CMainFrame()
     , m_iReloadSubIdx(-1)
     , m_bRememberFilePos(false)
     , m_dwLastRun(0)
+    , m_nLastAppendSelectionIndex(0)
     , m_bBuffering(false)
     , m_fLiveWM(false)
     , m_rtDurationOverride(-1)
@@ -5227,12 +5228,20 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
             OpenMedia(p);
         } else {
             ULONGLONG tcnow = GetTickCount64();
-            if (m_dwLastRun && ((tcnow - m_dwLastRun) < s.iRedirectOpenToAppendThreshold)) {
+            // Opening a multi-file selection in Explorer spawns one process per file. Those arrive here in
+            // arbitrary order, so the entries added by the second and later ones are sorted back into place.
+            bool bSameSelection = m_dwLastRun && ((tcnow - m_dwLastRun) < s.iRedirectOpenToAppendThreshold);
+            if (bSameSelection) {
                 s.nCLSwitches |= CLSW_ADD;
             }
             m_dwLastRun = tcnow;
+            bool bRandomize = !!(s.nCLSwitches & CLSW_RANDOMIZE);
 
-            if ((s.nCLSwitches & CLSW_ADD) && !IsPlaylistEmpty()) {             
+            if ((s.nCLSwitches & CLSW_ADD) && !IsPlaylistEmpty()) {
+                if (!bSameSelection) { // a new selection starts at the current end of the playlist
+                    m_nLastAppendSelectionIndex = (int)m_wndPlaylistBar.GetCount();
+                }
+
                 POSITION pos2 = sl.GetHeadPosition();
                 while (pos2) {
                     CString fn = sl.GetNext(pos2);
@@ -5256,8 +5265,15 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
                     }
                     PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
                 }
+
+                // Done last so that it does not interfere with the item selected above. Sorting only moves
+                // list nodes around, so the playlist position stays on the same item.
+                if (bSameSelection && !bRandomize) {
+                    m_wndPlaylistBar.SortByPathFrom(m_nLastAppendSelectionIndex);
+                }
             } else {
                 fSetForegroundWindow = true;
+                m_nLastAppendSelectionIndex = 0; // the playlist gets replaced below
 
                 if (GetMediaState() == State_Running) {
                     MediaControlPause(true);

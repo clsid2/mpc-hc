@@ -173,6 +173,7 @@ public:
     void SetCurLabel(CString label);
     void SetCurTime(REFERENCE_TIME rt);
     void Randomize();
+    void SortByPathFrom(int startIndex);
     void UpdateLabel(CString in);
 
     void Refresh();

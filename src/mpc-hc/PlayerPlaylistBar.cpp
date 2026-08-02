@@ -1560,6 +1560,19 @@ void CPlayerPlaylistBar::SetCurTime(REFERENCE_TIME rt)
     }
 }
 
+// Sorts the items from startIndex until the end of the list on path, leaving the preceding items untouched.
+void CPlayerPlaylistBar::SortByPathFrom(int startIndex)
+{
+    if (startIndex < 0 || (INT_PTR)startIndex + 1 >= m_pl.GetCount()) {
+        return;
+    }
+    POSITION selPos = FindPos(m_list.GetSelectionMark());
+    m_pl.SortByPath(startIndex);
+    SetupList();
+    SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+    SavePlaylist();
+}
+
 void CPlayerPlaylistBar::Randomize()
 {
     POSITION selPos = FindPos(m_list.GetSelectionMark());

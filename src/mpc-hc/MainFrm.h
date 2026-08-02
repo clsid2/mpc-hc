@@ -457,6 +457,7 @@ private:
     bool m_bRememberFilePos;
 
     ULONGLONG m_dwLastRun;
+    int m_nLastAppendSelectionIndex; // playlist index where the current batch of redirected opens started
 
     bool m_bBuffering;
 
