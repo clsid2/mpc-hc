@@ -85,6 +85,7 @@ private:
     int m_nTimeColWidth;
     void ResizeListColumn();
     void RefreshItem(POSITION pos);
+    void RemoveItemAt(int index);
 
     CPlaylistItem* GetCur();
 
