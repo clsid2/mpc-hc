@@ -79,6 +79,8 @@
 #define IDF_SVG_BUTTONS48               708
 #define IDF_SVG_BUTTONS64               709
 #define IDF_SVG_GEAR                    710
+#define IDF_SVG_TICK                    711
+#define IDF_SVG_CROSS                   712
 #define ID_FILE_OPENMEDIA               800
 #define ID_FILE_OPENDVDBD               801
 #define ID_FILE_OPENDEVICE              802

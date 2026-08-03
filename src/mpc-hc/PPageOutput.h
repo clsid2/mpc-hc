@@ -35,7 +35,6 @@ class CPPageOutput : public CMPCThemePPageBase
 
 private:
     CStringArray m_AudioRendererDisplayNames;
-    CImageList m_tickcross;
     HICON m_tick, m_cross, m_warn;
 
     CMPCThemeComboBox m_iDSVideoRendererTypeCtrl;

@@ -24,7 +24,6 @@
 #include "PPageOutput.h"
 #include "moreuuids.h"
 #include "Monitors.h"
-#include "MPCPngImage.h"
 #include <WinapiFunc.h>
 #include "PPageAudioRenderer.h"
 #include "PPageVideoRenderer.h"
@@ -56,10 +55,10 @@ CPPageOutput::CPPageOutput()
 
 CPPageOutput::~CPPageOutput()
 {
-    DestroyIcon(m_tick);
-    DestroyIcon(m_cross);
-    if (m_warn) {
-        DestroyIcon(m_warn);
+    for (HICON icon : { m_tick, m_cross, m_warn }) {
+        if (icon) {
+            DestroyIcon(icon);
+        }
     }
 }
 
@@ -238,13 +237,26 @@ BOOL CPPageOutput::OnInitDialog()
 
     UpdateData(FALSE);
 
-    m_tickcross.Create(16, 16, ILC_COLOR32, 2, 0);
-    CMPCPngImage tickcross;
-    tickcross.Load(IDF_TICKCROSS);
-    m_tickcross.Add(&tickcross, (CBitmap*)nullptr);
-    m_tick = m_tickcross.ExtractIcon(0);
-    m_cross = m_tickcross.ExtractIcon(1);
-    LoadIconMetric(nullptr, (PCWSTR)IDI_WARNING, LIM_SMALL, &m_warn);
+    // All three indicators are rendered at the small-icon size for this
+    // window's DPI, so they stay the same size as each other when scaling.
+    DpiHelper dpiWindow;
+    dpiWindow.Override(GetSafeHwnd());
+    const int iconSize = dpiWindow.GetSystemMetricsDPI(SM_CXSMICON);
+
+    auto svgIcon = [iconSize](UINT nIDIcon) -> HICON {
+        CImage img;
+        if (FAILED(SVGImage::LoadIconDef({ nIDIcon, iconSize }, img)) || img.IsNull()) {
+            return nullptr;
+        }
+        CImageList imageList;
+        imageList.Create(img.GetWidth(), img.GetHeight(), ILC_COLOR32, 1, 0);
+        imageList.Add(CBitmap::FromHandle(img), (CBitmap*)nullptr);
+        return imageList.ExtractIcon(0);
+    };
+
+    m_tick = svgIcon(IDF_SVG_TICK);
+    m_cross = svgIcon(IDF_SVG_CROSS);
+    LoadIconWithScaleDown(nullptr, (PCWSTR)IDI_WARNING, iconSize, iconSize, &m_warn);
 
     CRect brc;
     GetDlgItem(IDC_BUTTON1)->GetWindowRect(brc);
