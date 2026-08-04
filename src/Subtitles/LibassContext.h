@@ -129,7 +129,7 @@ public:
     void SetFilterGraphFromFilter(IBaseFilter* f);
     void SetFilterGraph(IFilterGraph* g);
     void AssFlattenSSE2(ASS_Image* imagee, SubPicDesc& spd, CRect& rcDirty);
-    void AssFlatten(ASS_Image* image, SubPicDesc& spd, CRect& rcDirty);
+    //void AssFlatten(ASS_Image* image, SubPicDesc& spd, CRect& rcDirty); // unused C reference implementation
     void SetFrameSize(int w, int h);
     bool IsLibassActive() { return m_assloaded; }
 
