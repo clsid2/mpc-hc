@@ -940,22 +940,13 @@ STDMETHODIMP LibassContext::Render(REFERENCE_TIME rt, SubPicDesc& spd, RECT& bbo
     return E_POINTER;
 }
 
-// src and dst both use inverted alpha (0xff = transparent), src color is premultiplied
-void AlphaBlendToInverted(const BYTE* src, int w, int h, int pitch, int srcXOffset, int srcYOffset, BYTE* dst, int dst_pitch) {
-    src += srcYOffset * pitch;
+// The flattened image shares the subpic's pixel format (premultiplied color,
+// inverted alpha), and the subpic dirty rect holds no prior content, so the
+// image can be copied row by row instead of alpha blended.
+void CopyToSPD(const BYTE* src, int w, int h, int pitch, int srcXOffset, int srcYOffset, BYTE* dst, int dst_pitch) {
+    src += srcYOffset * pitch + srcXOffset;
     for (int i = 0; i < h; i++, src += pitch, dst += dst_pitch) {
-        const BYTE* s2 = src + srcXOffset;
-        const BYTE* s2end = s2 + w * 4;
-        DWORD* d2 = (DWORD*)dst;
-        for (; s2 < s2end; s2 += 4, d2++) {
-            if (s2[3] < 0xff) {
-                DWORD ia = s2[3];
-                *d2 = (((((*d2 & 0x00ff00ff) * ia) >> 8) + (*((DWORD*)s2) & 0x00ff00ff)) & 0x00ff00ff)
-                    | (((((*d2 & 0x0000ff00) * ia) >> 8) + (*((DWORD*)s2) & 0x0000ff00)) & 0x0000ff00)
-                    | (((((*d2 >> 24) + 1) * ia) >> 8) << 24)
-                    ;
-            }
-        }
+        memcpy(dst, src, (size_t)w * 4);
     }
 }
 
@@ -978,7 +969,7 @@ bool LibassContext::RenderFrame(long long now, SubPicDesc& spd, CRect& rcDirty) 
     }
 
     BYTE* pixelBytes = (BYTE*)(spd.bits + spd.pitch * rcDirty.top + rcDirty.left * 4);
-    AlphaBlendToInverted(reinterpret_cast<uint8_t*>(m_pixels.get()), rcDirty.Width(), rcDirty.Height(), 4 * lastUncroppedDirty.Width(), 4 * (rcDirty.left - lastUncroppedDirty.left), rcDirty.top - lastUncroppedDirty.top, pixelBytes, spd.pitch);
+    CopyToSPD(reinterpret_cast<uint8_t*>(m_pixels.get()), rcDirty.Width(), rcDirty.Height(), 4 * lastUncroppedDirty.Width(), 4 * (rcDirty.left - lastUncroppedDirty.left), rcDirty.top - lastUncroppedDirty.top, pixelBytes, spd.pitch);
     return true;
 }
 
