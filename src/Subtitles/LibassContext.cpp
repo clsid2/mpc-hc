@@ -940,6 +940,7 @@ STDMETHODIMP LibassContext::Render(REFERENCE_TIME rt, SubPicDesc& spd, RECT& bbo
     return E_POINTER;
 }
 
+// src and dst both use inverted alpha (0xff = transparent), src color is premultiplied
 void AlphaBlendToInverted(const BYTE* src, int w, int h, int pitch, int srcXOffset, int srcYOffset, BYTE* dst, int dst_pitch) {
     src += srcYOffset * pitch;
     for (int i = 0; i < h; i++, src += pitch, dst += dst_pitch) {
@@ -947,11 +948,11 @@ void AlphaBlendToInverted(const BYTE* src, int w, int h, int pitch, int srcXOffs
         const BYTE* s2end = s2 + w * 4;
         DWORD* d2 = (DWORD*)dst;
         for (; s2 < s2end; s2 += 4, d2++) {
-            if (s2[3] > 0) {
-                auto alpha = s2[3];
-                *d2 = (((((*d2 & 0x00ff00ff) * ~alpha) >> 8) + (*((DWORD*)s2) & 0x00ff00ff)) & 0x00ff00ff)
-                    | (((((*d2 & 0x0000ff00) * ~alpha) >> 8) + (*((DWORD*)s2) & 0x0000ff00)) & 0x0000ff00)
-                    | ((~(alpha + (((~((*d2 & 0xff000000) >> 24)) * ~alpha)))) << 24) //A.  this is inverted alpha, so we invert it before multiplying and then invert it again
+            if (s2[3] < 0xff) {
+                DWORD ia = s2[3];
+                *d2 = (((((*d2 & 0x00ff00ff) * ia) >> 8) + (*((DWORD*)s2) & 0x00ff00ff)) & 0x00ff00ff)
+                    | (((((*d2 & 0x0000ff00) * ia) >> 8) + (*((DWORD*)s2) & 0x0000ff00)) & 0x0000ff00)
+                    | (((((*d2 >> 24) + 1) * ia) >> 8) << 24)
                     ;
             }
         }
@@ -1017,7 +1018,15 @@ static __forceinline __m128i packed_pix_mix_sse2(const __m128i& dst,
     d_g = _mm_or_si128(d_g, c_g);
     d_b = _mm_or_si128(d_b, c_b);
 
+    __m128i ones = _mm_set1_epi32(0x1);
+    d_a = _mm_add_epi32(d_a, ones);
+
+    // The alpha channel is inverted (0xff = transparent), so a's low word
+    // contains 256 - src alpha. Multiplying it by the incremented destination
+    // alpha can produce 65536, which wraps to zero in this 16-bit multiply.
+    // The subtraction below still leaves the correct value in bits 8-15.
     d_a = _mm_mullo_epi16(d_a, a);
+    d_a = _mm_sub_epi32(d_a, ones);
     d_r = _mm_madd_epi16(d_r, a);
     d_g = _mm_madd_epi16(d_g, a);
     d_b = _mm_madd_epi16(d_b, a);
@@ -1026,11 +1035,6 @@ static __forceinline __m128i packed_pix_mix_sse2(const __m128i& dst,
     d_r = _mm_srli_epi32(d_r, 8);
     d_g = _mm_srli_epi32(d_g, 8);
     d_b = _mm_srli_epi32(d_b, 8);
-
-    __m128i ones = _mm_set1_epi32(0x1);
-    __m128i a_sub_one = _mm_srli_epi32(a, 16);
-    a_sub_one = _mm_sub_epi32(a_sub_one, ones);
-    d_a = _mm_add_epi32(d_a, a_sub_one);
 
     d_a = _mm_slli_epi32(d_a, 24);
     d_r = _mm_slli_epi32(d_r, 16);
@@ -1099,7 +1103,12 @@ static __forceinline void packed_pix_mix_sse2(BYTE* dst, const BYTE* alpha, int 
     }
     DWORD* dst_w = reinterpret_cast<DWORD*>(dst);
     for (; alpha < alpha_end; alpha++, dst_w++) {
+        // pixmix_sse2 accumulates straight alpha; recompute the inverted alpha channel
+        const DWORD dst_alpha = *dst_w >> 24;
+        const DWORD src_alpha = ((static_cast<DWORD>(*alpha) + 1) * (color >> 24)) >> 8;
         pixmix_sse2(dst_w, color, *alpha);
+        const DWORD output_alpha = (((dst_alpha + 1) * (0x100 - src_alpha) - 1) >> 8) << 24;
+        *dst_w = (*dst_w & 0x00FFFFFF) | output_alpha;
     }
 }
 
@@ -1114,7 +1123,9 @@ void LibassContext::AssFlattenSSE2(ASS_Image* image, SubPicDesc& spd, CRect& rcD
         CRect spdRect = GetSPDRect(spd);
         rcDirty.IntersectRect(pRect + spdRect.TopLeft(), spdRect);
 
-        m_pixels = std::make_unique<uint32_t[]>(pRect.Width() * pRect.Height());
+        size_t pixelCount = (size_t)pRect.Width() * pRect.Height();
+        m_pixels.reset(new uint32_t[pixelCount]);
+        std::fill_n(m_pixels.get(), pixelCount, 0xFF000000u); // transparent, inverted alpha
 
         for (auto i = image; i != nullptr; i = i->next) {
             for (int y=0; y<i->h; y++) {
