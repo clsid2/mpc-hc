@@ -2476,6 +2476,8 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         M_SAVEAS,
         M_SORTBYNAME,
         M_SORTBYPATH,
+        M_SORTBYDATENEWEST,
+        M_SORTBYDATEOLDEST,
         M_RANDOMIZE,
         M_SORTBYID,
         M_SHUFFLE,
@@ -2517,6 +2519,8 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         UINT styleListNotEmptyPopup = MF_POPUP | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
         sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYNAME, ResStr(IDS_PLAYLIST_SORTBYLABEL));
         sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYPATH, ResStr(IDS_PLAYLIST_SORTBYPATH));
+        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATENEWEST, ResStr(IDS_PLAYLIST_SORTBYDATE_NEWEST));
+        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATEOLDEST, ResStr(IDS_PLAYLIST_SORTBYDATE_OLDEST));
         sortMenu.AppendMenu(styleListNotEmpty, M_RANDOMIZE, ResStr(IDS_PLAYLIST_RANDOMIZE));
         sortMenu.AppendMenu(MF_SEPARATOR);
         sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYID, ResStr(IDS_PLAYLIST_RESTORE));
@@ -2591,6 +2595,15 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         case M_SORTBYPATH: {
             POSITION selPos = FindPos(m_list.GetSelectionMark());
             m_pl.SortByPath();
+            SetupList();
+            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            SavePlaylist();
+            break;
+        }
+        case M_SORTBYDATENEWEST:
+        case M_SORTBYDATEOLDEST: {
+            POSITION selPos = FindPos(m_list.GetSelectionMark());
+            m_pl.SortByDate(nID == M_SORTBYDATEOLDEST);
             SetupList();
             SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
             SavePlaylist();

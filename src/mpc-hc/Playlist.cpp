@@ -36,6 +36,7 @@ CPlaylistItem::CPlaylistItem()
     , m_posPrevShuffle(nullptr)
     , m_type(file)
     , m_duration(0)
+    , m_filetime(0)
     , m_vinput(-1)
     , m_vchannel(-1)
     , m_ainput(-1)
@@ -78,6 +79,7 @@ CPlaylistItem& CPlaylistItem::operator=(const CPlaylistItem& pli)
         m_type = pli.m_type;
         m_fInvalid = pli.m_fInvalid;
         m_duration = pli.m_duration;
+        m_filetime = pli.m_filetime;
         m_vinput = pli.m_vinput;
         m_vchannel = pli.m_vchannel;
         m_ainput = pli.m_ainput;
@@ -352,6 +354,48 @@ void CPlaylist::SortByPath(int startIndex)
         a[i].str = GetAt(pos).m_fns.GetHead(), a[i].pos = pos;
     }
     std::sort(a.GetData(), a.GetData() + a.GetCount());
+    for (size_t i = 0; i < a.GetCount(); i++) {
+        MoveToTail(a[i].pos);
+    }
+}
+
+struct plsort3_t {
+    ULONGLONG time;
+    POSITION pos;
+};
+
+void CPlaylist::SortByDate(bool bIncreasing)
+{
+    CAtlArray<plsort3_t> a;
+    a.SetCount(GetCount());
+    POSITION pos = GetHeadPosition();
+    for (int i = 0; pos; i++, GetNext(pos)) {
+        CPlaylistItem& pli = GetAt(pos);
+        if (pli.m_filetime == 0 && pli.m_type == CPlaylistItem::file && !pli.m_fns.IsEmpty()) {
+            CString& fn = pli.m_fns.GetHead();
+            if (!PathUtils::IsURL(fn)) {
+                pli.m_filetime = 1; // assume unavailable, so we don't check the file again
+                WIN32_FILE_ATTRIBUTE_DATA fad;
+                if (GetFileAttributesEx(fn, GetFileExInfoStandard, &fad)) {
+                    ULARGE_INTEGER ft;
+                    ft.LowPart = fad.ftCreationTime.dwLowDateTime;
+                    ft.HighPart = fad.ftCreationTime.dwHighDateTime;
+                    if (ft.QuadPart > 1) {
+                        pli.m_filetime = ft.QuadPart;
+                    }
+                }
+            }
+        }
+        a[i].time = pli.m_filetime;
+        a[i].pos = pos;
+    }
+    // items without a valid time (URLs, missing files) always go to the bottom
+    std::stable_sort(a.GetData(), a.GetData() + a.GetCount(), [bIncreasing](const plsort3_t& lhs, const plsort3_t& rhs) {
+        if (lhs.time <= 1 || rhs.time <= 1) {
+            return rhs.time <= 1 && lhs.time > 1;
+        }
+        return bIncreasing ? lhs.time < rhs.time : lhs.time > rhs.time;
+    });
     for (size_t i = 0; i < a.GetCount(); i++) {
         MoveToTail(a[i].pos);
     }

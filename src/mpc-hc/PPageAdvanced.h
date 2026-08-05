@@ -193,6 +193,7 @@ private:
         BLOCK_VSFILTER,
         BLOCK_RDP,
         LOOP_FOLDER_NEXT_FILE,
+        NEXT_FILE_SORT_BY_DATE,
         OSD_TRANSPARENCY,
         OSD_BORDER,
         USE_YDL,

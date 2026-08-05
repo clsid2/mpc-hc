@@ -146,6 +146,7 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(BLOCK_VSFILTER, IDS_RS_BLOCKVSFILTER, true, s.fBlockVSFilter, StrRes(IDS_PPAGEADVANCED_BLOCK_VSFILTER));
     addBoolItem(BLOCK_RDP, IDS_RS_BLOCKRDP, true, s.bBlockRDP, StrRes(IDS_PPAGEADVANCED_BLOCKRDP));
     addBoolItem(LOOP_FOLDER_NEXT_FILE, IDS_RS_LOOP_FOLDER_NEXT_FILE, false, s.bLoopFolderOnPlayNextFile, StrRes(IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE));
+    addBoolItem(NEXT_FILE_SORT_BY_DATE, IDS_RS_NEXT_FILE_SORT_BY_DATE, false, s.bNextFileInFolderSortByDate, L"Sort files by creation time instead of file name when skipping to the next/previous file in a folder.");
     addIntItem(OSD_TRANSPARENCY, IDS_RS_OSD_TRANSPARENCY, 64, s.nOSDTransparency, std::make_pair(0, 160), "");
     addIntItem(OSD_BORDER, IDS_RS_OSD_BORDER, 1, s.nOSDBorder, std::make_pair(0, 3), "");
     addBoolItem(USE_YDL, IDS_RS_USE_YDL, true, s.bUseYDL, StrRes(IDS_PPAGEADVANCED_USE_YDL));

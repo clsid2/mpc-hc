@@ -40,6 +40,7 @@ public:
     CAtlList<CString> m_subs;
     enum type_t { file, device } m_type;
     REFERENCE_TIME m_duration;
+    ULONGLONG m_filetime; // file creation time; 0 = not checked yet, 1 = unavailable (missing file or URL)
     int inlineEditMaxWidth;
     int m_vinput, m_vchannel;
     int m_ainput;
@@ -109,6 +110,7 @@ public:
 
     void SortById(), SortByName(), Randomize();
     void SortByPath(int startIndex = 0);
+    void SortByDate(bool bIncreasing);
 
     POSITION GetPos() const;
     void SetPos(POSITION pos);

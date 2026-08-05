@@ -16572,7 +16572,7 @@ void CMainFrame::CloseMediaPrivate()
     }
 }
 
-bool CMainFrame::WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs)
+bool CMainFrame::WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs, std::map<CString, ULONGLONG>* creationTimes)
 {
     ExtendMaxPathLengthIfNeeded(searchstr);
 
@@ -16590,12 +16590,22 @@ bool CMainFrame::WildcardFileSearch(CString searchstr, std::set<CString, CString
         bool other_ext = (search_ext != _T(".*"));
         CStringW curExt = CPath(m_wndPlaylistBar.GetCurFileName()).GetExtension().MakeLower();
 
+        auto addFile = [&](const CString& fn) {
+            results.insert(fn);
+            if (creationTimes) {
+                ULARGE_INTEGER ft;
+                ft.LowPart = findData.ftCreationTime.dwLowDateTime;
+                ft.HighPart = findData.ftCreationTime.dwHighDateTime;
+                (*creationTimes)[fn] = ft.QuadPart;
+            }
+        };
+
         do {
             CString filename = findData.cFileName;
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
                 if (recurse_dirs && search_ext == L".*" && filename != L"." && filename != L"..") {
-                    WildcardFileSearch(path + filename + L"\\*.*", results, true);
+                    WildcardFileSearch(path + filename + L"\\*.*", results, true, creationTimes);
                 }
                 continue;
             }
@@ -16605,10 +16615,10 @@ bool CMainFrame::WildcardFileSearch(CString searchstr, std::set<CString, CString
             if (CanSkipToExt(ext, curExt)) {
                 /* playlist and cue files should be ignored when searching dir for playable files */
                 if (!IsPlaylistFileExt(ext)) {
-                    results.insert(path + filename);
+                    addFile(path + filename);
                 }
             } else if (other_ext && search_ext == ext) {
-                results.insert(path + filename);
+                addFile(path + filename);
                 if (ext == _T(".rar")) {
                     break;
                 }
@@ -16651,9 +16661,12 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
     if (p < 0) {
         return false;
     }
+    const bool bSortByDate = AfxGetAppSettings().bNextFileInFolderSortByDate;
+
     CString filemask = filename.Left(p + 1) + _T("*.*");
     std::set<CString, CStringUtils::LogicalLess> filelist;
-    if (!WildcardFileSearch(filemask, filelist, false)) {
+    std::map<CString, ULONGLONG> creationTimes;
+    if (!WildcardFileSearch(filemask, filelist, false, bSortByDate ? &creationTimes : nullptr)) {
         return false;
     }
 
@@ -16665,28 +16678,83 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
         return false;
     }
 
-    if (bDirForward) {
-        current++;
-        if (current == filelist.end()) {
-            if (bLoop) {
-                current = filelist.begin();
+    CString nextfile;
+
+    if (bSortByDate) {
+        std::vector<std::pair<ULONGLONG, CString>> timelist;
+        timelist.reserve(filelist.size());
+        for (const CString& file : filelist) {
+            ULONGLONG time = 0;
+            auto it = creationTimes.find(file);
+            if (it != creationTimes.end()) {
+                time = it->second;
+            } else { // the currently opened file, when it was not part of the search results
+                WIN32_FILE_ATTRIBUTE_DATA fad;
+                if (GetFileAttributesEx(file, GetFileExInfoStandard, &fad)) {
+                    ULARGE_INTEGER ft;
+                    ft.LowPart = fad.ftCreationTime.dwLowDateTime;
+                    ft.HighPart = fad.ftCreationTime.dwHighDateTime;
+                    time = ft.QuadPart;
+                }
+            }
+            timelist.emplace_back(time, file);
+        }
+        // stable sort keeps path order for identical times
+        std::stable_sort(timelist.begin(), timelist.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.first < rhs.first;
+        });
+
+        size_t idx = 0;
+        for (size_t i = 0; i < timelist.size(); i++) {
+            if (timelist[i].second == filename) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (bDirForward) {
+            if (idx + 1 < timelist.size()) {
+                idx++;
+            } else if (bLoop) {
+                idx = 0;
+            } else {
+                return false;
+            }
+        } else {
+            if (idx > 0) {
+                idx--;
+            } else if (bLoop) {
+                idx = timelist.size() - 1;
             } else {
                 return false;
             }
         }
+        nextfile = timelist[idx].second;
     } else {
-        if (current == filelist.begin()) {
-            if (bLoop) {
-                current = filelist.end();
-            } else {
-                return false;
+        if (bDirForward) {
+            current++;
+            if (current == filelist.end()) {
+                if (bLoop) {
+                    current = filelist.begin();
+                } else {
+                    return false;
+                }
             }
+        } else {
+            if (current == filelist.begin()) {
+                if (bLoop) {
+                    current = filelist.end();
+                } else {
+                    return false;
+                }
+            }
+            current--;
         }
-        current--;
+        nextfile = *current;
     }
 
     CAtlList<CString> sl;
-    sl.AddHead(*current);
+    sl.AddHead(nextfile);
     m_wndPlaylistBar.Open(sl, false);
 
     return true;

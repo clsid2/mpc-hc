@@ -755,7 +755,7 @@ public:
 
     void DoAfterPlaybackEvent();
     bool SearchInDir(bool bDirForward, bool bLoop = false);
-    bool WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs);
+    bool WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs, std::map<CString, ULONGLONG>* creationTimes = nullptr);
     CString lastOpenFile;
     bool CanSkipFromClosedFile();
 

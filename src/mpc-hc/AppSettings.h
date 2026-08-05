@@ -727,6 +727,7 @@ public:
     bool            bSaveImageCurrentTime;
     bool            bAllowInaccurateFastseek;
     bool            bLoopFolderOnPlayNextFile;
+    bool            bNextFileInFolderSortByDate;
     bool            bLockNoPause;
     bool            bPreventDisplaySleep;
     bool            bUseSMTC;

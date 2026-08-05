@@ -2718,6 +2718,8 @@ BEGIN
     IDS_PLAYLIST_SAVEAS     "&Save As..."
     IDS_PLAYLIST_SORTBYLABEL "Sort by &label"
     IDS_PLAYLIST_SORTBYPATH "Sort by &path"
+    IDS_PLAYLIST_SORTBYDATE_NEWEST "Sort by date (&newest first)"
+    IDS_PLAYLIST_SORTBYDATE_OLDEST "Sort by date (&oldest first)"
     IDS_PLAYLIST_RANDOMIZE  "R&andomize"
     IDS_PLAYLIST_RESTORE    "R&estore"
     IDS_PLAYLIST_SORT       "&Sort"
