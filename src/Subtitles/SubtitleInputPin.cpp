@@ -88,6 +88,7 @@ HRESULT CSubtitleInputPin::CheckMediaType(const CMediaType* pmt)
 HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
 {
     InvalidateSamples();
+    m_lastHeader.clear();
 
     if (m_mt.majortype == MEDIATYPE_Text) {
         if (!(m_pSubStream = DEBUG_NEW CRenderedTextSubtitle(m_pSubLock))) {
@@ -154,6 +155,10 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
             }
             pRTS->m_storageRes = pRTS->m_playRes = CSize(384, 288);
             pRTS->CreateDefaultStyle(DEFAULT_CHARSET);
+
+            if (subtype_ass && dwOffset > 0 && m_mt.cbFormat > dwOffset) {
+                m_lastHeader.assign(m_mt.pbFormat + dwOffset, m_mt.pbFormat + m_mt.cbFormat);
+            }
 
             if (dwOffset > 0 && m_mt.cbFormat - dwOffset > 0) {
                 CMediaType mt = m_mt;
@@ -268,6 +273,33 @@ STDMETHODIMP CSubtitleInputPin::Receive(IMediaSample* pSample)
     }
 
     CAutoLock cAutoLock(&m_csReceive);
+
+    if (m_mt.majortype == MEDIATYPE_Subtitle
+            && (m_mt.subtype == MEDIASUBTYPE_SSA || m_mt.subtype == MEDIASUBTYPE_ASS || m_mt.subtype == MEDIASUBTYPE_ASS2)) {
+        // The splitter can send an updated subtitle header as a dynamic media type change,
+        // e.g. when MKV ordered chapters transition into a linked segment whose track has
+        // different styles. Queue it so it is applied in decode order, ahead of the samples
+        // that reference the new styles.
+        AM_MEDIA_TYPE* pmt = nullptr;
+        if (pSample->GetMediaType(&pmt) == S_OK && pmt) {
+            if (pmt->majortype == MEDIATYPE_Subtitle && pmt->formattype == FORMAT_SubtitleInfo
+                    && pmt->cbFormat > sizeof(SUBTITLEINFO)) {
+                const SUBTITLEINFO* psi = (const SUBTITLEINFO*)pmt->pbFormat;
+                if (psi->dwOffset >= sizeof(SUBTITLEINFO) && psi->dwOffset < pmt->cbFormat) {
+                    const BYTE* pHeader = pmt->pbFormat + psi->dwOffset;
+                    size_t headerLen = pmt->cbFormat - psi->dwOffset;
+                    if (m_lastHeader.size() != headerLen || memcmp(m_lastHeader.data(), pHeader, headerLen) != 0) {
+                        m_lastHeader.assign(pHeader, pHeader + headerLen);
+                        std::unique_lock<std::mutex> lock(m_mutexQueue);
+                        m_sampleQueue.emplace_back(DEBUG_NEW SubtitleSample(pHeader, headerLen));
+                        lock.unlock();
+                        m_condQueueReady.notify_one();
+                    }
+                }
+            }
+            DeleteMediaType(pmt);
+        }
+    }
 
     REFERENCE_TIME tStart, tStop;
     hr = pSample->GetTime(&tStart, &tStop);
@@ -388,6 +420,11 @@ REFERENCE_TIME CSubtitleInputPin::DecodeSample(const std::unique_ptr<SubtitleSam
     bool bInvalidate = false;
 
     if (pSample->data.size() <= 0) {
+        return -1;
+    }
+
+    if (pSample->bHeaderChange) {
+        ApplyHeaderChange(pSample->data.data(), pSample->data.size());
         return -1;
     }
 
@@ -528,6 +565,50 @@ REFERENCE_TIME CSubtitleInputPin::DecodeSample(const std::unique_ptr<SubtitleSam
     }
 
     return bInvalidate ? pSample->rtStart : -1;
+}
+
+void CSubtitleInputPin::ApplyHeaderChange(const BYTE* pData, size_t len)
+{
+    // Runs on the decoding thread with m_pSubLock held (see DecodeSamples). The samples
+    // that follow reference the style definitions of this header by name.
+    CRenderedTextSubtitle* pRTS = (CRenderedTextSubtitle*)(ISubStream*)m_pSubStream;
+    if (!pRTS) {
+        return;
+    }
+
+#if USE_LIBASS
+    if (pRTS->m_LibassContext.IsLibassActive()) {
+        // libass resolves the style of new events against the most recently added
+        // style with a matching name, so earlier events keep their definitions
+        ass_process_codec_private(pRTS->m_LibassContext.m_track.get(), (char*)pData, (int)len);
+        return;
+    }
+#endif
+
+    std::vector<BYTE> buf;
+    buf.reserve(len + 3);
+    if (len < 3 || pData[0] != 0xef || pData[1] != 0xbb || pData[2] != 0xbf) {
+        static const BYTE bom[] = { 0xef, 0xbb, 0xbf };
+        buf.insert(buf.end(), bom, bom + 3);
+    }
+    buf.insert(buf.end(), pData, pData + len);
+
+    CSimpleTextSubtitle sts;
+    if (!sts.Open(buf.data(), (int)buf.size(), DEFAULT_CHARSET, pRTS->m_name)) {
+        return;
+    }
+
+    POSITION pos = sts.m_styles.GetStartPosition();
+    while (pos) {
+        CString name;
+        STSStyle* style = nullptr;
+        sts.m_styles.GetNextAssoc(pos, name, style);
+        if (style && !(sts.m_bUsingPlayerDefaultStyle && name == _T("Default"))) {
+            // on a name collision, AddStyle renames the existing style and remaps the
+            // events already referencing it, so they keep their original definitions
+            pRTS->AddStyle(name, DEBUG_NEW STSStyle(*style));
+        }
+    }
 }
 
 void CSubtitleInputPin::InvalidateSamples()

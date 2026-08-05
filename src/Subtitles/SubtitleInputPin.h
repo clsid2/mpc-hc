@@ -45,14 +45,23 @@ class CSubtitleInputPin : public CBaseInputPin
     struct SubtitleSample {
         REFERENCE_TIME rtStart, rtStop;
         std::vector<BYTE> data;
+        bool bHeaderChange; // data holds a new subtitle header from a dynamic media type change
 
         SubtitleSample(REFERENCE_TIME rtStart, REFERENCE_TIME rtStop, BYTE* pData, size_t len)
             : rtStart(rtStart)
             , rtStop(rtStop)
-            , data(pData, pData + len) {}
+            , data(pData, pData + len)
+            , bHeaderChange(false) {}
+
+        SubtitleSample(const BYTE* pData, size_t len)
+            : rtStart(0)
+            , rtStop(0)
+            , data(pData, pData + len)
+            , bHeaderChange(true) {}
     };
 
     std::list<std::unique_ptr<SubtitleSample>> m_sampleQueue;
+    std::vector<BYTE> m_lastHeader;
 
     bool m_bExitDecodingThread, m_bStopDecoding;
     std::thread m_decodeThread;
@@ -61,6 +70,7 @@ class CSubtitleInputPin : public CBaseInputPin
 
     void DecodeSamples();
     REFERENCE_TIME DecodeSample(const std::unique_ptr<SubtitleSample>& pSample);
+    void ApplyHeaderChange(const BYTE* pData, size_t len);
     void InvalidateSamples();
 
 protected:
