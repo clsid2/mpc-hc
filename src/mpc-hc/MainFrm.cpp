@@ -3478,6 +3478,9 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 LoadKeyFrames();
                 if (GetPlaybackMode() == PM_FILE) {
                     SetupChapters();
+                    if (m_bUseSeekPreview) {
+                        SyncPreviewEdition();
+                    }
                 } else if (GetPlaybackMode() == PM_DVD) {
                     SetupDVDChapters();
                 }
@@ -14033,6 +14036,58 @@ HRESULT CMainFrame::PreviewWindowShow(REFERENCE_TIME rtCur2) {
     }
 
     return hr;
+}
+
+void CMainFrame::SyncPreviewEdition()
+{
+    // LAV Splitter exposes Matroska editions through IAMStreamSelect with group 18.
+    // The preview graph is not aware of edition changes made in the main graph,
+    // so select the same edition there to keep the previewed timeline in sync.
+    if (!m_pGB_preview || !m_pSplitterSS) {
+        return;
+    }
+
+    DWORD cStreams;
+    if (FAILED(m_pSplitterSS->Count(&cStreams))) {
+        return;
+    }
+
+    int selectedEdition = -1;
+    int editionCount = 0;
+    for (DWORD i = 0; i < cStreams; i++) {
+        DWORD dwFlags, dwGroup;
+        if (SUCCEEDED(m_pSplitterSS->Info(i, nullptr, &dwFlags, nullptr, &dwGroup, nullptr, nullptr, nullptr)) && dwGroup == 18) {
+            if (dwFlags) {
+                selectedEdition = editionCount;
+            }
+            editionCount++;
+        }
+    }
+    if (editionCount < 2 || selectedEdition < 0) {
+        return;
+    }
+
+    BeginEnumFilters(m_pGB_preview, pEF, pBF) {
+        if (CComQIPtr<IAMStreamSelect> pSS = pBF) {
+            if (FAILED(pSS->Count(&cStreams))) {
+                continue;
+            }
+            int edition = 0;
+            for (DWORD i = 0; i < cStreams; i++) {
+                DWORD dwFlags, dwGroup;
+                if (SUCCEEDED(pSS->Info(i, nullptr, &dwFlags, nullptr, &dwGroup, nullptr, nullptr, nullptr)) && dwGroup == 18) {
+                    if (edition == selectedEdition) {
+                        if (!dwFlags) {
+                            pSS->Enable(i, AMSTREAMSELECTENABLE_ENABLE);
+                        }
+                        return;
+                    }
+                    edition++;
+                }
+            }
+        }
+    }
+    EndEnumFilters;
 }
 
 HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, int* pEntryIndex) {

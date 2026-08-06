@@ -1235,6 +1235,7 @@ public:
     void ReleasePreviewGraph();
     HRESULT PreviewWindowHide();
     HRESULT PreviewWindowShow(REFERENCE_TIME rtCur2);
+    void SyncPreviewEdition();
     HRESULT HandleMultipleEntryRar(CStringW fn, int* pEntryIndex = nullptr);
     bool TrySkipWithinRar(bool forward);
     bool CanPreviewUse();
