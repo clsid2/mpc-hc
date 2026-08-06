@@ -39,9 +39,6 @@
     <ClInclude Include="libass\libass\ass_font.h">
       <Filter>Header Files\libass</Filter>
     </ClInclude>
-    <ClInclude Include="libass\libass\ass_fontconfig.h">
-      <Filter>Header Files\libass</Filter>
-    </ClInclude>
     <ClInclude Include="libass\libass\ass_parse.h">
       <Filter>Header Files\libass</Filter>
     </ClInclude>
@@ -113,9 +110,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="libass\libass\ass_fontconfig.c">
-      <Filter>Source Files\libass</Filter>
-    </ClCompile>
     <ClCompile Include="libass\libass\ass_library.c">
       <Filter>Source Files\libass</Filter>
     </ClCompile>

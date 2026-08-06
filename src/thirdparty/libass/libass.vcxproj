@@ -30,7 +30,6 @@
     <ClInclude Include="libass\libass\ass_drawing.h" />
     <ClInclude Include="libass\libass\ass_filesystem.h" />
     <ClInclude Include="libass\libass\ass_font.h" />
-    <ClInclude Include="libass\libass\ass_fontconfig.h" />
     <ClInclude Include="libass\libass\ass_fontselect.h" />
     <ClInclude Include="libass\libass\ass_func_template.h" />
     <ClInclude Include="libass\libass\ass_outline.h" />
@@ -58,7 +57,6 @@
     <ClCompile Include="libass\libass\ass_drawing.c" />
     <ClCompile Include="libass\libass\ass_filesystem.c" />
     <ClCompile Include="libass\libass\ass_font.c" />
-    <ClCompile Include="libass\libass\ass_fontconfig.c" />
     <ClCompile Include="libass\libass\ass_fontselect.c" />
     <ClCompile Include="libass\libass\ass_library.c" />
     <ClCompile Include="libass\libass\ass_outline.c" />
@@ -109,7 +107,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;libass\libass;..\fribidi\generated;..\libiconv\libiconv-for-Windows\include;..\dirent;..\freetype2\freetype2\include\freetype;..\fontconfig\fontconfig;..\freetype2\freetype2\include;..\harfbuzz\harfbuzz\src;..\fribidi\fribidi\lib;..\fribidi\fribidi\charset;..\fribidi;..\fribidi\fribidi\SMP\lib;..\libunibreak\libunibreak\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;libass\libass;..\fribidi\generated;..\libiconv\libiconv-for-Windows\include;..\dirent;..\freetype2\freetype2\include\freetype;..\freetype2\freetype2\include;..\harfbuzz\harfbuzz\src;..\fribidi\fribidi\lib;..\fribidi\fribidi\charset;..\fribidi;..\fribidi\fribidi\SMP\lib;..\libunibreak\libunibreak\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level2</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <C99Support>true</C99Support>
@@ -117,7 +115,7 @@
       <DisableSpecificWarnings>4005;4244;4267;4018;4334;4101;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype2.lib;libfontconfig.lib;libfribidi.lib;libharfbuzz.lib;libiconv.lib;liblzma.lib;zlib.lib;libunibreak.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype2.lib;libfribidi.lib;libharfbuzz.lib;libiconv.lib;zlib.lib;libunibreak.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <NASM>
       <IncludePaths>libass\libass;%(IncludePaths)</IncludePaths>

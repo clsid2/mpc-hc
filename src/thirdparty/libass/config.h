@@ -16,7 +16,7 @@
 #define CONFIG_DIRECTWRITE 1
 
 /* found fontconfig */
-#define CONFIG_FONTCONFIG 1
+/* #undef CONFIG_FONTCONFIG */
 
 /* found freetype2 */
 #define CONFIG_FREETYPE 1

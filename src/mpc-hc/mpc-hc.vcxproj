@@ -736,9 +736,6 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ProjectReference Include="..\thirdparty\ffmpeg\ffmpeg.vcxproj">
       <Project>{438286b7-a9f4-411d-bcc5-948c40e37d8f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\thirdparty\fontconfig\libfontconfig.vcxproj">
-      <Project>{dbf1e8f7-5b7d-4cbf-842a-b7e0c02520dc}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\thirdparty\freetype2\freetype2.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
@@ -756,12 +753,6 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     </ProjectReference>
     <ProjectReference Include="..\thirdparty\libiconv\libiconv.vcxproj">
       <Project>{1704ea01-6b21-4362-9f1f-44d25cf2e0d7}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\thirdparty\liblzma\liblzma.vcxproj">
-      <Project>{85763f39-23df-4c04-b7df-7fbe3e7cf336}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\thirdparty\libxml2\libxml2.vcxproj">
-      <Project>{cfe70273-7a79-4815-af95-1e02e2675e37}</Project>
     </ProjectReference>
     <ProjectReference Include="..\thirdparty\MpcAudioRenderer\MpcAudioRenderer.vcxproj">
       <Project>{d0620ef4-1313-40d5-9069-a82f6fe26994}</Project>
