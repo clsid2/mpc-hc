@@ -34,6 +34,7 @@
 
 #include "FavoriteAddDlg.h"
 #include "GoToDlg.h"
+#include "HistoryDlg.h"
 #include "MediaTypesDlg.h"
 #include "OpenFileDlg.h"
 #include "PnSPresetsDlg.h"
@@ -620,6 +621,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_UPDATE_COMMAND_UI(ID_RECENT_FILES_CLEAR, OnUpdateRecentFileClear)
     ON_COMMAND_RANGE(ID_RECENT_FILE_START, ID_RECENT_FILE_END, OnRecentFile)
     ON_UPDATE_COMMAND_UI_RANGE(ID_RECENT_FILE_START, ID_RECENT_FILE_END, OnUpdateRecentFile)
+    ON_COMMAND(ID_RECENT_FILES_SHOW_HISTORY, OnShowHistory)
 
     ON_COMMAND(ID_HELP_HOMEPAGE, OnHelpHomepage)
     ON_COMMAND(ID_HELP_CHECKFORUPDATE, OnHelpCheckForUpdate)
@@ -1240,6 +1242,10 @@ void CMainFrame::OnDestroy()
 
     if (m_pDebugShaders && IsWindow(m_pDebugShaders->m_hWnd)) {
         VERIFY(m_pDebugShaders->DestroyWindow());
+    }
+
+    if (m_pHistoryDlg && IsWindow(m_pHistoryDlg->m_hWnd)) {
+        VERIFY(m_pHistoryDlg->DestroyWindow());
     }
 
     if (m_pGraphThread && m_pGraphThread->m_hThread) {
@@ -11781,7 +11787,6 @@ void CMainFrame::OnUpdateFavoritesFile(CCmdUI* pCmdUI)
 
 void CMainFrame::OnRecentFile(UINT nID)
 {
-    CAtlList<CString> fns;
     auto& MRU = AfxGetAppSettings().MRU;
     RecentFileEntry r;
 
@@ -11789,11 +11794,18 @@ void CMainFrame::OnRecentFile(UINT nID)
     nID -= ID_RECENT_FILE_START;
     if (nID < (UINT)MRU.GetSize()) {
         r = MRU[nID];
-        fns.AddHeadList(&r.fns);
     } else {
         ASSERT(false);
         return;
     }
+
+    OpenRecentFileEntry(r);
+}
+
+void CMainFrame::OpenRecentFileEntry(RecentFileEntry& r)
+{
+    CAtlList<CString> fns;
+    fns.AddHeadList(&r.fns);
 
     if (!CloseMediaBeforeOpen()) {
         return;
@@ -11827,6 +11839,19 @@ void CMainFrame::OnRecentFile(UINT nID)
 void CMainFrame::OnUpdateRecentFile(CCmdUI* pCmdUI)
 {
     //UINT nID = pCmdUI->m_nID - ID_RECENT_FILE_START;
+}
+
+void CMainFrame::OnShowHistory()
+{
+    if (!m_pHistoryDlg) {
+        m_pHistoryDlg = std::make_unique<CHistoryDlg>(this);
+        m_pHistoryDlg->Create(IDD_HISTORY, this);
+    }
+    if (m_pHistoryDlg->IsWindowVisible()) {
+        m_pHistoryDlg->SetActiveWindow();
+    } else {
+        m_pHistoryDlg->ShowWindow(SW_SHOW);
+    }
 }
 
 void CMainFrame::OnFavoritesDVD(UINT nID)
@@ -17972,6 +17997,8 @@ void CMainFrame::SetupRecentFilesSubMenu()
     if (!s.fKeepHistory) {
         return;
     }
+
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_RECENT_FILES_SHOW_HISTORY, ResStr(IDS_HISTORY_SHOW)));
 
     if (MRU.GetSize() > 0) {
         VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_RECENT_FILES_CLEAR, ResStr(IDS_RECENT_FILES_CLEAR)));

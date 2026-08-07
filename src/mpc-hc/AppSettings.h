@@ -525,7 +525,7 @@ class CAppSettings
             return rfe_array[nIndex];
         }
 
-        //void Remove(size_t nIndex);
+        void RemoveEntries(const std::list<CStringW>& hashes);
         void Add(LPCTSTR fn);
         void Add(LPCTSTR fn, ULONGLONG llDVDGuid);
         void Add(RecentFileEntry r, bool current_open = false);

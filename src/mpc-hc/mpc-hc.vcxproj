@@ -229,6 +229,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="FullscreenWnd.cpp" />
     <ClCompile Include="GoToDlg.cpp" />
     <ClCompile Include="GraphThread.cpp" />
+    <ClCompile Include="HistoryDlg.cpp" />
     <ClCompile Include="Ifo.cpp" />
     <ClCompile Include="KeyProvider.cpp" />
     <ClCompile Include="LcdSupport.cpp" />
@@ -427,6 +428,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="GoToDlg.h" />
     <ClInclude Include="GPUInfo.h" />
     <ClInclude Include="GraphThread.h" />
+    <ClInclude Include="HistoryDlg.h" />
     <ClInclude Include="MemoryDCBuffer.h" />
     <ClInclude Include="MediaTransControls.h" />
     <ClInclude Include="Ifo.h" />

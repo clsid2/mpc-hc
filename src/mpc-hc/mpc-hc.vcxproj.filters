@@ -139,6 +139,9 @@
     <ClCompile Include="GoToDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="HistoryDlg.cpp">
+      <Filter>Modal Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="OpenDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
@@ -686,6 +689,9 @@
       <Filter>Graph</Filter>
     </ClInclude>
     <ClInclude Include="GoToDlg.h">
+      <Filter>Modal Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="HistoryDlg.h">
       <Filter>Modal Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="OpenDlg.h">

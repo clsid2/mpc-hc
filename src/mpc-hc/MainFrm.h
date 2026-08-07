@@ -55,6 +55,7 @@
 #include "AllocatorCommon.h"
 
 class CDebugShadersDlg;
+class CHistoryDlg;
 class CFullscreenWnd;
 struct DisplayMode;
 enum MpcCaptionState;
@@ -662,6 +663,7 @@ public:
     void OpenMedia(CAutoPtr<OpenMediaData> pOMD);
     void PlayFavoriteFile(const CString& fav);
     void PlayFavoriteDVD(CString fav);
+    void OpenRecentFileEntry(RecentFileEntry& r);
     FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     bool ResetDevice();
     bool DisplayChange();
@@ -844,6 +846,7 @@ protected:  // control bar embedded members
     CEditListEditor m_wndEditListEditor;
 
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
+    std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
 
     LPCTSTR GetRecentFile() const;
 
@@ -1211,6 +1214,7 @@ public:
     afx_msg void OnUpdateRecentFileClear(CCmdUI* pCmdUI);
     afx_msg void OnRecentFile(UINT nID);
     afx_msg void OnUpdateRecentFile(CCmdUI* pCmdUI);
+    afx_msg void OnShowHistory();
 
     afx_msg void OnHelpHomepage();
     afx_msg void OnHelpCheckForUpdate();

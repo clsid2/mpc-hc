@@ -1124,6 +1124,17 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,230,163,50,14
 END
 
+IDD_HISTORY DIALOGEX 0, 0, 276, 170
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "History"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Menu",IDC_BUTTON1,4,4,40,14
+    EDITTEXT        IDC_EDIT1,48,4,100,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Remove selected",IDC_BUTTON2,152,4,76,14
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,23,268,142,WS_EX_CLIENTEDGE
+END
+
 IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
 STYLE DS_SETFONT | DS_NOFAILCREATE | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
@@ -4271,6 +4282,23 @@ STRINGTABLE
 BEGIN
     IDS_ABOUT_COPYRIGHT     "Copyright 2002-%s clsid2 and others"
     IDS_ABOUT_COPYRIGHT_YEAR "2026"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_HISTORY_SHOW        "&Show history..."
+    IDS_HISTORY_PATH        "Path"
+    IDS_HISTORY_TITLE       "Title"
+    IDS_HISTORY_POSITION    "Position"
+    IDS_HISTORY_LAST_OPENED "Last opened"
+    IDS_HISTORY_REMOVE_SELECTED "Remove selected"
+    IDS_HISTORY_REMOVE_MISSING "Remove missing files"
+    IDS_HISTORY_REMOVE_URLS "Remove all URLs"
+    IDS_HISTORY_REMOVE_OLDER_WEEK "Remove entries older than one week"
+    IDS_HISTORY_REMOVE_OLDER_MONTH "Remove entries older than one month"
+    IDS_HISTORY_CLEAR       "Clear all history"
+    IDS_HISTORY_REMOVE_QUESTION "Are you sure you want to remove %d selected entries from the history?"
+    IDS_HISTORY_COPY_PATHS  "Copy paths to clipboard"
 END
 
 #endif    // English (United States) resources

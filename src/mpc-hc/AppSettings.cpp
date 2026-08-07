@@ -3168,23 +3168,29 @@ CStringW getRFEHash(RecentFileEntry &r) {
     }
 }
 
-/*
-void CAppSettings::CRecentFileListWithMoreInfo::Remove(size_t nIndex) {
-    if (nIndex >= 0 && nIndex < rfe_array.GetCount()) {
-        auto pApp = AfxGetMyApp();
-        CStringW& hash = rfe_array[nIndex].hash;
-        if (!hash.IsEmpty()) {
-            pApp->RemoveProfileKey(m_section, hash);
+void CAppSettings::CRecentFileListWithMoreInfo::RemoveEntries(const std::list<CStringW>& hashes) {
+    bool changed = false;
+    for (const auto& hash : hashes) {
+        if (hash.IsEmpty()) {
+            continue;
         }
-        rfe_array.RemoveAt(nIndex);
-        rfe_array.FreeExtra();
+        for (size_t i = 0; i < rfe_array.GetCount(); i++) {
+            if (rfe_array[i].hash == hash) {
+                CAppSettings::PurgeExpiredHash(m_section, hash);
+                rfe_array.RemoveAt(i);
+                if (hash == current_rfe_hash) {
+                    current_rfe_hash.Empty();
+                }
+                changed = true;
+                break;
+            }
+        }
     }
-    if (nIndex == 0 && rfe_array.GetCount() == 0) {
-        // list was cleared
-        current_rfe_hash.Empty();
+    if (changed) {
+        rfe_array.FreeExtra();
+        listModifySequence++;
     }
 }
-*/
 
 void CAppSettings::CRecentFileListWithMoreInfo::Add(LPCTSTR fn) {
     RecentFileEntry r;
