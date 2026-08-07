@@ -19,222 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-ankr-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-bsln-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-feat-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-just-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-kerx-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-morx-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-opbd-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout-trak-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout.h" />
-    <ClInclude Include="harfbuzz\src\hb-aat-layout.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-ltag-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat-map.hh" />
-    <ClInclude Include="harfbuzz\src\hb-aat.h" />
-    <ClInclude Include="harfbuzz\src\hb-algs.hh" />
-    <ClInclude Include="harfbuzz\src\hb-array.hh" />
-    <ClInclude Include="harfbuzz\src\hb-atomic.hh" />
-    <ClInclude Include="harfbuzz\src\hb-bimap.hh" />
-    <ClInclude Include="harfbuzz\src\hb-blob.hh" />
-    <ClInclude Include="harfbuzz\src\hb-buffer-deserialize-json.hh" />
-    <ClInclude Include="harfbuzz\src\hb-buffer-deserialize-text.hh" />
-    <ClInclude Include="harfbuzz\src\hb-buffer.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cache.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cff-interp-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cff-interp-cs-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cff-interp-dict-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cff1-interp-cs.hh" />
-    <ClInclude Include="harfbuzz\src\hb-cff2-interp-cs.hh" />
-    <ClInclude Include="harfbuzz\src\hb-config.hh" />
-    <ClInclude Include="harfbuzz\src\hb-debug.hh" />
-    <ClInclude Include="harfbuzz\src\hb-dispatch.hh" />
-    <ClInclude Include="harfbuzz\src\hb-face.hh" />
-    <ClInclude Include="harfbuzz\src\hb-font.h" />
-    <ClInclude Include="harfbuzz\src\hb-font.hh" />
-    <ClInclude Include="harfbuzz\src\hb-iter.hh" />
-    <ClInclude Include="harfbuzz\src\hb-kern.hh" />
-    <ClInclude Include="harfbuzz\src\hb-machinery.hh" />
-    <ClInclude Include="harfbuzz\src\hb-map.hh" />
-    <ClInclude Include="harfbuzz\src\hb-meta.hh" />
-    <ClInclude Include="harfbuzz\src\hb-mutex.hh" />
-    <ClInclude Include="harfbuzz\src\hb-null.hh" />
-    <ClInclude Include="harfbuzz\src\hb-number.hh" />
-    <ClInclude Include="harfbuzz\src\hb-object.hh" />
-    <ClInclude Include="harfbuzz\src\hb-open-file.hh" />
-    <ClInclude Include="harfbuzz\src\hb-open-type.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-cff-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-cff1-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-cff2-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-cmap-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color-cbdt-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color-colr-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color-cpal-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color-sbix-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color-svg-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-color.h" />
-    <ClInclude Include="harfbuzz\src\hb-ot-deprecated.h" />
-    <ClInclude Include="harfbuzz\src\hb-ot-face-table-list.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-face.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-gasp-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-glyf-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-hdmx-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-head-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-hhea-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-hmtx-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-kern-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-base-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-gdef-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-gpos-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-gsub-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-gsubgpos.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout-jstf-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-layout.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-map.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-math-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-maxp-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-meta-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-metrics.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-name-language-static.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-name-language.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-name-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-name.h" />
-    <ClInclude Include="harfbuzz\src\hb-ot-os2-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-os2-unicode-ranges.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-post-macroman.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-post-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shape-complex.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shape-fallback.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shape-normalize.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shape.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-arabic-fallback.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-arabic-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-arabic-win1256.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-arabic.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-indic-machine.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-indic.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-khmer-machine.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-khmer.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-myanmar-machine.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-myanmar.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-use-machine.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-use-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-use.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-shaper-vowel-constraints.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-stat-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-tag-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-var-avar-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-var-fvar-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-var-gvar-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-var-hvar-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-var-mvar-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ot-vorg-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-paint.hh" />
-    <ClInclude Include="harfbuzz\src\hb-paint-extents.hh" />
-    <ClInclude Include="harfbuzz\src\hb-pool.hh" />
-    <ClInclude Include="harfbuzz\src\hb-sanitize.hh" />
-    <ClInclude Include="harfbuzz\src\hb-serialize.hh" />
-    <ClInclude Include="harfbuzz\src\hb-set-digest.hh" />
-    <ClInclude Include="harfbuzz\src\hb-set.hh" />
-    <ClInclude Include="harfbuzz\src\hb-shape-plan.hh" />
-    <ClInclude Include="harfbuzz\src\hb-shaper-impl.hh" />
-    <ClInclude Include="harfbuzz\src\hb-shaper-list.hh" />
-    <ClInclude Include="harfbuzz\src\hb-shaper.hh" />
-    <ClInclude Include="harfbuzz\src\hb-string-array.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset-cff-common.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset-cff1.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset-cff2.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset-input.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset-plan.hh" />
-    <ClInclude Include="harfbuzz\src\hb-subset.hh" />
-    <ClInclude Include="harfbuzz\src\hb-ucd-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-unicode-emoji-table.hh" />
-    <ClInclude Include="harfbuzz\src\hb-unicode.hh" />
-    <ClInclude Include="harfbuzz\src\hb-utf.hh" />
-    <ClInclude Include="harfbuzz\src\hb-vector.hh" />
-    <ClInclude Include="harfbuzz\src\hb.hh" />
-    <ClInclude Include="harfbuzz\SMP\config.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="harfbuzz\src\hb-aat-layout.cc" />
-    <ClCompile Include="harfbuzz\src\hb-aat-map.cc" />
-    <ClCompile Include="harfbuzz\src\hb-blob.cc" />
-    <ClCompile Include="harfbuzz\src\hb-buffer-serialize.cc" />
-    <ClCompile Include="harfbuzz\src\hb-buffer-verify.cc" />
-    <ClCompile Include="harfbuzz\src\hb-buffer.cc" />
-    <ClCompile Include="harfbuzz\src\hb-cairo.cc" />
-    <ClCompile Include="harfbuzz\src\hb-cairo-utils.cc" />
-    <ClCompile Include="harfbuzz\src\hb-common.cc" />
-    <ClCompile Include="harfbuzz\src\hb-coretext.cc" />
-    <ClCompile Include="harfbuzz\src\hb-coretext-font.cc" />
-    <ClCompile Include="harfbuzz\src\hb-coretext-shape.cc" />
-    <ClCompile Include="harfbuzz\src\hb-directwrite.cc" />
-    <ClCompile Include="harfbuzz\src\hb-directwrite-font.cc" />
-    <ClCompile Include="harfbuzz\src\hb-directwrite-shape.cc" />
-    <ClCompile Include="harfbuzz\src\hb-draw.cc" />
-    <ClCompile Include="harfbuzz\src\hb-face.cc" />
-    <ClCompile Include="harfbuzz\src\hb-face-builder.cc" />
-    <ClCompile Include="harfbuzz\src\hb-fallback-shape.cc" />
-    <ClCompile Include="harfbuzz\src\hb-font.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ft.cc" />
-    <ClCompile Include="harfbuzz\src\hb-gdi.cc" />
-    <ClCompile Include="harfbuzz\src\hb-glib.cc" />
-    <ClCompile Include="harfbuzz\src\hb-graphite2.cc" />
-    <ClCompile Include="harfbuzz\src\hb-harfruzz.cc" />
-    <ClCompile Include="harfbuzz\src\hb-icu.cc" />
-    <ClCompile Include="harfbuzz\src\hb-map.cc" />
-    <ClCompile Include="harfbuzz\src\hb-number.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-cff1-table.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-cff2-table.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-color.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-face.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-font.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-layout.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-map.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-math.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-meta.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-metrics.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-name.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shape-fallback.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shape-normalize.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shape.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-arabic.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-default.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-hangul.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-hebrew.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-indic-table.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-indic.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-khmer.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-myanmar.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-syllabic.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-thai.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-use.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-shaper-vowel-constraints.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-tag.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ot-var.cc" />
-    <ClCompile Include="harfbuzz\src\hb-outline.cc" />
-    <ClCompile Include="harfbuzz\src\hb-paint.cc" />
-    <ClCompile Include="harfbuzz\src\hb-paint-bounded.cc" />
-    <ClCompile Include="harfbuzz\src\hb-paint-extents.cc" />
-    <ClCompile Include="harfbuzz\src\hb-set.cc" />
-    <ClCompile Include="harfbuzz\src\hb-shape-plan.cc" />
-    <ClCompile Include="harfbuzz\src\hb-shape.cc" />
-    <ClCompile Include="harfbuzz\src\hb-shaper.cc" />
-    <ClCompile Include="harfbuzz\src\hb-static.cc" />
-    <ClCompile Include="harfbuzz\src\hb-style.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-cff-common.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-cff1.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-cff2.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-input.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-instancer-iup.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-instancer-solver.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-plan.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-plan-layout.cc" />
-    <ClCompile Include="harfbuzz\src\hb-subset-plan-var.cc" />
-    <ClCompile Include="harfbuzz\src\hb-ucd.cc" />
-    <ClCompile Include="harfbuzz\src\hb-unicode.cc" />
+    <ClCompile Include="harfbuzz\src\harfbuzz.cc" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
@@ -272,7 +59,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>harfbuzz\SMP;..\freetype2\freetype2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\freetype2\freetype2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(Configuration.Contains('Release'))">
@@ -308,7 +96,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_CONFIG_H;_LIB;_DEBUG;_WIN32_WINNT=0x0502;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_FREETYPE;_LIB;_DEBUG;_WIN32_WINNT=0x0502;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Lib>
@@ -318,7 +106,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_CONFIG_H;_LIB;_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_FREETYPE;_LIB;_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <DisableSpecificWarnings>4244;4267;4805;4018;4146;4138;4068;4305;4309;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -331,7 +119,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_CONFIG_H;_LIB;NDEBUG;_WIN32_WINNT=0x0502;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_FREETYPE;_LIB;NDEBUG;_WIN32_WINNT=0x0502;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -349,7 +137,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_CONFIG_H;_LIB;NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;HAVE_FREETYPE;_LIB;NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

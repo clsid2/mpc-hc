@@ -24,10 +24,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fribidi-config.h">
+    <ClInclude Include="generated\fribidi-config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
+    <ClInclude Include="generated\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fribidi\lib\bidi-types.h" />

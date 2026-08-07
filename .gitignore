@@ -36,7 +36,6 @@ _*.bat
 /src/MPCTestAPI/bin17
 /src/thirdparty/DoctorDump/obj
 /src/thirdparty/LAVFilters/obj
-/src/thirdparty/fribidi/generated/config.h
 /src/thirdparty/libxml2/generated/libxml/xmlversion.h
 ipch
 /distrib/MPCVR/

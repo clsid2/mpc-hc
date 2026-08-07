@@ -50,8 +50,8 @@
     <ClInclude Include="fribidi\lib\fribidi.h" />
     <ClInclude Include="fribidi\lib\joining-types.h" />
     <ClInclude Include="fribidi\lib\run.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="fribidi-config.h" />
+    <ClInclude Include="generated\config.h" />
+    <ClInclude Include="generated\fribidi-config.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fribidi\lib\fribidi-arabic.c" />
@@ -122,7 +122,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatSpecificWarningsAsErrors>4113;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
       <DisableSpecificWarnings>4018;4244;4028;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>fribidi/SMP;fribidi/SMP/lib;fribidi/lib;fribidi/charset;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>generated;fribidi/lib;fribidi/charset;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <SubSystem>Windows</SubSystem>
@@ -187,27 +187,6 @@
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
     </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup>
-    <PostBuildEvent>
-      <Command>mkdir "generated"
-copy /y "fribidi\SMP\config.h" "generated"
-</Command>
-    </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>if exist generated\config.h (
-del generated\config.h
-)</Command>
-    </PreBuildEvent>
-    <CustomBuildStep>
-      <Message>Custom Clean Step</Message>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Outputs>force_clean</Outputs>
-      <Command>if exist generated\config.h (
-del generated\config.h
-)</Command>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

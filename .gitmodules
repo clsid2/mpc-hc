@@ -30,10 +30,10 @@
 	url = https://github.com/libass/libass.git
 [submodule "src/thirdparty/fribidi/fribidi"]
 	path = src/thirdparty/fribidi/fribidi
-	url = https://github.com/ShiftMediaProject/fribidi.git
+	url = https://github.com/fribidi/fribidi.git
 [submodule "src/thirdparty/harfbuzz/harfbuzz"]
 	path = src/thirdparty/harfbuzz/harfbuzz
-	url = https://github.com/ShiftMediaProject/harfbuzz.git
+	url = https://github.com/harfbuzz/harfbuzz.git
 [submodule "src/thirdparty/freetype2/freetype2"]
 	path = src/thirdparty/freetype2/freetype2
 	url = https://gitlab.freedesktop.org/freetype/freetype.git

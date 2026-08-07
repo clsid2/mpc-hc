@@ -107,7 +107,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;libass\libass;..\fribidi\generated;..\libiconv\libiconv-for-Windows\include;..\dirent;..\freetype2\freetype2\include\freetype;..\freetype2\freetype2\include;..\harfbuzz\harfbuzz\src;..\fribidi\fribidi\lib;..\fribidi\fribidi\charset;..\fribidi;..\fribidi\fribidi\SMP\lib;..\libunibreak\libunibreak\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;libass\libass;..\fribidi\generated;..\libiconv\libiconv-for-Windows\include;..\dirent;..\freetype2\freetype2\include\freetype;..\freetype2\freetype2\include;..\harfbuzz\harfbuzz\src;..\fribidi\fribidi\lib;..\fribidi\fribidi\charset;..\fribidi;..\libunibreak\libunibreak\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level2</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <C99Support>true</C99Support>
