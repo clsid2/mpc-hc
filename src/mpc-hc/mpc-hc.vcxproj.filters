@@ -106,6 +106,9 @@
     <ClCompile Include="ColorButton.cpp">
       <Filter>Custom Controls</Filter>
     </ClCompile>
+    <ClCompile Include="ColorControlsDlg.cpp">
+      <Filter>Modal Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="DebugShadersDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
@@ -657,6 +660,9 @@
     </ClInclude>
     <ClInclude Include="ColorButton.h">
       <Filter>Custom Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorControlsDlg.h">
+      <Filter>Modal Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="DebugShadersDlg.h">
       <Filter>Modal Dialogs</Filter>

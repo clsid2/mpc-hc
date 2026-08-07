@@ -32,6 +32,7 @@
 #include "TextPassThruFilter.h"
 #include "FakeFilterMapper2.h"
 
+#include "ColorControlsDlg.h"
 #include "FavoriteAddDlg.h"
 #include "GoToDlg.h"
 #include "HistoryDlg.h"
@@ -392,6 +393,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_UPDATE_COMMAND_UI(ID_VIEW_CAPTURE, OnUpdateViewCapture)
     ON_COMMAND(ID_VIEW_DEBUGSHADERS, OnViewDebugShaders)
     ON_UPDATE_COMMAND_UI(ID_VIEW_DEBUGSHADERS, OnUpdateViewDebugShaders)
+    ON_COMMAND(ID_COLOR_CONTROLS, OnViewColorControls)
+    ON_UPDATE_COMMAND_UI(ID_COLOR_CONTROLS, OnUpdateViewColorControls)
     ON_COMMAND(ID_VIEW_PRESETS_MINIMAL, OnViewMinimal)
     ON_UPDATE_COMMAND_UI(ID_VIEW_PRESETS_MINIMAL, OnUpdateViewMinimal)
     ON_COMMAND(ID_VIEW_PRESETS_COMPACT, OnViewCompact)
@@ -1242,6 +1245,10 @@ void CMainFrame::OnDestroy()
 
     if (m_pDebugShaders && IsWindow(m_pDebugShaders->m_hWnd)) {
         VERIFY(m_pDebugShaders->DestroyWindow());
+    }
+
+    if (m_pColorControls && IsWindow(m_pColorControls->m_hWnd)) {
+        VERIFY(m_pColorControls->DestroyWindow());
     }
 
     if (m_pHistoryDlg && IsWindow(m_pHistoryDlg->m_hWnd)) {
@@ -8364,6 +8371,39 @@ void CMainFrame::OnViewDebugShaders()
 void CMainFrame::OnUpdateViewDebugShaders(CCmdUI* pCmdUI)
 {
     const auto& dlg = m_pDebugShaders;
+    pCmdUI->SetCheck(dlg && dlg->m_hWnd && dlg->IsWindowVisible());
+}
+
+void CMainFrame::OnViewColorControls()
+{
+    auto& dlg = m_pColorControls;
+    if (dlg && !dlg->m_hWnd) {
+        // something has destroyed the dialog and we didn't know about it
+        dlg = nullptr;
+    }
+    if (!dlg) {
+        // dialog doesn't exist - create and show it
+        dlg = std::make_unique<CColorControlsDlg>();
+        dlg->ShowWindow(SW_SHOW);
+    } else if (dlg->IsWindowVisible()) {
+        if (dlg->IsIconic()) {
+            // dialog is visible but iconic - restore it
+            VERIFY(dlg->ShowWindow(SW_RESTORE));
+        } else {
+            // dialog is visible and not iconic - destroy it
+            VERIFY(dlg->DestroyWindow());
+            ASSERT(!dlg->m_hWnd);
+            dlg = nullptr;
+        }
+    } else {
+        // dialog is not visible - show it
+        VERIFY(!dlg->ShowWindow(SW_SHOW));
+    }
+}
+
+void CMainFrame::OnUpdateViewColorControls(CCmdUI* pCmdUI)
+{
+    const auto& dlg = m_pColorControls;
     pCmdUI->SetCheck(dlg && dlg->m_hWnd && dlg->IsWindowVisible());
 }
 
@@ -22556,6 +22596,18 @@ void CMainFrame::UpdateUILanguage()
         m_pDebugShaders = std::make_unique<CDebugShadersDlg>();
         if (bWasVisible) {
             m_pDebugShaders->ShowWindow(SW_SHOWNA);
+            // Don't steal focus from main frame
+            SetActiveWindow();
+        }
+    }
+
+    // Reload the color controls dialog if need be
+    if (m_pColorControls && IsWindow(m_pColorControls->m_hWnd)) {
+        BOOL bWasVisible = m_pColorControls->IsWindowVisible();
+        VERIFY(m_pColorControls->DestroyWindow());
+        m_pColorControls = std::make_unique<CColorControlsDlg>();
+        if (bWasVisible) {
+            m_pColorControls->ShowWindow(SW_SHOWNA);
             // Don't steal focus from main frame
             SetActiveWindow();
         }

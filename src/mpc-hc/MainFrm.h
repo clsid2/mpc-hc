@@ -55,6 +55,7 @@
 #include "AllocatorCommon.h"
 
 class CDebugShadersDlg;
+class CColorControlsDlg;
 class CHistoryDlg;
 class CFullscreenWnd;
 struct DisplayMode;
@@ -846,6 +847,7 @@ protected:  // control bar embedded members
     CEditListEditor m_wndEditListEditor;
 
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
+    std::unique_ptr<CColorControlsDlg> m_pColorControls;
     std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
 
     LPCTSTR GetRecentFile() const;
@@ -1013,6 +1015,8 @@ public:
     afx_msg void OnUpdateViewCapture(CCmdUI* pCmdUI);
     afx_msg void OnViewDebugShaders();
     afx_msg void OnUpdateViewDebugShaders(CCmdUI* pCmdUI);
+    afx_msg void OnViewColorControls();
+    afx_msg void OnUpdateViewColorControls(CCmdUI* pCmdUI);
     afx_msg void OnViewMinimal();
     afx_msg void OnUpdateViewMinimal(CCmdUI* pCmdUI);
     afx_msg void OnViewCompact();

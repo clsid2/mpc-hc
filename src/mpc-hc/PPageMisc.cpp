@@ -20,7 +20,6 @@
 
 #include "stdafx.h"
 #include "mplayerc.h"
-#include "MainFrm.h"
 #include "PPageOutput.h"
 #include "moreuuids.h"
 #include "PPageMisc.h"
@@ -33,10 +32,6 @@
 IMPLEMENT_DYNAMIC(CPPageMisc, CMPCThemePPageBase)
 CPPageMisc::CPPageMisc()
     : CMPCThemePPageBase(CPPageMisc::IDD, CPPageMisc::IDD)
-    , m_iBrightness(0)
-    , m_iContrast(0)
-    , m_iHue(0)
-    , m_iSaturation(0)
     , m_nUpdaterAutoCheck(0)
     , m_nUpdaterDelay(7)
 {
@@ -49,15 +44,7 @@ CPPageMisc::~CPPageMisc()
 void CPPageMisc::DoDataExchange(CDataExchange* pDX)
 {
     __super::DoDataExchange(pDX);
-    DDX_Control(pDX, IDC_SLI_BRIGHTNESS, m_SliBrightness);
-    DDX_Control(pDX, IDC_SLI_CONTRAST, m_SliContrast);
-    DDX_Control(pDX, IDC_SLI_HUE, m_SliHue);
-    DDX_Control(pDX, IDC_SLI_SATURATION, m_SliSaturation);
     DDX_Control(pDX, IDC_EXPORT_KEYS, m_ExportKeys);
-    DDX_Text(pDX, IDC_STATIC1, m_sBrightness);
-    DDX_Text(pDX, IDC_STATIC2, m_sContrast);
-    DDX_Text(pDX, IDC_STATIC3, m_sHue);
-    DDX_Text(pDX, IDC_STATIC4, m_sSaturation);
     DDX_Check(pDX, IDC_CHECK1, m_nUpdaterAutoCheck);
     DDX_Text(pDX, IDC_EDIT1, m_nUpdaterDelay);
     DDX_Control(pDX, IDC_CHECK1, m_updaterAutoCheckCtrl);
@@ -74,8 +61,6 @@ void CPPageMisc::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CPPageMisc, CMPCThemePPageBase)
-    ON_WM_HSCROLL()
-    ON_BN_CLICKED(IDC_RESET, OnBnClickedReset)
     ON_BN_CLICKED(IDC_RESET_SETTINGS, OnResetSettings)
     ON_BN_CLICKED(IDC_EXPORT_SETTINGS, OnExportSettings)
     ON_BN_CLICKED(IDC_EXPORT_KEYS, OnExportKeys)
@@ -96,43 +81,9 @@ BOOL CPPageMisc::OnInitDialog()
 
     CreateToolTip();
 
-    m_iBrightness = s.iBrightness;
-    m_iContrast   = s.iContrast;
-    m_iHue        = s.iHue;
-    m_iSaturation = s.iSaturation;
-
-    m_SliBrightness.EnableWindow(TRUE);
-    m_SliBrightness.SetRange(-100, 100, true);
-    m_SliBrightness.SetTic(0);
-    m_SliBrightness.SetPos(m_iBrightness);
-    m_SliBrightness.SetLockToZero();
-
-    m_SliContrast.EnableWindow(TRUE);
-    m_SliContrast.SetRange(-100, 100, true);
-    m_SliContrast.SetTic(0);
-    m_SliContrast.SetPos(m_iContrast);
-    m_SliContrast.SetLockToZero();
-
-    m_SliHue.EnableWindow(TRUE);
-    m_SliHue.SetRange(-180, 180, true);
-    m_SliHue.SetTic(0);
-    m_SliHue.SetPos(m_iHue);
-    m_SliHue.SetLockToZero();
-
-    m_SliSaturation.EnableWindow(TRUE);
-    m_SliSaturation.SetRange(-100, 100, true);
-    m_SliSaturation.SetTic(0);
-    m_SliSaturation.SetPos(m_iSaturation);
-    m_SliSaturation.SetLockToZero();
-
     if (AfxGetMyApp()->IsIniValid()) {
         m_ExportKeys.EnableWindow(FALSE);
     }
-
-    m_sBrightness.Format(m_iBrightness ? _T("%+d") : _T("%d"), m_iBrightness);
-    m_sContrast.Format(m_iContrast ? _T("%+d") : _T("%d"), m_iContrast);
-    m_sHue.Format(m_iHue ? _T("%+d") : _T("%d"), m_iHue);
-    m_sSaturation.Format(m_iSaturation ? _T("%+d") : _T("%d"), m_iSaturation);
 
     m_nUpdaterAutoCheck = s.nUpdaterAutoCheck;
     m_nUpdaterDelay = s.nUpdaterDelay;
@@ -150,68 +101,10 @@ BOOL CPPageMisc::OnApply()
 
     CAppSettings& s = AfxGetAppSettings();
 
-    s.iBrightness = m_iBrightness;
-    s.iContrast   = m_iContrast;
-    s.iHue        = m_iHue;
-    s.iSaturation = m_iSaturation;
-
     s.nUpdaterAutoCheck = m_nUpdaterAutoCheck;
     s.nUpdaterDelay = m_nUpdaterDelay;
 
     return __super::OnApply();
-}
-
-void CPPageMisc::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-    UpdateData();
-    
-    if (*pScrollBar == m_SliBrightness) {
-        m_iBrightness = m_SliBrightness.GetPos();
-        ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_Brightness, m_iBrightness, m_iContrast, m_iHue, m_iSaturation);
-        m_sBrightness.Format(m_iBrightness ? _T("%+d") : _T("%d"), m_iBrightness);
-    } else if (*pScrollBar == m_SliContrast) {
-        m_iContrast = m_SliContrast.GetPos();
-        ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_Contrast, m_iBrightness, m_iContrast, m_iHue, m_iSaturation);
-        m_sContrast.Format(m_iContrast ? _T("%+d") : _T("%d"), m_iContrast);
-    } else if (*pScrollBar == m_SliHue) {
-        m_iHue = m_SliHue.GetPos();
-        ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_Hue, m_iBrightness, m_iContrast, m_iHue, m_iSaturation);
-        m_sHue.Format(m_iHue ? _T("%+d") : _T("%d"), m_iHue);
-    } else if (*pScrollBar == m_SliSaturation) {
-        m_iSaturation = m_SliSaturation.GetPos();
-        ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_Saturation, m_iBrightness, m_iContrast, m_iHue, m_iSaturation);
-        m_sSaturation.Format(m_iSaturation ? _T("%+d") : _T("%d"), m_iSaturation);
-    }
-
-    UpdateData(FALSE);
-
-    SetModified();
-
-    __super::OnHScroll(nSBCode, nPos, pScrollBar);
-}
-
-void CPPageMisc::OnBnClickedReset()
-{
-    m_iBrightness = AfxGetMyApp()->GetColorControl(ProcAmp_Brightness)->DefaultValue;
-    m_iContrast   = AfxGetMyApp()->GetColorControl(ProcAmp_Contrast)->DefaultValue;
-    m_iHue        = AfxGetMyApp()->GetColorControl(ProcAmp_Hue)->DefaultValue;
-    m_iSaturation = AfxGetMyApp()->GetColorControl(ProcAmp_Saturation)->DefaultValue;
-
-    m_SliBrightness.SetPos(m_iBrightness);
-    m_SliContrast.SetPos(m_iContrast);
-    m_SliHue.SetPos(m_iHue);
-    m_SliSaturation.SetPos(m_iSaturation);
-
-    m_sBrightness.Format(m_iBrightness ? _T("%+d") : _T("%d"), m_iBrightness);
-    m_sContrast.Format(m_iContrast ? _T("%+d") : _T("%d"), m_iContrast);
-    m_sHue.Format(m_iHue ? _T("%+d") : _T("%d"), m_iHue);
-    m_sSaturation.Format(m_iSaturation ? _T("%+d") : _T("%d"), m_iSaturation);
-
-    ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_All, m_iBrightness, m_iContrast, m_iHue, m_iSaturation);
-
-    UpdateData(FALSE);
-
-    SetModified();
 }
 
 void CPPageMisc::OnUpdateDelayEditBox(CCmdUI* pCmdUI)
@@ -286,14 +179,6 @@ void CPPageMisc::OnExportKeys()
             }
         }
     }
-}
-
-void CPPageMisc::OnCancel()
-{
-    CAppSettings& s = AfxGetAppSettings();
-
-    ((CMainFrame*)AfxGetMyApp()->GetMainWnd())->SetColorControl(ProcAmp_All, s.iBrightness, s.iContrast, s.iHue, s.iSaturation);
-    __super::OnCancel();
 }
 
 void CPPageMisc::AdjustDynamicWidgets() {

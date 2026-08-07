@@ -712,6 +712,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_COLOR_SATURATION_INC,              0, 0,                 IDS_SATURATION_INC },
     { ID_COLOR_SATURATION_DEC,              0, 0,                 IDS_SATURATION_DEC },
     { ID_COLOR_RESET,                       0, 0,                 IDS_RESET_COLOR },
+    { ID_COLOR_CONTROLS,                    0, 0,                 IDS_AG_COLOR_CONTROLS },
     { ID_NAVIGATE_TITLEMENU,              'T', FALT,              IDS_MPLAYERC_63 },
     { ID_NAVIGATE_ROOTMENU,               'R', FALT,              IDS_AG_DVD_ROOT_MENU },
     { ID_NAVIGATE_SUBPICTUREMENU,           0, 0,                 IDS_MPLAYERC_65 },

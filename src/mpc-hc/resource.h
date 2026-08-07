@@ -666,6 +666,7 @@
 #define IDD_PPAGETOOLBARLAYOUT          20022
 #define IDD_PPAGEVIDEORENDERER          20076
 #define IDD_HISTORY                     20077
+#define IDD_COLORCONTROLS_DLG           20078
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052
@@ -1158,6 +1159,7 @@
 #define IDS_SEEKBAR_HOVER_PREVIEW       33460
 #define IDS_SEEKBAR_HOVER_TOOLTIP       33461
 #define IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES 33462
+#define ID_COLOR_CONTROLS               33464
 #define ID_RECENT_FILE_START            34000
 #define ID_RECENT_FILE_END              34999
 #define IDS_MFMT_AVI                    39001
@@ -1858,13 +1860,14 @@
 #define IDS_HISTORY_COPY_PATHS          58038
 #define IDS_HISTORY_RESET_POSITION      58039
 #define IDS_HISTORY_RESET_TRACKS        58040
+#define IDS_AG_COLOR_CONTROLS           58041
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        20078
-#define _APS_NEXT_COMMAND_VALUE         33464
+#define _APS_NEXT_RESOURCE_VALUE        20079
+#define _APS_NEXT_COMMAND_VALUE         33465
 #define _APS_NEXT_CONTROL_VALUE         22102
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif

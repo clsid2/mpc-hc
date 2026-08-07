@@ -197,6 +197,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="CMPCThemeStatusBar.cpp" />
     <ClCompile Include="CMPCThemeTabCtrl.cpp" />
     <ClCompile Include="ColorButton.cpp" />
+    <ClCompile Include="ColorControlsDlg.cpp" />
     <ClCompile Include="ColorProfileUtil.cpp" />
     <ClCompile Include="ComPropertyPage.cpp" />
     <ClCompile Include="ComPropertySheet.cpp" />
@@ -397,6 +398,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="CMPCThemeTabCtrl.h" />
     <ClInclude Include="CMPCThemeWin10Api.h" />
     <ClInclude Include="ColorButton.h" />
+    <ClInclude Include="ColorControlsDlg.h" />
     <ClInclude Include="ColorProfileUtil.h" />
     <ClInclude Include="ComPropertyPage.h" />
     <ClInclude Include="ComPropertySheet.h" />

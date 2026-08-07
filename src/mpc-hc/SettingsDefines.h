@@ -381,6 +381,8 @@
 #define IDS_R_DLG_HISTORY                   _T("Dialogs\\History")
 #define IDS_RS_DLG_HISTORY_COLWIDTH         _T("ColWidth")
 
+#define IDS_R_DLG_COLOR_CONTROLS            _T("Dialogs\\ColorControls")
+
 #define IDS_R_SHADERS                       _T("Shaders")
 #define IDS_RS_SHADERS_EXTRA                _T("Extra")
 #define IDS_RS_SHADERS_PRERESIZE            _T("PreResize")

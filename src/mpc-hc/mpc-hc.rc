@@ -785,30 +785,16 @@ IDD_PPAGEMISC DIALOGEX 0, 0, 355, 289
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Color controls (for VMR-9, EVR and madVR)",IDC_STATIC,6,6,343,115
-    LTEXT           "Brightness",IDC_STATIC,12,23,66,8
-    LTEXT           "Contrast",IDC_STATIC,12,42,66,8
-    LTEXT           "Hue",IDC_STATIC,12,61,66,8
-    LTEXT           "Saturation",IDC_STATIC,12,80,66,8
-    RTEXT           "",IDC_STATIC1,84,23,24,10,SS_SUNKEN
-    RTEXT           "",IDC_STATIC2,84,42,24,10,SS_SUNKEN
-    RTEXT           "",IDC_STATIC3,84,61,24,10,SS_SUNKEN
-    RTEXT           "",IDC_STATIC4,84,80,24,10,SS_SUNKEN
-    CONTROL         "",IDC_SLI_BRIGHTNESS,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,20,224,14
-    CONTROL         "",IDC_SLI_CONTRAST,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,40,224,14
-    CONTROL         "",IDC_SLI_HUE,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,59,224,14
-    CONTROL         "",IDC_SLI_SATURATION,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,78,224,14
-    PUSHBUTTON      "Reset",IDC_RESET,277,96,60,14
-    GROUPBOX        "Update check",IDC_STATIC,6,127,343,48
-    CONTROL         "Enable automatic update check",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,142,300,8
-    LTEXT           "Check every:",IDC_STATIC5,12,157,132,8
-    EDITTEXT        IDC_EDIT1,144,155,36,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,180,155,16,14
-    LTEXT           "day(s)",IDC_STATIC6,186,157,60,8
-    GROUPBOX        "Settings management",IDC_STATIC,6,181,343,34
-    PUSHBUTTON      "Reset",IDC_RESET_SETTINGS,12,193,103,14
-    PUSHBUTTON      "Export",IDC_EXPORT_SETTINGS,240,193,103,14
-    PUSHBUTTON      "Export keys",IDC_EXPORT_KEYS,126,193,103,14
+    GROUPBOX        "Update check",IDC_STATIC,6,6,343,48
+    CONTROL         "Enable automatic update check",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,21,300,8
+    LTEXT           "Check every:",IDC_STATIC5,12,36,132,8
+    EDITTEXT        IDC_EDIT1,144,34,36,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,180,34,16,14
+    LTEXT           "day(s)",IDC_STATIC6,186,36,60,8
+    GROUPBOX        "Settings management",IDC_STATIC,6,60,343,34
+    PUSHBUTTON      "Reset",IDC_RESET_SETTINGS,12,72,103,14
+    PUSHBUTTON      "Export",IDC_EXPORT_SETTINGS,240,72,103,14
+    PUSHBUTTON      "Export keys",IDC_EXPORT_KEYS,126,72,103,14
 END
 
 IDD_TUNER_SCAN DIALOGEX 0, 0, 407, 246
@@ -1133,6 +1119,27 @@ BEGIN
     EDITTEXT        IDC_EDIT1,48,4,100,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Remove selected",IDC_BUTTON2,152,4,76,14
     CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,23,268,142,WS_EX_CLIENTEDGE
+END
+
+IDD_COLORCONTROLS_DLG DIALOGEX 0, 0, 355, 106
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Color controls"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "Brightness",IDC_STATIC,12,9,66,8
+    LTEXT           "Contrast",IDC_STATIC,12,28,66,8
+    LTEXT           "Hue",IDC_STATIC,12,47,66,8
+    LTEXT           "Saturation",IDC_STATIC,12,66,66,8
+    RTEXT           "",IDC_STATIC1,84,9,24,10,SS_SUNKEN
+    RTEXT           "",IDC_STATIC2,84,28,24,10,SS_SUNKEN
+    RTEXT           "",IDC_STATIC3,84,47,24,10,SS_SUNKEN
+    RTEXT           "",IDC_STATIC4,84,66,24,10,SS_SUNKEN
+    CONTROL         "",IDC_SLI_BRIGHTNESS,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,6,224,14
+    CONTROL         "",IDC_SLI_CONTRAST,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,26,224,14
+    CONTROL         "",IDC_SLI_HUE,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,45,224,14
+    CONTROL         "",IDC_SLI_SATURATION,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP | TBS_DOWNISLEFT,119,64,224,14
+    PUSHBUTTON      "Reset",IDC_RESET,219,86,60,14
+    PUSHBUTTON      "Close",IDCANCEL,283,86,60,14
 END
 
 IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
@@ -1772,6 +1779,7 @@ BEGIN
         MENUITEM "R&eset Rate",                 ID_PLAY_RESETRATE
         MENUITEM SEPARATOR
         MENUITEM "&Filters",                    ID_FILTERS
+        MENUITEM "&Color controls...",          ID_COLOR_CONTROLS
         MENUITEM "S&haders",                    ID_SHADERS
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
@@ -1964,6 +1972,7 @@ BEGIN
         MENUITEM "F&avorites",                  ID_FAVORITES
         MENUITEM SEPARATOR
         MENUITEM "&Filters",                    ID_FILTERS
+        MENUITEM "&Color controls...",          ID_COLOR_CONTROLS
         MENUITEM "S&haders",                    ID_SHADERS
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
@@ -2344,6 +2353,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "&Filters",                    ID_FILTERS
+        MENUITEM "&Color controls...",          ID_COLOR_CONTROLS
         MENUITEM "S&haders",                    ID_SHADERS
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
@@ -4301,6 +4311,11 @@ BEGIN
     IDS_HISTORY_COPY_PATHS  "Copy paths to clipboard"
     IDS_HISTORY_RESET_POSITION "Reset saved position"
     IDS_HISTORY_RESET_TRACKS "Reset track selection"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_AG_COLOR_CONTROLS   "Color Controls"
 END
 
 #endif    // English (United States) resources
