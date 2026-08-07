@@ -172,12 +172,17 @@ public:
 };
 
 class CPPageAdvanced : public CMPCThemePPageBase
+    , public CMPCThemeListCtrlCustomInterface
 {
     DECLARE_DYNAMIC(CPPageAdvanced)
 public:
     CPPageAdvanced();
     virtual ~CPPageAdvanced() = default;
     virtual void DoDPIChanged();
+    virtual void GetCustomTextColors(INT_PTR nItem, int iSubItem, COLORREF& clrText, COLORREF& clrTextBk, bool& overrideSelectedBG);
+    virtual void DoCustomPrePaint() {};
+    virtual void GetCustomGridColors(int nItem, COLORREF& horzGridColor, COLORREF& vertGridColor) {};
+    virtual bool UseCustomGrid() { return false; };
 
 private:
     enum { IDD = IDD_PPAGEADVANCED };
@@ -241,6 +246,8 @@ private:
         HISTORY_EXCLUDE_FILTER,
     };
 
+    static constexpr DWORD_PTR HEADER_ITEM_DATA = (DWORD_PTR)-1;
+
     enum {
         COL_NAME,
         COL_VALUE,
@@ -261,6 +268,9 @@ private:
 
     void InitSettings();
     bool IsDefault(ADVANCED_SETTINGS) const;
+    inline bool IsHeaderRow(int iItem) const {
+        return m_list.GetItemData(iItem) == HEADER_ITEM_DATA;
+    };
     inline const int GetListSelectionMark() const {
         const int iItem = m_list.GetSelectionMark();
         if (iItem != m_lastSelectedItem) {

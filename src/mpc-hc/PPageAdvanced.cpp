@@ -51,6 +51,7 @@ BOOL CPPageAdvanced::OnInitDialog()
     SetRedraw(FALSE);
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() /* | LVS_EX_FULLROWSELECT */ /*| LVS_EX_DOUBLEBUFFER */ | LVS_EX_INFOTIP);
     m_list.setAdditionalStyles(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
+    m_list.setColorInterface(this);
     m_list.InsertColumn(COL_NAME, ResStr(IDS_PPAGEADVANCED_COL_NAME), LVCFMT_LEFT);
     m_list.InsertColumn(COL_VALUE, ResStr(IDS_PPAGEADVANCED_COL_VALUE), LVCFMT_LEFT);
     m_list.InsertColumn(COL_DUMMYCOL, L"", LVCFMT_FIXED_WIDTH);
@@ -89,10 +90,16 @@ void CPPageAdvanced::InitSettings()
 {
     auto& s = AfxGetAppSettings();
 
+    auto addHeaderItem = [this](CString name) {
+        int iItem = m_list.InsertItem(m_list.GetItemCount(), name);
+        m_list.SetItemData(iItem, HEADER_ITEM_DATA);
+        m_list.setFlaggedItem(iItem, true);
+    };
+
     auto addBoolItem = [this](int nItem, CString name, bool defaultValue, bool & settingReference, CString toolTipText) {
         auto pItem = std::make_shared<SettingsBool>(name, defaultValue, settingReference, toolTipText);
         auto eSetting = static_cast<ADVANCED_SETTINGS>(nItem);
-        int iItem = m_list.InsertItem(nItem, pItem->GetName());
+        int iItem = m_list.InsertItem(m_list.GetItemCount(), pItem->GetName());
         m_hiddenOptions[eSetting] = pItem;
         m_list.setItemTextWithDefaultFlag(iItem, COL_VALUE, (pItem->GetValue() ? m_strTrue : m_strFalse), !IsDefault(eSetting));
         m_list.SetItemData(iItem, nItem);
@@ -108,7 +115,7 @@ void CPPageAdvanced::InitSettings()
         }
         auto pItem = std::make_shared<SettingsInt>(name, defaultValue, settingReference, range, toolTipText);
         auto eSetting = static_cast<ADVANCED_SETTINGS>(nItem);
-        int iItem = m_list.InsertItem(nItem, pItem->GetName());
+        int iItem = m_list.InsertItem(m_list.GetItemCount(), pItem->GetName());
         m_hiddenOptions[eSetting] = pItem;
 
         CString str;
@@ -121,7 +128,7 @@ void CPPageAdvanced::InitSettings()
     auto addComboItem = [this](int nItem, CString name, int defaultValue, int& settingReference, std::deque<CString> list, CString toolTipText) {
         auto pItem = std::make_shared<SettingsCombo>(name, defaultValue, settingReference, list, toolTipText);
         auto eSetting = static_cast<ADVANCED_SETTINGS>(nItem);
-        int iItem = m_list.InsertItem(nItem, pItem->GetName());
+        int iItem = m_list.InsertItem(m_list.GetItemCount(), pItem->GetName());
         m_hiddenOptions[eSetting] = pItem;
         m_list.setItemTextWithDefaultFlag(iItem, COL_VALUE, list.at(settingReference), !IsDefault(eSetting));
         m_list.SetItemData(iItem, nItem);
@@ -130,25 +137,70 @@ void CPPageAdvanced::InitSettings()
     auto addCStringItem = [this](int nItem, CString name, CString defaultValue, CString & settingReference, CString toolTipText) {
         auto pItem = std::make_shared<SettingsCString>(name, defaultValue, settingReference, toolTipText);
         auto eSetting = static_cast<ADVANCED_SETTINGS>(nItem);
-        int iItem = m_list.InsertItem(nItem, pItem->GetName());
+        int iItem = m_list.InsertItem(m_list.GetItemCount(), pItem->GetName());
         m_hiddenOptions[eSetting] = pItem;
         m_list.setItemTextWithDefaultFlag(iItem, COL_VALUE, pItem->GetValue(), !IsDefault(eSetting));
         m_list.SetItemData(iItem, nItem);
     };
 
+    addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_USER_INTERFACE));
+    addBoolItem(FULLSCREEN_SEPARATE_CONTROLS, IDS_RS_FULLSCREEN_SEPARATE_CONTROLS, true, s.bFullscreenSeparateControls, StrRes(IDS_PPAGEADVANCED_FULLSCREEN_SEPARATE_CONTROLS));
+    addIntItem(FULLSCREEN_DELAY, IDS_RS_FULLSCREEN_DELAY, MIN_FULLSCREEN_DELAY, s.iFullscreenDelay, std::make_pair(MIN_FULLSCREEN_DELAY, MAX_FULLSCREEN_DELAY), StrRes(IDS_PPAGEADVANCED_FULLSCREEN_DELAY));
+    addIntItem(OSD_TRANSPARENCY, IDS_RS_OSD_TRANSPARENCY, 64, s.nOSDTransparency, std::make_pair(0, 160), "");
+    addIntItem(OSD_BORDER, IDS_RS_OSD_BORDER, 1, s.nOSDBorder, std::make_pair(0, 3), "");
+    addBoolItem(SHOW_VOLUME_PERCENTAGE, IDS_RS_SHOW_VOLUME_PERCENTAGE, true, s.bShowVolumePercentage, StrRes(IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE));
+    addBoolItem(TIME_ON_SEEKBAR_LEFT, IDS_RS_TIME_ON_SEEKBAR_LEFT, false, s.bTimeOnSeekBarLeft, StrRes(IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT));
+    addComboItem(STARTUP_PRESET, IDS_RS_STARTUP_PRESET, STARTUP_PRESET_REMEMBER, s.nStartupPreset,
+        { StrRes(IDS_STARTUP_PRESET_REMEMBER), StrRes(IDS_AG_VIEW_MINIMAL), StrRes(IDS_AG_VIEW_COMPACT), StrRes(IDS_AG_VIEW_NORMAL), StrRes(IDS_AG_VIEW_CUSTOM) },
+        StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
+    addBoolItem(ALWAYS_USE_SHORT_MENU, IDS_RS_ALWAYS_USE_SHORT_MENU, false, s.bAlwaysUseShortMenu, StrRes(IDS_PPAGEADVANCED_ALWAYS_USE_SHORT_MENU));
+    addIntItem(MOUSE_LEFTUP_DELAY, IDS_RS_MOUSE_LEFTUP_DELAY, 0, s.iMouseLeftUpDelay, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_MOUSE_LEFTUP_DELAY));
+    addIntItem(COVER_SIZE_LIMIT, IDS_RS_COVER_ART_SIZE_LIMIT, 600, s.nCoverArtSizeLimit, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_COVER_SIZE_LIMIT));
+    addBoolItem(OPEN_REC_PANEL_WHEN_OPENING_DEVICE, IDS_RS_OPEN_REC_PANEL_WHEN_OPENING_DEVICE, true, s.bOpenRecPanelWhenOpeningDevice, StrRes(IDS_PPAGEADVANCED_OPEN_REC_PANEL_WHEN_OPENING_DEVICE));
+    addBoolItem(CONFIRM_FILE_DELETE, IDS_RS_CONFIRM_FILE_DELETE, true, s.bConfirmFileDelete, StrRes(IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE));
+
+    addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_PLAYBACK));
+    addBoolItem(LOOP_FOLDER_NEXT_FILE, IDS_RS_LOOP_FOLDER_NEXT_FILE, false, s.bLoopFolderOnPlayNextFile, StrRes(IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE));
+    addBoolItem(NEXT_FILE_SORT_BY_DATE, IDS_RS_NEXT_FILE_SORT_BY_DATE, false, s.bNextFileInFolderSortByDate, L"Sort files by creation time instead of file name when skipping to the next/previous file in a folder.");
+    addBoolItem(LOCK_NOPAUSE, IDS_RS_LOCK_NOPAUSE, false, s.bLockNoPause, StrRes(IDS_PPAGEADVANCED_LOCK_NOPAUSE));
+    addBoolItem(PREVENT_DISPLAY_SLEEP, IDS_RS_PREVENT_DISPLAY_SLEEP, true, s.bPreventDisplaySleep, StrRes(IDS_PPAGEADVANCED_PREVENT_DISPLAY_SLEEP));
+    addIntItem(RELOAD_AFTER_LONG_PAUSE, IDS_RS_RELOAD_AFTER_LONG_PAUSE, 0, s.iReloadAfterLongPause, std::make_pair(-1, 1440), StrRes(IDS_PPAGEADVANCED_RELOAD_AFTER_LONG_PAUSE));
+    addBoolItem(INACCURATE_FASTSEEK, IDS_RS_ALLOW_INACCURATE_FASTSEEK, true, s.bAllowInaccurateFastseek, StrRes(IDS_PPAGEADVANCED_ALLOW_INACCURATE_FASTSEEK));
+    addIntItem(STILL_VIDEO_DURATION, IDS_RS_STILL_VIDEO_DURATION, 10, s.iStillVideoDuration, std::make_pair(0, 86400), StrRes(IDS_PPAGEADVANCED_STILL_VIDEO_DURATION));
+    addIntItem(STREAMPOSPOLLER_INTERVAL, IDS_RS_TIME_REFRESH_INTERVAL, 100, s.nStreamPosPollerInterval, std::make_pair(40, 500), StrRes(IDS_PPAGEADVANCED_TIME_REFRESH_INTERVAL));
+    addIntItem(REDIR_OPEN_TO_APPEND, IDS_RS_REDIRECT_OPEN_TO_APPEND_THRESHOLD, 1000, s.iRedirectOpenToAppendThreshold, std::make_pair(250, 5000), StrRes(IDS_PPAGEADVANCED_REDIRECT_OPEN_TO_APPEND_THRESHOLD));
+    addBoolItem(PAUSE_WHILE_DRAGGING_SEEKBAR, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, true, s.bPauseWhileDraggingSeekbar, StrRes(IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR));
+    addBoolItem(BLOCK_VSFILTER, IDS_RS_BLOCKVSFILTER, true, s.fBlockVSFilter, StrRes(IDS_PPAGEADVANCED_BLOCK_VSFILTER));
+    addBoolItem(BLOCK_RDP, IDS_RS_BLOCKRDP, true, s.bBlockRDP, StrRes(IDS_PPAGEADVANCED_BLOCKRDP));
+    addBoolItem(CAPTURE_DEINTERLACE, IDS_RS_CAPTURE_DEINTERLACE, false, s.bCaptureDeinterlace, StrRes(IDS_PPAGEADVANCED_CAPTURE_DEINTERLACE));
+    addBoolItem(USE_MEDIAINFO_LOAD_FILE_DURATION, IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION, false, s.bUseMediainfoLoadFileDuration, StrRes(IDS_PPAGEADVANCED_USE_MEDIAINFO_LOAD_FILE_DURATION));
+
+    addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_HISTORY));
     addIntItem(RECENT_FILES_NB, IDS_RS_RECENT_FILES_NUMBER, 100, s.iRecentFilesNumber, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_RECENT_FILES_NUMBER));
     addIntItem(FILE_POS_LONGER, IDS_RS_FILEPOSLONGER, 5, s.iRememberPosForLongerThan, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_FILE_POS_LONGER));
     addBoolItem(FILE_POS_AUDIO, IDS_RS_FILEPOSAUDIO, true, s.bRememberPosForAudioFiles, StrRes(IDS_PPAGEADVANCED_FILE_POS_AUDIO));
     addBoolItem(FILE_POS_PLAYLIST, IDS_RS_FILEPOS_PLAYLIST, true, s.bRememberExternalPlaylistPos, StrRes(IDS_PPAGEADVANCED_FILEPOS_PLAYLIST));
     addBoolItem(FILE_POS_TRACK_SELECTION, IDS_RS_FILEPOS_TRACK_SELECTION, true, s.bRememberTrackSelection, StrRes(IDS_PPAGEADVANCED_FILEPOS_TRACK_SELECTION));
-    addBoolItem(FULLSCREEN_SEPARATE_CONTROLS, IDS_RS_FULLSCREEN_SEPARATE_CONTROLS, true, s.bFullscreenSeparateControls, StrRes(IDS_PPAGEADVANCED_FULLSCREEN_SEPARATE_CONTROLS));
-    addIntItem(COVER_SIZE_LIMIT, IDS_RS_COVER_ART_SIZE_LIMIT, 600, s.nCoverArtSizeLimit, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_COVER_SIZE_LIMIT));
-    addBoolItem(BLOCK_VSFILTER, IDS_RS_BLOCKVSFILTER, true, s.fBlockVSFilter, StrRes(IDS_PPAGEADVANCED_BLOCK_VSFILTER));
-    addBoolItem(BLOCK_RDP, IDS_RS_BLOCKRDP, true, s.bBlockRDP, StrRes(IDS_PPAGEADVANCED_BLOCKRDP));
-    addBoolItem(LOOP_FOLDER_NEXT_FILE, IDS_RS_LOOP_FOLDER_NEXT_FILE, false, s.bLoopFolderOnPlayNextFile, StrRes(IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE));
-    addBoolItem(NEXT_FILE_SORT_BY_DATE, IDS_RS_NEXT_FILE_SORT_BY_DATE, false, s.bNextFileInFolderSortByDate, L"Sort files by creation time instead of file name when skipping to the next/previous file in a folder.");
-    addIntItem(OSD_TRANSPARENCY, IDS_RS_OSD_TRANSPARENCY, 64, s.nOSDTransparency, std::make_pair(0, 160), "");
-    addIntItem(OSD_BORDER, IDS_RS_OSD_BORDER, 1, s.nOSDBorder, std::make_pair(0, 3), "");
+    addBoolItem(USE_TITLE_IN_RECENT_FILE_LIST, IDS_RS_USE_TITLE_IN_RECENT_FILE_LIST, true, s.bUseTitleInRecentFileList, StrRes(IDS_PPAGEADVANCED_USE_TITLE_IN_RECENT_FILE_LIST));
+    addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, L"Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart.");
+    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, L"Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com");
+
+    addHeaderItem(ResStr(IDS_INFOBAR_SUBTITLES));
+    addBoolItem(ADD_LANGCODE_WHEN_SAVE_SUBTITLES, IDS_RS_ADD_LANGCODE_WHEN_SAVE_SUBTITLES, false, s.bAddLangCodeWhenSaveSubtitles, StrRes(IDS_PPAGEADVANCED_ADD_LANGCODE_WHEN_SAVE_SUBTITLES));
+    addBoolItem(LIBASS_FOR_SRT, IDS_RS_LIBASS_FOR_SRT, false, s.bRenderSRTUsingLibass, StrRes(IDS_PPAGEADVANCED_LIBASS_FOR_SRT));
+    addBoolItem(USE_FREETYPE, IDS_RS_USE_FREETYPE, false, s.bUseFreeType, StrRes(IDS_PPAGEADVANCED_USE_FREETYPE));
+    addIntItem(AUTO_DOWNLOAD_SCORE_MOVIES, IDS_RS_AUTODOWNLOADSCOREMOVIES, 0x16, s.nAutoDownloadScoreMovies,
+        std::make_pair(10, 30), StrRes(IDS_PPAGEADVANCED_SCORE));
+    addIntItem(AUTO_DOWNLOAD_SCORE_SERIES, IDS_RS_AUTODOWNLOADSCORESERIES, 0x18, s.nAutoDownloadScoreSeries,
+        std::make_pair(10, 30), StrRes(IDS_PPAGEADVANCED_SCORE));
+
+    addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_SCREENSHOTS));
+    addBoolItem(SAVEIMAGE_POSITION, IDS_RS_SAVEIMAGE_POSITION, true, s.bSaveImagePosition, StrRes(IDS_PPAGEADVANCED_SAVEIMAGE_POSITION));
+    addBoolItem(SAVEIMAGE_CURRENTTIME, IDS_RS_SAVEIMAGE_CURRENTTIME, false, s.bSaveImageCurrentTime, StrRes(IDS_PPAGEADVANCED_SAVEIMAGE_CURRENTTIME));
+    addBoolItem(SNAPSHOTSUBTITLES, IDS_RS_SNAPSHOTSUBTITLES, true, s.bSnapShotSubtitles, StrRes(IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES));
+    addBoolItem(SNAPSHOTKEEPVIDEOEXTENSION, IDS_RS_SNAPSHOTKEEPVIDEOEXTENSION, true, s.bSnapShotKeepVideoExtension, StrRes(IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION));
+
+    addHeaderItem(L"yt-dlp");
     addBoolItem(USE_YDL, IDS_RS_USE_YDL, true, s.bUseYDL, StrRes(IDS_PPAGEADVANCED_USE_YDL));
     addIntItem(YDL_MAX_HEIGHT, IDS_RS_YDL_MAX_HEIGHT, 1440, s.iYDLMaxHeight, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_YDL_MAX_HEIGHT));
     addIntItem(YDL_VIDEO_FORMAT, IDS_RS_YDL_VIDEO_FORMAT, 0, s.iYDLVideoFormat, std::make_pair(0, 8), StrRes(IDS_PPAGEADVANCED_YDL_VIDEO_FORMAT));
@@ -158,44 +210,12 @@ void CPPageAdvanced::InitSettings()
     addCStringItem(YDL_COMMAND_LINE, L"YDLCommandLineForDownloadOnly", _T(""), s.sYDLCommandLine, StrRes(IDS_PPAGEADVANCED_YDL_COMMAND_LINE));
     addCStringItem(YDL_SUBS_PREFERENCE, IDS_RS_YDL_SUBS_PREFERENCE, _T(""), s.sYDLSubsPreference, StrRes(IDS_PPAGEADVANCED_YDL_SUBS_PREFERENCE));
     addBoolItem(USE_AUTOMATIC_CAPTIONS, IDS_RS_USE_AUTOMATIC_CAPTIONS, false, s.bUseAutomaticCaptions, StrRes(IDS_PPAGEADVANCED_USE_AUTOMATIC_CAPTIONS));
-    addBoolItem(SAVEIMAGE_POSITION, IDS_RS_SAVEIMAGE_POSITION, true, s.bSaveImagePosition, StrRes(IDS_PPAGEADVANCED_SAVEIMAGE_POSITION));
-    addBoolItem(SAVEIMAGE_CURRENTTIME, IDS_RS_SAVEIMAGE_CURRENTTIME, false, s.bSaveImageCurrentTime, StrRes(IDS_PPAGEADVANCED_SAVEIMAGE_CURRENTTIME));
-    addBoolItem(SNAPSHOTSUBTITLES, IDS_RS_SNAPSHOTSUBTITLES, true, s.bSnapShotSubtitles, StrRes(IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES));
-    addBoolItem(SNAPSHOTKEEPVIDEOEXTENSION, IDS_RS_SNAPSHOTKEEPVIDEOEXTENSION, true, s.bSnapShotKeepVideoExtension, StrRes(IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION));
-    addBoolItem(ADD_LANGCODE_WHEN_SAVE_SUBTITLES, IDS_RS_ADD_LANGCODE_WHEN_SAVE_SUBTITLES, false, s.bAddLangCodeWhenSaveSubtitles, StrRes(IDS_PPAGEADVANCED_ADD_LANGCODE_WHEN_SAVE_SUBTITLES));
-    addBoolItem(USE_TITLE_IN_RECENT_FILE_LIST, IDS_RS_USE_TITLE_IN_RECENT_FILE_LIST, true, s.bUseTitleInRecentFileList, StrRes(IDS_PPAGEADVANCED_USE_TITLE_IN_RECENT_FILE_LIST));
-    addIntItem(MOUSE_LEFTUP_DELAY, IDS_RS_MOUSE_LEFTUP_DELAY, 0, s.iMouseLeftUpDelay, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_MOUSE_LEFTUP_DELAY));
-    addBoolItem(LOCK_NOPAUSE, IDS_RS_LOCK_NOPAUSE, false, s.bLockNoPause, StrRes(IDS_PPAGEADVANCED_LOCK_NOPAUSE));
-    addBoolItem(PREVENT_DISPLAY_SLEEP, IDS_RS_PREVENT_DISPLAY_SLEEP, true, s.bPreventDisplaySleep, StrRes(IDS_PPAGEADVANCED_PREVENT_DISPLAY_SLEEP));
-    addIntItem(RELOAD_AFTER_LONG_PAUSE, IDS_RS_RELOAD_AFTER_LONG_PAUSE, 0, s.iReloadAfterLongPause, std::make_pair(-1, 1440), StrRes(IDS_PPAGEADVANCED_RELOAD_AFTER_LONG_PAUSE));
-    addBoolItem(INACCURATE_FASTSEEK, IDS_RS_ALLOW_INACCURATE_FASTSEEK, true, s.bAllowInaccurateFastseek, StrRes(IDS_PPAGEADVANCED_ALLOW_INACCURATE_FASTSEEK));
-    addIntItem(STILL_VIDEO_DURATION, IDS_RS_STILL_VIDEO_DURATION, 10, s.iStillVideoDuration, std::make_pair(0, 86400), StrRes(IDS_PPAGEADVANCED_STILL_VIDEO_DURATION));
-    addIntItem(STREAMPOSPOLLER_INTERVAL, IDS_RS_TIME_REFRESH_INTERVAL, 100, s.nStreamPosPollerInterval, std::make_pair(40, 500), StrRes(IDS_PPAGEADVANCED_TIME_REFRESH_INTERVAL));
-    addIntItem(REDIR_OPEN_TO_APPEND, IDS_RS_REDIRECT_OPEN_TO_APPEND_THRESHOLD, 1000, s.iRedirectOpenToAppendThreshold, std::make_pair(250, 5000), StrRes(IDS_PPAGEADVANCED_REDIRECT_OPEN_TO_APPEND_THRESHOLD));
+
+    addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_MISC));
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif
     addIntItem(LOGGING, IDS_RS_LOGGING, 0, s.DebugLogMask, std::make_pair(0, 31), /*StrRes(IDS_PPAGEADVANCED_LOGGER)*/ L"Enables logging to file (requires restart).\nThis option for debugging purposes only and should not be enabled during normal use!\nLogs are saved in folder: %appdata%\\MPC-HC\nValue to set is the sum of the loggers that you want to enable:\n1: General\n2: Graph builder\n4: Subtitle search\n8: yt-dlp processing\n16: DVB scanning");
-    addIntItem(FULLSCREEN_DELAY, IDS_RS_FULLSCREEN_DELAY, MIN_FULLSCREEN_DELAY, s.iFullscreenDelay, std::make_pair(MIN_FULLSCREEN_DELAY, MAX_FULLSCREEN_DELAY), StrRes(IDS_PPAGEADVANCED_FULLSCREEN_DELAY));
-    addIntItem(AUTO_DOWNLOAD_SCORE_MOVIES, IDS_RS_AUTODOWNLOADSCOREMOVIES, 0x16, s.nAutoDownloadScoreMovies,
-        std::make_pair(10, 30), StrRes(IDS_PPAGEADVANCED_SCORE));
-    addIntItem(AUTO_DOWNLOAD_SCORE_SERIES, IDS_RS_AUTODOWNLOADSCORESERIES, 0x18, s.nAutoDownloadScoreSeries,
-        std::make_pair(10, 30), StrRes(IDS_PPAGEADVANCED_SCORE));
-    addBoolItem(OPEN_REC_PANEL_WHEN_OPENING_DEVICE, IDS_RS_OPEN_REC_PANEL_WHEN_OPENING_DEVICE, true, s.bOpenRecPanelWhenOpeningDevice, StrRes(IDS_PPAGEADVANCED_OPEN_REC_PANEL_WHEN_OPENING_DEVICE));
-    addBoolItem(ALWAYS_USE_SHORT_MENU, IDS_RS_ALWAYS_USE_SHORT_MENU, false, s.bAlwaysUseShortMenu, StrRes(IDS_PPAGEADVANCED_ALWAYS_USE_SHORT_MENU));
-    addBoolItem(USE_FREETYPE, IDS_RS_USE_FREETYPE, false, s.bUseFreeType, StrRes(IDS_PPAGEADVANCED_USE_FREETYPE));
-    addBoolItem(USE_MEDIAINFO_LOAD_FILE_DURATION, IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION, false, s.bUseMediainfoLoadFileDuration, StrRes(IDS_PPAGEADVANCED_USE_MEDIAINFO_LOAD_FILE_DURATION));
-    addBoolItem(CAPTURE_DEINTERLACE, IDS_RS_CAPTURE_DEINTERLACE, false, s.bCaptureDeinterlace, StrRes(IDS_PPAGEADVANCED_CAPTURE_DEINTERLACE));
-    addBoolItem(PAUSE_WHILE_DRAGGING_SEEKBAR, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, true, s.bPauseWhileDraggingSeekbar, StrRes(IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR));
-    addBoolItem(CONFIRM_FILE_DELETE, IDS_RS_CONFIRM_FILE_DELETE, true, s.bConfirmFileDelete, StrRes(IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE));
-    addBoolItem(LIBASS_FOR_SRT, IDS_RS_LIBASS_FOR_SRT, false, s.bRenderSRTUsingLibass, StrRes(IDS_PPAGEADVANCED_LIBASS_FOR_SRT));
-    addBoolItem(SHOW_VOLUME_PERCENTAGE, IDS_RS_SHOW_VOLUME_PERCENTAGE, true, s.bShowVolumePercentage, StrRes(IDS_PPAGEADVANCED_SHOW_VOLUME_PERCENTAGE));
-    addComboItem(STARTUP_PRESET, IDS_RS_STARTUP_PRESET, STARTUP_PRESET_REMEMBER, s.nStartupPreset,
-        { StrRes(IDS_STARTUP_PRESET_REMEMBER), StrRes(IDS_AG_VIEW_MINIMAL), StrRes(IDS_AG_VIEW_COMPACT), StrRes(IDS_AG_VIEW_NORMAL), StrRes(IDS_AG_VIEW_CUSTOM) },
-        StrRes(IDS_PPAGEADVANCED_STARTUP_PRESET));
-    addBoolItem(TIME_ON_SEEKBAR_LEFT, IDS_RS_TIME_ON_SEEKBAR_LEFT, false, s.bTimeOnSeekBarLeft, StrRes(IDS_PPAGEADVANCED_TIME_ON_SEEKBAR_LEFT));
-    addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, L"Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart.");
-    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, L"Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com");
 }
 
 BOOL CPPageAdvanced::OnApply()
@@ -203,6 +223,9 @@ BOOL CPPageAdvanced::OnApply()
     auto& s = AfxGetAppSettings();
 
     for (int i = 0; i < m_list.GetItemCount(); i++) {
+        if (IsHeaderRow(i)) {
+            continue;
+        }
         auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(i));
         m_hiddenOptions.at(eSetting)->Apply();
     }
@@ -298,7 +321,7 @@ void CPPageAdvanced::OnUpdateDefaultButton(CCmdUI* pCmdUI)
 void CPPageAdvanced::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
-    if (pNMItemActivate->iItem >= 0) {
+    if (pNMItemActivate->iItem >= 0 && !IsHeaderRow(pNMItemActivate->iItem)) {
         auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(pNMItemActivate->iItem));
         auto pItem = m_hiddenOptions.at(eSetting);
         if (auto pItemBool = std::dynamic_pointer_cast<SettingsBool>(pItem)) {
@@ -324,22 +347,47 @@ void CPPageAdvanced::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
 
     //this custom draw is used only in classic mode
     if (!AppNeedsThemedControls()) {
-        LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+        LPNMLVCUSTOMDRAW pLVCD = reinterpret_cast<LPNMLVCUSTOMDRAW>(pNMHDR);
 
-        switch (pNMCD->dwDrawStage) {
+        switch (pLVCD->nmcd.dwDrawStage) {
         case CDDS_PREPAINT:
             *pResult = CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT;
             break;
         case CDDS_ITEMPREPAINT: {
-                auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData((int)pNMCD->dwItemSpec));
-                if (!IsDefault(eSetting)) {
-                    ::SelectObject(pNMCD->hdc, m_fontBold.GetSafeHandle());
+                int iItem = (int)pLVCD->nmcd.dwItemSpec;
+                if (IsHeaderRow(iItem)) {
+                    bool overrideSelectedBG = false;
+                    GetCustomTextColors(iItem, pLVCD->iSubItem, pLVCD->clrText, pLVCD->clrTextBk, overrideSelectedBG);
+                    if (overrideSelectedBG) {
+                        pLVCD->nmcd.uItemState &= ~CDIS_SELECTED;
+                    }
+                    ::SelectObject(pLVCD->nmcd.hdc, m_fontBold.GetSafeHandle());
                     *pResult |= CDRF_NEWFONT;
                 } else {
-                    *pResult = CDRF_DODEFAULT;
+                    auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(iItem));
+                    if (!IsDefault(eSetting)) {
+                        ::SelectObject(pLVCD->nmcd.hdc, m_fontBold.GetSafeHandle());
+                        *pResult |= CDRF_NEWFONT;
+                    } else {
+                        *pResult = CDRF_DODEFAULT;
+                    }
                 }
             }
             break;
+        }
+    }
+}
+
+void CPPageAdvanced::GetCustomTextColors(INT_PTR nItem, int iSubItem, COLORREF& clrText, COLORREF& clrTextBk, bool& overrideSelectedBG)
+{
+    if (IsHeaderRow((int)nItem)) {
+        overrideSelectedBG = true;
+        if (AppNeedsThemedControls()) {
+            clrText = CMPCTheme::TextFGColor;
+            clrTextBk = CMPCTheme::ControlAreaBGColor;
+        } else {
+            clrText = GetSysColor(COLOR_BTNTEXT);
+            clrTextBk = GetSysColor(COLOR_BTNFACE);
         }
     }
 }
@@ -348,9 +396,11 @@ void CPPageAdvanced::OnLvnGetInfoTipList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMLVGETINFOTIP pGetInfoTip = reinterpret_cast<LPNMLVGETINFOTIP>(pNMHDR);
 
-    auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(pGetInfoTip->iItem));
-    auto pItem = m_hiddenOptions.at(eSetting);
-    StringCchCopy(pGetInfoTip->pszText, pGetInfoTip->cchTextMax, pItem->GetToolTipText());
+    if (!IsHeaderRow(pGetInfoTip->iItem)) {
+        auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(pGetInfoTip->iItem));
+        auto pItem = m_hiddenOptions.at(eSetting);
+        StringCchCopy(pGetInfoTip->pszText, pGetInfoTip->cchTextMax, pItem->GetToolTipText());
+    }
 
     *pResult = 0;
 }
@@ -366,7 +416,7 @@ void CPPageAdvanced::OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult)
             }
         };
 
-        if (pNMLV->iItem >= 0) {
+        if (pNMLV->iItem >= 0 && !IsHeaderRow(pNMLV->iItem)) {
             m_lastSelectedItem = pNMLV->iItem;
             auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(pNMLV->iItem));
             auto pItem = m_hiddenOptions.at(eSetting);
