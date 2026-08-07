@@ -2444,7 +2444,11 @@ void CEVRAllocatorPresenter::RenderThread()
                                 SubPicSetTime();
                                 Paint(pMFSample);
                             }
-                            NextSleepTime = int(SampleDuration / 10000 - 2);
+                            // Sleep no longer than 10ms, so that a state change is picked up promptly.
+                            // Still image sources deliver samples with durations of several seconds;
+                            // sleeping that long here leaves the screen black after playback starts,
+                            // because nothing wakes this thread when the clock is started.
+                            NextSleepTime = (SampleDuration >= 120000) ? 10 : (SampleDuration < 40000) ? 1 : int(SampleDuration / 10000 - 2);
                         }
 
                         if (bStepForward) {
