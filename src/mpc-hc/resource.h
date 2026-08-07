@@ -1856,6 +1856,8 @@
 #define IDS_HISTORY_CLEAR               58036
 #define IDS_HISTORY_REMOVE_QUESTION     58037
 #define IDS_HISTORY_COPY_PATHS          58038
+#define IDS_HISTORY_RESET_POSITION      58039
+#define IDS_HISTORY_RESET_TRACKS        58040
 
 // Next default values for new objects
 // 

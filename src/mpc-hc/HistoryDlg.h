@@ -58,6 +58,8 @@ private:
     void RemoveEntries(const std::list<CStringW>& hashes, const std::list<CString>& paths);
     void ConfirmRemoveSelected();
     void RemoveSelected();
+    void ResetPosition();
+    void ResetTrackSelection();
     void RemoveMissingFiles();
     void RemoveURLs();
     void RemoveOlderThan(int days);

@@ -73,6 +73,16 @@ static void RemoveFromJumpList(const std::list<CString>& paths)
     }
 }
 
+static bool HasSavedPosition(const RecentFileEntry& r)
+{
+    if (r.DVDPosition.llDVDGuid) {
+        return r.DVDPosition.lTitle != 0
+               || r.DVDPosition.timecode.bHours || r.DVDPosition.timecode.bMinutes
+               || r.DVDPosition.timecode.bSeconds || r.DVDPosition.timecode.bFrames;
+    }
+    return r.filePosition > 0;
+}
+
 CHistoryDlg::CHistoryDlg(CWnd* pParent)
     : CMPCThemeModelessResizableDialog(CHistoryDlg::IDD, pParent)
 {
@@ -271,6 +281,67 @@ void CHistoryDlg::RemoveSelected()
     RemoveEntries(hashes, paths);
 }
 
+void CHistoryDlg::ResetPosition()
+{
+    auto& MRU = AfxGetAppSettings().MRU;
+
+    POSITION pos = m_list.GetFirstSelectedItemPosition();
+    while (pos) {
+        int nItem = m_list.GetNextSelectedItem(pos);
+        size_t index = m_list.GetItemData(nItem);
+        if (index < m_entries.size() && HasSavedPosition(m_entries[index])) {
+            auto& entry = m_entries[index];
+            if (entry.DVDPosition.llDVDGuid) {
+                entry.DVDPosition.lTitle = 0;
+                entry.DVDPosition.timecode = {};
+            } else {
+                entry.filePosition = 0;
+            }
+            for (int i = 0; i < MRU.GetSize(); i++) {
+                if (MRU[i].hash == entry.hash) {
+                    if (MRU[i].DVDPosition.llDVDGuid) {
+                        MRU[i].DVDPosition.lTitle = 0;
+                        MRU[i].DVDPosition.timecode = {};
+                    } else {
+                        MRU[i].filePosition = 0;
+                    }
+                    MRU.WriteMediaHistoryEntry(MRU[i]);
+                    break;
+                }
+            }
+        }
+    }
+
+    RefreshList();
+}
+
+void CHistoryDlg::ResetTrackSelection()
+{
+    auto& MRU = AfxGetAppSettings().MRU;
+
+    POSITION pos = m_list.GetFirstSelectedItemPosition();
+    while (pos) {
+        int nItem = m_list.GetNextSelectedItem(pos);
+        size_t index = m_list.GetItemData(nItem);
+        if (index < m_entries.size() && (m_entries[index].AudioTrackIndex != -1 || m_entries[index].SubtitleTrackIndex != -1)) {
+            auto& entry = m_entries[index];
+            entry.AudioTrackIndex = -1;
+            entry.SubtitleTrackIndex = -1;
+            for (int i = 0; i < MRU.GetSize(); i++) {
+                if (MRU[i].hash == entry.hash) {
+                    MRU[i].AudioTrackIndex = -1;
+                    MRU[i].SubtitleTrackIndex = -1;
+                    MRU.WriteMediaHistoryAudioIndex(MRU[i]);
+                    MRU.WriteMediaHistorySubtitleIndex(MRU[i]);
+                    break;
+                }
+            }
+        }
+    }
+
+    RefreshList();
+}
+
 void CHistoryDlg::RemoveMissingFiles()
 {
     std::list<CStringW> hashes;
@@ -456,6 +527,8 @@ void CHistoryDlg::OnBnClickedMenu()
     enum {
         M_COPY_SELECTED = 1,
         M_REMOVE_SELECTED,
+        M_RESET_POSITION,
+        M_RESET_TRACKS,
         M_REMOVE_MISSING,
         M_REMOVE_URLS,
         M_REMOVE_OLDER_WEEK,
@@ -463,10 +536,30 @@ void CHistoryDlg::OnBnClickedMenu()
         M_CLEAR
     };
 
+    bool canResetPosition = false;
+    bool canResetTracks = false;
+    POSITION pos = m_list.GetFirstSelectedItemPosition();
+    while (pos && !(canResetPosition && canResetTracks)) {
+        int nItem = m_list.GetNextSelectedItem(pos);
+        size_t index = m_list.GetItemData(nItem);
+        if (index < m_entries.size()) {
+            const auto& entry = m_entries[index];
+            if (HasSavedPosition(entry)) {
+                canResetPosition = true;
+            }
+            if (entry.AudioTrackIndex != -1 || entry.SubtitleTrackIndex != -1) {
+                canResetTracks = true;
+            }
+        }
+    }
+
     CMPCThemeMenu menu;
     menu.CreatePopupMenu();
     menu.AppendMenu(MF_STRING | MF_ENABLED, M_COPY_SELECTED, ResStr(IDS_HISTORY_COPY_PATHS) + _T("\tCtrl+C"));
     menu.AppendMenu(MF_STRING | MF_ENABLED, M_REMOVE_SELECTED, ResStr(IDS_HISTORY_REMOVE_SELECTED) + _T("\tDelete"));
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING | (canResetPosition ? MF_ENABLED : MF_GRAYED), M_RESET_POSITION, ResStr(IDS_HISTORY_RESET_POSITION));
+    menu.AppendMenu(MF_STRING | (canResetTracks ? MF_ENABLED : MF_GRAYED), M_RESET_TRACKS, ResStr(IDS_HISTORY_RESET_TRACKS));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | MF_ENABLED, M_REMOVE_MISSING, ResStr(IDS_HISTORY_REMOVE_MISSING));
     menu.AppendMenu(MF_STRING | MF_ENABLED, M_REMOVE_URLS, ResStr(IDS_HISTORY_REMOVE_URLS));
@@ -487,6 +580,12 @@ void CHistoryDlg::OnBnClickedMenu()
             break;
         case M_REMOVE_SELECTED:
             ConfirmRemoveSelected();
+            break;
+        case M_RESET_POSITION:
+            ResetPosition();
+            break;
+        case M_RESET_TRACKS:
+            ResetTrackSelection();
             break;
         case M_REMOVE_MISSING:
             RemoveMissingFiles();

@@ -4299,6 +4299,8 @@ BEGIN
     IDS_HISTORY_CLEAR       "Clear all history"
     IDS_HISTORY_REMOVE_QUESTION "Are you sure you want to remove %d selected entries from the history?"
     IDS_HISTORY_COPY_PATHS  "Copy paths to clipboard"
+    IDS_HISTORY_RESET_POSITION "Reset saved position"
+    IDS_HISTORY_RESET_TRACKS "Reset track selection"
 END
 
 #endif    // English (United States) resources
