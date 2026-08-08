@@ -105,7 +105,6 @@ public:
         CString sShaderCachePath;
 
         void    SetDefault();
-        void    SetOptimal();
     };
 
     CAdvRendererSettings m_AdvRendSets;

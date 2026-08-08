@@ -59,38 +59,6 @@ void CRenderersSettings::CAdvRendererSettings::SetDefault()
     bDesktopSizeBackBuffer            = false;
 }
 
-void CRenderersSettings::CAdvRendererSettings::SetOptimal()
-{
-    bVMR9AlterativeVSync              = true;
-    iVMR9VSyncOffset                  = 0;
-    bVMR9VSyncAccurate                = true;
-    bVMR9FullscreenGUISupport         = false;
-    bVMR9VSync                        = false;
-    bVMR9FullFloatingPointProcessing  = false;
-    bVMR9HalfFloatingPointProcessing  = false;
-    bVMR9ColorManagementEnable        = false;
-    iVMR9ColorManagementInput         = VIDEO_SYSTEM_UNKNOWN;
-    iVMR9ColorManagementAmbientLight  = AMBIENT_LIGHT_BRIGHT;
-    iVMR9ColorManagementIntent        = COLOR_RENDERING_INTENT_PERCEPTUAL;
-    bVMRDisableDesktopComposition     = false;
-    bVMRFlushGPUBeforeVSync           = true;
-    bVMRFlushGPUAfterPresent          = true;
-    bVMRFlushGPUWait                  = false;
-    bEVRHighColorResolution           = false;
-    bEVRForceInputHighColorResolution = false;
-    bEVREnableFrameTimeCorrection     = false;
-    iEVROutputRange                   = 0;
-    bSynchronizeVideo                 = false;
-    bSynchronizeDisplay               = false;
-    bSynchronizeNearest               = true;
-    iLineDelta                        = 0;
-    iColumnDelta                      = 0;
-    fCycleDelta                       = 0.0012;
-    fTargetSyncOffset                 = 12.0;
-    fControlLimit                     = 2.0;
-    bCacheShaders                     = false;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CRenderersData construction
 

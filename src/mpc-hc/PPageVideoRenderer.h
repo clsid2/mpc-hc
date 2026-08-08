@@ -70,6 +70,8 @@ private:
     double m_fTargetSyncOffset;
     double m_fControlLimit;
 
+    bool m_bResetToDefaults;
+
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
@@ -84,6 +86,7 @@ public:
     afx_msg void OnBnClickedSyncVideo();
     afx_msg void OnBnClickedSyncDisplay();
     afx_msg void OnBnClickedSyncNearest();
+    afx_msg void OnBnClickedReset();
     afx_msg void OnUpdateSyncDisplay(CCmdUI* pCmdUI);
     afx_msg void OnUpdateSyncVideo(CCmdUI* pCmdUI);
 };

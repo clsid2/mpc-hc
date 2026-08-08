@@ -48,6 +48,7 @@ CPPageVideoRenderer::CPPageVideoRenderer()
     , m_fCycleDelta(0.0012)
     , m_fTargetSyncOffset(10.0)
     , m_fControlLimit(2.0)
+    , m_bResetToDefaults(false)
 {
     m_bPopupHosted = true;
 }
@@ -89,6 +90,7 @@ BEGIN_MESSAGE_MAP(CPPageVideoRenderer, CMPCThemePPageBase)
     ON_BN_CLICKED(IDC_SYNCVIDEO, OnBnClickedSyncVideo)
     ON_BN_CLICKED(IDC_SYNCDISPLAY, OnBnClickedSyncDisplay)
     ON_BN_CLICKED(IDC_SYNCNEAREST, OnBnClickedSyncNearest)
+    ON_BN_CLICKED(IDC_RESET, OnBnClickedReset)
     ON_UPDATE_COMMAND_UI(IDC_STATIC1, OnUpdateSyncVideo)
     ON_UPDATE_COMMAND_UI(IDC_CYCLEDELTA, OnUpdateSyncVideo)
     ON_UPDATE_COMMAND_UI(IDC_STATIC2, OnUpdateSyncDisplay)
@@ -225,6 +227,11 @@ BOOL CPPageVideoRenderer::OnApply()
     CAppSettings& s = AfxGetAppSettings();
     CRenderersSettings& r = s.m_RenderersSettings;
 
+    if (m_bResetToDefaults) {
+        r.m_AdvRendSets.SetDefault();
+        m_bResetToDefaults = false;
+    }
+
     s.fD3DFullscreen = m_fD3DFullscreen ? true : false;
 
     r.iAPSurfaceUsage = m_iAPSurfaceUsage;
@@ -285,7 +292,7 @@ void CPPageVideoRenderer::OnFullscreenCheck()
     UpdateData();
     if (m_fD3DFullscreen && CMPCThemeMsgBox::MessageBoxW(this, ResStr(IDS_D3DFS_WARNING), nullptr, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2) == IDNO) {
         m_fD3DFullscreen = false;
-        UpdateData(FALSE);
+        CheckDlgButton(IDC_FULLSCREEN_MONITOR_CHECK, BST_UNCHECKED);
     } else {
         SetModified();
     }
@@ -298,7 +305,9 @@ void CPPageVideoRenderer::OnBnClickedSyncVideo()
         m_bSynchronizeDisplay = FALSE;
         m_bSynchronizeNearest = FALSE;
     }
-    UpdateData(FALSE);
+    CheckDlgButton(IDC_SYNCVIDEO, m_bSynchronizeVideo ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCDISPLAY, m_bSynchronizeDisplay ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCNEAREST, m_bSynchronizeNearest ? BST_CHECKED : BST_UNCHECKED);
     SetModified();
 }
 
@@ -309,7 +318,9 @@ void CPPageVideoRenderer::OnBnClickedSyncDisplay()
         m_bSynchronizeVideo = FALSE;
         m_bSynchronizeNearest = FALSE;
     }
-    UpdateData(FALSE);
+    CheckDlgButton(IDC_SYNCVIDEO, m_bSynchronizeVideo ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCDISPLAY, m_bSynchronizeDisplay ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCNEAREST, m_bSynchronizeNearest ? BST_CHECKED : BST_UNCHECKED);
     SetModified();
 }
 
@@ -320,7 +331,39 @@ void CPPageVideoRenderer::OnBnClickedSyncNearest()
         m_bSynchronizeVideo = FALSE;
         m_bSynchronizeDisplay = FALSE;
     }
+    CheckDlgButton(IDC_SYNCVIDEO, m_bSynchronizeVideo ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCDISPLAY, m_bSynchronizeDisplay ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(IDC_SYNCNEAREST, m_bSynchronizeNearest ? BST_CHECKED : BST_UNCHECKED);
+    SetModified();
+}
+
+void CPPageVideoRenderer::OnBnClickedReset()
+{
+    CRenderersSettings::CAdvRendererSettings defaultSettings;
+
+    m_iAPSurfaceUsage = VIDRNDT_AP_TEXTURE3D;
+    m_iDX9Resizer = 1;
+    m_fVMR9MixerMode = TRUE;
+    m_fD3DFullscreen = FALSE;
+    m_fResetDevice = FALSE;
+    m_fCacheShaders = defaultSettings.bCacheShaders;
+    m_iEvrBuffers = _T("5");
+    m_fD3D9RenderDevice = FALSE;
+    m_iD3D9RenderDevice = -1;
+
+    m_bSynchronizeVideo = defaultSettings.bSynchronizeVideo;
+    m_bSynchronizeDisplay = defaultSettings.bSynchronizeDisplay;
+    m_bSynchronizeNearest = defaultSettings.bSynchronizeNearest;
+    m_iLineDelta = defaultSettings.iLineDelta;
+    m_iColumnDelta = defaultSettings.iColumnDelta;
+    m_fCycleDelta = defaultSettings.fCycleDelta;
+    m_fTargetSyncOffset = defaultSettings.fTargetSyncOffset;
+    m_fControlLimit = defaultSettings.fControlLimit;
+
+    m_bResetToDefaults = true;
     UpdateData(FALSE);
+    GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(FALSE);
+    m_wndToolTip.UpdateTipText(ResStr(IDC_TEXTURESURF3D), GetDlgItem(IDC_DX_SURFACE));
     SetModified();
 }
 

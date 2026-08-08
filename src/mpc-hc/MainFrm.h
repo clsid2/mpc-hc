@@ -1114,7 +1114,6 @@ public:
     afx_msg void OnViewDisableDesktopComposition();
     afx_msg void OnViewAlternativeVSync();
     afx_msg void OnViewResetDefault();
-    afx_msg void OnViewResetOptimal();
 
     afx_msg void OnViewFullscreenGUISupport();
     afx_msg void OnViewHighColorResolution();

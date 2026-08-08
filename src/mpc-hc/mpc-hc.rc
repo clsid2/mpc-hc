@@ -892,7 +892,8 @@ BEGIN
     EDITTEXT        IDC_CONTROLLIMIT,161,245,48,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "ms",IDC_STATIC9,214,247,29,8
     LTEXT           "Changes take effect after the playback has been closed and restarted.",IDC_STATIC10,12,265,331,18
-    LTEXT           "More renderer settings are available in the Play menu",IDC_STATIC,12,296,331,8
+    LTEXT           "More renderer settings are available in the Play menu",IDC_STATIC,12,296,283,8
+    PUSHBUTTON      "Reset",IDC_RESET,299,293,50,14
 END
 
 IDD_PPAGEFULLSCREEN DIALOGEX 0, 0, 355, 289
@@ -1673,11 +1674,7 @@ BEGIN
                 MENUITEM "Flush GPU &after Present",    ID_VIEW_FLUSHGPU_AFTERPRESENT
                 MENUITEM "&Wait for flushes",           ID_VIEW_FLUSHGPU_WAIT
             END
-            POPUP "R&eset"
-            BEGIN
-                MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
-                MENUITEM "Reset to &optimal renderer settings", ID_VIEW_RESET_OPTIMAL
-            END
+            MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
         END
         POPUP "Video &Frame"
         BEGIN
@@ -2086,11 +2083,7 @@ BEGIN
                 MENUITEM "Flush GPU &after Present",    ID_VIEW_FLUSHGPU_AFTERPRESENT
                 MENUITEM "&Wait for flushes",           ID_VIEW_FLUSHGPU_WAIT
             END
-            POPUP "R&eset"
-            BEGIN
-                MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
-                MENUITEM "Reset to &optimal renderer settings", ID_VIEW_RESET_OPTIMAL
-            END
+            MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
         END
         MENUITEM "P&roperties",                 ID_FILE_PROPERTIES
         MENUITEM "&Options...",                 ID_VIEW_OPTIONS
@@ -2222,11 +2215,7 @@ BEGIN
                     MENUITEM "Flush GPU &after Present",    ID_VIEW_FLUSHGPU_AFTERPRESENT
                     MENUITEM "&Wait for flushes",           ID_VIEW_FLUSHGPU_WAIT
                 END
-                POPUP "R&eset"
-                BEGIN
-                    MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
-                    MENUITEM "Reset to &optimal renderer settings", ID_VIEW_RESET_OPTIMAL
-                END
+                MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
             END
             POPUP "Video &Frame"
             BEGIN
@@ -2439,11 +2428,7 @@ BEGIN
                 MENUITEM "Flush GPU &after Present",    ID_VIEW_FLUSHGPU_AFTERPRESENT
                 MENUITEM "&Wait for flushes",           ID_VIEW_FLUSHGPU_WAIT
             END
-            POPUP "R&eset"
-            BEGIN
-                MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
-                MENUITEM "Reset to &optimal renderer settings", ID_VIEW_RESET_OPTIMAL
-            END
+            MENUITEM "Reset to &default renderer settings", ID_VIEW_RESET_DEFAULT
         END
         MENUITEM "P&roperties",                 ID_FILE_PROPERTIES
         MENUITEM "&Options...",                 ID_VIEW_OPTIONS
@@ -3833,7 +3818,6 @@ BEGIN
     IDS_OSD_RS_ALT_VSYNC_ON "Alternative VSync: On"
     IDS_OSD_RS_ALT_VSYNC_OFF "Alternative VSync: Off"
     IDS_OSD_RS_RESET_DEFAULT "Renderer settings reset to default"
-    IDS_OSD_RS_RESET_OPTIMAL "Renderer settings reset to optimal"
     IDS_OSD_RS_D3D_FS_GUI_SUPP_ON "D3D Fullscreen GUI Support: On"
     IDS_OSD_RS_D3D_FS_GUI_SUPP_OFF "D3D Fullscreen GUI Support: Off"
     IDS_OSD_RS_10BIT_RBG_OUT_ON "10-bit RGB Output: On"
