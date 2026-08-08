@@ -742,6 +742,7 @@
 #define IDC_AUDRND_COMBO                22063
 #define IDC_VIDRND_SUPPORT_ICON         22064
 #define IDC_VIDRND_SUPPORT_NOTE         22101
+#define IDC_SYNC_GROUP                  22102
 #define IDC_VOLUMESTEP                  22073
 #define IDC_VOLUMESTEP_SPIN             22074
 #define IDC_SPEEDSTEP                   22075
@@ -1873,7 +1874,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20079
 #define _APS_NEXT_COMMAND_VALUE         33465
-#define _APS_NEXT_CONTROL_VALUE         22102
+#define _APS_NEXT_CONTROL_VALUE         22103
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

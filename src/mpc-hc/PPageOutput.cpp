@@ -407,6 +407,7 @@ void CPPageOutput::OpenVideoRendererSettings() {
     if (m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
             || m_iDSVideoRendererType == VIDRNDT_DS_SYNC) {
         CPPageVideoRenderer page;
+        page.SetRendererType(m_iDSVideoRendererType);
         CMPCThemePropertySheet dlg(IDS_PPAGE_OUTPUT_VIDEO_RENDERER_SETTINGS, this);
         dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
         dlg.AddPage(&page);

@@ -39,8 +39,12 @@ public:
 
     enum { IDD = IDD_PPAGEVIDEORENDERER };
 
+    void SetRendererType(int rendererType) { m_iRendererType = rendererType; }
+
 private:
     CStringArray m_D3D9GUIDNames;
+
+    int m_iRendererType;
 
     CMPCThemeComboBox m_iD3D9RenderDeviceCtrl;
     CMPCThemeComboBox m_APSurfaceUsageCtrl;
@@ -51,7 +55,6 @@ private:
     int m_iDX9Resizer;
     BOOL m_fVMR9MixerMode;
     BOOL m_fD3DFullscreen;
-    BOOL m_fVMR9AlterativeVSync;
     BOOL m_fResetDevice;
     BOOL m_fCacheShaders;
     CString m_iEvrBuffers;
