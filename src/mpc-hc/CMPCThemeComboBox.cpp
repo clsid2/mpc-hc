@@ -16,6 +16,7 @@ BEGIN_MESSAGE_MAP(CMPCThemeComboBox, CComboBox)
     ON_WM_LBUTTONDOWN()
     ON_WM_CREATE()
     ON_WM_ERASEBKGND()
+    ON_MESSAGE(CB_SETCURSEL, OnCbSetCurSel)
 END_MESSAGE_MAP()
 
 CMPCThemeComboBox::CMPCThemeComboBox()
@@ -277,6 +278,14 @@ int CMPCThemeComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CMPCThemeComboBox::OnEraseBkgnd(CDC* pDC) {
     return TRUE;
+}
+
+LRESULT CMPCThemeComboBox::OnCbSetCurSel(WPARAM wParam, LPARAM lParam) { //native repaint after CB_SETCURSEL bypasses our themed paint, so redraw ourselves
+    LRESULT ret = Default();
+    if (AppNeedsThemedControls()) {
+        RedrawWindow();
+    }
+    return ret;
 }
 
 int CMPCThemeComboBox::SetCurSel(int nSelect) { //note, this is NOT virtual, and only works for explicit subclass
