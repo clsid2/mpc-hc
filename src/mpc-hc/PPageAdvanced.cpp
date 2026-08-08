@@ -177,6 +177,7 @@ void CPPageAdvanced::InitSettings()
 
     addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_HISTORY));
     addIntItem(RECENT_FILES_NB, IDS_RS_RECENT_FILES_NUMBER, 100, s.iRecentFilesNumber, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_RECENT_FILES_NUMBER));
+    addIntItem(HISTORY_MAX_AGE_DAYS, IDS_RS_HISTORY_MAX_AGE_DAYS, 365, s.iHistoryMaxAgeDays, std::make_pair(0, 10000), L"Automatically remove entries older than this number of days from the recent files history. Set to 0 to disable age-based cleanup.");
     addIntItem(FILE_POS_LONGER, IDS_RS_FILEPOSLONGER, 5, s.iRememberPosForLongerThan, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_FILE_POS_LONGER));
     addBoolItem(FILE_POS_AUDIO, IDS_RS_FILEPOSAUDIO, true, s.bRememberPosForAudioFiles, StrRes(IDS_PPAGEADVANCED_FILE_POS_AUDIO));
     addBoolItem(FILE_POS_PLAYLIST, IDS_RS_FILEPOS_PLAYLIST, true, s.bRememberExternalPlaylistPos, StrRes(IDS_PPAGEADVANCED_FILEPOS_PLAYLIST));
@@ -221,6 +222,7 @@ void CPPageAdvanced::InitSettings()
 BOOL CPPageAdvanced::OnApply()
 {
     auto& s = AfxGetAppSettings();
+    int oldHistoryMaxAgeDays = s.iHistoryMaxAgeDays;
 
     for (int i = 0; i < m_list.GetItemCount(); i++) {
         if (IsHeaderRow(i)) {
@@ -231,6 +233,10 @@ BOOL CPPageAdvanced::OnApply()
     }
 
     s.MRU.SetSize(s.iRecentFilesNumber);
+    if (s.iHistoryMaxAgeDays != oldHistoryMaxAgeDays && s.iHistoryMaxAgeDays > 0) {
+        s.MRU.rfe_last_added = 0; // force reload so the new age limit is applied immediately
+        s.MRU.ReadMediaHistory();
+    }
 
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     if (!s.bEnableCrashReporter && CrashReporter::IsEnabled()) {

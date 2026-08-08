@@ -71,6 +71,7 @@ CAppSettings::CAppSettings()
     , fTitleBarTextTitle(false)
     , fKeepHistory(true)
     , iRecentFilesNumber(100)
+    , iHistoryMaxAgeDays(365)
     , sHistoryExcludeFilter()
     , sHistoryExcludeFilterPrivate()
     , MRU(L"MediaHistory", iRecentFilesNumber)
@@ -1013,6 +1014,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ASPECTRATIO_Y, sizeAspectRatio.cy);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_KEEPHISTORY, fKeepHistory);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_RECENT_FILES_NUMBER, iRecentFilesNumber);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_MAX_AGE_DAYS, iHistoryMaxAgeDays);
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER, sHistoryExcludeFilter);
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER_PRIVATE, sHistoryExcludeFilterPrivate);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, iDSVideoRendererType);
@@ -1851,6 +1853,7 @@ void CAppSettings::LoadSettings()
     fKeepHistory = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_KEEPHISTORY, TRUE);
     fileAssoc.SetNoRecentDocs(!fKeepHistory);
     iRecentFilesNumber = std::max(0, (int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_RECENT_FILES_NUMBER, 100));
+    iHistoryMaxAgeDays = std::max(0, (int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_MAX_AGE_DAYS, 365));
     MRU.SetSize(iRecentFilesNumber);
     sHistoryExcludeFilter = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""));
     sHistoryExcludeFilterPrivate = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_HISTORY_EXCLUDE_FILTER_PRIVATE, _T(""));
@@ -3590,12 +3593,21 @@ void CAppSettings::CRecentFileListWithMoreInfo::ReadMediaHistory() {
 
     auto timeToHash = CAppSettings::LoadHistoryHashes(m_section, L"LastOpened");
 
+    // lastOpened timestamps are ISO 8601, so they can be compared as strings
+    CStringW cutoff;
+    int maxAgeDays = AfxGetAppSettings().iHistoryMaxAgeDays;
+    if (maxsize > 0 && maxAgeDays > 0) {
+        auto cutoffTime = std::chrono::system_clock::now() - std::chrono::hours(24) * maxAgeDays;
+        auto cutoffISO = date::format<wchar_t>(L"%FT%TZ", date::floor<std::chrono::milliseconds>(cutoffTime));
+        cutoff = cutoffISO.c_str();
+    }
+
     rfe_array.RemoveAll();
     int entries = 0;
     for (auto iter = timeToHash.rbegin(); iter != timeToHash.rend(); ++iter) {
         bool purge_rfe = true;
         CStringW hash = iter->second;
-        if (entries < maxsize) {
+        if (entries < maxsize && (cutoff.IsEmpty() || iter->first >= cutoff)) {
             RecentFileEntry r;
             r.lastOpened = iter->first;
             if (LoadMediaHistoryEntry(hash, r)) {
