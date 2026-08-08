@@ -1425,7 +1425,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
 
 void CAppSettings::PurgeMediaHistory(size_t maxsize) {
     CStringW section = L"MediaHistory";
-    auto timeToHash = LoadHistoryHashes(section, L"LastUpdated");
+    auto timeToHash = LoadHistoryHashes(section, L"LastOpened");
     size_t entries = timeToHash.size();
     if (entries > maxsize) {
         for (auto iter = timeToHash.rbegin(); iter != timeToHash.rend(); ++iter) {
