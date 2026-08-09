@@ -19,6 +19,7 @@
 #define ERAR_MISSING_PASSWORD   22
 #define ERAR_EREFERENCE         23
 #define ERAR_BAD_PASSWORD       24
+#define ERAR_LARGE_DICT         25
 
 #define RAR_OM_LIST              0
 #define RAR_OM_EXTRACT           1
@@ -31,7 +32,7 @@
 #define RAR_VOL_ASK           0
 #define RAR_VOL_NOTIFY        1
 
-#define RAR_DLL_VERSION       8
+#define RAR_DLL_VERSION      10
 
 #define RAR_HASH_NONE         0
 #define RAR_HASH_CRC32        1
@@ -108,7 +109,11 @@ struct RARHeaderDataEx
   unsigned int CtimeHigh;
   unsigned int AtimeLow;
   unsigned int AtimeHigh;
-  unsigned int Reserved[988];
+  wchar_t      *ArcNameEx;
+  unsigned int ArcNameExSize;
+  wchar_t      *FileNameEx;
+  unsigned int FileNameExSize;
+  unsigned int Reserved[982];
 };
 
 
@@ -135,7 +140,8 @@ typedef int (CALLBACK *UNRARCALLBACK)(UINT msg,LPARAM UserData,LPARAM P1,LPARAM 
 #define ROADF_ENCHEADERS   0x0080
 #define ROADF_FIRSTVOLUME  0x0100
 
-#define ROADOF_KEEPBROKEN  0x0001
+#define ROADOF_KEEPBROKEN  0x0001 // Preserve extracted files with checksum errors.
+#define ROADOF_SHARED      0x0002 // Open an archive in shared mode.
 
 struct RAROpenArchiveDataEx
 {
@@ -152,12 +158,13 @@ struct RAROpenArchiveDataEx
   LPARAM        UserData;
   unsigned int  OpFlags;
   wchar_t      *CmtBufW;
-  unsigned int  Reserved[25];
+  wchar_t      *MarkOfTheWeb;
+  unsigned int  Reserved[23];
 };
 
 enum UNRARCALLBACK_MESSAGES {
   UCM_CHANGEVOLUME,UCM_PROCESSDATA,UCM_NEEDPASSWORD,UCM_CHANGEVOLUMEW,
-  UCM_NEEDPASSWORDW
+  UCM_NEEDPASSWORDW,UCM_LARGEDICT
 };
 
 typedef int (PASCAL *CHANGEVOLPROC)(char *ArcName,int Mode);

@@ -77,6 +77,12 @@
     <ClCompile Include="isnt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="largepage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="motw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -169,7 +175,10 @@
     <ClInclude Include="archive.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="array.hpp">
+    <ClInclude Include="largepage.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="motw.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="blake2s.hpp">

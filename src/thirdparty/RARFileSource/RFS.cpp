@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2008-2012, OctaneSnail <os@v12pwr.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,49 @@
 #include "Anchor.h"
 #include "resource.h"
 #include "Mediatype.h"
+
+// unrar 7.x removed GetVolNumPart() from pathfn.cpp; this is a local copy of
+// the old implementation. Returns a pointer to the last digit of the volume
+// number part inside ArcName.
+static wchar* RfsGetVolNumPart(const wchar *ArcName)
+{
+  // We do not want to increment any characters in path component.
+  for (const wchar *s=ArcName; *s!=0; s++)
+    if (*s=='\\' || *s=='/')
+      ArcName=s+1;
+
+  if (*ArcName==0)
+    return (wchar *)ArcName;
+
+  // Pointing to last name character.
+  const wchar *ChPtr=ArcName+wcslen(ArcName)-1;
+
+  // Skipping the archive extension.
+  while (!IsDigit(*ChPtr) && ChPtr>ArcName)
+    ChPtr--;
+
+  // Skipping the numeric part of name.
+  const wchar *NumPtr=ChPtr;
+  while (IsDigit(*NumPtr) && NumPtr>ArcName)
+    NumPtr--;
+
+  // Searching for first numeric part in names like name.part##of##.rar.
+  // Stop search on the first dot.
+  while (NumPtr>ArcName && *NumPtr!='.')
+  {
+    if (IsDigit(*NumPtr))
+    {
+      // Validate the first numeric part only if it has a dot somewhere
+      // before it.
+      const wchar *Dot=wcschr(ArcName,'.');
+      if (Dot!=NULL && Dot<NumPtr)
+        ChPtr=NumPtr;
+      break;
+    }
+    NumPtr--;
+  }
+  return (wchar *)ChPtr;
+}
 #include "File.h"
 
 
@@ -304,7 +347,7 @@ HRESULT CRARFileSource::ScanArchive(wchar_t* archive_name, CRFSList<CRFSFile>* f
 
         if (!redirectedToFirstVolume && !rarArchive.FirstVolume) {
             if (rarArchive.NewNumbering && nullptr != wcsstr(archive_name,L".part")) { //verify ".part" exists in case the files have been renamed
-                wchar* Num = GetVolNumPart(archive_name); //last digit of vol num
+                wchar* Num = RfsGetVolNumPart(archive_name); //last digit of vol num
 
                 uint VolNum = 0;
                 for (uint K = 1; Num >= archive_name && IsDigit(*Num); K *= 10, Num--) {
@@ -355,12 +398,12 @@ HRESULT CRARFileSource::ScanArchive(wchar_t* archive_name, CRFSList<CRFSFile>* f
 
             file->media_type.SetType(&MEDIATYPE_Stream);
             file->media_type.SetSubtype(&MEDIASUBTYPE_NULL);
-            wchar_t* fname = new wchar_t[wcslen(rarArchive.FileHead.FileName) + 1];
-            wcscpy(fname, rarArchive.FileHead.FileName);
+            wchar_t* fname = new wchar_t[rarArchive.FileHead.FileName.size() + 1];
+            wcscpy(fname, rarArchive.FileHead.FileName.c_str());
             file->filename = fname;
             file->size = rarArchive.FileHead.UnpSize;
-            wchar_t* rfname = new wchar_t[wcslen(rarArchive.FileName) + 1];
-            wcscpy(rfname, rarArchive.FileName);
+            wchar_t* rfname = new wchar_t[rarArchive.FileName.size() + 1];
+            wcscpy(rfname, rarArchive.FileName.c_str());
             file->rarFilename = rfname;
             file->startingBlockPos = rarArchive.CurBlockPos;
             (*files_found)++;

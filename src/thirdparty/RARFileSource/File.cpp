@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2008-2012, OctaneSnail <os@v12pwr.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,17 +22,19 @@
 #include "Utils.h"
 #include "unrar/rar.hpp"
 
-size_t UnstoreFile(ComprDataIO &DataIO, Array<byte>& output) {
-    size_t bufSize = output.Size() > File::CopyBufferSize() ? File::CopyBufferSize() : output.Size();
-    Array<byte> Buffer(bufSize);
+#include <vector>
+
+size_t UnstoreFile(ComprDataIO &DataIO, std::vector<byte>& output) {
+    size_t bufSize = output.size() > File::CopyBufferSize() ? File::CopyBufferSize() : output.size();
+    std::vector<byte> Buffer(bufSize);
     size_t totalRead = 0;
-    while (totalRead < output.Size()) {
-        int ReadSize = DataIO.UnpRead(&Buffer[0], Buffer.Size());
+    while (totalRead < output.size()) {
+        int ReadSize = DataIO.UnpRead(&Buffer[0], Buffer.size());
         if (ReadSize <= 0)
             break;
         if (ReadSize > 0) {
-            if (ReadSize + totalRead > output.Size()) { //even though it never happens, ensure memcpy cannot copy beyond size of output
-                ReadSize = output.Size() - totalRead;
+            if (ReadSize + totalRead > output.size()) { //even though it never happens, ensure memcpy cannot copy beyond size of output
+                ReadSize = output.size() - totalRead;
             }
             memcpy(&output[totalRead], &Buffer[0], ReadSize);
             totalRead += ReadSize;
@@ -72,8 +74,8 @@ bool ExtractCurrentFile(CmdExtract *cmdExtract, Archive &Arc, int64 extractStart
   if (Arc.FileHead.UnpSize<0)
     Arc.FileHead.UnpSize=0;
 
-  wchar ArcFileName[NM];
-  ConvertPath(Arc.FileHead.FileName,ArcFileName,ASIZE(ArcFileName));
+  std::wstring ArcFileName;
+  ConvertPath(&Arc.FileHead.FileName,&ArcFileName);
 
   DataIO.UnpVolume=Arc.FileHead.SplitAfter;
   DataIO.NextVolumeMissing=false;
@@ -118,7 +120,7 @@ bool ExtractCurrentFile(CmdExtract *cmdExtract, Archive &Arc, int64 extractStart
         } else {
           readSize = lastByte - curOffset + 1;
         }
-        Array<byte> output(readSize);
+        std::vector<byte> output(readSize);
         size_t bytesRead = UnstoreFile(DataIO, output);
         if (bytesRead < 0) return false;
         memcpy(&pBuffer[curOffset-extractStartOffset], &output[0], bytesRead);

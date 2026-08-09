@@ -22,7 +22,9 @@ DWORD WinNT()
   return Result;
 }
 
-
+// Since Windows 10 development is stopped, we can assume that its build
+// number never reaches 22000. So we do not need WMI anymore.
+#if 0
 // Replace it with documented Windows 11 check when available.
 #include <comdef.h>
 #include <Wbemidl.h>
@@ -40,7 +42,7 @@ static bool WMI_IsWindows10()
 
   IWbemServices *pSvc = NULL;
  
-  hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"),NULL,NULL,NULL,NULL,0,0,&pSvc);
+  hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"),NULL,NULL,NULL,0,NULL,NULL,&pSvc);
     
   if (FAILED(hres))
   {
@@ -62,30 +64,24 @@ static bool WMI_IsWindows10()
   hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t("SELECT * FROM Win32_OperatingSystem"),
          WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
     
-  if (FAILED(hres))
+  if (FAILED(hres) || pEnumerator==NULL)
   {
     pSvc->Release();
     pLoc->Release();
     return false;
   }
 
+  bool Win10=false;
+
   IWbemClassObject *pclsObj = NULL;
   ULONG uReturn = 0;
-   
-  bool Win10=false;
-  while (pEnumerator!=NULL)
+  pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+  if (pclsObj!=NULL && uReturn>0)
   {
-    HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-
-    if (uReturn==0)
-      break;
-
     VARIANT vtProp;
-
-    hr = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
+    pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
     Win10|=wcsstr(vtProp.bstrVal,L"Windows 10")!=NULL;
     VariantClear(&vtProp);
-
     pclsObj->Release();
   }
 
@@ -95,6 +91,7 @@ static bool WMI_IsWindows10()
 
   return Win10;
 }
+#endif
 
 
 // Replace it with actual check when available.
@@ -107,7 +104,7 @@ bool IsWindows11OrGreater()
     WinVer.dwOSVersionInfoSize=sizeof(WinVer);
     GetVersionEx(&WinVer);
     IsWin11=WinVer.dwMajorVersion>10 || 
-          WinVer.dwMajorVersion==10 && WinVer.dwBuildNumber >= 22000 && !WMI_IsWindows10();
+          WinVer.dwMajorVersion==10 && WinVer.dwBuildNumber >= 22000/* && !WMI_IsWindows10()*/;
     IsSet=true;
   }
   return IsWin11;

@@ -3,7 +3,6 @@
 File::File()
 {
   hFile=FILE_BAD_HANDLE;
-  *FileName=0;
   NewFile=false;
   LastWrite=false;
   HandleType=FILE_HANDLENORMAL;
@@ -15,7 +14,7 @@ File::File()
   AllowExceptions=false; // MPC-HC
   PreserveAtime=false;
 #ifdef _WIN_ALL
-  CreateMode=FMF_UNDEFINED;
+  // CreateMode=FMF_UNDEFINED;
 #endif
   ReadErrorMode=FREM_ASK;
   TruncatedAfterReadError=false;
@@ -40,12 +39,12 @@ void File::operator = (File &SrcFile)
   LastWrite=SrcFile.LastWrite;
   HandleType=SrcFile.HandleType;
   TruncatedAfterReadError=SrcFile.TruncatedAfterReadError;
-  wcsncpyz(FileName,SrcFile.FileName,ASIZE(FileName));
+  FileName=SrcFile.FileName;
   SrcFile.SkipClose=true;
 }
 
 
-bool File::Open(const wchar *Name,uint Mode)
+bool File::Open(const std::wstring &Name,uint Mode)
 {
   ErrorType=FILE_SUCCESS;
   FileHandle hNewFile;
@@ -63,17 +62,17 @@ bool File::Open(const wchar *Name,uint Mode)
   FindData FD;
   if (PreserveAtime)
     Access|=FILE_WRITE_ATTRIBUTES; // Needed to preserve atime.
-  hNewFile=CreateFile(Name,Access,ShareMode,NULL,OPEN_EXISTING,Flags,NULL);
+  hNewFile=CreateFile(Name.c_str(),Access,ShareMode,NULL,OPEN_EXISTING,Flags,NULL);
 
   DWORD LastError;
   if (hNewFile==FILE_BAD_HANDLE)
   {
     LastError=GetLastError();
 
-    wchar LongName[NM];
-    if (GetWinLongPath(Name,LongName,ASIZE(LongName)))
+    std::wstring LongName;
+    if (GetWinLongPath(Name,LongName))
     {
-      hNewFile=CreateFile(LongName,Access,ShareMode,NULL,OPEN_EXISTING,Flags,NULL);
+      hNewFile=CreateFile(LongName.c_str(),Access,ShareMode,NULL,OPEN_EXISTING,Flags,NULL);
 
       // For archive names longer than 260 characters first CreateFile
       // (without \\?\) fails and sets LastError to 3 (access denied).
@@ -101,6 +100,12 @@ bool File::Open(const wchar *Name,uint Mode)
 
 #else
   int flags=UpdateMode ? O_RDWR:(WriteMode ? O_WRONLY:O_RDONLY);
+
+  // 2025.06.09: We can't just set O_DIRECT for Unix like we set
+  // FILE_FLAG_SEQUENTIAL_SCAN for Windows to minimize disk caching.
+  // O_DIRECT might impose alignment requirements for data size, data address
+  // and file offset. Also it might not be supported by some file systems
+  // and fail with an error.
 #ifdef O_BINARY
   flags|=O_BINARY;
 #if defined(_AIX) && defined(_LARGE_FILE_API)
@@ -112,10 +117,10 @@ bool File::Open(const wchar *Name,uint Mode)
   if (PreserveAtime)
     flags|=O_NOATIME;
 #endif
-  char NameA[NM];
-  WideToChar(Name,NameA,ASIZE(NameA));
+  std::string NameA;
+  WideToChar(Name,NameA);
 
-  int handle=open(NameA,flags);
+  int handle=open(NameA.c_str(),flags);
 #ifdef LOCK_EX
 
 #ifdef _OSF_SOURCE
@@ -148,7 +153,7 @@ bool File::Open(const wchar *Name,uint Mode)
   if (Success)
   {
     hFile=hNewFile;
-    wcsncpyz(FileName,Name,ASIZE(FileName));
+    FileName=Name;
     TruncatedAfterReadError=false;
   }
   return Success;
@@ -156,7 +161,7 @@ bool File::Open(const wchar *Name,uint Mode)
 
 
 #if !defined(SFX_MODULE)
-void File::TOpen(const wchar *Name)
+void File::TOpen(const std::wstring &Name)
 {
   if (!WOpen(Name))
     ErrHandler.Exit(RARX_OPEN);
@@ -164,7 +169,7 @@ void File::TOpen(const wchar *Name)
 #endif
 
 
-bool File::WOpen(const wchar *Name)
+bool File::WOpen(const std::wstring &Name)
 {
   if (Open(Name))
     return true;
@@ -173,8 +178,9 @@ bool File::WOpen(const wchar *Name)
 }
 
 
-bool File::Create(const wchar *Name,uint Mode)
+bool File::Create(const std::wstring &Name,uint Mode)
 {
+  // 2025.09.03: Likely outdated info, see https://www.illumos.org/issues/2000
   // OpenIndiana based NAS and CIFS shares fail to set the file time if file
   // was created in read+write mode and some data was written and not flushed
   // before SetFileTime call. So we should use the write only mode if we plan
@@ -182,46 +188,46 @@ bool File::Create(const wchar *Name,uint Mode)
   bool WriteMode=(Mode & FMF_WRITE)!=0;
   bool ShareRead=(Mode & FMF_SHAREREAD)!=0 || File::OpenShared;
 #ifdef _WIN_ALL
-  CreateMode=Mode;
+  // CreateMode=Mode;
   uint Access=WriteMode ? GENERIC_WRITE:GENERIC_READ|GENERIC_WRITE;
   DWORD ShareMode=ShareRead ? FILE_SHARE_READ:0;
 
   // Windows automatically removes dots and spaces in the end of file name,
   // So we detect such names and process them with \\?\ prefix.
-  wchar *LastChar=PointToLastChar(Name);
-  bool Special=*LastChar=='.' || *LastChar==' ';
+  wchar LastChar=GetLastChar(Name);
+  bool Special=LastChar=='.' || LastChar==' ';
   
   if (Special && (Mode & FMF_STANDARDNAMES)==0)
     hFile=FILE_BAD_HANDLE;
   else
-    hFile=CreateFile(Name,Access,ShareMode,NULL,CREATE_ALWAYS,0,NULL);
+    hFile=CreateFile(Name.c_str(),Access,ShareMode,NULL,CREATE_ALWAYS,0,NULL);
 
   if (hFile==FILE_BAD_HANDLE)
   {
-    wchar LongName[NM];
-    if (GetWinLongPath(Name,LongName,ASIZE(LongName)))
-      hFile=CreateFile(LongName,Access,ShareMode,NULL,CREATE_ALWAYS,0,NULL);
+    std::wstring LongName;
+    if (GetWinLongPath(Name,LongName))
+      hFile=CreateFile(LongName.c_str(),Access,ShareMode,NULL,CREATE_ALWAYS,0,NULL);
   }
 
 #else
-  char NameA[NM];
-  WideToChar(Name,NameA,ASIZE(NameA));
 #ifdef FILE_USE_OPEN
-  hFile=open(NameA,(O_CREAT|O_TRUNC) | (WriteMode ? O_WRONLY : O_RDWR),0666);
+  std::string NameA;
+  WideToChar(Name,NameA);
+  hFile=open(NameA.c_str(),(O_CREAT|O_TRUNC) | (WriteMode ? O_WRONLY : O_RDWR),0666);
 #else
-  hFile=fopen(NameA,WriteMode ? WRITEBINARY:CREATEBINARY);
+  hFile=fopen(NameA.c_str(),WriteMode ? WRITEBINARY:CREATEBINARY);
 #endif
 #endif
   NewFile=true;
   HandleType=FILE_HANDLENORMAL;
   SkipClose=false;
-  wcsncpyz(FileName,Name,ASIZE(FileName));
+  FileName=Name;
   return hFile!=FILE_BAD_HANDLE;
 }
 
 
 #if !defined(SFX_MODULE)
-void File::TCreate(const wchar *Name,uint Mode)
+void File::TCreate(const std::wstring &Name,uint Mode)
 {
   if (!WCreate(Name,Mode))
     ErrHandler.Exit(RARX_FATAL);
@@ -229,7 +235,7 @@ void File::TCreate(const wchar *Name,uint Mode)
 #endif
 
 
-bool File::WCreate(const wchar *Name,uint Mode)
+bool File::WCreate(const std::wstring &Name,uint Mode)
 {
   if (Create(Name,Mode))
     return true;
@@ -250,7 +256,7 @@ bool File::Close()
       // We use the standard system handle for stdout in Windows
       // and it must not be closed here.
       if (HandleType==FILE_HANDLENORMAL)
-        Success=CloseHandle(hFile)==TRUE;
+        Success=CloseHandle(hFile)!=FALSE;
 #else
 #ifdef FILE_USE_OPEN
       Success=close(hFile)!=-1;
@@ -280,16 +286,16 @@ bool File::Delete()
 }
 
 
-bool File::Rename(const wchar *NewName)
+bool File::Rename(const std::wstring &NewName)
 {
   // No need to rename if names are already same.
-  bool Success=wcscmp(FileName,NewName)==0;
+  bool Success=(NewName==FileName);
 
   if (!Success)
     Success=RenameFile(FileName,NewName);
 
   if (Success)
-    wcsncpyz(FileName,NewName,ASIZE(FileName));
+    FileName=NewName;
 
   return Success;
 }
@@ -327,13 +333,13 @@ bool File::Write(const void *Data,size_t Size)
       const size_t MaxSize=0x4000;
       for (size_t I=0;I<Size;I+=MaxSize)
       {
-        Success=WriteFile(hFile,(byte *)Data+I,(DWORD)Min(Size-I,MaxSize),&Written,NULL)==TRUE;
+        Success=WriteFile(hFile,(byte *)Data+I,(DWORD)Min(Size-I,MaxSize),&Written,NULL)!=FALSE;
         if (!Success)
           break;
       }
     }
     else
-      Success=WriteFile(hFile,Data,(DWORD)Size,&Written,NULL)==TRUE;
+      Success=WriteFile(hFile,Data,(DWORD)Size,&Written,NULL)!=FALSE;
 #else
 #ifdef FILE_USE_OPEN
     ssize_t Written=write(hFile,Data,Size);
@@ -362,7 +368,7 @@ bool File::Write(const void *Data,size_t Size)
           Seek(Tell()-Written,SEEK_SET);
         continue;
       }
-      ErrHandler.WriteError(NULL,FileName);
+      ErrHandler.WriteError(L"",FileName);
     }
     break;
   }
@@ -405,7 +411,7 @@ int File::Read(void *Data,size_t Size)
         else
         {
           bool Ignore=false,Retry=false,Quit=false;
-          if (ReadErrorMode==FREM_ASK && HandleType==FILE_HANDLENORMAL)
+          if (ReadErrorMode==FREM_ASK && HandleType==FILE_HANDLENORMAL && IsOpened())
           {
             ErrHandler.AskRepeatRead(FileName,Ignore,Retry,Quit);
             if (Retry)
@@ -646,7 +652,7 @@ void File::PutByte(byte Byte)
 bool File::Truncate()
 {
 #ifdef _WIN_ALL
-  return SetEndOfFile(hFile)==TRUE;
+  return SetEndOfFile(hFile)!=FALSE;
 #else
   return ftruncate(GetFD(),(off_t)Tell())==0;
 #endif
@@ -672,8 +678,10 @@ void File::SetOpenFileTime(RarTime *ftm,RarTime *ftc,RarTime *fta)
   // Workaround for OpenIndiana NAS time bug. If we cannot create a file
   // in write only mode, we need to flush the write buffer before calling
   // SetFileTime or file time will not be changed.
-  if (CreateMode!=FMF_UNDEFINED && (CreateMode & FMF_WRITE)==0)
-    FlushFileBuffers(hFile);
+  // 2025.09.03: Removed this code as likely redundant now,
+  // see https://www.illumos.org/issues/2000
+  // if (CreateMode!=FMF_UNDEFINED && (CreateMode & FMF_WRITE)==0)
+  //  FlushFileBuffers(hFile);
 
   bool sm=ftm!=NULL && ftm->IsSet();
   bool sc=ftc!=NULL && ftc->IsSet();
@@ -704,15 +712,15 @@ void File::SetCloseFileTime(RarTime *ftm,RarTime *fta)
 }
 
 
-void File::SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta)
+void File::SetCloseFileTimeByName(const std::wstring &Name,RarTime *ftm,RarTime *fta)
 {
 #ifdef _UNIX
   bool setm=ftm!=NULL && ftm->IsSet();
   bool seta=fta!=NULL && fta->IsSet();
   if (setm || seta)
   {
-    char NameA[NM];
-    WideToChar(Name,NameA,ASIZE(NameA));
+    std::string NameA;
+    WideToChar(Name,NameA);
 
 #ifdef UNIX_TIME_NS
     timespec times[2];
@@ -720,7 +728,7 @@ void File::SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta)
     times[0].tv_nsec=seta ? long(fta->GetUnixNS()%1000000000) : UTIME_NOW;
     times[1].tv_sec=setm ? ftm->GetUnix() : 0;
     times[1].tv_nsec=setm ? long(ftm->GetUnixNS()%1000000000) : UTIME_NOW;
-    utimensat(AT_FDCWD,NameA,times,0);
+    utimensat(AT_FDCWD,NameA.c_str(),times,0);
 #else
     utimbuf ut;
     if (setm)
@@ -731,7 +739,7 @@ void File::SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta)
       ut.actime=fta->GetUnix();
     else
       ut.actime=ut.modtime; // Need to set something, cannot left it 0.
-    utime(NameA,&ut);
+    utime(NameA.c_str(),&ut);
 #endif
   }
 #endif
@@ -802,15 +810,23 @@ bool File::IsDevice()
 #ifndef SFX_MODULE
 int64 File::Copy(File &Dest,int64 Length)
 {
-  Array<byte> Buffer(File::CopyBufferSize());
-  int64 CopySize=0;
   bool CopyAll=(Length==INT64NDF);
+
+  // Adjust the buffer size to data size. So we do not waste too much time
+  // to vector initialization when copying many small data blocks like
+  // when updating an archive with many small files.
+  size_t BufSize=File::CopyBufferSize();
+  if (!CopyAll && Length<(int64)BufSize)
+    BufSize=(size_t)Length;
+
+  std::vector<byte> Buffer(BufSize);
+  int64 CopySize=0;
 
   while (CopyAll || Length>0)
   {
     Wait();
-    size_t SizeToRead=(!CopyAll && Length<(int64)Buffer.Size()) ? (size_t)Length:Buffer.Size();
-    byte *Buf=&Buffer[0];
+    size_t SizeToRead=(!CopyAll && Length<(int64)Buffer.size()) ? (size_t)Length:Buffer.size();
+    byte *Buf=Buffer.data();
     int ReadSize=Read(Buf,SizeToRead);
     if (ReadSize==0)
       break;

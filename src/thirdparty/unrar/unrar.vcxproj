@@ -69,8 +69,10 @@
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="headers.cpp" />
     <ClCompile Include="isnt.cpp" />
+    <ClCompile Include="largepage.cpp" />
     <ClCompile Include="list.cpp" />
     <ClCompile Include="match.cpp" />
+    <ClCompile Include="motw.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="pathfn.cpp" />
     <ClCompile Include="qopen.cpp" />
@@ -103,7 +105,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="archive.hpp" />
-    <ClInclude Include="array.hpp" />
     <ClInclude Include="blake2s.hpp" />
     <ClInclude Include="cmddata.hpp" />
     <ClInclude Include="coder.hpp" />
@@ -127,6 +128,8 @@
     <ClInclude Include="headers.hpp" />
     <ClInclude Include="headers5.hpp" />
     <ClInclude Include="isnt.hpp" />
+    <ClInclude Include="largepage.hpp" />
+    <ClInclude Include="motw.hpp" />
     <ClInclude Include="list.hpp" />
     <ClInclude Include="loclang.hpp" />
     <ClInclude Include="log.hpp" />

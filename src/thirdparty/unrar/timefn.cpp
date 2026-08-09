@@ -71,46 +71,33 @@ void RarTime::SetLocal(RarLocalTime *lt)
 {
 #ifdef _WIN_ALL
   SYSTEMTIME st;
-  st.wYear=lt->Year;
-  st.wMonth=lt->Month;
-  st.wDay=lt->Day;
-  st.wHour=lt->Hour;
-  st.wMinute=lt->Minute;
-  st.wSecond=lt->Second;
+  st.wYear=(WORD)lt->Year;
+  st.wMonth=(WORD)lt->Month;
+  st.wDay=(WORD)lt->Day;
+  st.wHour=(WORD)lt->Hour;
+  st.wMinute=(WORD)lt->Minute;
+  st.wSecond=(WORD)lt->Second;
   st.wMilliseconds=0;
   st.wDayOfWeek=0;
-  FILETIME lft;
-  if (SystemTimeToFileTime(&st,&lft))
+
+  FILETIME ft;
+  if (WinNT() < WNT_VISTA)
   {
-    FILETIME ft;
-
-    if (WinNT() < WNT_VISTA)
-    {
-      // TzSpecificLocalTimeToSystemTime based code produces 1 hour error on XP.
-      LocalFileTimeToFileTime(&lft,&ft);
-    }
-    else
-    {
-      // Reverse procedure which we do in GetLocal.
-      SYSTEMTIME st1,st2;
-      FileTimeToSystemTime(&lft,&st2); // st2 might be unequal to st, because we added lt->Reminder to lft.
-      TzSpecificLocalTimeToSystemTime(NULL,&st2,&st1);
-      SystemTimeToFileTime(&st1,&ft);
-
-      // Correct precision loss (low 4 decimal digits) in FileTimeToSystemTime.
-      FILETIME rft;
-      SystemTimeToFileTime(&st2,&rft);
-      uint64 Corrected=INT32TO64(lft.dwHighDateTime,lft.dwLowDateTime)-
-                       INT32TO64(rft.dwHighDateTime,rft.dwLowDateTime)+
-                       INT32TO64(ft.dwHighDateTime,ft.dwLowDateTime);
-      ft.dwLowDateTime=(DWORD)Corrected;
-      ft.dwHighDateTime=(DWORD)(Corrected>>32);
-    }
-
-    SetWinFT(&ft);
+    // TzSpecificLocalTimeToSystemTime based code produces 1 hour error on XP.
+    FILETIME lft;
+    SystemTimeToFileTime(&st,&lft);
+    LocalFileTimeToFileTime(&lft,&ft);
   }
   else
-    Reset();
+  {
+    // Reverse procedure which we do in GetLocal.
+    SYSTEMTIME st1;
+    TzSpecificLocalTimeToSystemTime(NULL,&st,&st1);
+    SystemTimeToFileTime(&st1,&ft);
+  }
+
+  SetWinFT(&ft);
+
 #else
   struct tm t;
 
@@ -183,8 +170,7 @@ void RarTime::SetUnix(time_t ut)
 // Get the high precision Unix time in nanoseconds since 01-01-1970.
 uint64 RarTime::GetUnixNS()
 {
-  // 11644473600000000000 - number of ns between 01-01-1601 and 01-01-1970.
-  uint64 ushift=INT32TO64(0xA1997B0B,0x4C6A0000);
+  const uint64 ushift=11644473600000000000ULL; // ns between 01-01-1601 and 01-01-1970.
   return itime*(1000000000/TICKS_PER_SECOND)-ushift;
 }
 
@@ -192,8 +178,7 @@ uint64 RarTime::GetUnixNS()
 // Set the high precision Unix time in nanoseconds since 01-01-1970.
 void RarTime::SetUnixNS(uint64 ns)
 {
-  // 11644473600000000000 - number of ns between 01-01-1601 and 01-01-1970.
-  uint64 ushift=INT32TO64(0xA1997B0B,0x4C6A0000);
+  const uint64 ushift=11644473600000000000ULL; // ns between 01-01-1601 and 01-01-1970.
   itime=(ns+ushift)/(1000000000/TICKS_PER_SECOND);
 }
 
@@ -327,14 +312,14 @@ void RarTime::Adjust(int64 ns)
 
 
 #ifndef SFX_MODULE
-const wchar *GetMonthName(int Month)
+const wchar *GetMonthName(uint Month)
 {
   return uiGetMonthName(Month);
 }
 #endif
 
 
-bool IsLeapYear(int Year)
+bool IsLeapYear(uint Year)
 {
   return (Year&3)==0 && (Year%100!=0 || Year%400==0);
 }
