@@ -262,8 +262,11 @@ STDMETHODIMP CMemSubPic::Unlock(RECT* pDirtyRect)
             m_pAllocator->AllocSpdBits(*m_resizedSpd);
         }
 
-        BitBltFromRGBToRGBStretch(m_resizedSpd->w, m_resizedSpd->h, m_resizedSpd->bits, m_resizedSpd->pitch, m_resizedSpd->bpp
-                                  , m_spd.w, m_spd.h, m_spd.bits, m_spd.pitch, m_spd.bpp);
+        // Straight (non-premultiplied) data: resize the four channels
+        // independently, matching the former VDPixmapResample XRGB behavior.
+        stbir_resize(m_spd.bits, m_spd.w, m_spd.h, m_spd.pitch,
+                     m_resizedSpd->bits, m_resizedSpd->w, m_resizedSpd->h, m_resizedSpd->pitch,
+                     STBIR_4CHANNEL, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_CATMULLROM);
         TRACE("CMemSubPic: Resized SubPic %dx%d -> %dx%d\n", m_spd.w, m_spd.h, r.Width(), r.Height());
 
         // Set whole resized spd as dirty, we are not going to reuse it.

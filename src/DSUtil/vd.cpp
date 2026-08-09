@@ -1,392 +1,132 @@
-//  VirtualDub - Video processing and capture application
-//  Graphics support library
-//  Copyright (C) 1998-2007 Avery Lee
+// RGB surface conversion helpers. Historically these wrapped VirtualDub's
+// Kasumi pixmap library (hence the file name); they are now self-contained.
+// The per-format row converters below are transcribed verbatim from Kasumi's
+// blt_reference_rgb.cpp so results stay bit-identical to the old code paths.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-//  Notes:
-//  - VDPixmapBlt is from VirtualDub
-//  - sse2 yv12 to yuy2 conversion by Haali
-//  (- vd.cpp/h should be renamed to something more sensible already :)
-
+// Pixel layouts follow the Windows DIB conventions the callers use:
+// 16 bpp = RGB565, 24 bpp = BGR, 32 bpp = BGRX (the fourth byte is not
+// interpreted as alpha and reads back as 0 after conversion from 24 bpp).
 
 #include "stdafx.h"
 #include "vd.h"
-#include "vd_asm.h"
-#include <intrin.h>
 
-#include "vd2/system/memory.h"
-#include "vd2/system/vdstl.h"
-
-#include "vd2/Kasumi/pixmap.h"
-#include "vd2/Kasumi/pixmaputils.h"
-#include "vd2/Kasumi/pixmapops.h"
-#include "vd2/Kasumi/resample.h"
-
-#pragma warning(disable : 4799) // no emms... blahblahblah
-
-bool BitBltFromI420ToI420(int w, int h, BYTE* dsty, BYTE* dstu, BYTE* dstv, int dstpitch, BYTE* srcy, BYTE* srcu, BYTE* srcv, int srcpitch)
+namespace
 {
-    VDPixmap srcbm = {0};
-
-    srcbm.data      = srcy;
-    srcbm.pitch     = srcpitch;
-    srcbm.w         = w;
-    srcbm.h         = h;
-    srcbm.format    = nsVDPixmap::kPixFormat_YUV420_Planar;
-    srcbm.data2     = srcu;
-    srcbm.pitch2    = srcpitch / 2;
-    srcbm.data3     = srcv;
-    srcbm.pitch3    = srcpitch / 2;
-
-    VDPixmap dstpxm = {0};
-
-    dstpxm.data     = dsty;
-    dstpxm.pitch    = dstpitch;
-    dstpxm.w        = w;
-    dstpxm.h        = h;
-    dstpxm.format   = nsVDPixmap::kPixFormat_YUV420_Planar;
-    dstpxm.data2    = dstu;
-    dstpxm.pitch2   = dstpitch / 2;
-    dstpxm.data3    = dstv;
-    dstpxm.pitch3   = dstpitch / 2;
-
-    return VDPixmapBlt(dstpxm, srcbm);
-}
-
-bool BitBltFromYUY2ToYUY2(int w, int h, BYTE* dst, int dstpitch, BYTE* src, int srcpitch)
-{
-    VDPixmap srcbm = {0};
-
-    srcbm.data      = src;
-    srcbm.pitch     = srcpitch;
-    srcbm.w         = w;
-    srcbm.h         = h;
-    srcbm.format    = nsVDPixmap::kPixFormat_YUV422_YUYV;
-
-    VDPixmap dstpxm = {
-        dst,
-        NULL,
-        w,
-        h,
-        dstpitch
-    };
-
-    dstpxm.format = nsVDPixmap::kPixFormat_YUV422_YUYV;
-
-    return VDPixmapBlt(dstpxm, srcbm);
-}
-
-bool BitBltFromI420ToRGB(int w, int h, BYTE* dst, int dstpitch, int dbpp, BYTE* srcy, BYTE* srcu, BYTE* srcv, int srcpitch)
-{
-    VDPixmap srcbm = {0};
-
-    srcbm.data      = srcy;
-    srcbm.pitch     = srcpitch;
-    srcbm.w         = w;
-    srcbm.h         = h;
-    srcbm.format    = nsVDPixmap::kPixFormat_YUV420_Planar;
-    srcbm.data2     = srcu;
-    srcbm.pitch2    = srcpitch/2;
-    srcbm.data3     = srcv;
-    srcbm.pitch3    = srcpitch/2;
-
-    VDPixmap dstpxm = {
-        (char *)dst + dstpitch * (h - 1),
-        NULL,
-        w,
-        h,
-        -dstpitch
-    };
-
-    switch(dbpp) {
-    case 16:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        dstpxm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    return VDPixmapBlt(dstpxm, srcbm);
-}
-
-bool BitBltFromI420ToYUY2(int w, int h, BYTE* dst, int dstpitch, BYTE* srcy, BYTE* srcu, BYTE* srcv, int srcpitch)
-{
-    if (srcpitch == 0) srcpitch = w;
-
-#ifndef _WIN64
-    if (!((DWORD_PTR)srcy&15) && !((DWORD_PTR)srcu&15) && !((DWORD_PTR)srcv&15) && !(srcpitch&31) && !((DWORD_PTR)dst&15) && !(dstpitch&15))
+    void Row565To888(BYTE* dst, const BYTE* src, int w)
     {
-        if (w<=0 || h<=0 || (w&1) || (h&1))
-            return false;
-
-        yv12_yuy2_sse2(srcy, srcu, srcv, srcpitch/2, w/2, h, dst, dstpitch);
-        return true;
+        const WORD* s = (const WORD*)src;
+        do {
+            const UINT32 px = *s++;
+            UINT32 rb = px & 0xf81f;
+            UINT32 g = px & 0x07e0;
+            rb += rb << 5;
+            g += g << 6;
+            dst[0] = (BYTE)(rb >> 2);
+            dst[1] = (BYTE)(g >> 9);
+            dst[2] = (BYTE)(rb >> 13);
+            dst += 3;
+        } while (--w);
     }
-#endif
 
-    VDPixmap srcbm = {0};
+    void Row565To8888(BYTE* dst, const BYTE* src, int w)
+    {
+        const WORD* s = (const WORD*)src;
+        UINT32* d = (UINT32*)dst;
+        do {
+            const UINT32 px = *s++;
+            const UINT32 rb = ((px & 0xf800) << 8) + ((px & 0x001f) << 3);
+            const UINT32 g = ((px & 0x07e0) << 5) + (px & 0x0300);
+            *d++ = rb + ((rb & 0xe000e0) >> 5) + g;
+        } while (--w);
+    }
 
-    srcbm.data      = srcy;
-    srcbm.pitch     = srcpitch;
-    srcbm.w         = w;
-    srcbm.h         = h;
-    srcbm.format    = nsVDPixmap::kPixFormat_YUV420_Planar;
-    srcbm.data2     = srcu;
-    srcbm.pitch2    = srcpitch/2;
-    srcbm.data3     = srcv;
-    srcbm.pitch3    = srcpitch/2;
+    void Row888To565(BYTE* dst, const BYTE* src, int w)
+    {
+        WORD* d = (WORD*)dst;
+        do {
+            const UINT32 r = ((UINT32)src[2] & 0xf8) << 8;
+            const UINT32 g = ((UINT32)src[1] & 0xfc) << 3;
+            const UINT32 b = (UINT32)src[0] >> 3;
+            src += 3;
+            *d++ = (WORD)(r + g + b);
+        } while (--w);
+    }
 
-    VDPixmap dstpxm = {
-        dst,
-        NULL,
-        w,
-        h,
-        dstpitch
-    };
+    void Row8888To565(BYTE* dst, const BYTE* src, int w)
+    {
+        WORD* d = (WORD*)dst;
+        do {
+            const UINT32 r = ((UINT32)src[2] & 0xf8) << 8;
+            const UINT32 g = ((UINT32)src[1] & 0xfc) << 3;
+            const UINT32 b = (UINT32)src[0] >> 3;
+            src += 4;
+            *d++ = (WORD)(r + g + b);
+        } while (--w);
+    }
 
-    dstpxm.format = nsVDPixmap::kPixFormat_YUV422_YUYV;
+    void Row888To8888(BYTE* dst, const BYTE* src, int w)
+    {
+        UINT32* d = (UINT32*)dst;
+        do {
+            *d++ = (UINT32)src[0] + ((UINT32)src[1] << 8) + ((UINT32)src[2] << 16);
+            src += 3;
+        } while (--w);
+    }
 
-    return VDPixmapBlt(dstpxm, srcbm);
+    void Row8888To888(BYTE* dst, const BYTE* src, int w)
+    {
+        do {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+            dst += 3;
+            src += 4;
+        } while (--w);
+    }
 }
 
 bool BitBltFromRGBToRGB(int w, int h, BYTE* dst, int dstpitch, int dbpp, BYTE* src, int srcpitch, int sbpp)
 {
-    VDPixmap srcbm = {
-        (char *)src + srcpitch * (h - 1),
-        NULL,
-        w,
-        h,
-        -srcpitch
-    };
-
-    switch(sbpp) {
-    case 8:
-        srcbm.format = nsVDPixmap::kPixFormat_Pal8;
-        break;
-    case 16:
-        srcbm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        srcbm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        srcbm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    VDPixmap dstpxm = {
-        (char *)dst + dstpitch * (h - 1),
-        NULL,
-        w,
-        h,
-        -dstpitch
-    };
-
-    switch(dbpp) {
-    case 8:
-        dstpxm.format = nsVDPixmap::kPixFormat_Pal8;
-        break;
-    case 16:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        dstpxm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    return VDPixmapBlt(dstpxm, srcbm);
-}
-
-bool BitBltFromRGBToRGBStretch(int dstw, int dsth, BYTE* dst, int dstpitch, int dbpp, int srcw, int srch, BYTE* src, int srcpitch, int sbpp)
-{
-    VDPixmap srcbm = {
-        src + srcpitch * (srch - 1),
-        nullptr,
-        srcw,
-        srch,
-        -srcpitch
-    };
-
-    switch (sbpp) {
-    case 8:
-        srcbm.format = nsVDPixmap::kPixFormat_Pal8;
-        break;
-    case 16:
-        srcbm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        srcbm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        srcbm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    VDPixmap dstpxm = {
-        dst + dstpitch * (dsth - 1),
-        nullptr,
-        dstw,
-        dsth,
-        -dstpitch
-    };
-
-    switch (dbpp) {
-    case 8:
-        dstpxm.format = nsVDPixmap::kPixFormat_Pal8;
-        break;
-    case 16:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        dstpxm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    return VDPixmapResample(dstpxm, srcbm, IVDPixmapResampler::kFilterCubic);
-}
-
-
-bool BitBltFromYUY2ToRGB(int w, int h, BYTE* dst, int dstpitch, int dbpp, BYTE* src, int srcpitch)
-{
-    if (srcpitch == 0) srcpitch = w;
-
-    VDPixmap srcbm = {0};
-
-    srcbm.data      = src;
-    srcbm.pitch     = srcpitch;
-    srcbm.w         = w;
-    srcbm.h         = h;
-    srcbm.format    = nsVDPixmap::kPixFormat_YUV422_YUYV;
-
-    VDPixmap dstpxm = {
-        (char *)dst + dstpitch * (h - 1),
-        NULL,
-        w,
-        h,
-        -dstpitch
-    };
-
-    switch(dbpp) {
-    case 16:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB565;
-        break;
-    case 24:
-        dstpxm.format = nsVDPixmap::kPixFormat_RGB888;
-        break;
-    case 32:
-        dstpxm.format = nsVDPixmap::kPixFormat_XRGB8888;
-        break;
-    default:
-        VDASSERT(false);
-    }
-
-    return VDPixmapBlt(dstpxm, srcbm);
-}
-
-static void yuvtoyuy2row_c(BYTE* dst, BYTE* srcy, BYTE* srcu, BYTE* srcv, DWORD width)
-{
-    WORD* dstw = (WORD*)dst;
-    for (; width > 1; width -= 2)
-    {
-        *dstw++ = (*srcu++<<8)|*srcy++;
-        *dstw++ = (*srcv++<<8)|*srcy++;
-    }
-}
-
-static void yuvtoyuy2row_avg_c(BYTE* dst, BYTE* srcy, BYTE* srcu, BYTE* srcv, DWORD width, DWORD pitchuv)
-{
-    WORD* dstw = (WORD*)dst;
-    for (; width > 1; width -= 2, srcu++, srcv++)
-    {
-        *dstw++ = (((srcu[0]+srcu[pitchuv])>>1)<<8)|*srcy++;
-        *dstw++ = (((srcv[0]+srcv[pitchuv])>>1)<<8)|*srcy++;
-    }
-}
-
-bool BitBltFromI420ToYUY2Interlaced(int w, int h, BYTE* dst, int dstpitch, BYTE* srcy, BYTE* srcu, BYTE* srcv, int srcpitch)
-{
-    if (w<=0 || h<=0 || (w&1) || (h&1))
+    if (w <= 0 || h <= 0 || !dst || !src) {
         return false;
-
-    if (srcpitch == 0) srcpitch = w;
-
-    void (*yuvtoyuy2row)(BYTE* dst, BYTE* srcy, BYTE* srcu, BYTE* srcv, DWORD width) = NULL;
-    void (*yuvtoyuy2row_avg)(BYTE* dst, BYTE* srcy, BYTE* srcu, BYTE* srcv, DWORD width, DWORD pitchuv) = NULL;
-
-#ifndef _WIN64
-    if (!((DWORD_PTR)srcy&15) && !((DWORD_PTR)srcu&15) && !((DWORD_PTR)srcv&15) && !(srcpitch&31) && !((DWORD_PTR)dst&15) && !(dstpitch&15))
-    {
-        yv12_yuy2_sse2_interlaced(srcy, srcu, srcv, srcpitch/2, w/2, h, dst, dstpitch);
-        return true;
     }
 
-    if (!(w&7))
-    {
-        yuvtoyuy2row = yuvtoyuy2row_MMX;
-        yuvtoyuy2row_avg = yuvtoyuy2row_avg_MMX;
-    }
-    else
-#endif
-    {
-        yuvtoyuy2row = yuvtoyuy2row_c;
-        yuvtoyuy2row_avg = yuvtoyuy2row_avg_c;
-    }
+    void (*rowconv)(BYTE*, const BYTE*, int) = nullptr;
 
-    if (!yuvtoyuy2row)
+    if (sbpp == dbpp) {
+        rowconv = nullptr; // straight row copy
+    } else if (sbpp == 16 && dbpp == 24) {
+        rowconv = Row565To888;
+    } else if (sbpp == 16 && dbpp == 32) {
+        rowconv = Row565To8888;
+    } else if (sbpp == 24 && dbpp == 16) {
+        rowconv = Row888To565;
+    } else if (sbpp == 24 && dbpp == 32) {
+        rowconv = Row888To8888;
+    } else if (sbpp == 32 && dbpp == 16) {
+        rowconv = Row8888To565;
+    } else if (sbpp == 32 && dbpp == 24) {
+        rowconv = Row8888To888;
+    } else {
+        ASSERT(FALSE);
         return false;
-
-    int halfsrcpitch = srcpitch/2;
-    do
-    {
-        yuvtoyuy2row(dst, srcy, srcu, srcv, w);
-        yuvtoyuy2row_avg(dst + dstpitch, srcy + srcpitch, srcu, srcv, w, halfsrcpitch);
-
-        dst += 2*dstpitch;
-        srcy += 2*srcpitch;
-        srcu += halfsrcpitch;
-        srcv += halfsrcpitch;
     }
-    while ((h -= 2) > 2);
 
-    yuvtoyuy2row(dst, srcy, srcu, srcv, w);
-    yuvtoyuy2row(dst + dstpitch, srcy + srcpitch, srcu, srcv, w);
+    if (sbpp != 16 && sbpp != 24 && sbpp != 32) {
+        ASSERT(FALSE);
+        return false;
+    }
 
-#ifndef _WIN64
-    __asm emms
-#endif
+    // Pitches may be negative for bottom-up rows; the same row indexing works
+    // for either orientation since both sides advance by their own pitch.
+    const size_t rowbytes = (size_t)w * (sbpp >> 3);
+    for (int y = 0; y < h; y++, src += srcpitch, dst += dstpitch) {
+        if (rowconv) {
+            rowconv(dst, src, w);
+        } else {
+            memcpy(dst, src, rowbytes);
+        }
+    }
 
     return true;
 }

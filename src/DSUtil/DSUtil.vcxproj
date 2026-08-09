@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\include;..\DSUtil;..\filters\renderer\VideoRenderers;..\thirdparty;..\thirdparty\VirtualDub\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;..\DSUtil;..\filters\renderer\VideoRenderers;..\thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -72,9 +72,6 @@
     <ClCompile Include="text.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="vd.cpp" />
-    <ClCompile Include="vd_asm.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="WinAPIUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -105,15 +102,11 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="text.h" />
     <ClInclude Include="vd.h" />
-    <ClInclude Include="vd_asm.h" />
     <ClInclude Include="VersionHelpersInternal.h" />
     <ClInclude Include="WinapiFunc.h" />
     <ClInclude Include="WinAPIUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\thirdparty\VirtualDub\Kasumi\Kasumi.vcxproj">
-      <Project>{0d252872-7542-4232-8d02-53f9182aee15}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

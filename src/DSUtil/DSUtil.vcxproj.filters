@@ -50,9 +50,6 @@
     <ClCompile Include="vd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vd_asm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AudioTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -131,9 +128,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vd_asm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioTools.h">

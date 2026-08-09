@@ -16,7 +16,9 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "stdafx.h"
-#include "vd2/system/vdstl.h"
+
+#include <cstdint>
+typedef uint32_t uint32; // formerly from vd2/system/vdstl.h
 
 #pragma warning(disable: 4799)      // warning C4799: function has no EMMS instruction
 
@@ -140,7 +142,7 @@ static void asm_blend_row(void *dst0, const void *src0, uint32 w, ptrdiff_t srcp
 }
 #endif
 
-#if defined(VD_CPU_X86) || defined(VD_CPU_AMD64)
+#if defined(_M_IX86) || defined(_M_X64) // formerly VD_CPU_X86/VD_CPU_AMD64 from vd2/system/vdtypes.h
     static void asm_blend_row_SSE2(void *dst, const void *src, uint32 w, ptrdiff_t srcpitch) {
         __m128i zero = _mm_setzero_si128();
         __m128i inv = _mm_cmpeq_epi8(zero, zero);
