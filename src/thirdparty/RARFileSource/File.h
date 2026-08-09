@@ -21,14 +21,15 @@
 #include "List.h"
 #include "unrar/rartypes.hpp"
 
+#include <string>
+#include <vector>
+
 class Archive;
-class CommandData;
-class CmdExtract;
 
 class CRFSFile : public CRFSNode<CRFSFile>
 {
 public:
-	CRFSFile (void) : size (0), filename (NULL), rarFilename(NULL), startingBlockPos(0) { }
+	CRFSFile (void) : size (0), filename (NULL), rarFilename(NULL), startingBlockPos(0), m_extentsComplete(false) { }
 
 	~CRFSFile (void)
 	{
@@ -55,6 +56,23 @@ public:
     int64 startingBlockPos;
 
 	wchar_t *filename, *rarFilename;
+
+private:
+    // Maps a range of the stored (uncompressed) file onto its location inside
+    // a specific volume, so reads can address volume files directly instead of
+    // walking every volume through the unrar extraction machinery.
+    struct VolumeExtent {
+        LONGLONG start;      // unpacked offset of this chunk within the file
+        LONGLONG size;       // chunk byte count (PackSize of this volume's piece)
+        LONGLONG dataPos;    // offset of the chunk data inside the volume file
+        std::wstring volume; // volume file path
+    };
+
+    bool EnsureExtents(LONGLONG upTo);
+
+    std::vector<VolumeExtent> m_extents; // built lazily, guarded by m_extentLock
+    bool m_extentsComplete;              // last volume reached
+    CCritSec m_extentLock;
 };
 
 #endif // FILE_H

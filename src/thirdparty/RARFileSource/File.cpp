@@ -24,127 +24,88 @@
 
 #include <vector>
 
-size_t UnstoreFile(ComprDataIO &DataIO, std::vector<byte>& output) {
-    size_t bufSize = output.size() > File::CopyBufferSize() ? File::CopyBufferSize() : output.size();
-    std::vector<byte> Buffer(bufSize);
-    size_t totalRead = 0;
-    while (totalRead < output.size()) {
-        int ReadSize = DataIO.UnpRead(&Buffer[0], Buffer.size());
-        if (ReadSize <= 0)
-            break;
-        if (ReadSize > 0) {
-            if (ReadSize + totalRead > output.size()) { //even though it never happens, ensure memcpy cannot copy beyond size of output
-                ReadSize = output.size() - totalRead;
-            }
-            memcpy(&output[totalRead], &Buffer[0], ReadSize);
-            totalRead += ReadSize;
-        }
-    }
-    return totalRead;
-}
-
-
-bool ExtractCurrentFile(CmdExtract *cmdExtract, Archive &Arc, int64 extractStartOffset, int64 extractEndOffset, BYTE* pBuffer, size_t &totalRead)
+// Builds the volume-extent index far enough to cover byte offset upTo (or to
+// the last volume, whichever comes first). Only stored (Method==0) files are
+// playable, so the mapping from unpacked offset to a position inside a volume
+// file is exact: each volume holds one contiguous chunk of the file's bytes.
+// Returns true if at least the first extent is known.
+bool CRFSFile::EnsureExtents(LONGLONG upTo)
 {
-  wchar Command='E';
+    CAutoLock lock(&m_extentLock);
 
-  ComprDataIO &DataIO = cmdExtract->DataIO;
-  Unpack *Unp = cmdExtract->Unp;
-
-  if (Arc.FileHead.HeadSize ==0)
-    if (DataIO.UnpVolume)
-    {
-      if (!MergeArchive(Arc,&DataIO,false,Command))
-      {
-        ErrHandler.SetErrorCode(RARX_WARNING);
-        return false;
-      }
-    }
-    else
-      return false;
-
-  HEADER_TYPE HeaderType=Arc.GetHeaderType();
-  if (HeaderType!=HEAD_FILE)
-  {
-    return false;
-  }
-
-  if (Arc.FileHead.PackSize<0)
-    Arc.FileHead.PackSize=0;
-  if (Arc.FileHead.UnpSize<0)
-    Arc.FileHead.UnpSize=0;
-
-  std::wstring ArcFileName;
-  ConvertPath(&Arc.FileHead.FileName,&ArcFileName);
-
-  DataIO.UnpVolume=Arc.FileHead.SplitAfter;
-  DataIO.NextVolumeMissing=false;
-
-  Arc.Seek(Arc.NextBlockPos - Arc.FileHead.PackSize, SEEK_SET);
-
-  if (!cmdExtract->CheckUnpVer(Arc,ArcFileName))
-  {
-      return false;
-  }
-
-  if (Arc.FileHead.Encrypted)
-  {
-      return false;
-  }
-
-  File CurFile;
-
-  DataIO.CurUnpRead=0;
-  DataIO.CurUnpWrite=0;
-  DataIO.UnpHash.Init(Arc.FileHead.FileHash.Type,1);
-  DataIO.PackedDataHash.Init(Arc.FileHead.FileHash.Type,1);
-  DataIO.SetPackedSizeToRead(Arc.FileHead.PackSize);
-  DataIO.SetFiles(&Arc,&CurFile);
-  DataIO.SetTestMode(true);
-  DataIO.SetSkipUnpCRC(false);
-
-  totalRead = 0;
-  if (!Arc.FileHead.SplitBefore)
-    if (Arc.FileHead.Method==0) {
-      int64 lastByte = Arc.FileHead.PackSize - 1;
-      while (extractStartOffset > lastByte) {
-        if (!MergeArchive(Arc, &DataIO, false, Command)) return false;
-        lastByte += Arc.FileHead.PackSize;
-      }
-      int64 curOffset = extractStartOffset;
-      while (curOffset < extractEndOffset) {
-        Arc.Seek(Arc.NextBlockPos + curOffset - (lastByte + 1), SEEK_SET);
-        size_t readSize;
-        if (lastByte > extractEndOffset) {
-          readSize = extractEndOffset - curOffset + 1;
-        } else {
-          readSize = lastByte - curOffset + 1;
+    if (m_extents.empty()) {
+        Archive arc;
+        arc.SetExceptions(false);
+        if (!arc.Open(rarFilename) || !arc.IsArchive(false)) {
+            ErrorMsg(GetLastError(), L"CRFSFile::EnsureExtents - Archive Open");
+            return false;
         }
-        std::vector<byte> output(readSize);
-        size_t bytesRead = UnstoreFile(DataIO, output);
-        if (bytesRead < 0) return false;
-        memcpy(&pBuffer[curOffset-extractStartOffset], &output[0], bytesRead);
-        curOffset += bytesRead;
-        totalRead += bytesRead;
-        if (curOffset > lastByte) {
-            if (!MergeArchive(Arc, &DataIO, false, Command)) break; //no more volumes.  we have read what we can
-            lastByte += Arc.FileHead.PackSize;
+        arc.Seek(startingBlockPos, SEEK_SET);
+        if (0 == arc.SearchBlock(HEAD_FILE)) {
+            ErrorMsg(GetLastError(), L"CRFSFile::EnsureExtents - SearchBlock");
+            return false;
         }
-      }
+        if (arc.FileHead.Method != 0 || arc.FileHead.Encrypted || arc.FileHead.SplitBefore) {
+            return false;
+        }
+        VolumeExtent e;
+        e.start = 0;
+        e.size = arc.FileHead.PackSize;
+        e.dataPos = arc.NextBlockPos - arc.FileHead.PackSize;
+        e.volume = arc.FileName;
+        m_extents.push_back(e);
+        m_extentsComplete = !arc.FileHead.SplitAfter;
     }
-    else
-    {
-      Unp->Init(Arc.FileHead.WinSize,Arc.FileHead.Solid);
-      Unp->SetDestSize(Arc.FileHead.UnpSize);
-      if (Arc.Format!=RARFMT50 && Arc.FileHead.UnpVer<=15)
-        Unp->DoUnpack(15,cmdExtract->FileCount>1 && Arc.Solid);
-      else
-        Unp->DoUnpack(Arc.FileHead.UnpVer,Arc.FileHead.Solid);
+
+    bool newNumbering = true;
+    bool oldSchemeTested = false;
+
+    while (!m_extentsComplete) {
+        const VolumeExtent& prev = m_extents.back();
+        if (prev.start + prev.size > upTo) {
+            break; // already cover the requested range
+        }
+
+        // Same volume-name sequencing MergeArchive uses, including its
+        // fallback for new-style sets renamed to the old naming scheme.
+        std::wstring nextName = prev.volume;
+        NextVolumeName(nextName, !newNumbering);
+
+        Archive arc;
+        arc.SetExceptions(false);
+        bool opened = arc.Open(nextName) && arc.IsArchive(false);
+        if (!opened && newNumbering && !oldSchemeTested) {
+            oldSchemeTested = true;
+            std::wstring altName = prev.volume;
+            NextVolumeName(altName, true);
+            opened = arc.Open(altName) && arc.IsArchive(false);
+            if (opened) {
+                nextName = altName;
+                newNumbering = false;
+            }
+        }
+        if (!opened) {
+            break; // missing/broken next volume: serve what we have
+        }
+        newNumbering = arc.NewNumbering;
+
+        // The continuation chunk is the first file block in the volume.
+        if (0 == arc.SearchBlock(HEAD_FILE)) {
+            break;
+        }
+        if (arc.FileHead.Method != 0 || arc.FileHead.Encrypted || !arc.FileHead.SplitBefore) {
+            break;
+        }
+        VolumeExtent e;
+        e.start = prev.start + prev.size;
+        e.size = arc.FileHead.PackSize;
+        e.dataPos = arc.NextBlockPos - arc.FileHead.PackSize;
+        e.volume = nextName;
+        m_extents.push_back(e);
+        m_extentsComplete = !arc.FileHead.SplitAfter;
     }
- 
-  if (DataIO.NextVolumeMissing)
-    return false;
-  return true;
+
+    return !m_extents.empty();
 }
 
 CRFSFile::ReadThread::ReadThread(CRFSFile* file, LONGLONG llPosition, DWORD lLength, BYTE* pBuffer) {
@@ -173,40 +134,80 @@ DWORD WINAPI CRFSFile::ReadThread::ThreadStartStatic(void *param) {
 }
 
 HRESULT CRFSFile::SyncRead(LONGLONG llPosition, DWORD lLength, BYTE* pBuffer, LONG* cbActual) {
-    Archive rarArchive;
-    rarArchive.SetExceptions(false);
-    CommandData cdata;
-    cdata.Test = true;
-    cdata.FileArgs.AddString(filename);
-    cdata.Threads = 1; 
-    cdata.Callback = NULL;
-    CmdExtract cmd(&cdata);
-
-    if (!rarArchive.Open(rarFilename)) {
-        ErrorMsg(GetLastError(), L"CRFSOutputPin::SyncRead - Archive Open");
+    if (llPosition < 0) {
         return E_FAIL;
     }
-    
-    if (!rarArchive.IsArchive(false)) {
-        ErrorMsg(GetLastError(), L"CRFSOutputPin::SyncRead - IsArchive");
-        return E_FAIL;
-    }
-    rarArchive.Seek(startingBlockPos, SEEK_SET);
-    if (0 == rarArchive.SearchBlock(HEAD_FILE)) {
-        ErrorMsg(GetLastError(), L"CRFSOutputPin::SyncRead - SearchBlock");
-        return E_FAIL;
-    }
-    cmd.ExtractArchiveInit(rarArchive);
-
-    size_t totalRead;
-    if (ExtractCurrentFile(&cmd, rarArchive, llPosition, llPosition + lLength - 1, pBuffer, totalRead)) {
+    if (lLength == 0) {
         if (cbActual)
-            *cbActual = totalRead;
+            *cbActual = 0;
         return S_OK;
-    } else {
-        return E_FAIL;
     }
 
+    const LONGLONG last = llPosition + lLength - 1;
+    EnsureExtents(last);
+
+    // Snapshot the index so file I/O runs outside the lock. One entry per
+    // volume visited so far; trivial to copy.
+    std::vector<VolumeExtent> extents;
+    {
+        CAutoLock lock(&m_extentLock);
+        if (m_extents.empty()) {
+            return E_FAIL;
+        }
+        extents = m_extents;
+    }
+
+    // First extent whose end lies beyond the start position.
+    size_t i = 0;
+    {
+        size_t lo = 0, hi = extents.size();
+        while (lo < hi) {
+            size_t mid = (lo + hi) / 2;
+            if (extents[mid].start + extents[mid].size <= llPosition) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        i = lo;
+    }
+
+    size_t totalRead = 0;
+    LONGLONG pos = llPosition;
+
+    while (pos <= last && i < extents.size()) {
+        const VolumeExtent& e = extents[i];
+        if (pos < e.start) {
+            break; // gap: should not happen with sequentially built extents
+        }
+
+        const LONGLONG avail = e.start + e.size - pos;
+        const LONGLONG remaining = last - pos + 1;
+        const size_t want = (size_t)(avail < remaining ? avail : remaining);
+
+        File vol;
+        vol.SetExceptions(false);
+        if (!vol.Open(e.volume)) {
+            ErrorMsg(GetLastError(), L"CRFSFile::SyncRead - volume open");
+            break;
+        }
+        vol.Seek(e.dataPos + (pos - e.start), SEEK_SET);
+        int r = vol.Read(pBuffer + (size_t)(pos - llPosition), want);
+        if (r <= 0) {
+            break;
+        }
+
+        totalRead += r;
+        pos += r;
+        if ((size_t)r < want) {
+            break; // truncated volume: serve what we have
+        }
+        i++;
+    }
+
+    if (cbActual)
+        *cbActual = (LONG)totalRead;
+    return totalRead > 0 ? S_OK : E_FAIL;
 }
 
 
