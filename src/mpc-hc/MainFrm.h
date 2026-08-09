@@ -483,7 +483,11 @@ private:
     HRESULT GetOriginalFrame(std::vector<BYTE>& dib, CString& errmsg);
     HRESULT RenderCurrentSubtitles(BYTE* pData);
     bool GetDIB(BYTE** ppData, long& size, bool fSilent = false);
+    BYTE* ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch);
     void SaveDIB(LPCTSTR fn, BYTE* pData, long size);
+#if MPC_SMTC_VIDEO_THUMBNAIL
+    bool CaptureVideoThumbnail(std::vector<BYTE>& thumbnail);
+#endif
     CString MakeSnapshotFileName(BOOL thumbnails);
     BOOL IsRendererCompatibleWithSaveImage();
     void SaveImage(LPCTSTR fn, bool displayed, bool includeSubtitles);
@@ -1443,6 +1447,20 @@ public:
 
     void MediaTransportControlSetMedia();
     void MediaTransportControlUpdateState(OAFilterState state);
+    void MediaTransportControlUpdateTimeline(bool force = false);
+    void MediaTransportControlUpdateAutoRepeat();
+#if MPC_SMTC_VIDEO_THUMBNAIL
+    void MediaTransportControlUpdateThumbnail();
+#endif
+    afx_msg LRESULT OnSmtcSeek(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSmtcAutoRepeat(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSmtcShuffle(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSmtcRate(WPARAM wParam, LPARAM lParam);
+    ULONGLONG m_lastSMTCTimelineUpdate = 0;
+#if MPC_SMTC_VIDEO_THUMBNAIL
+    ULONGLONG m_nextSMTCThumbnailUpdate = 0;
+    ULONGLONG m_lastSMTCThumbnailTick = 0;
+#endif
 
     enum themableDialogTypes {
         None,

@@ -114,6 +114,7 @@
 
 #include "stb/stb_image.h"
 #include "stb/stb_image_resize2.h"
+#include "stb/stb_image_write.h"
 
 #include  "Logger.h"
 
@@ -295,6 +296,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_SHUTDOWN, OnDoShutdown)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
+
+    ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
+    ON_MESSAGE(WM_SMTC_AUTOREPEAT, OnSmtcAutoRepeat)
+    ON_MESSAGE(WM_SMTC_SHUFFLE, OnSmtcShuffle)
+    ON_MESSAGE(WM_SMTC_RATE, OnSmtcRate)
 
     ON_MESSAGE_VOID(WM_SAVESETTINGS, SaveAppSettings)
 
@@ -2355,6 +2361,9 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                 m_OSD.SetPos(rtNow);
                 m_Lcd.SetMediaRange(0, rtDur);
                 m_Lcd.SetMediaPos(rtNow);
+
+                // Update media transport controls timeline (throttled)
+                MediaTransportControlUpdateTimeline();
 
                 if (m_pCAP) {
                     if (g_bExternalSubtitleTime) {
@@ -5914,18 +5923,26 @@ bool CMainFrame::GetDIB(BYTE** ppData, long& size, bool fSilent)
     return true;
 }
 
-void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
-{
-    CPath path(fn);
+#if MPC_SMTC_VIDEO_THUMBNAIL
+// Callback for stb_image_write to append to vector
+static void stbi_write_to_vector(void* context, void* data, int size) {
+    std::vector<BYTE>* vec = (std::vector<BYTE>*)context;
+    size_t oldSize = vec->size();
+    vec->resize(oldSize + size);
+    memcpy(vec->data() + oldSize, data, size);
+}
+#endif
 
+BYTE* CMainFrame::ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch)
+{
     PBITMAPINFO bi = reinterpret_cast<PBITMAPINFO>(pData);
     PBITMAPINFOHEADER bih = &bi->bmiHeader;
     int bpp = bih->biBitCount;
 
     if (bpp != 16 && bpp != 24 && bpp != 32) {
-        AfxMessageBox(IDS_SCREENSHOT_ERROR, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return nullptr;
     }
+
     bool topdown = (bih->biHeight < 0);
     int w = bih->biWidth;
     int h = abs(bih->biHeight);
@@ -5933,13 +5950,29 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
     int dstpitch = (w * 3 + 3) / 4 * 4; // round w * 3 to next multiple of 4
 
     BYTE* p = DEBUG_NEW BYTE[dstpitch * h];
-
     const BYTE* src = pData + sizeof(*bih);
 
     if (topdown) {
         BitBltFromRGBToRGB(w, h, p, dstpitch, 24, (BYTE*)src, srcpitch, bpp);
     } else {
         BitBltFromRGBToRGB(w, h, p, dstpitch, 24, (BYTE*)src + srcpitch * (h - 1), -srcpitch, bpp);
+    }
+
+    outWidth = w;
+    outHeight = h;
+    outPitch = dstpitch;
+    return p;
+}
+
+void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
+{
+    CPath path(fn);
+
+    int w, h, dstpitch;
+    BYTE* p = ConvertDIBTo24bppRGB(pData, size, w, h, dstpitch);
+    if (!p) {
+        AfxMessageBox(IDS_SCREENSHOT_ERROR, MB_ICONWARNING | MB_OK, 0);
+        return;
     }
 
     {
@@ -6015,6 +6048,53 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
 
     SendStatusMessage(m_wndStatusBar.PreparePathStatusMessage(path), 3000);
 }
+
+#if MPC_SMTC_VIDEO_THUMBNAIL
+bool CMainFrame::CaptureVideoThumbnail(std::vector<BYTE>& thumbnail)
+{
+    // Get the current video frame as DIB
+    std::vector<BYTE> dib;
+    CString errmsg;
+    HRESULT hr = GetCurrentFrame(dib, errmsg);
+    if (FAILED(hr) || dib.empty()) {
+        return false;
+    }
+
+    // Convert DIB to 24bpp BGR
+    int w, h, dstpitch;
+    BYTE* bgr = ConvertDIBTo24bppRGB(dib.data(), (long)dib.size(), w, h, dstpitch);
+    if (!bgr) {
+        return false;
+    }
+
+    // Downscale to at most 320 pixels wide, preserving aspect ratio
+    int tw = w;
+    int th = h;
+    if (tw > 320) {
+        th = std::max(1, MulDiv(h, 320, w));
+        tw = 320;
+    }
+
+    // Allocate buffer for RGB output (tightly packed, no padding)
+    int rgbPitch = tw * 3;
+    BYTE* rgb = DEBUG_NEW BYTE[rgbPitch * th];
+
+    // Downscale and convert BGR to RGB using stb_image_resize2
+    STBIR_RESIZE resize;
+    stbir_resize_init(&resize, bgr, w, h, dstpitch, rgb, tw, th, rgbPitch, STBIR_BGR, STBIR_TYPE_UINT8);
+    stbir_set_pixel_layouts(&resize, STBIR_BGR, STBIR_RGB);
+    stbir_resize_extended(&resize);
+
+    delete[] bgr;
+
+    // Encode to JPEG using stb_image_write
+    int quality = AfxGetAppSettings().nJpegQuality;
+    int result = stbi_write_jpg_to_func(stbi_write_to_vector, &thumbnail, tw, th, 3, rgb, quality);
+
+    delete[] rgb;
+    return result != 0;
+}
+#endif
 
 HRESULT GetBasicVideoFrame(IBasicVideo* pBasicVideo, std::vector<BYTE>& dib) {
     // IBasicVideo::GetCurrentImage() gives the original frame
@@ -8236,6 +8316,7 @@ void CMainFrame::OnPlaylistToggleShuffle() {
     m_wndPlaylistBar.m_pl.SetShuffle(s.bShufflePlaylistItems);
     m_wndToolBar.SetShuffle(s.bShufflePlaylistItems);
     m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.bShufflePlaylistItems ? IDS_SHUFFLE_ON : IDS_SHUFFLE_OFF));
+    m_media_trans_control.SetShuffleEnabled(s.bShufflePlaylistItems);
 }
 
 void CMainFrame::OnViewEditListEditor()
@@ -9899,6 +9980,8 @@ void CMainFrame::SetPlayingRate(double rate)
         CString strODSMessage;
         strODSMessage.Format(IDS_OSD_SPEED, rate);
         m_OSD.DisplayMessage(OSD_TOPRIGHT, strODSMessage);
+        m_media_trans_control.SetPlaybackRate(rate);
+        MediaTransportControlUpdateTimeline(true);
     }
 }
 
@@ -10100,6 +10183,8 @@ void CMainFrame::OnPlayResetRate()
         CString strODSMessage;
         strODSMessage.Format(IDS_OSD_SPEED, m_dSpeedRate);
         m_OSD.DisplayMessage(OSD_TOPRIGHT, strODSMessage);
+        m_media_trans_control.SetPlaybackRate(m_dSpeedRate);
+        MediaTransportControlUpdateTimeline(true);
     }
 }
 
@@ -10934,6 +11019,7 @@ void CMainFrame::OnPlayRepeat(UINT nID)
 
     m_nLoops = 0;
     m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(osdMsg));
+    MediaTransportControlUpdateAutoRepeat();
 }
 
 void CMainFrame::OnUpdatePlayRepeat(CCmdUI* pCmdUI)
@@ -10964,6 +11050,7 @@ void CMainFrame::OnPlayRepeatForever()
 
     m_nLoops = 0;
     m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.fLoopForever ? IDS_PLAYLOOP_FOREVER_ON : IDS_PLAYLOOP_FOREVER_OFF));
+    MediaTransportControlUpdateAutoRepeat();
 }
 
 void CMainFrame::OnUpdatePlayRepeatForever(CCmdUI* pCmdUI)
@@ -19148,6 +19235,12 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
     OnTimer(TIMER_STREAMPOSPOLLER);
     OnTimer(TIMER_STREAMPOSPOLLER2);
 
+    // Update media transport controls timeline after seek
+    MediaTransportControlUpdateTimeline(true);
+#if MPC_SMTC_VIDEO_THUMBNAIL
+    MediaTransportControlUpdateThumbnail();
+#endif
+
     SendCurrentPositionToApi(true);
 }
 
@@ -23593,30 +23686,40 @@ void CMainFrame::MediaTransportControlSetMedia() {
         }
 
         // Thumbnail
-        CComQIPtr<IFilterGraph> pFilterGraph = m_pGB;
-        std::vector<BYTE> internalCover;
-        if (CoverArt::FindEmbedded(pFilterGraph, internalCover)) {
-            m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
-        } else {
-            CPlaylistItem pli;
-            if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
-                m_media_trans_control.loadThumbnail(pli.m_cover);
+#if MPC_SMTC_VIDEO_THUMBNAIL
+        if (!m_fAudioOnly) {
+            // For video, schedule capturing a video frame after playback has started,
+            // see MediaTransportControlUpdateThumbnail()
+            m_lastSMTCThumbnailTick = 0;
+            m_nextSMTCThumbnailUpdate = GetTickCount64() + 5000ULL;
+        } else
+#endif
+        {
+            CComQIPtr<IFilterGraph> pFilterGraph = m_pGB;
+            std::vector<BYTE> internalCover;
+            if (CoverArt::FindEmbedded(pFilterGraph, internalCover)) {
+                m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
             } else {
-                CString filename = m_wndPlaylistBar.GetCurFileName();
-                CString filename_no_ext;
-                CString filedir;
-                if (!PathUtils::IsURL(filename)) {
-                    CPath path = CPath(filename);
-                    if (path.FileExists()) {
-                        path.RemoveExtension();
-                        filename_no_ext = path.m_strPath;
-                        path.RemoveFileSpec();
-                        filedir = path.m_strPath;
-                        bool is_file_art = false;
-                        CString img = CoverArt::FindExternal(filename_no_ext, filedir, author, is_file_art);
-                        if (!img.IsEmpty()) {
-                            if (m_fAudioOnly || is_file_art) {
-                                m_media_trans_control.loadThumbnail(img);
+                CPlaylistItem pli;
+                if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
+                    m_media_trans_control.loadThumbnail(pli.m_cover);
+                } else {
+                    CString filename = m_wndPlaylistBar.GetCurFileName();
+                    CString filename_no_ext;
+                    CString filedir;
+                    if (!PathUtils::IsURL(filename)) {
+                        CPath path = CPath(filename);
+                        if (path.FileExists()) {
+                            path.RemoveExtension();
+                            filename_no_ext = path.m_strPath;
+                            path.RemoveFileSpec();
+                            filedir = path.m_strPath;
+                            bool is_file_art = false;
+                            CString img = CoverArt::FindExternal(filename_no_ext, filedir, author, is_file_art);
+                            if (!img.IsEmpty()) {
+                                if (m_fAudioOnly || is_file_art) {
+                                    m_media_trans_control.loadThumbnail(img);
+                                }
                             }
                         }
                     }
@@ -23641,6 +23744,12 @@ void CMainFrame::MediaTransportControlSetMedia() {
             TRACE(_T("MediaTransControls: put_IsEnabled error %ld\n"), ret);
             return;
         }
+
+        // ISystemMediaTransportControls2: playback rate, repeat/shuffle state and timeline
+        m_media_trans_control.SetPlaybackRate(m_dSpeedRate);
+        m_media_trans_control.SetShuffleEnabled(AfxGetAppSettings().bShufflePlaylistItems);
+        MediaTransportControlUpdateAutoRepeat();
+        MediaTransportControlUpdateTimeline(true);
     }
 }
 
@@ -23650,5 +23759,118 @@ void CMainFrame::MediaTransportControlUpdateState(OAFilterState state) {
         else if (state == State_Paused)  m_media_trans_control.smtc_controls->put_PlaybackStatus(ABI::Windows::Media::MediaPlaybackStatus_Paused);
         else if (state == State_Stopped) m_media_trans_control.smtc_controls->put_PlaybackStatus(ABI::Windows::Media::MediaPlaybackStatus_Stopped);
         else                             m_media_trans_control.smtc_controls->put_PlaybackStatus(ABI::Windows::Media::MediaPlaybackStatus_Changing);
+
+        // Keep rate and timeline in sync with the new state, so that consumers
+        // that extrapolate the playback position stay accurate
+        m_media_trans_control.SetPlaybackRate(m_dSpeedRate);
+        MediaTransportControlUpdateTimeline(true);
+#if MPC_SMTC_VIDEO_THUMBNAIL
+        if (state == State_Paused) {
+            MediaTransportControlUpdateThumbnail();
+        }
+#endif
     }
+}
+
+void CMainFrame::MediaTransportControlUpdateTimeline(bool force /*= false*/) {
+    // Note: IsActive() is a COM call, so when throttling check the tick count first
+    ULONGLONG tick = GetTickCount64();
+    if (!force && tick < m_lastSMTCTimelineUpdate + 2000ULL) {
+        return;
+    }
+    if (GetLoadState() != MLS::LOADED || IsPlaybackCaptureMode() || !m_media_trans_control.IsActive()) {
+        return;
+    }
+    m_lastSMTCTimelineUpdate = tick;
+
+    __int64 start = 0, stop = 0;
+    m_wndSeekBar.GetRange(start, stop);
+    if (stop > 0) {
+        m_media_trans_control.UpdateTimelineProperties(0, stop, m_wndSeekBar.GetPos());
+    }
+
+#if MPC_SMTC_VIDEO_THUMBNAIL
+    // Periodic thumbnail refresh, driven from the same throttled path
+    if (m_nextSMTCThumbnailUpdate && tick >= m_nextSMTCThumbnailUpdate && GetMediaState() == State_Running) {
+        MediaTransportControlUpdateThumbnail();
+    }
+#endif
+}
+
+void CMainFrame::MediaTransportControlUpdateAutoRepeat() {
+    const CAppSettings& s = AfxGetAppSettings();
+    ABI::Windows::Media::MediaPlaybackAutoRepeatMode mode = ABI::Windows::Media::MediaPlaybackAutoRepeatMode_None;
+    if (s.fLoopForever) {
+        mode = (s.eLoopMode == CAppSettings::LoopMode::FILE) ? ABI::Windows::Media::MediaPlaybackAutoRepeatMode_Track
+                                                             : ABI::Windows::Media::MediaPlaybackAutoRepeatMode_List;
+    }
+    m_media_trans_control.SetAutoRepeatMode(mode);
+}
+
+#if MPC_SMTC_VIDEO_THUMBNAIL
+void CMainFrame::MediaTransportControlUpdateThumbnail() {
+    if (m_fAudioOnly || GetLoadState() != MLS::LOADED || IsPlaybackCaptureMode() || !m_media_trans_control.IsActive()) {
+        return;
+    }
+    // Capture at most once per second, e.g. when seeking repeatedly
+    ULONGLONG tick = GetTickCount64();
+    if (m_lastSMTCThumbnailTick && tick < m_lastSMTCThumbnailTick + 1000ULL) {
+        return;
+    }
+    m_lastSMTCThumbnailTick = tick;
+    m_nextSMTCThumbnailUpdate = tick + 30000ULL;
+
+    std::vector<BYTE> thumbnail;
+    if (CaptureVideoThumbnail(thumbnail)) {
+        m_media_trans_control.loadThumbnail(thumbnail.data(), thumbnail.size());
+        if (m_media_trans_control.smtc_updater) {
+            m_media_trans_control.smtc_updater->Update();
+        }
+    }
+}
+#endif
+
+LRESULT CMainFrame::OnSmtcSeek(WPARAM wParam, LPARAM lParam) {
+    if (GetLoadState() == MLS::LOADED && !IsPlaybackCaptureMode()) {
+        SeekTo(m_media_trans_control.requested_seek_position, false);
+    }
+    return 0;
+}
+
+LRESULT CMainFrame::OnSmtcAutoRepeat(WPARAM wParam, LPARAM lParam) {
+    CAppSettings& s = AfxGetAppSettings();
+    auto mode = static_cast<ABI::Windows::Media::MediaPlaybackAutoRepeatMode>(wParam);
+    switch (mode) {
+        case ABI::Windows::Media::MediaPlaybackAutoRepeatMode_Track:
+            s.fLoopForever = true;
+            s.eLoopMode = CAppSettings::LoopMode::FILE;
+            break;
+        case ABI::Windows::Media::MediaPlaybackAutoRepeatMode_List:
+            s.fLoopForever = true;
+            s.eLoopMode = CAppSettings::LoopMode::PLAYLIST;
+            break;
+        default:
+            s.fLoopForever = false;
+            break;
+    }
+    m_nLoops = 0;
+    MediaTransportControlUpdateAutoRepeat();
+    return 0;
+}
+
+LRESULT CMainFrame::OnSmtcShuffle(WPARAM wParam, LPARAM lParam) {
+    if (AfxGetAppSettings().bShufflePlaylistItems != (wParam != 0)) {
+        OnPlaylistToggleShuffle();
+    } else {
+        m_media_trans_control.SetShuffleEnabled(wParam != 0);
+    }
+    return 0;
+}
+
+LRESULT CMainFrame::OnSmtcRate(WPARAM wParam, LPARAM lParam) {
+    double rate = m_media_trans_control.requested_playback_rate;
+    if (GetLoadState() == MLS::LOADED && rate > 0.0) {
+        SetPlayingRate(rate);
+    }
+    return 0;
 }

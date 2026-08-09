@@ -1174,6 +1174,9 @@
     <ClInclude Include="MediaTransControls.h">
       <Filter>Main View</Filter>
     </ClInclude>
+    <ClInclude Include="SMTC2Compat.h">
+      <Filter>Main View</Filter>
+    </ClInclude>
     <ClInclude Include="ModelessResizableDialog.h">
       <Filter>Modal Dialogs</Filter>
     </ClInclude>

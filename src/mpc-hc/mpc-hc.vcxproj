@@ -516,6 +516,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="SaveTextFileDialog.h" />
     <ClInclude Include="SaveThumbnailsDialog.h" />
     <ClInclude Include="SelectMediaType.h" />
+    <ClInclude Include="SMTC2Compat.h" />
     <ClInclude Include="SettingsDefines.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="ShockwaveGraph.h" />

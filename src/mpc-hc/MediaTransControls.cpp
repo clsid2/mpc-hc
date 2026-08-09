@@ -57,6 +57,8 @@ bool MediaTransControls::Init(CMainFrame* main) {
         return false;
     }
 
+    m_pMainFrame = main;
+
     CComPtr<ISystemMediaTransportControlsInterop> op;
     HRESULT ret;
     if ((ret = GetActivationFactory(HStringReference(RuntimeClass_Windows_Media_SystemMediaTransportControls).Get(), &op)) != S_OK) {
@@ -68,6 +70,13 @@ bool MediaTransControls::Init(CMainFrame* main) {
         TRACE(_T("MediaTransControls: GetForWindow error %ld\n"), ret);
         return false;
     }
+
+    // Try to get ISystemMediaTransportControls2 (Windows 10 1607+)
+    ret = smtc_controls->QueryInterface(IID_PPV_ARGS(&smtc_controls2));
+    if (ret != S_OK) {
+        smtc_controls2 = nullptr;
+    }
+
     ret = smtc_controls->get_DisplayUpdater(&smtc_updater);
     if (ret != S_OK) {
         smtc_controls = nullptr;
@@ -113,7 +122,52 @@ bool MediaTransControls::Init(CMainFrame* main) {
     smtc_controls->put_IsPreviousEnabled(true);
     smtc_controls->put_IsNextEnabled(true);
 
-    m_pMainFrame = main;
+    // Register for SMTC2 change requests. These events arrive on WinRT threadpool
+    // threads, so the callbacks only post a message to the main frame.
+    // Registration failures are non-fatal.
+    if (smtc_controls2) {
+        auto callbackPositionChange = Callback<ABI::Windows::Foundation::ITypedEventHandler<SystemMediaTransportControls*, PlaybackPositionChangeRequestedEventArgs*>>(
+            [this](ISystemMediaTransportControls*, IPlaybackPositionChangeRequestedEventArgs* pArgs) {
+                ABI::Windows::Foundation::TimeSpan requestedPosition;
+                if (pArgs->get_RequestedPlaybackPosition(&requestedPosition) == S_OK && m_pMainFrame) {
+                    requested_seek_position = requestedPosition.Duration;
+                    m_pMainFrame->PostMessageW(WM_SMTC_SEEK);
+                }
+                return S_OK;
+            });
+        smtc_controls2->add_PlaybackPositionChangeRequested(callbackPositionChange.Get(), &m_EventRegistrationTokenPositionChange);
+
+        auto callbackRateChange = Callback<ABI::Windows::Foundation::ITypedEventHandler<SystemMediaTransportControls*, PlaybackRateChangeRequestedEventArgs*>>(
+            [this](ISystemMediaTransportControls*, IPlaybackRateChangeRequestedEventArgs* pArgs) {
+                DOUBLE requestedRate;
+                if (pArgs->get_RequestedPlaybackRate(&requestedRate) == S_OK && m_pMainFrame) {
+                    requested_playback_rate = requestedRate;
+                    m_pMainFrame->PostMessageW(WM_SMTC_RATE);
+                }
+                return S_OK;
+            });
+        smtc_controls2->add_PlaybackRateChangeRequested(callbackRateChange.Get(), &m_EventRegistrationTokenRateChange);
+
+        auto callbackShuffleChange = Callback<ABI::Windows::Foundation::ITypedEventHandler<SystemMediaTransportControls*, ShuffleEnabledChangeRequestedEventArgs*>>(
+            [this](ISystemMediaTransportControls*, IShuffleEnabledChangeRequestedEventArgs* pArgs) {
+                boolean requestedShuffle;
+                if (pArgs->get_RequestedShuffleEnabled(&requestedShuffle) == S_OK && m_pMainFrame) {
+                    m_pMainFrame->PostMessageW(WM_SMTC_SHUFFLE, requestedShuffle ? 1 : 0);
+                }
+                return S_OK;
+            });
+        smtc_controls2->add_ShuffleEnabledChangeRequested(callbackShuffleChange.Get(), &m_EventRegistrationTokenShuffleChange);
+
+        auto callbackAutoRepeatChange = Callback<ABI::Windows::Foundation::ITypedEventHandler<SystemMediaTransportControls*, AutoRepeatModeChangeRequestedEventArgs*>>(
+            [this](ISystemMediaTransportControls*, IAutoRepeatModeChangeRequestedEventArgs* pArgs) {
+                MediaPlaybackAutoRepeatMode requestedMode;
+                if (pArgs->get_RequestedAutoRepeatMode(&requestedMode) == S_OK && m_pMainFrame) {
+                    m_pMainFrame->PostMessageW(WM_SMTC_AUTOREPEAT, (WPARAM)requestedMode);
+                }
+                return S_OK;
+            });
+        smtc_controls2->add_AutoRepeatModeChangeRequested(callbackAutoRepeatChange.Get(), &m_EventRegistrationTokenAutoRepeatChange);
+    }
 
     return true;
 }
@@ -182,7 +236,9 @@ void MediaTransControls::loadThumbnail(CString fn) {
 }
 
 void MediaTransControls::loadThumbnail(BYTE* content, size_t size) {
-    if (!content || !size || !smtc_updater) return;
+    if (!content || !size || !smtc_updater) {
+        return;
+    }
 
     ComPtr<Streams::IRandomAccessStream> s;
     HRESULT ret;
@@ -258,4 +314,76 @@ bool MediaTransControls::IsActive() {
         }
     }
     return false;
+}
+
+void MediaTransControls::SetAutoRepeatMode(ABI::Windows::Media::MediaPlaybackAutoRepeatMode mode) {
+    if (smtc_controls2) {
+        smtc_controls2->put_AutoRepeatMode(mode);
+    }
+}
+
+void MediaTransControls::SetShuffleEnabled(bool enabled) {
+    if (smtc_controls2) {
+        smtc_controls2->put_ShuffleEnabled(enabled);
+    }
+}
+
+void MediaTransControls::SetPlaybackRate(double rate) {
+    if (smtc_controls2) {
+        smtc_controls2->put_PlaybackRate(rate);
+    }
+}
+
+void MediaTransControls::UpdateTimelineProperties(REFERENCE_TIME startTime, REFERENCE_TIME endTime, REFERENCE_TIME position) {
+    if (!smtc_controls2) {
+        return;
+    }
+
+    HRESULT hr;
+    if (!smtc_timeline) {
+        // Not using RuntimeClass_Windows_Media_SystemMediaTransportControlsTimelineProperties here,
+        // since the Windows 8.1 SDK headers do not define it
+        hr = ActivateInstance(HStringReference(L"Windows.Media.SystemMediaTransportControlsTimelineProperties").Get(), &smtc_timeline);
+        if (hr != S_OK) {
+            return;
+        }
+    }
+    ISystemMediaTransportControlsTimelineProperties* timeline = smtc_timeline;
+
+    // Convert REFERENCE_TIME (100ns units) to TimeSpan (also 100ns units)
+    ABI::Windows::Foundation::TimeSpan start, end, pos, minSeek, maxSeek;
+    start.Duration = startTime;
+    end.Duration = endTime;
+    pos.Duration = position;
+    minSeek.Duration = startTime;  // Min seekable position (usually start)
+    maxSeek.Duration = endTime;    // Max seekable position (usually end)
+
+    // Set timeline properties
+    hr = timeline->put_StartTime(start);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_EndTime(end);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_MinSeekTime(minSeek);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_MaxSeekTime(maxSeek);
+    if (hr != S_OK) {
+        return;
+    }
+
+    hr = timeline->put_Position(pos);
+    if (hr != S_OK) {
+        return;
+    }
+
+    // Update the timeline
+    smtc_controls2->UpdateTimelineProperties(timeline);
 }
