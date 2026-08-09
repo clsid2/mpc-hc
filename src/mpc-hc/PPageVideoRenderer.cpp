@@ -193,7 +193,10 @@ BOOL CPPageVideoRenderer::OnInitDialog()
     GetDlgItem(IDC_EVR_BUFFERS)->EnableWindow(m_iRendererType != VIDRNDT_DS_VMR9RENDERLESS);
 
     // The D3D9 render device selection is only meaningful with more than one adapter
-    bool canSelectD3D9Device = m_iD3D9RenderDeviceCtrl.GetCount() > 1 && m_iRendererType != VIDRNDT_DS_SYNC;
+    bool multipleD3D9Devices = m_iD3D9RenderDeviceCtrl.GetCount() > 1;
+    bool canSelectD3D9Device = multipleD3D9Devices && m_iRendererType != VIDRNDT_DS_SYNC;
+    GetDlgItem(IDC_D3D9DEVICE)->ShowWindow(multipleD3D9Devices ? SW_SHOW : SW_HIDE);
+    GetDlgItem(IDC_D3D9DEVICE_COMBO)->ShowWindow(multipleD3D9Devices ? SW_SHOW : SW_HIDE);
     GetDlgItem(IDC_D3D9DEVICE)->EnableWindow(canSelectD3D9Device);
     GetDlgItem(IDC_D3D9DEVICE_COMBO)->EnableWindow(canSelectD3D9Device && m_fD3D9RenderDevice);
 
