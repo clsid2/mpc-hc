@@ -143,7 +143,8 @@ void CMPCThemeStatic::OnNcPaint()
 
 void CMPCThemeStatic::OnEnable(BOOL bEnable)
 {
-    if (AppNeedsThemedControls() || isFileDialogChild) {
+    //SetRedraw(TRUE) sets WS_VISIBLE, so the redraw dance must be skipped for hidden controls
+    if ((AppNeedsThemedControls() || isFileDialogChild) && (GetStyle() & WS_VISIBLE)) {
         SetRedraw(FALSE);
         __super::OnEnable(bEnable);
         SetRedraw(TRUE);

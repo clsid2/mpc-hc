@@ -87,7 +87,8 @@ HBRUSH CMPCThemeStaticLink::CtlColor(CDC* pDC, UINT nCtlColor)   //avoid overrid
 
 void CMPCThemeStaticLink::OnEnable(BOOL bEnable)
 {
-    if (AppNeedsThemedControls()) {
+    //SetRedraw(TRUE) sets WS_VISIBLE, so the redraw dance must be skipped for hidden controls
+    if (AppNeedsThemedControls() && (GetStyle() & WS_VISIBLE)) {
         SetRedraw(FALSE);
         __super::OnEnable(bEnable);
         SetRedraw(TRUE);
