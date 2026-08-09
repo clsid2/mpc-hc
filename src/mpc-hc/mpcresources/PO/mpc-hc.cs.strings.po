@@ -103,7 +103,7 @@ msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
 msgstr "Opakování A-B: Označit pozici B"
 
-msgctxt "IDS_SNAPSHOT_SUBTITLES"
+msgctxt "IDS_SCREENSHOT_SUBTITLES"
 msgid "Include Subtitles"
 msgstr "Včetně titulků"
 
@@ -4770,13 +4770,14 @@ msgstr ""
 "Zpoždění před zobrazením videa na celou obrazovku (k zabránění obrazových "
 "vad)."
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
 msgstr "Vykreslit titulky do snímků obrazovky"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION"
 msgid ""
-"Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+"Keep video file extension as part of screenshot filenames (e.g., "
+"file.mkv.png)"
 msgstr "Přidat příponu video souboru k názvu obrázku (např. soubor.mkv.png)"
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"

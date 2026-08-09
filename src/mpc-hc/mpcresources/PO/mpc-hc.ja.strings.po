@@ -103,7 +103,7 @@ msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
 msgstr "A-B リピート: 終点 B を設定"
 
-msgctxt "IDS_SNAPSHOT_SUBTITLES"
+msgctxt "IDS_SCREENSHOT_SUBTITLES"
 msgid "Include Subtitles"
 msgstr "字幕を含める"
 
@@ -4686,13 +4686,14 @@ msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
 msgstr "全画面表示の前に短い遅延を設け、表示の乱れを防ぎます。"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
 msgstr "スクリーンショットに字幕をレンダリングします"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION"
 msgid ""
-"Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+"Keep video file extension as part of screenshot filenames (e.g., "
+"file.mkv.png)"
 msgstr "スナップショットのファイル名にビデオ ファイルの拡張子を含めます (例: file.mkv.png)"
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"

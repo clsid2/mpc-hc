@@ -103,7 +103,7 @@ msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
 msgstr "A-B 點重複播放：標示 B 點"
 
-msgctxt "IDS_SNAPSHOT_SUBTITLES"
+msgctxt "IDS_SCREENSHOT_SUBTITLES"
 msgid "Include Subtitles"
 msgstr "包含字幕"
 
@@ -4656,13 +4656,14 @@ msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
 msgstr "延後顯示全螢幕視訊，以避免畫面不正常"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
 msgstr "在螢幕擷圖中繪製字幕"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION"
 msgid ""
-"Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+"Keep video file extension as part of screenshot filenames (e.g., "
+"file.mkv.png)"
 msgstr "在螢幕擷圖檔名中，保留原影片檔的副檔名（例如 file.mkv.png）"
 
 msgctxt "IDS_PRESIZE_SHADERS_ENABLED"

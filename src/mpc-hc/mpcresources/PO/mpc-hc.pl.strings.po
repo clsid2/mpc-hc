@@ -107,7 +107,7 @@ msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
 msgstr "Powtarzanie A-B: Ustaw znacznik B"
 
-msgctxt "IDS_SNAPSHOT_SUBTITLES"
+msgctxt "IDS_SCREENSHOT_SUBTITLES"
 msgid "Include Subtitles"
 msgstr " Uwzględnij napisy"
 
@@ -4791,13 +4791,14 @@ msgstr ""
 "Opóźnienie przed wyświetleniem wideo w trybie pełnoekranowym, aby zapobiec "
 "błędom wizualnym."
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
 msgstr "Renderuj napisy do zrzutów ekranu"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION"
 msgid ""
-"Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+"Keep video file extension as part of screenshot filenames (e.g., "
+"file.mkv.png)"
 msgstr ""
 "Zachowuj rozszerzenie pliku wideo w nazwach zrzutów (np. plik.mkv.png)"
 

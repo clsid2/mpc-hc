@@ -102,7 +102,7 @@ msgctxt "IDS_PLAYLOOPMODE_AB_MARK_B"
 msgid "A-B Repeat: Mark B Position"
 msgstr "A-B gentagelse: Marker B-position"
 
-msgctxt "IDS_SNAPSHOT_SUBTITLES"
+msgctxt "IDS_SCREENSHOT_SUBTITLES"
 msgid "Include Subtitles"
 msgstr "Inkluder undertekster"
 
@@ -4722,13 +4722,14 @@ msgctxt "IDS_PPAGEADVANCED_FULLSCREEN_DELAY"
 msgid "Delay before showing fullscreen video, to prevent visual glitches."
 msgstr "Forsink inden fuldskærmsvisning for at forhindre visuelle fejl."
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES"
 msgid "Render subtitles onto screenshots"
 msgstr "Gengiv undertekster på screenshots"
 
-msgctxt "IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION"
+msgctxt "IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION"
 msgid ""
-"Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+"Keep video file extension as part of screenshot filenames (e.g., "
+"file.mkv.png)"
 msgstr ""
 "Behold videofilendelse som en del af snapshot-filnavne (f.eks. fil.mkv.png)"
 

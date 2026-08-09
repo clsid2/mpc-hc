@@ -2600,7 +2600,7 @@ BEGIN
     IDS_PLAY_LOOPMODE_AB    "A-B"
     IDS_PLAYLOOPMODE_AB_MARK_A "A-B Repeat: Mark A Position"
     IDS_PLAYLOOPMODE_AB_MARK_B "A-B Repeat: Mark B Position"
-    IDS_SNAPSHOT_SUBTITLES  "Include Subtitles"
+    IDS_SCREENSHOT_SUBTITLES  "Include Subtitles"
     IDS_THEMEMODE_DARK      "Dark"
     IDS_THEMEMODE_LIGHT     "Light"
     IDS_THEMEMODE_WINDOWS   "Windows Default"
@@ -4145,9 +4145,9 @@ BEGIN
                             "Loop back to first file in folder after playing the last file."
     IDS_PPAGEADVANCED_FULLSCREEN_DELAY 
                             "Delay before showing fullscreen video, to prevent visual glitches."
-    IDS_PPAGEADVANCED_SNAPSHOTSUBTITLES "Render subtitles onto screenshots"
-    IDS_PPAGEADVANCED_SNAPSHOTKEEPVIDEOEXTENSION 
-                            "Keep video file extension as part of snapshot filenames (e.g., file.mkv.png)"
+    IDS_PPAGEADVANCED_SCREENSHOTSUBTITLES "Render subtitles onto screenshots"
+    IDS_PPAGEADVANCED_SCREENSHOTKEEPVIDEOEXTENSION 
+                            "Keep video file extension as part of screenshot filenames (e.g., file.mkv.png)"
     IDS_PRESIZE_SHADERS_ENABLED "Pre-Resize Pixel Shaders: on"
     IDS_PRESIZE_SHADERS_DISABLED "Pre-Resize Pixel Shaders: off"
     IDS_PRESIZE_SHADERS_TOGGLE "Enable Pre-Resize Pixel Shaders"

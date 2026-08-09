@@ -45,7 +45,7 @@ CSaveImageDialog::CSaveImageDialog(
         bSubtitleOptionSupported = subtitleOptionSupported;
         if (bSubtitleOptionSupported) {
             pfdc->StartVisualGroup(IDS_SAVEDIALOG_INCLUDE_SUBS, L"");
-            pfdc->AddCheckButton(IDS_SNAPSHOT_SUBTITLES, ResStr(IDS_SNAPSHOT_SUBTITLES), AfxGetAppSettings().bSnapShotSubtitles);
+            pfdc->AddCheckButton(IDS_SCREENSHOT_SUBTITLES, ResStr(IDS_SCREENSHOT_SUBTITLES), AfxGetAppSettings().bSnapShotSubtitles);
             pfdc->EndVisualGroup();
         }
 
@@ -88,7 +88,7 @@ BOOL CSaveImageDialog::OnFileNameOK()
 
         if (bSubtitleOptionSupported) {
             BOOL bChecked;
-            pfdc->GetCheckButtonState(IDS_SNAPSHOT_SUBTITLES, &bChecked);
+            pfdc->GetCheckButtonState(IDS_SCREENSHOT_SUBTITLES, &bChecked);
             AfxGetAppSettings().bSnapShotSubtitles = !!bChecked;
         }
     }
