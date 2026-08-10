@@ -374,6 +374,16 @@ static CString StripIgnoredForNameSimilarity(const CString& str) {
 bool IsNameSimilar(const CString& title, const CString& fileName) {
     if (fileName.Find(title.Left(25)) > -1) return true;
 
+    // Titles of the form "ReleaseGroup | FileNameWithoutExt" contain the file
+    // name instead of the other way around. Treat those as similar when the
+    // title is not much longer than the file name itself.
+    int dot = fileName.ReverseFind(_T('.'));
+    CString baseName = dot > 0 ? fileName.Left(dot) : fileName;
+    if (baseName.GetLength() >= 10 && title.Find(baseName) > -1
+            && title.GetLength() <= baseName.GetLength() + 25) {
+        return true;
+    }
+
     CString strippedTitle = StripIgnoredForNameSimilarity(title);
     if (strippedTitle.GetLength() >= 10) {
         return StripIgnoredForNameSimilarity(fileName).Find(strippedTitle.Left(25)) > -1;
