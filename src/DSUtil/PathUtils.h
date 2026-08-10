@@ -26,6 +26,7 @@ namespace PathUtils
     CString DirName(LPCTSTR path);
     CString FileName(LPCTSTR path);
     CString FileExt(LPCTSTR path);
+    CString StripExtensionAndRarVolumeSuffix(LPCTSTR path);
     CString GetModulePath(HMODULE hModule);
     CString GetAfxModulePath(bool bWithModuleName = false);
     CString GetProgramPath(bool bWithExeName = false);

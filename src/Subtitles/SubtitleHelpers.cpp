@@ -63,14 +63,10 @@ void Subtitle::GetSubFileNames(CString fn, const CAtlArray<CString>& paths, CAtl
 
     ExtendMaxPathLengthIfNeeded(fn, MAX_PATH);
 
-    int l  = fn.ReverseFind('\\') + 1;
-    int l2 = fn.ReverseFind('.');
-    if (l2 < l) { // no extension, read to the end
-        l2 = fn.GetLength();
-    }
+    int l = fn.ReverseFind('\\') + 1;
 
     CString orgpath = fn.Left(l);
-    CString title = fn.Mid(l, l2 - l);
+    CString title = PathUtils::StripExtensionAndRarVolumeSuffix(fn.Mid(l));
     int titleLength = title.GetLength();
 
     WIN32_FIND_DATA wfd;

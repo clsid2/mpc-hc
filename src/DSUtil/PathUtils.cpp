@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "PathUtils.h"
 #include <memory>
+#include <regex>
 #include "text.h"
 #include "DSUtil.h"
 
@@ -54,6 +55,19 @@ namespace PathUtils
     CString FileExt(LPCTSTR path)
     {
         return CPath(path).GetExtension();
+    }
+
+    CString StripExtensionAndRarVolumeSuffix(LPCTSTR path)
+    {
+        // base.mkv        -> base
+        // base.part01.rar -> base (multi-volume rar)
+        static const std::wregex re(_T("(\\.part\\d+\\.rar|\\.[^.\\\\/]+)$"),
+                                    std::wregex::icase | std::wregex::optimize);
+        std::wcmatch mc;
+        if (std::regex_search(path, mc, re)) {
+            return CString(path, (int)mc.position());
+        }
+        return path;
     }
 
     CString GetModulePath(HMODULE hModule)
