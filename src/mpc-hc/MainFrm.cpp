@@ -2362,9 +2362,6 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                 m_Lcd.SetMediaRange(0, rtDur);
                 m_Lcd.SetMediaPos(rtNow);
 
-                // Update media transport controls timeline (throttled)
-                MediaTransportControlUpdateTimeline();
-
                 if (m_pCAP) {
                     if (g_bExternalSubtitleTime) {
                         m_pCAP->SetTime(rtNow);
@@ -2383,6 +2380,8 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                     case PM_FILE:
                     // no break
                     case PM_DVD:
+                        // Update media transport controls timeline (throttled)
+                        MediaTransportControlUpdateTimeline();
                         if (AfxGetAppSettings().fShowCurrentTimeInOSD && m_OSD.CanShowMessage()) {
                             m_OSD.DisplayTime(m_wndStatusBar.GetStatusTimer());
                         }
@@ -23773,6 +23772,9 @@ void CMainFrame::MediaTransportControlUpdateState(OAFilterState state) {
 }
 
 void CMainFrame::MediaTransportControlUpdateTimeline(bool force /*= false*/) {
+    if (!m_media_trans_control.smtc_controls2) {
+        return;
+    }
     // Note: IsActive() is a COM call, so when throttling check the tick count first
     ULONGLONG tick = GetTickCount64();
     if (!force && tick < m_lastSMTCTimelineUpdate + 2000ULL) {
