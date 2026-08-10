@@ -1182,6 +1182,7 @@ public:
     afx_msg void OnSubtitlesOverrideStyles();
     afx_msg void OnPlaySubtitles(UINT nID);
     afx_msg void OnPlaySecondarySubtitle(UINT nID);
+    afx_msg void OnSecondarySubtitleLoad();
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
     afx_msg void OnPlayVolume(UINT nID);

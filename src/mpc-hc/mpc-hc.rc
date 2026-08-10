@@ -4110,6 +4110,7 @@ BEGIN
     IDS_TOOLBAR_ALIGNMENT_LEFT "Left"
     IDS_TOOLBAR_ALIGNMENT_CENTER "Center"
     IDS_TOOLBAR_ALIGNMENT_RIGHT "Right"
+    IDS_SUBTITLES_SECONDARY_BAD_FORMAT "This subtitle format cannot be used as a secondary subtitle track. Only simple text formats such as SRT are supported."
 END
 
 STRINGTABLE

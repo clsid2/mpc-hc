@@ -571,6 +571,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_AUDIO_SUBITEM_START, ID_AUDIO_SUBITEM_END, OnPlayAudio)
     ON_COMMAND_RANGE(ID_SUBTITLES_SUBITEM_START, ID_SUBTITLES_SUBITEM_END, OnPlaySubtitles)
     ON_COMMAND_RANGE(ID_SUBTITLES_SECONDARY_SUBITEM_START, ID_SUBTITLES_SECONDARY_SUBITEM_END, OnPlaySecondarySubtitle)
+    ON_COMMAND(ID_SUBTITLES_SECONDARY_LOAD, OnSecondarySubtitleLoad)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_DEFAULT_STYLE, OnSubtitlesDefaultStyle)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_ALL_STYLES, OnSubtitlesOverrideStyles)
     ON_COMMAND_RANGE(ID_VIDEO_STREAMS_SUBITEM_START, ID_VIDEO_STREAMS_SUBITEM_END, OnPlayVideoStreams)
@@ -10590,6 +10591,48 @@ void CMainFrame::OnPlaySecondarySubtitle(UINT nID)
     }
 }
 
+void CMainFrame::OnSecondarySubtitleLoad()
+{
+    if (!m_pCAP || GetLoadState() != MLS::LOADED || m_fAudioOnly) {
+        return;
+    }
+
+    DWORD dwFlags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_NOCHANGEDIR;
+    if (!AfxGetAppSettings().fKeepHistory) {
+        dwFlags |= OFN_DONTADDTORECENT;
+    }
+    CString filters;
+    filters.Format(_T("%s|*.srt;*.sub;*.smi;*.psb;*.txt;*.rt;*.webvtt;*.vtt|%s"),
+                   ResStr(IDS_SUBTITLE_FILES_FILTER).GetString(), ResStr(IDS_ALL_FILES_FILTER).GetString());
+
+    CFileDialog fd(TRUE, nullptr, nullptr, dwFlags, filters, GetModalParent());
+
+    OPENFILENAME& ofn = fd.GetOFN();
+    // Set the current file directory as default folder
+    CString curfile = m_wndPlaylistBar.GetCurFileName();
+    CPathW defaultDir; // must outlive DoModal(), ofn.lpstrInitialDir points into it
+    if (!PathUtils::IsURL(curfile)) {
+        ExtendMaxPathLengthIfNeeded(curfile, true);
+        defaultDir = curfile.GetString();
+        defaultDir.RemoveFileSpec();
+        if (!defaultDir.m_strPath.IsEmpty() && defaultDir.IsDirectory()) {
+            ofn.lpstrInitialDir = defaultDir.m_strPath;
+        }
+    }
+
+    if (fd.DoModal() != IDOK) {
+        return;
+    }
+
+    SubtitleInput subInput;
+    if (!LoadSubtitle(fd.GetPathName(), &subInput) || !IsEligibleSecondarySubtitle(subInput)) {
+        AfxMessageBox(IDS_SUBTITLES_SECONDARY_BAD_FORMAT, MB_ICONINFORMATION | MB_OK, 0);
+        return;
+    }
+    AfxGetAppSettings().fEnableSubtitles = true;
+    SetSecondarySubtitle(subInput);
+}
+
 void CMainFrame::OnPlayVideoStreams(UINT nID)
 {
     nID -= ID_VIDEO_STREAMS_SUBITEM_START;
@@ -17593,12 +17636,30 @@ bool CMainFrame::IsEligibleSecondarySubtitle(const SubtitleInput& subInput) cons
     // and never the stream that is currently selected as the primary one.
     // Embedded/IAMStreamSelect tracks are excluded because selecting one calls
     // IAMStreamSelect::Enable, which would disturb the primary selection.
-    return subInput.pSubStream
-           && !subInput.pSourceFilter
-           && dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)subInput.pSubStream)
-           && std::find(m_ExternalSubstreams.cbegin(), m_ExternalSubstreams.cend(),
-                        (ISubStream*)subInput.pSubStream) != m_ExternalSubstreams.cend()
-           && subInput.pSubStream != m_pCurrentSubInput.pSubStream;
+    if (!subInput.pSubStream || subInput.pSourceFilter
+            || subInput.pSubStream == m_pCurrentSubInput.pSubStream
+            || std::find(m_ExternalSubstreams.cbegin(), m_ExternalSubstreams.cend(),
+                         (ISubStream*)subInput.pSubStream) == m_ExternalSubstreams.cend()) {
+        return false;
+    }
+    auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)subInput.pSubStream);
+    if (!pRTS) {
+        return false;
+    }
+    // Restrict to simple text formats: SSA/ASS and the XML-based formats can
+    // carry their own positioning, which would collide with the primary track.
+    switch (pRTS->m_subtitleType) {
+        case Subtitle::SRT:
+        case Subtitle::SUB:
+        case Subtitle::SMI:
+        case Subtitle::PSB:
+        case Subtitle::TXT:
+        case Subtitle::RT:
+        case Subtitle::VTT:
+            return true;
+        default:
+            return false;
+    }
 }
 
 SubtitleInput* CMainFrame::GetSecondarySubtitleInput(int idx)
@@ -17636,8 +17697,6 @@ void CMainFrame::SetupSecondarySubtitleSubMenu()
             continue;
         }
         if (i == 0) {
-            // Only build the menu when there is at least one eligible track, so
-            // that an empty menu grays the "Secondary Subtitle Track" item out.
             VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, ResStr(IDS_AG_DISABLED)));
             VERIFY(subMenu.AppendMenu(MF_SEPARATOR));
         }
@@ -17665,7 +17724,12 @@ void CMainFrame::SetupSecondarySubtitleSubMenu()
         // Check the active entry, or "Disabled" (position 0) when no secondary is selected
         int checkPos = (iSelected >= 0) ? (iSelected + 2) : 0;
         VERIFY(subMenu.CheckMenuRadioItem(0, subMenu.GetMenuItemCount() - 1, checkPos, MF_BYPOSITION));
+        VERIFY(subMenu.AppendMenu(MF_SEPARATOR));
     }
+
+    // Load a subtitle file directly as the secondary track, without going
+    // through the regular load path which changes the primary selection.
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_SUBTITLES_SECONDARY_LOAD, ResStr(IDS_AG_LOAD_SUBTITLES)));
 }
 
 void CMainFrame::SetupVideoStreamsSubMenu()
