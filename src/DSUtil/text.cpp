@@ -352,8 +352,32 @@ int LastIndexOfCString(const CString& text, const CString& pattern) {
     }
 }
 
+// Remove characters that are illegal in file names, together with the
+// substitutes download tools commonly use when sanitizing them (youtube-dl
+// replaces '/' with '_', deletes '?', expands ':' to " -", turns '"' into
+// '\''). Removing both the originals and the substitutes from both strings
+// lets a title still match its sanitized file name.
+static CString StripIgnoredForNameSimilarity(const CString& str) {
+    CString ret;
+    LPTSTR buf = ret.GetBuffer(str.GetLength());
+    int len = 0;
+    for (int i = 0; i < str.GetLength(); i++) {
+        TCHAR c = str[i];
+        if (c > _T(' ') && !_tcschr(_T("/\\:*?\"<>|_-.'"), c)) {
+            buf[len++] = c;
+        }
+    }
+    ret.ReleaseBufferSetLength(len);
+    return ret;
+}
+
 bool IsNameSimilar(const CString& title, const CString& fileName) {
     if (fileName.Find(title.Left(25)) > -1) return true;
+
+    CString strippedTitle = StripIgnoredForNameSimilarity(title);
+    if (strippedTitle.GetLength() >= 10) {
+        return StripIgnoredForNameSimilarity(fileName).Find(strippedTitle.Left(25)) > -1;
+    }
     return false;
 }
 
