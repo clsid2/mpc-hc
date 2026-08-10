@@ -3387,6 +3387,7 @@ STRINGTABLE
 BEGIN
     IDS_AG_NEXT_SUBTITLE    "Next Subtitle Track"
     IDS_AG_PREV_SUBTITLE    "Prev Subtitle Track"
+    IDS_AG_AUTOCOPY_SUBTITLE "Auto-Copy Subtitle to Clipboard"
     IDS_MPLAYERC_85         "On/Off Subtitle"
     IDS_MPLAYERC_86         "Reload Subtitles"
     IDS_MPLAYERC_91         "Next Angle (DVD)"
@@ -4107,6 +4108,8 @@ BEGIN
     IDS_TOOLBAR_ALIGNMENT_LEFT "Left"
     IDS_TOOLBAR_ALIGNMENT_CENTER "Center"
     IDS_TOOLBAR_ALIGNMENT_RIGHT "Right"
+    IDS_OSD_AUTOCOPY_SUBTITLE_ON "Auto-Copy Subtitle to Clipboard: On"
+    IDS_OSD_AUTOCOPY_SUBTITLE_OFF "Auto-Copy Subtitle to Clipboard: Off"
 END
 
 STRINGTABLE
