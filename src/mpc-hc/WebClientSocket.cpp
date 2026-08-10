@@ -689,8 +689,8 @@ bool CWebClientSocket::OnControls(CStringA& hdr, CStringA& body, CStringA& mime)
     }
 
     CString volumelevel, muted;
-    volumelevel.Format(_T("%d"), m_pMainFrame->m_wndToolBar.m_volctrl.GetPos());
-    muted.Format(_T("%d"), m_pMainFrame->m_wndToolBar.Volume == -10000 ? 1 : 0);
+    volumelevel.Format(_T("%d"), m_pMainFrame->GetVolume());
+    muted.Format(_T("%d"), m_pMainFrame->IsMuted() ? 1 : 0);
 
     CString reloadtime(_T("0")); // TODO
 
@@ -745,8 +745,8 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     }
 
     CString volumelevel, muted;
-    volumelevel.Format(_T("%d"), m_pMainFrame->m_wndToolBar.m_volctrl.GetPos());
-    muted.Format(_T("%d"), m_pMainFrame->m_wndToolBar.Volume == -10000 ? 1 : 0);
+    volumelevel.Format(_T("%d"), m_pMainFrame->GetVolume());
+    muted.Format(_T("%d"), m_pMainFrame->IsMuted() ? 1 : 0);
 
     CString reloadtime(_T("0")); // TODO
 
