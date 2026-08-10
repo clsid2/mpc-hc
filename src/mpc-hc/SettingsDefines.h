@@ -193,6 +193,7 @@
 #define IDS_RS_SPOVERRIDEPLACEMENT          _T("SPOverridePlacement")
 #define IDS_RS_SPHORPOS                     _T("SPHorPos")
 #define IDS_RS_SPVERPOS                     _T("SPVerPos")
+#define IDS_RS_SECONDARYSUBVERPOS           _T("SecondarySubVerPos")
 #define IDS_RS_SUBTITLEARCOMPENSATION       _T("SubtitleARCompensation")
 #define IDS_RS_SPCSIZE                      _T("SPCSize2")
 #define IDS_RS_SPCMAXRESX                   _T("SPCMaxResX")

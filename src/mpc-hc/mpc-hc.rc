@@ -1779,6 +1779,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -1972,6 +1973,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -2345,6 +2347,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"

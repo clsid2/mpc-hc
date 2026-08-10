@@ -1936,6 +1936,7 @@ CRenderedTextSubtitle::CRenderedTextSubtitle(CCritSec* pLock)
     , m_polygonBaselineOffset(0)
     , m_bOverridePlacement(false)
     , m_overridePlacement(50, 90)
+    , m_bTopAlignedPlacement(false)
     , m_webvtt_allow_clear(false)
     , m_bUseFreeType(false)
 {
@@ -3126,7 +3127,7 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
     } else {
         // find the appropriate embedded style
         GetStyle(entry, stss);
-        if (m_bOverridePlacement) {
+        if (m_bOverridePlacement && !m_bTopAlignedPlacement) {
             // Apply override placement to embedded style
             stss.scrAlignment = 2;
             LONG mw = m_storageRes.cx - stss.marginRect.left - stss.marginRect.right;
@@ -3136,6 +3137,17 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
             stss.marginRect.left   = std::lround(m_storageRes.cx * m_overridePlacement.cx / 100.0 - mw / 2.0);
             stss.marginRect.right  = m_storageRes.cx - (stss.marginRect.left + mw);
         }
+    }
+    if (m_bTopAlignedPlacement) {
+        // Secondary subtitle track: force a top anchor regardless of the style
+        // override settings, so it cannot overlap the primary subtitles at the
+        // bottom and multi-line text stacks downward from the fixed top position.
+        LONG mw = m_storageRes.cx - stss.marginRect.left - stss.marginRect.right;
+        stss.scrAlignment = 8;
+        stss.marginRect.top    = std::lround(m_storageRes.cy * m_overridePlacement.cy / 100.0);
+        stss.marginRect.bottom = m_storageRes.cy - (stss.marginRect.top + std::lround(stss.fontSize * 3.0));
+        stss.marginRect.left   = std::lround(m_storageRes.cx * m_overridePlacement.cx / 100.0 - mw / 2.0);
+        stss.marginRect.right  = m_storageRes.cx - (stss.marginRect.left + mw);
     }
 
     double dFontScaleXCompensation = 1.0;
@@ -3164,7 +3176,9 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
 
     STSStyle orgstss = stss;
 
-    sub->m_scrAlignment = -stss.scrAlignment;
+    // A positive alignment value is locked, so for the secondary subtitle track
+    // in-line \an and \a tags cannot override the forced top placement.
+    sub->m_scrAlignment = m_bTopAlignedPlacement ? stss.scrAlignment : -stss.scrAlignment;
     sub->m_wrapStyle = m_defaultWrapStyle;
     sub->m_fAnimated = false;
     sub->m_relativeTo = stss.relativeTo;

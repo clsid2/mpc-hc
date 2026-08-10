@@ -345,6 +345,7 @@ private:
     std::list<ISubStream*> m_ExternalSubstreams;
     POSITION m_posFirstExtSub;
     SubtitleInput m_pCurrentSubInput;
+    SubtitleInput m_pSecondarySubInput; // secondary subtitle track, limited to externally loaded text subtitles
 
     // StatusBar message text parts
     CString currentAudioLang;
@@ -354,6 +355,11 @@ private:
     CString m_statusbarVideoSize;
 
     SubtitleInput* GetSubtitleInput(int& i, bool bIsOffset = false);
+    // Secondary subtitle track helpers. The same eligibility predicate drives the
+    // menu builder and the command handler, so the handler can never select an
+    // entry the menu did not offer.
+    bool IsEligibleSecondarySubtitle(const SubtitleInput& subInput) const;
+    SubtitleInput* GetSecondarySubtitleInput(int idx);
     int UpdateSelectedAudioStreamInfo(int index, AM_MEDIA_TYPE* pmt, LCID lcid);
     bool IsValidSubtitleStream(int i);
     int GetSelectedSubtitleTrackIndex();
@@ -390,6 +396,7 @@ private:
     void SetupFiltersSubMenu();
     void SetupAudioSubMenu();
     void SetupSubtitlesSubMenu();
+    void SetupSecondarySubtitleSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
     void SetupFavoritesSubMenu();
@@ -407,7 +414,7 @@ private:
 
     CMPCThemeMenu m_mainPopupMenu, m_popupMenu;
     CMPCThemeMenu m_openCDsMenu;
-    CMPCThemeMenu m_filtersMenu, m_subtitlesMenu, m_audiosMenu, m_videoStreamsMenu;
+    CMPCThemeMenu m_filtersMenu, m_subtitlesMenu, m_subtitlesSecondaryMenu, m_audiosMenu, m_videoStreamsMenu;
     CMPCThemeMenu m_chaptersMenu, m_titlesMenu, m_playlistMenu, m_BDPlaylistMenu, m_channelsMenu;
     CMPCThemeMenu m_favoritesMenu;
     CMPCThemeMenu m_shadersMenu;
@@ -721,11 +728,14 @@ public:
     bool LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub);
     bool SetSubtitle(int i, bool bIsOffset = false, bool bDisplayMessage = false);
     void SetSubtitle(const SubtitleInput& subInput, bool skip_lcid = false);
+    void SetSecondarySubtitle(const SubtitleInput& subInput);
+    CComPtr<ISubPicProvider> GetSubtitleSubPicProvider();
     void UpdateSubtitleColorInfo();
     void ToggleSubtitleOnOff(bool bDisplayMessage = false);
     void ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pSubStreamNew);
     void InvalidateSubtitle(DWORD_PTR nSubtitleId = DWORD_PTR_MAX, REFERENCE_TIME rtInvalidate = -1);
     void ReloadSubtitle();
+    bool ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary);
     void UpdateSubtitleRenderingParameters();
     HRESULT InsertTextPassThruFilter(IBaseFilter* pBF, IPin* pPin, IPin* pPinto);
 
@@ -1171,6 +1181,7 @@ public:
     afx_msg void OnSubtitlesDefaultStyle();
     afx_msg void OnSubtitlesOverrideStyles();
     afx_msg void OnPlaySubtitles(UINT nID);
+    afx_msg void OnPlaySecondarySubtitle(UINT nID);
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
     afx_msg void OnPlayVolume(UINT nID);

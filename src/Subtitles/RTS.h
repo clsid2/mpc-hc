@@ -495,6 +495,7 @@ class __declspec(uuid("537DCACA-2812-4a4f-B2C6-1A34C17ADEB0"))
     bool m_bOverridePlacement;
     bool m_bUseFreeType;
     CSize m_overridePlacement;
+    bool m_bTopAlignedPlacement; // secondary subtitle track: forced top-anchored placement
 
     void ParseEffect(CSubtitle* sub, CString str);
     void ParseString(CSubtitle* sub, CStringW str, STSStyle& style);
@@ -523,9 +524,10 @@ public:
     void SetUseFreeType(bool useFreeType) { m_bUseFreeType = useFreeType; }
     bool GetUseFreeType() { return m_bUseFreeType; }
 
-    void SetAlignment(bool bOverridePlacement, LONG lHorPos, LONG lVerPos) {
+    void SetAlignment(bool bOverridePlacement, LONG lHorPos, LONG lVerPos, bool bTopAligned = false) {
         m_bOverridePlacement = bOverridePlacement;
         m_overridePlacement.SetSize(lHorPos, lVerPos);
+        m_bTopAlignedPlacement = bTopAligned;
     }
 
 public:

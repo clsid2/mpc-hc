@@ -818,6 +818,7 @@ public:
     // Subtitles
     bool            fOverridePlacement;
     int             nHorPos, nVerPos;
+    int             nSecondarySubVerPos; // top placement (%) of the secondary subtitle track
     bool            bSubtitleARCompensation;
     int             nSubDelayStep;
 
