@@ -850,7 +850,7 @@ bool CVobSubFile::ReadRar(CString fn)
     }
 
     RARHeaderDataEx HeaderDataEx;
-    HeaderDataEx.CmtBuf = nullptr;
+    ZeroMemory(&HeaderDataEx, sizeof(HeaderDataEx));
 
     while (ReadHeaderEx(hArcData, &HeaderDataEx) == 0) {
         CString subfn(HeaderDataEx.FileNameW);

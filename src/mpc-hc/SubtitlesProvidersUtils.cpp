@@ -528,7 +528,7 @@ bool SubtitlesProvidersUtils::FileUnRar(CString fn, stringMap& dataOut)
     }
 
     RARHeaderDataEx HeaderDataEx;
-    HeaderDataEx.CmtBuf = nullptr;
+    ZeroMemory(&HeaderDataEx, sizeof(HeaderDataEx));
 
     while (ReadHeaderEx(hArcData, &HeaderDataEx) == 0) {
         if (wcslen(HeaderDataEx.FileNameW) >= 4 && Subtitle::IsTextSubtitleFileName(HeaderDataEx.FileNameW)) {
