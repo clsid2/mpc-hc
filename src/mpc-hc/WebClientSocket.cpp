@@ -1001,6 +1001,485 @@ bool CWebClientSocket::OnDVBSetChannel(CStringA& hdr, CStringA& body, CStringA& 
     return true;
 }
 
+// Escape a UTF-8 string so that it can be used as a JSON string value. We can't
+// use EscapeJSONString() from text.h: it escapes the quotes before the
+// backslashes, which then escapes the backslashes it has just added itself, and
+// it leaves the other control characters alone.
+static CStringA JSONEscape(const CStringA& str)
+{
+    CStringA escaped;
+
+    for (int i = 0, len = str.GetLength(); i < len; i++) {
+        unsigned char c = (unsigned char)str[i];
+        switch (c) {
+            case '\"':
+                escaped += "\\\"";
+                break;
+            case '\\':
+                escaped += "\\\\";
+                break;
+            case '\b':
+                escaped += "\\b";
+                break;
+            case '\f':
+                escaped += "\\f";
+                break;
+            case '\n':
+                escaped += "\\n";
+                break;
+            case '\r':
+                escaped += "\\r";
+                break;
+            case '\t':
+                escaped += "\\t";
+                break;
+            default:
+                if (c < 0x20) {
+                    escaped.AppendFormat("\\u%04x", c);
+                } else {
+                    escaped += (char)c;
+                }
+                break;
+        }
+    }
+
+    return escaped;
+}
+
+// Convert a native string into a quoted, escaped UTF-8 JSON string literal.
+static CStringA JSONString(const CString& str)
+{
+    return "\"" + JSONEscape(UTF8(str)) + "\"";
+}
+
+// Append one { "name", "id" } track object to a JSON array body.
+static void AppendJSONTrack(CStringA& tracks, UINT id, const CString& name)
+{
+    if (!tracks.IsEmpty()) {
+        tracks += ",";
+    }
+    tracks.AppendFormat("{\"name\":%s,\"id\":%u}", JSONString(name).GetString(), id);
+}
+
+// Mirrors CMainFrame::SetupNavStreamSelectSubMenu() and the arithmetic of its
+// CMainFrame::OnNavStreamSelectSubMenu() counterpart: the n-th stream of the
+// group, taken from the first filter that provides any, is selected by
+// baseID + n.
+void CWebClientSocket::GetNavStreamTracksJSON(DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active) const
+{
+    int count = 0;
+
+    auto addStreamSelectFilter = [&](CComPtr<IAMStreamSelect> pSS) {
+        DWORD cStreams;
+        if (!pSS || FAILED(pSS->Count(&cStreams))) {
+            return;
+        }
+
+        for (DWORD i = 0; i < cStreams; i++) {
+            DWORD dwFlags, dwGroup;
+            CComHeapPtr<WCHAR> pszName;
+            LCID lcid = 0;
+            if (FAILED(pSS->Info(i, nullptr, &dwFlags, &lcid, &dwGroup, &pszName, nullptr, nullptr))
+                    || !pszName) {
+                continue;
+            }
+
+            if (dwGroup != dwSelGroup) {
+                continue;
+            }
+
+            if (dwFlags) {
+                active = count;
+            }
+
+            AppendJSONTrack(tracks, baseID + count, CString(pszName));
+            count++;
+        }
+    };
+
+    if (m_pMainFrame->m_pSplitterSS) {
+        addStreamSelectFilter(m_pMainFrame->m_pSplitterSS);
+    }
+    if (!count && m_pMainFrame->m_pOtherSS[0]) {
+        addStreamSelectFilter(m_pMainFrame->m_pOtherSS[0]);
+    }
+    if (!count && m_pMainFrame->m_pOtherSS[1]) {
+        addStreamSelectFilter(m_pMainFrame->m_pOtherSS[1]);
+    }
+}
+
+// The ids we report are the ones CMainFrame::OnPlayAudio() expects, which are
+// not simply ID_AUDIO_SUBITEM_START + track index: when the audio switcher is
+// used the first menu entry opens the options dialog.
+CStringA CWebClientSocket::GetAudioTracksJSON() const
+{
+    CStringA tracks, json;
+    int active = -1;
+
+    if (m_pMainFrame->GetLoadState() == MLS::LOADED) {
+        DWORD cStreams = 0;
+
+        if (m_pMainFrame->GetPlaybackMode() == PM_DVD) {
+            ULONG ulStreamsAvailable, ulCurrentStream;
+            if (m_pMainFrame->m_pDVDI
+                    && SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
+                for (ULONG i = 0; i < ulStreamsAvailable; i++) {
+                    LCID lcid = 0;
+                    CString name;
+                    if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
+                        GetLocaleString(lcid, LOCALE_SENGLANGUAGE, name);
+                    } else {
+                        name.Format(IDS_AG_UNKNOWN, int(i + 1));
+                    }
+
+                    if (i == ulCurrentStream) {
+                        active = (int)i;
+                    }
+
+                    // OnPlayAudio() calls SelectAudioStream() with the id offset
+                    AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + i, name);
+                }
+            }
+        } else if (m_pMainFrame->m_pAudioSwitcherSS
+                   && SUCCEEDED(m_pMainFrame->m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
+            for (long i = 0; i < (long)cStreams; i++) {
+                DWORD dwFlags;
+                CComHeapPtr<WCHAR> pszName;
+                if (FAILED(m_pMainFrame->m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
+                    break;
+                }
+
+                if (dwFlags) {
+                    active = i;
+                }
+
+                // the options dialog takes the first id, the streams follow it
+                AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + 1 + i, CString(pszName));
+            }
+        } else if (m_pMainFrame->GetPlaybackMode() == PM_FILE
+                   || m_pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            GetNavStreamTracksJSON(1, ID_AUDIO_SUBITEM_START, tracks, active);
+        }
+    }
+
+    json.Format("{\"active\":%d,\"tracks\":[%s]}", active, tracks.GetString());
+
+    return json;
+}
+
+// Same as above for the subtitles, whose menu holds a lot more entries the
+// actual tracks are offset by, see CMainFrame::OnPlaySubtitles().
+CStringA CWebClientSocket::GetSubtitleTracksJSON() const
+{
+    CStringA tracks, json;
+    int active = -1, count = 0;
+
+    if (m_pMainFrame->GetLoadState() == MLS::LOADED && !m_pMainFrame->m_fAudioOnly) {
+        UINT baseID = ID_SUBTITLES_SUBITEM_START;
+
+        // DVD subpicture streams are never handled by the internal subtitle
+        // renderer, but external subtitles can be loaded on top of them
+        if (m_pMainFrame->GetPlaybackMode() == PM_DVD) {
+            ULONG ulStreamsAvailable, ulCurrentStream;
+            BOOL bIsDisabled;
+            if (m_pMainFrame->m_pDVDI
+                    && SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
+                    && ulStreamsAvailable > 0) {
+                for (ULONG i = 0; i < ulStreamsAvailable; i++) {
+                    LCID lcid = 0;
+                    if (FAILED(m_pMainFrame->m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
+                        continue;
+                    }
+
+                    CString name;
+                    if (lcid) {
+                        GetLocaleString(lcid, LOCALE_SENGLANGUAGE, name);
+                    } else {
+                        name.Format(IDS_AG_UNKNOWN, int(i + 1));
+                    }
+
+                    if (!bIsDisabled && i == ulCurrentStream) {
+                        active = count;
+                    }
+
+                    // OnPlaySubtitles() reserves the first id for the on/off item
+                    AppendJSONTrack(tracks, ID_SUBTITLES_SUBITEM_START + 1 + i, name);
+                    count++;
+                }
+
+                // whatever follows is offset by the on/off item and the streams
+                baseID += ulStreamsAvailable + 1;
+            }
+        }
+
+        if (m_pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            GetNavStreamTracksJSON(2, baseID, tracks, active);
+        } else if (!m_pMainFrame->m_pSubStreams.IsEmpty()) {
+            // the internal subtitle renderer's menu has 6 items before the list
+            baseID += 6;
+
+            POSITION pos = m_pMainFrame->m_pSubStreams.GetHeadPosition();
+            int i = 0;
+            while (pos) {
+                SubtitleInput& subInput = m_pMainFrame->m_pSubStreams.GetNext(pos);
+
+                if (CComQIPtr<IAMStreamSelect> pSSF = subInput.pSourceFilter) {
+                    DWORD cStreams;
+                    if (FAILED(pSSF->Count(&cStreams))) {
+                        continue;
+                    }
+
+                    for (int j = 0, cnt = (int)cStreams; j < cnt; j++) {
+                        DWORD dwFlags, dwGroup;
+                        CComHeapPtr<WCHAR> pszName;
+                        LCID lcid = 0;
+                        if (FAILED(pSSF->Info(j, nullptr, &dwFlags, &lcid, &dwGroup, &pszName, nullptr, nullptr))
+                                || !pszName) {
+                            continue;
+                        }
+
+                        if (dwGroup != 2) {
+                            continue;
+                        }
+
+                        if (subInput.pSubStream == m_pMainFrame->m_pCurrentSubInput.pSubStream
+                                && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
+                            active = count + i;
+                        }
+
+                        AppendJSONTrack(tracks, baseID + i, CString(pszName));
+                        i++;
+                    }
+                } else {
+                    CComPtr<ISubStream> pSubStream = subInput.pSubStream;
+                    if (!pSubStream) {
+                        continue;
+                    }
+
+                    if (subInput.pSubStream == m_pMainFrame->m_pCurrentSubInput.pSubStream) {
+                        active = count + i + pSubStream->GetStream();
+                    }
+
+                    for (int j = 0, cnt = pSubStream->GetStreamCount(); j < cnt; j++) {
+                        CComHeapPtr<WCHAR> pName;
+                        LCID lcid = 0;
+                        CString name;
+                        if (SUCCEEDED(pSubStream->GetStreamInfo(j, &pName, &lcid))) {
+                            name = pName;
+                        } else {
+                            name = ResStr(IDS_AG_UNKNOWN_STREAM);
+                        }
+
+                        AppendJSONTrack(tracks, baseID + i, name);
+                        i++;
+                    }
+                }
+            }
+
+            if (!AfxGetAppSettings().fEnableSubtitles) {
+                active = -1;
+            }
+        } else if (m_pMainFrame->GetPlaybackMode() == PM_FILE) {
+            GetNavStreamTracksJSON(2, baseID, tracks, active);
+        }
+    }
+
+    json.Format("{\"active\":%d,\"tracks\":[%s]}", active, tracks.GetString());
+
+    return json;
+}
+
+bool CWebClientSocket::OnStatusJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    OAFilterState fs = m_pMainFrame->GetMediaState();
+    CString statestring;
+    switch (fs) {
+        case State_Stopped:
+            statestring.LoadString(IDS_CONTROLS_STOPPED);
+            break;
+        case State_Paused:
+            statestring.LoadString(IDS_CONTROLS_PAUSED);
+            break;
+        case State_Running:
+            statestring.LoadString(IDS_CONTROLS_PLAYING);
+            break;
+        default:
+            statestring = _T("N/A");
+            break;
+    }
+
+    body = "{";
+    body += "\"file\":" + JSONString(m_pMainFrame->GetFileName());
+    body += ",\"path\":" + JSONString(m_pMainFrame->m_wndPlaylistBar.GetCurFileName());
+    body.AppendFormat(",\"state\":%ld", fs);
+    body += ",\"stateString\":" + JSONString(statestring);
+    body.AppendFormat(",\"position\":%ld,\"duration\":%ld",
+                      std::lround(m_pMainFrame->GetPos() / 10000i64),
+                      std::lround(m_pMainFrame->GetDur() / 10000i64));
+    body.AppendFormat(",\"volume\":%d,\"muted\":%s,\"rate\":%g",
+                      m_pMainFrame->GetVolume(), m_pMainFrame->IsMuted() ? "true" : "false",
+                      m_pMainFrame->GetPlayingRate());
+    body += ",\"size\":" + JSONString(GetSize());
+    body += ",\"version\":" + JSONString(AfxGetMyApp()->m_strVersion);
+    body.AppendFormat(",\"preview\":%s", AfxGetAppSettings().bWebUIEnablePreview ? "true" : "false");
+    body += ",\"audio\":" + GetAudioTracksJSON();
+    body += ",\"subtitle\":" + GetSubtitleTracksJSON();
+    body += "}";
+
+    mime = "application/json";
+
+    return true;
+}
+
+bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    CStringA items;
+    int index = 0;
+
+    CPlaylist& pl = m_pMainFrame->m_wndPlaylistBar.m_pl;
+    POSITION pos = pl.GetHeadPosition();
+    while (pos) {
+        CPlaylistItem& pli = pl.GetNext(pos);
+
+        if (!items.IsEmpty()) {
+            items += ",";
+        }
+        items.AppendFormat("{\"index\":%d,\"label\":%s,\"duration\":%ld,\"id\":%u}",
+                           index, JSONString(pli.GetLabel()).GetString(),
+                           std::lround(pli.m_duration / 10000i64),
+                           ID_NAVIGATE_JUMPTO_SUBITEM_START + index);
+        index++;
+    }
+
+    body.Format("{\"active\":%d,\"items\":[%s]}",
+                m_pMainFrame->m_wndPlaylistBar.GetSelIdx(), items.GetString());
+
+    mime = "application/json";
+
+    return true;
+}
+
+bool CWebClientSocket::OnCommandsJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    CStringA commands;
+
+    const CAppSettings& s = AfxGetAppSettings();
+    POSITION pos = s.wmcmds.GetHeadPosition();
+    while (pos) {
+        const wmcmd& wc = s.wmcmds.GetNext(pos);
+
+        if (!commands.IsEmpty()) {
+            commands += ",";
+        }
+        commands.AppendFormat("{\"id\":%u,\"name\":%s}", wc.cmd, JSONString(wc.GetName()).GetString());
+    }
+
+    body = "{\"commands\":[" + commands + "]}";
+
+    mime = "application/json";
+
+    return true;
+}
+
+bool CWebClientSocket::OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    // read-only counterpart of OnBrowser(), which keeps opening the files
+
+    CString path;
+    m_get.Lookup("path", path);
+
+    CFileStatus fs;
+    if (PathUtils::IsURL(path)) {
+        path.Empty();
+    } else if (!path.IsEmpty() && CFileGetStatus(path, fs) && !(fs.m_attribute & CFile::directory)) {
+        CPath p(path);
+        p.RemoveFileSpec();
+        path = (LPCTSTR)p;
+    }
+
+    if (!path.IsEmpty() && CFileGetStatus(path, fs) && (fs.m_attribute & CFile::directory)
+            || path.Find(_T("\\")) == 0) { // FIXME
+        CPath p(path);
+        p.Canonicalize();
+        p.MakePretty();
+        p.AddBackslash();
+        path = (LPCTSTR)p;
+    }
+
+    CStringA parent("null"), dirs, files;
+
+    if (path.IsEmpty()) {
+        for (TCHAR drive[] = _T("A:"); drive[0] <= _T('Z'); drive[0]++) {
+            if (GetDriveType(drive) != DRIVE_NO_ROOT_DIR) {
+                CString rootdrive = CString(drive) + _T("\\");
+
+                if (!dirs.IsEmpty()) {
+                    dirs += ",";
+                }
+                dirs.AppendFormat("{\"name\":%s,\"path\":%s}",
+                                  JSONString(rootdrive).GetString(), JSONString(rootdrive).GetString());
+            }
+        }
+    } else {
+        // at the root of a drive there is nothing to go up to but the drive list
+        if (path.GetLength() > 3) {
+            CPath p(path + "..");
+            p.Canonicalize();
+            p.AddBackslash();
+            parent = JSONString((LPCTSTR)p);
+        }
+
+        WIN32_FIND_DATA fd;
+        ZeroMemory(&fd, sizeof(WIN32_FIND_DATA));
+
+        HANDLE hFind = FindFirstFile(path + "*.*", &fd);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || fd.cFileName[0] == '.') {
+                    continue;
+                }
+
+                if (!dirs.IsEmpty()) {
+                    dirs += ",";
+                }
+                dirs.AppendFormat("{\"name\":%s,\"path\":%s}",
+                                  JSONString(fd.cFileName).GetString(), JSONString(path + fd.cFileName).GetString());
+            } while (FindNextFile(hFind, &fd));
+
+            FindClose(hFind);
+        }
+
+        hFind = FindFirstFile(path + "*.*", &fd);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    continue;
+                }
+
+                const int MAX_FILE_SIZE_BUFFER = 65;
+                TCHAR szFileSize[MAX_FILE_SIZE_BUFFER];
+                StrFormatByteSizeW((LONGLONG(fd.nFileSizeHigh) << 32) | fd.nFileSizeLow, szFileSize, MAX_FILE_SIZE_BUFFER);
+
+                if (!files.IsEmpty()) {
+                    files += ",";
+                }
+                files.AppendFormat("{\"name\":%s,\"path\":%s,\"size\":%s}",
+                                   JSONString(fd.cFileName).GetString(), JSONString(path + fd.cFileName).GetString(),
+                                   JSONString(szFileSize).GetString());
+            } while (FindNextFile(hFind, &fd));
+
+            FindClose(hFind);
+        }
+    }
+
+    body.Format("{\"path\":%s,\"parent\":%s,\"dirs\":[%s],\"files\":[%s]}",
+                JSONString(path).GetString(), parent.GetString(), dirs.GetString(), files.GetString());
+
+    mime = "application/json";
+
+    return true;
+}
+
 CString CWebClientSocket::GetSize() const
 {
     CString sizeString;

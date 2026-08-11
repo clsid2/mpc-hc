@@ -89,14 +89,18 @@ void CWebServer::Init()
 {
     m_internalpages["/"] = &CWebClientSocket::OnIndex;
     m_internalpages["/404.html"] = &CWebClientSocket::OnError404;
+    m_internalpages["/browse.json"] = &CWebClientSocket::OnBrowseJSON;
     m_internalpages["/browser.html"] = &CWebClientSocket::OnBrowser;
     m_internalpages["/command.html"] = &CWebClientSocket::OnCommand;
+    m_internalpages["/commands.json"] = &CWebClientSocket::OnCommandsJSON;
     m_internalpages["/controls.html"] = &CWebClientSocket::OnControls;
     m_internalpages["/index.html"] = &CWebClientSocket::OnIndex;
     m_internalpages["/info.html"] = &CWebClientSocket::OnInfo;
     m_internalpages["/player.html"] = &CWebClientSocket::OnPlayer;
+    m_internalpages["/playlist.json"] = &CWebClientSocket::OnPlaylistJSON;
     m_internalpages["/snapshot.jpg"] = &CWebClientSocket::OnSnapshotJpeg;
     m_internalpages["/status.html"] = &CWebClientSocket::OnStatus;
+    m_internalpages["/status.json"] = &CWebClientSocket::OnStatusJSON;
     m_internalpages["/variables.html"] = &CWebClientSocket::OnVariables;
     m_internalpages["/viewres.html"] = &CWebClientSocket::OnViewRes;
     m_internalpages["/dvb/channels.json"] = &CWebClientSocket::OnDVBChannels;
