@@ -484,7 +484,8 @@ void CWebServer::OnRequest(CWebClientSocket* pClient, CStringA& hdr, CStringA& b
 
     // gzip
     if (s.fWebServerUseCompression && !body.IsEmpty()
-            && hdr.Find("Content-Encoding:") < 0 && ext != ".png" && ext != ".jpeg" && ext != ".gif")
+            && hdr.Find("Content-Encoding:") < 0
+            && ext != ".png" && ext != ".jpg" && ext != ".jpeg" && ext != ".gif" && ext != ".ico")
         do {
             CStringA accept_encoding;
             pClient->m_hdrlines.Lookup("accept-encoding", accept_encoding);

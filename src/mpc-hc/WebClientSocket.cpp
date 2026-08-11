@@ -393,7 +393,13 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
             if (id == ID_FILE_EXIT) {
                 m_pMainFrame->PostMessage(WM_COMMAND, id);
             } else {
-                m_pMainFrame->SendMessage(WM_COMMAND, id);
+                // Commands that open a modal dialog do not return until that dialog is
+                // dismissed at the player. Waiting for them would block this thread, and
+                // with it every other web client, so bound the wait instead. The command
+                // still runs; we just stop waiting for it to finish.
+                DWORD_PTR dwResult;
+                ::SendMessageTimeout(m_pMainFrame->GetSafeHwnd(), WM_COMMAND, id, 0,
+                                     SMTO_NORMAL, 5000, &dwResult);
             }
         } else {
             if (arg == _T(CMD_SETPOS) && m_request.Lookup("position", arg)) {
