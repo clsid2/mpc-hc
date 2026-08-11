@@ -828,6 +828,14 @@ bool CWebClientSocket::OnError404(CStringA& hdr, CStringA& body, CStringA& mime)
     return true;
 }
 
+bool CWebClientSocket::OnRemote(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    // The remote UI is self-contained and reads its state from the JSON
+    // endpoints, so it needs no per-page substitutions.
+    m_pWebServer->LoadPage(IDR_HTML_REMOTE, body, AToT(m_path));
+    return true;
+}
+
 bool CWebClientSocket::OnPlayer(CStringA& hdr, CStringA& body, CStringA& mime)
 {
     m_pWebServer->LoadPage(IDR_HTML_PLAYER, body, AToT(m_path));

@@ -75,6 +75,7 @@ public:
     bool OnStatus(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnError404(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnPlayer(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnRemote(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnViewRes(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnDVBChannels(CStringA& hdr, CStringA& body, CStringA& mime);

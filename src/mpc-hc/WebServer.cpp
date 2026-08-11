@@ -98,6 +98,7 @@ void CWebServer::Init()
     m_internalpages["/info.html"] = &CWebClientSocket::OnInfo;
     m_internalpages["/player.html"] = &CWebClientSocket::OnPlayer;
     m_internalpages["/playlist.json"] = &CWebClientSocket::OnPlaylistJSON;
+    m_internalpages["/remote.html"] = &CWebClientSocket::OnRemote;
     m_internalpages["/snapshot.jpg"] = &CWebClientSocket::OnSnapshotJpeg;
     m_internalpages["/status.html"] = &CWebClientSocket::OnStatus;
     m_internalpages["/status.json"] = &CWebClientSocket::OnStatusJSON;
@@ -227,6 +228,9 @@ void CWebServer::Deploy(CString dir)
     }
     if (LoadResource(IDR_HTML_PLAYER, data, RT_HTML)) {
         PutFileContents(dir + _T("player.html"), data);
+    }
+    if (LoadResource(IDR_HTML_REMOTE, data, RT_HTML)) {
+        PutFileContents(dir + _T("remote.html"), data);
     }
 
     // Create the needed folder
