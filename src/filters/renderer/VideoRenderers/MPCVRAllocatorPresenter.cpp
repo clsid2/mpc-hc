@@ -390,7 +390,41 @@ STDMETHODIMP_(SIZE) CMPCVRAllocatorPresenter::GetVideoSize(bool bCorrectAR) cons
     SIZE size = {0, 0};
 
     if (!bCorrectAR) {
-        if (CComQIPtr<IBasicVideo> pBV = m_pMPCVR) {
+        // MPCVR 0.10.2.2540 and newer return an aspect ratio corrected size through
+        // IBasicVideo::GetVideoSize (matching VMR-9/madVR behavior, needed by the
+        // DVD Navigator), so read the coded frame size from the input connection.
+        if (CComQIPtr<IBaseFilter> pBF = m_pMPCVR) {
+            if (CComPtr<IPin> pPin = GetFirstPin(pBF, PINDIR_INPUT)) {
+                CMediaType mt;
+                if (SUCCEEDED(pPin->ConnectionMediaType(&mt)) && mt.pbFormat) {
+                    RECT rcSource = {};
+                    if (mt.formattype == FORMAT_VideoInfo2) {
+                        const VIDEOINFOHEADER2* vih2 = (VIDEOINFOHEADER2*)mt.pbFormat;
+                        rcSource = vih2->rcSource;
+                        size.cx = vih2->bmiHeader.biWidth;
+                        size.cy = abs(vih2->bmiHeader.biHeight);
+                    } else if (mt.formattype == FORMAT_VideoInfo) {
+                        const VIDEOINFOHEADER* vih = (VIDEOINFOHEADER*)mt.pbFormat;
+                        rcSource = vih->rcSource;
+                        size.cx = vih->bmiHeader.biWidth;
+                        size.cy = abs(vih->bmiHeader.biHeight);
+                    }
+                    // biWidth can include stride padding, so prefer rcSource
+                    if (rcSource.right > rcSource.left && rcSource.bottom > rcSource.top) {
+                        size.cx = rcSource.right - rcSource.left;
+                        size.cy = rcSource.bottom - rcSource.top;
+                    }
+                }
+            }
+        }
+        if (size.cx > 0 && size.cy > 0) {
+            if (CComQIPtr<IExFilterConfig> pIExFilterConfig = m_pMPCVR) {
+                int rotation = 0;
+                if (SUCCEEDED(pIExFilterConfig->Flt_GetInt("rotation", &rotation)) && (rotation == 90 || rotation == 270)) {
+                    std::swap(size.cx, size.cy);
+                }
+            }
+        } else if (CComQIPtr<IBasicVideo> pBV = m_pMPCVR) {
             pBV->GetVideoSize(&size.cx, &size.cy);
         }
     } else {
