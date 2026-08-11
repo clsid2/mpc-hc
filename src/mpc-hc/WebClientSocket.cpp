@@ -828,6 +828,70 @@ bool CWebClientSocket::OnError404(CStringA& hdr, CStringA& body, CStringA& mime)
     return true;
 }
 
+static bool ReadFileBytes(CStringW path, CStringA& body)
+{
+    FILE* f = nullptr;
+    if (_wfopen_s(&f, path, L"rb") || !f) {
+        return false;
+    }
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    bool ok = false;
+    if (size > 0) {
+        char* buff = body.GetBufferSetLength(size);
+        fseek(f, 0, SEEK_SET);
+        ok = (long)fread(buff, 1, size, f) == size;
+    }
+    fclose(f);
+    return ok;
+}
+
+bool CWebClientSocket::OnToolbarImage(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    const CAppSettings& s = AfxGetAppSettings();
+
+    // A toolbar sheet is large and rarely changes, so let the browser keep it
+    // rather than fetching it again for every page load.
+    hdr += "Cache-Control: max-age=600\r\n";
+
+    // Mirror the player's own toolbar lookup, so the remote draws with whatever
+    // toolbar the user selected rather than always the built-in one. Sizes are
+    // tried in order because an external toolbar need not provide every size.
+    if (s.nToolbarType > 0 && !s.strToolbarName.IsEmpty()) {
+        std::vector<CStringW> paths({ PathUtils::GetProgramPath() });
+        CStringW appDataPath;
+        if (AfxGetMyApp()->GetAppDataPath(appDataPath)) {
+            paths.emplace_back(appDataPath);
+        }
+        // 48px first: an external toolbar is usually bitmap, and the browser
+        // scales it, so a larger sheet stays sharp on high density screens
+        // without the weight of the 64 and 128 versions.
+        LPCWSTR sizes[] = { L"48", L"32", L"64", L"24", L"16" };
+        for (const auto& path : paths) {
+            CStringW tbPath = PathUtils::CombinePaths(PathUtils::CombinePaths(path, L"toolbars"), s.strToolbarName);
+            for (const auto& size : sizes) {
+                // Build the file name before combining: path canonicalization
+                // strips a trailing dot, so combining "buttons24." loses it.
+                CStringW base = CStringW(L"buttons") + size + L".";
+                if (ReadFileBytes(PathUtils::CombinePaths(tbPath, base + L"svg"), body)) {
+                    mime = "image/svg+xml";
+                    return true;
+                }
+                if (ReadFileBytes(PathUtils::CombinePaths(tbPath, base + L"png"), body)) {
+                    mime = "image/png";
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (LoadResource(IDF_SVG_BUTTONS24, body, _T("SVG"))) {
+        mime = "image/svg+xml";
+        return true;
+    }
+    return false;
+}
+
 bool CWebClientSocket::OnRemote(CStringA& hdr, CStringA& body, CStringA& mime)
 {
     // The remote UI is self-contained and reads its state from the JSON

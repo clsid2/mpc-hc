@@ -98,6 +98,7 @@ void CWebServer::Init()
     m_internalpages["/info.html"] = &CWebClientSocket::OnInfo;
     m_internalpages["/player.html"] = &CWebClientSocket::OnPlayer;
     m_internalpages["/playlist.json"] = &CWebClientSocket::OnPlaylistJSON;
+    m_internalpages["/img/buttons.svg"] = &CWebClientSocket::OnToolbarImage;
     m_internalpages["/remote.html"] = &CWebClientSocket::OnRemote;
     m_internalpages["/snapshot.jpg"] = &CWebClientSocket::OnSnapshotJpeg;
     m_internalpages["/status.html"] = &CWebClientSocket::OnStatus;
@@ -140,8 +141,6 @@ void CWebServer::Init()
     m_downloads["/img/vbg.png"] = IDF_VBR_PNG;
     m_downloads["/img/vbs.png"] = IDF_VBS_PNG;
     m_downloads["/javascript.js"] = IDF_JAVASCRIPT;
-    // The player's own toolbar artwork, so the remote draws the same buttons.
-    m_downloads["/img/buttons.svg"] = IDF_SVG_BUTTONS24;
 
 #if 0
     CRegKey key;
@@ -411,8 +410,7 @@ void CWebServer::OnRequest(CWebClientSocket* pClient, CStringA& hdr, CStringA& b
 
     UINT resid;
     if (!fHandled && m_downloads.Lookup(pClient->m_path, resid)
-            && (LoadResource(resid, body, _T("FILE")) || LoadResource(resid, body, _T("PNG"))
-                || LoadResource(resid, body, _T("SVG")))) {
+            && (LoadResource(resid, body, _T("FILE")) || LoadResource(resid, body, _T("PNG")))) {
         if (mime.IsEmpty()) {
             mime = "application/octet-stream";
         }

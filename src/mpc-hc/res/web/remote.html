@@ -144,8 +144,9 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
     width: var(--sz); height: var(--sz); pointer-events: none; flex: none;
     background-image: url(/img/buttons.svg);
     background-repeat: no-repeat;
-    /* 26 columns x 4 rows, scaled to whatever --sz asks for */
-    background-size: calc(var(--sz) * 26) calc(var(--sz) * 4);
+    /* N columns x 4 rows, scaled to whatever --sz asks for. The column count
+       comes from the sheet itself, since a custom toolbar may differ. */
+    background-size: calc(var(--sz) * var(--tb-cols, 26)) calc(var(--sz) * 4);
     background-position: calc(var(--i, 0) * var(--sz) * -1) calc(var(--sz) * -2);
 }
 @media (prefers-color-scheme: light) {
@@ -385,6 +386,22 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
     var SETPOS = -1, SETVOL = -2;
 
     var $ = function (id) { return document.getElementById(id); };
+
+    // The toolbar sheet is always 4 rows of square cells, but a user-selected
+    // toolbar can have a different number of buttons, so measure it.
+    (function measureToolbar() {
+        var sheet = new Image();
+        sheet.onload = function () {
+            var cell = sheet.naturalHeight / 4;
+            if (cell > 0) {
+                var cols = Math.round(sheet.naturalWidth / cell);
+                if (cols > 0) {
+                    document.documentElement.style.setProperty("--tb-cols", cols);
+                }
+            }
+        };
+        sheet.src = "/img/buttons.svg";
+    }());
     var el = {
         title: $("title"), state: $("state"), rate: $("rate"), size: $("size"),
         seek: $("seek"), pos: $("pos"), dur: $("dur"), vol: $("vol"),
