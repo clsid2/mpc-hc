@@ -14177,6 +14177,13 @@ HRESULT CMainFrame::PreviewWindowShow(REFERENCE_TIME rtCur2) {
     if (!m_wndPreView.IsWindowVisible()) {
         m_wndPreView.SetRelativeSize(AfxGetAppSettings().iSeekPreviewSize);
         m_wndPreView.ShowWindow(SW_SHOWNOACTIVATE);
+        if (GetExStyle() & WS_EX_TOPMOST) {
+            // The preview is an owned popup, so it should already follow the main window into the
+            // topmost band. It has been reported behind an always-on-top main window (#3849), so
+            // put it in that band explicitly as a safeguard. Nothing to do when not topmost:
+            // Windows moves owned windows out of the topmost band along with their owner.
+            m_wndPreView.SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
         m_wndPreView.SetWindowSize();
     }
 
