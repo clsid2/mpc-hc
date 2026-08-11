@@ -140,6 +140,8 @@ void CWebServer::Init()
     m_downloads["/img/vbg.png"] = IDF_VBR_PNG;
     m_downloads["/img/vbs.png"] = IDF_VBS_PNG;
     m_downloads["/javascript.js"] = IDF_JAVASCRIPT;
+    // The player's own toolbar artwork, so the remote draws the same buttons.
+    m_downloads["/img/buttons.svg"] = IDF_SVG_BUTTONS24;
 
 #if 0
     CRegKey key;
@@ -169,6 +171,7 @@ void CWebServer::Init()
     m_mimes[".js"] = "text/javascript";
     m_mimes[".json"] = "text/plain";
     m_mimes[".png"] = "image/png";
+    m_mimes[".svg"] = "image/svg+xml";
     m_mimes[".txt"] = "text/plain";
     m_mimes[".ico"] = "image/x-icon";
 }
@@ -408,7 +411,8 @@ void CWebServer::OnRequest(CWebClientSocket* pClient, CStringA& hdr, CStringA& b
 
     UINT resid;
     if (!fHandled && m_downloads.Lookup(pClient->m_path, resid)
-            && (LoadResource(resid, body, _T("FILE")) || LoadResource(resid, body, _T("PNG")))) {
+            && (LoadResource(resid, body, _T("FILE")) || LoadResource(resid, body, _T("PNG"))
+                || LoadResource(resid, body, _T("SVG")))) {
         if (mime.IsEmpty()) {
             mime = "application/octet-stream";
         }

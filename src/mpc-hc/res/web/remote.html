@@ -136,6 +136,23 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
     width: 46px; height: 46px; border-radius: var(--radius);
     display: grid; place-items: center; cursor: pointer;
 }
+/* Buttons are drawn from the player's own toolbar artwork (res/buttons24.svg),
+   a 26 x 4 sheet of 24px cells. Rows are: 0 normal light, 1 disabled light,
+   2 normal dark, 3 disabled dark — so the theme is a background-position-y. */
+.tbico {
+    --sz: 24px;
+    width: var(--sz); height: var(--sz); pointer-events: none; flex: none;
+    background-image: url(/img/buttons.svg);
+    background-repeat: no-repeat;
+    /* 26 columns x 4 rows, scaled to whatever --sz asks for */
+    background-size: calc(var(--sz) * 26) calc(var(--sz) * 4);
+    background-position: calc(var(--i, 0) * var(--sz) * -1) calc(var(--sz) * -2);
+}
+@media (prefers-color-scheme: light) {
+    .tbico { background-position-y: 0; }
+}
+/* On the amber button the light-theme (dark ink) cell reads better. */
+.btn.primary .tbico { background-position-y: 0; }
 .btn svg { width: 20px; height: 20px; fill: currentColor; pointer-events: none; }
 .btn:hover { background: var(--raised); }
 .btn:active { transform: scale(.94); }
@@ -148,6 +165,7 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 .btn.primary svg { width: 24px; height: 24px; }
 .btn.small { width: 38px; height: 38px; }
 .btn.small svg { width: 17px; height: 17px; }
+.btn.small .tbico { --sz: 20px; }
 
 .rack { display: flex; align-items: center; gap: 8px; padding: 0 12px 12px; flex-wrap: wrap; min-width: 0; }
 .rack .grow { flex: 1 1 60px; }
@@ -205,6 +223,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
     font-size: 11px;
 }
 .tabs button svg { width: 18px; height: 18px; fill: currentColor; }
+.tabs button .tbico { --sz: 18px; }
 .tabs button[aria-selected=true] { color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
 .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
@@ -239,6 +258,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
     .meta { padding-top: 10px; }
     .plist button, .plist a { min-height: 38px; padding: 7px 12px; }
     .tabs button svg { width: 16px; height: 16px; }
+    .tabs button .tbico { --sz: 16px; }
     .tracks { justify-content: flex-end; }
     .tracks select.pick { flex: 0 1 240px; }
     /* The player never leaves the screen here, so this tab would do nothing. */
@@ -299,17 +319,17 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
                     </div>
 
                     <div class="transport">
-                        <button class="btn" id="b-prev" aria-label="Previous track"><svg><use href="#i-prev"></use></svg></button>
-                        <button class="btn" id="b-rew" aria-label="Jump backward"><svg><use href="#i-rew"></use></svg></button>
-                        <button class="btn primary" id="b-play" aria-label="Play"><svg><use href="#i-play"></use></svg></button>
-                        <button class="btn" id="b-ff" aria-label="Jump forward"><svg><use href="#i-ff"></use></svg></button>
-                        <button class="btn" id="b-next" aria-label="Next track"><svg><use href="#i-next"></use></svg></button>
-                        <button class="btn" id="b-stop" aria-label="Stop"><svg><use href="#i-stop"></use></svg></button>
-                        <button class="btn" id="b-fs" aria-label="Toggle fullscreen"><svg><use href="#i-fs"></use></svg></button>
+                        <button class="btn" id="b-prev" aria-label="Previous track"><span class="tbico" style="--i:3"></span></button>
+                        <button class="btn" id="b-rew" aria-label="Jump backward"><span class="tbico" style="--i:16"></span></button>
+                        <button class="btn primary" id="b-play" aria-label="Play"><span class="tbico" style="--i:0"></span></button>
+                        <button class="btn" id="b-ff" aria-label="Jump forward"><span class="tbico" style="--i:17"></span></button>
+                        <button class="btn" id="b-next" aria-label="Next track"><span class="tbico" style="--i:4"></span></button>
+                        <button class="btn" id="b-stop" aria-label="Stop"><span class="tbico" style="--i:2"></span></button>
+                        <button class="btn" id="b-fs" aria-label="Toggle fullscreen"><span class="tbico" style="--i:12"></span></button>
                     </div>
 
                     <div class="rack">
-                        <button class="btn small" id="b-mute" aria-label="Mute"><svg><use href="#i-vol"></use></svg></button>
+                        <button class="btn small" id="b-mute" aria-label="Mute"><span class="tbico" style="--i:24"></span></button>
                         <input type="range" class="vol" id="vol" min="0" max="100" value="0"
                                aria-label="Volume" style="--p:0%">
                     </div>
@@ -340,10 +360,10 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
             </div>
 
             <nav class="tabs" role="tablist">
-                <button role="tab" aria-selected="true" data-pane="now"><svg><use href="#i-disc"></use></svg>Now playing</button>
-                <button role="tab" aria-selected="false" data-pane="playlist"><svg><use href="#i-list"></use></svg>Playlist</button>
-                <button role="tab" aria-selected="false" data-pane="files"><svg><use href="#i-folder"></use></svg>Files</button>
-                <button role="tab" aria-selected="false" data-pane="commands"><svg><use href="#i-cmd"></use></svg>Commands</button>
+                <button role="tab" aria-selected="true" data-pane="now"><span class="tbico tabico" style="--i:0"></span>Now playing</button>
+                <button role="tab" aria-selected="false" data-pane="playlist"><span class="tbico tabico" style="--i:13"></span>Playlist</button>
+                <button role="tab" aria-selected="false" data-pane="files"><span class="tbico tabico" style="--i:10"></span>Files</button>
+                <button role="tab" aria-selected="false" data-pane="commands"><span class="tbico tabico" style="--i:11"></span>Commands</button>
             </nav>
         </div>
 
@@ -421,8 +441,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
         el.size.textContent = s.size || "";
 
         el.play.setAttribute("aria-label", s.state === 2 ? "Pause" : "Play");
-        el.play.firstElementChild.firstElementChild
-            .setAttribute("href", s.state === 2 ? "#i-pause" : "#i-play");
+        el.play.firstElementChild.style.setProperty("--i", s.state === 2 ? 1 : 0);
 
         if (!seeking) {
             el.seek.max = Math.max(1, s.duration || 0);
@@ -436,8 +455,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
             setFill(el.vol);
         }
         el.mute.setAttribute("aria-label", s.muted ? "Unmute" : "Mute");
-        el.mute.firstElementChild.firstElementChild
-            .setAttribute("href", s.muted ? "#i-mute" : "#i-vol");
+        el.mute.firstElementChild.style.setProperty("--i", s.muted ? 25 : 24);
 
         fillTracks(el.pickAudio, s.audio, "Audio");
         fillTracks(el.pickSub, s.subtitle, "Subtitles");
