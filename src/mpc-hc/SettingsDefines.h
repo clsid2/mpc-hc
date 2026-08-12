@@ -75,7 +75,6 @@
 #define IDS_RS_AUTOUPLOADSUBTITLES          _T("AutoUploadSubtitles")
 #define IDS_RS_SUBTITLESPROVIDERS           _T("SubtitlesProviders")
 #define IDS_RS_PREFERHEARINGIMPAIREDSUBTITLES _T("PreferHearingImpairedSubtitles")
-#define IDS_RS_AUTOCOPYSUBTITLE             _T("AutoCopySubtitleToClipboard")
 #define IDS_RS_MPCTHEME                     _T("MPCTheme")
 #define IDS_RS_MODERNSEEKBARHEIGHT          _T("ModernSeekbarHeight")
 #define IDS_RS_MODERNTHEMEMODE              _T("ModernThemeMode")
