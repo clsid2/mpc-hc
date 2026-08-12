@@ -346,8 +346,14 @@ private:
     POSITION m_posFirstExtSub;
     SubtitleInput m_pCurrentSubInput;
 
-    // last subtitle segment copied to the clipboard by auto-copy
+    // last subtitle segment copied to the clipboard by auto-copy, and the time
+    // before which there is nothing new to copy
     int m_nLastCopiedSubSegment;
+    REFERENCE_TIME m_rtNextAutoCopySubtitle;
+    void ResetAutoCopySubtitle() {
+        m_nLastCopiedSubSegment = -1;
+        m_rtNextAutoCopySubtitle = 0;
+    }
 
     // StatusBar message text parts
     CString currentAudioLang;
@@ -1386,7 +1392,7 @@ protected:
     static BOOL AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text);
 
     void SubtitlesSave(const TCHAR* directory = nullptr, bool silent = false);
-    void CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow);
+    REFERENCE_TIME CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow);
 
     void OnSizingFixWndToVideo(UINT nSide, LPRECT lpRect, bool bCtrl = false);
     void OnSizingSnapToScreen(UINT nSide, LPRECT lpRect, bool bCtrl = false);
