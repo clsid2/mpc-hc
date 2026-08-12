@@ -7223,6 +7223,11 @@ void CMainFrame::SubtitlesSave(const TCHAR* directory, bool silent)
     }
 }
 
+// Guards against copying typesetting rather than dialogue; generous enough for
+// ordinary subtitles, which are a handful of lines at most.
+static const size_t MAX_AUTOCOPY_SUBTITLE_LINES = 12;
+static const int MAX_AUTOCOPY_SUBTITLE_LENGTH = 1000;
+
 static CStringW StripMarkupTags(CStringW str)
 {
     int i = 0;
@@ -7275,6 +7280,14 @@ void CMainFrame::CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow)
         }
         m_nLastCopiedSubSegment = iSegment;
 
+        // Typeset and karaoke effects can put hundreds of fragments on screen
+        // at the same instant, often a single character each. That is artwork
+        // rather than dialogue, and copying it only fills the clipboard with
+        // noise, so leave those segments alone.
+        if (pSeg->subs.GetCount() > MAX_AUTOCOPY_SUBTITLE_LINES) {
+            return;
+        }
+
         for (size_t i = 0; i < pSeg->subs.GetCount(); i++) {
             int subIndex = pSeg->subs[i];
             if (subIndex >= 0 && subIndex < (int)pRTS->GetCount()) {
@@ -7283,6 +7296,10 @@ void CMainFrame::CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow)
                 }
                 strText += StripMarkupTags(pRTS->GetStrW(subIndex));
             }
+        }
+
+        if (strText.GetLength() > MAX_AUTOCOPY_SUBTITLE_LENGTH) {
+            strText.Empty();
         }
     }
 
