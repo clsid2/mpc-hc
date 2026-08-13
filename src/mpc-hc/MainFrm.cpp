@@ -4016,16 +4016,21 @@ void CMainFrame::OnMenuFilters()
 
 void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
 {
-    if (GetLoadState() == MLS::LOADING) {
+    const MLS loadState = GetLoadState();
+    if (loadState != MLS::CLOSING && !m_tempstatus_msg.IsEmpty()) {
+        m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
+        if (loadState == MLS::LOADING && AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
+            m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
+        }
+        return;
+    }
+
+    if (loadState == MLS::LOADING) {
         m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_OPENING));
         if (AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
             m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
         }
-    } else if (GetLoadState() == MLS::LOADED) {
-        if (!m_tempstatus_msg.IsEmpty()) {
-            m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
-            return;
-        }
+    } else if (loadState == MLS::LOADED) {
         CString msg;
         if (m_fCapturing) {
             msg.LoadString(IDS_CONTROLS_CAPTURING);
@@ -4216,7 +4221,7 @@ void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
         }
 
         m_wndStatusBar.SetStatusMessage(msg);
-    } else if (GetLoadState() == MLS::CLOSING) {
+    } else if (loadState == MLS::CLOSING) {
         m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_CLOSING));
         if (AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
             m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
@@ -5094,7 +5099,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
         if (s.hMasterWnd) {
-            ProcessAPICommand(pCDS);
+            ProcessAPICommand(pWnd ? pWnd->GetSafeHwnd() : nullptr, pCDS);
             return TRUE;
         } else {
             return FALSE;
@@ -19780,11 +19785,19 @@ void CMainFrame::StopWebServer()
     }
 }
 
-void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bError /* = false */)
+void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar /* = false */,
+                                   bool bKeepVisibleOnMediaLoad /* = false */)
 {
     const auto timerId = TimerOneTimeSubscriber::STATUS_ERASE;
 
     m_timerOneTime.Unsubscribe(timerId);
+
+    // A non-revealing replacement cannot inherit a forced-visible status bar from an API
+    // message whose timer has just been cancelled.
+    if (m_bKeepTempStatusBarVisibleOnMediaLoad && !(nTimeOut > 0 && bRevealStatusBar)) {
+        RestoreStatusBarMessageHold();
+    }
+    m_bKeepTempStatusBarVisibleOnMediaLoad = false;
 
     m_tempstatus_msg.Empty();
     if (nTimeOut <= 0) {
@@ -19792,19 +19805,21 @@ void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bError /* = f
     }
 
     m_tempstatus_msg = msg;
-    // For a transient error we briefly reveal a preset-hidden status bar; re-hide it when the
-    // message times out so a recurring error (e.g. a failing shader on each load) can't pin it open (#3256).
-    m_timerOneTime.Subscribe(timerId, [this, bError] {
+    m_bKeepTempStatusBarVisibleOnMediaLoad = bRevealStatusBar && bKeepVisibleOnMediaLoad;
+    // A caller may briefly reveal a preset-hidden status bar; re-hide it when the
+    // message times out so recurring messages cannot pin it open (#3256).
+    m_timerOneTime.Subscribe(timerId, [this, bRevealStatusBar] {
         m_tempstatus_msg.Empty();
-        if (bError) {
+        m_bKeepTempStatusBarVisibleOnMediaLoad = false;
+        if (bRevealStatusBar) {
             RestoreStatusBarMessageHold();
         }
     }, nTimeOut);
 
     if (!m_tempstatus_msg.IsEmpty()) {
         m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
-        if (bError) {
-            ShowStatusBarForMessage(); // reveal the status bar (if a preset hides it) for errors only
+        if (bRevealStatusBar) {
+            ShowStatusBarForMessage();
         }
     }
 
@@ -19861,8 +19876,11 @@ void CMainFrame::AddCurDevToPlaylist()
 
 void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
 {
-    // Next media load: stop force-showing the status bar that an earlier error revealed.
-    RestoreStatusBarMessageHold();
+    // Next media load: stop force-showing the status bar that an earlier error revealed. A
+    // host-supplied status message keeps its own three-second reveal across this transition.
+    if (!m_bKeepTempStatusBarVisibleOnMediaLoad) {
+        RestoreStatusBarMessageHold();
+    }
 
     auto pFileData = dynamic_cast<const OpenFileData*>(pOMD.m_p);
     //auto pDVDData = dynamic_cast<const OpenDVDData*>(pOMD.m_p);
@@ -21283,7 +21301,40 @@ void CMainFrame::ResetSubtitlePosAndSize(bool repaint /* = false*/)
 }
 
 
-void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
+static bool ParseAPIStatusMessage(const COPYDATASTRUCT* pCDS, CStringW& message)
+{
+    constexpr size_t maxCodeUnits = 512;
+    if (!pCDS || !pCDS->lpData || pCDS->cbData < 2 * sizeof(wchar_t)
+            || pCDS->cbData > (maxCodeUnits + 1) * sizeof(wchar_t)
+            || pCDS->cbData % sizeof(wchar_t) != 0) {
+        return false;
+    }
+
+    const wchar_t* const value = static_cast<const wchar_t*>(pCDS->lpData);
+    const size_t codeUnits = pCDS->cbData / sizeof(wchar_t) - 1;
+    if (value[codeUnits] != L'\0' || wmemchr(value, L'\0', codeUnits)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < codeUnits; i++) {
+        const wchar_t codeUnit = value[i];
+        if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF) {
+            if (++i >= codeUnits || value[i] < 0xDC00 || value[i] > 0xDFFF) {
+                return false;
+            }
+        } else if ((codeUnit >= 0xDC00 && codeUnit <= 0xDFFF)
+                   || codeUnit < 0x20
+                   || (codeUnit >= 0x7F && codeUnit <= 0x9F)
+                   || codeUnit == 0x2028 || codeUnit == 0x2029) {
+            return false;
+        }
+    }
+
+    message.SetString(value, static_cast<int>(codeUnits));
+    return true;
+}
+
+void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
 {
     CAtlList<CString> fns;
     REFERENCE_TIME rtPos = 0;
@@ -21444,6 +21495,15 @@ void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
         case CMD_OSDSHOWMESSAGE:
             ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
             break;
+        case CMD_STATUSSHOWMESSAGE: {
+            CStringW message;
+            const CAppSettings& settings = AfxGetAppSettings();
+            if (hSender == settings.hMasterWnd && IsWindow(hSender)
+                    && ParseAPIStatusMessage(pCDS, message)) {
+                SendStatusMessage(message, 3000, true, true);
+            }
+            break;
+        }
     }
 }
 

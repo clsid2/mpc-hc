@@ -469,8 +469,10 @@ private:
 
     bool m_bIsMPCVRExclusiveMode = false;
 
-    void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
+    void SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar = false,
+                           bool bKeepVisibleOnMediaLoad = false);
     CString m_tempstatus_msg, m_closingmsg;
+    bool m_bKeepTempStatusBarVisibleOnMediaLoad = false;
 
     REFERENCE_TIME m_rtDurationOverride;
 
@@ -1287,7 +1289,7 @@ public:
     void        ResetSubtitlePosAndSize(bool repaint = false);
 
     // MPC API functions
-    void        ProcessAPICommand(COPYDATASTRUCT* pCDS);
+    void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();

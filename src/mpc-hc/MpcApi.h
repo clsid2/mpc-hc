@@ -281,6 +281,11 @@ typedef enum MPCAPI_COMMAND :
     CMD_SETPANSCAN          = 0xA0004009,
 
     // Show host defined OSD message string
-    CMD_OSDSHOWMESSAGE      = 0xA0005000
+    CMD_OSDSHOWMESSAGE      = 0xA0005000,
+
+    // Show a host-defined message in the status bar for three seconds
+    // Parameter 1: non-empty, single-line, well-formed UTF-16 text; maximum
+    //              512 UTF-16 code units, excluding the terminating null
+    CMD_STATUSSHOWMESSAGE   = 0xA0005001
 
 } MPCAPI_COMMAND;

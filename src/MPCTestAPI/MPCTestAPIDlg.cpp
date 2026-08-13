@@ -188,6 +188,10 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
     m_strMPCPath += _T("mpc-hc.exe");
 #endif // _WIN64
 
+    // Keep this feature-specific addition independent of the existing resource/index table.
+    VERIFY(SendDlgItemMessage(IDC_COMBO1, CB_ADDSTRING, 0,
+                              reinterpret_cast<LPARAM>(_T("CMD_STATUSSHOWMESSAGE"))) == 23);
+
     UpdateData(FALSE);
 
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -354,6 +358,9 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
             break;
         case 22:
             Senddata(CMD_CLOSEAPP, m_txtCommand);
+            break;
+        case 23:
+            Senddata(CMD_STATUSSHOWMESSAGE, m_txtCommand);
             break;
     }
 }
