@@ -189,8 +189,14 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
 #endif // _WIN64
 
     // Keep this feature-specific addition independent of the existing resource/index table.
-    VERIFY(SendDlgItemMessage(IDC_COMBO1, CB_ADDSTRING, 0,
-                              reinterpret_cast<LPARAM>(_T("CMD_STATUSSHOWMESSAGE"))) == 23);
+    const LRESULT statusCommandIndex = SendDlgItemMessage(
+        IDC_COMBO1, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(_T("CMD_STATUSSHOWMESSAGE")));
+    VERIFY(statusCommandIndex != CB_ERR && statusCommandIndex != CB_ERRSPACE);
+    if (statusCommandIndex != CB_ERR && statusCommandIndex != CB_ERRSPACE) {
+        VERIFY(SendDlgItemMessage(IDC_COMBO1, CB_SETITEMDATA,
+                                  static_cast<WPARAM>(statusCommandIndex),
+                                  static_cast<LPARAM>(CMD_STATUSSHOWMESSAGE)) != CB_ERR);
+    }
 
     UpdateData(FALSE);
 
@@ -289,6 +295,12 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
     CString strEmpty(_T(""));
     UpdateData(TRUE);
 
+    const LRESULT command = SendDlgItemMessage(IDC_COMBO1, CB_GETITEMDATA, m_nCommandType);
+    if (command != 0 && command != CB_ERR) {
+        Senddata(static_cast<MPCAPI_COMMAND>(static_cast<DWORD>(command)), m_txtCommand);
+        return;
+    }
+
     switch (m_nCommandType) {
         case 0:
             Senddata(CMD_OPENFILE, m_txtCommand);
@@ -358,9 +370,6 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
             break;
         case 22:
             Senddata(CMD_CLOSEAPP, m_txtCommand);
-            break;
-        case 23:
-            Senddata(CMD_STATUSSHOWMESSAGE, m_txtCommand);
             break;
     }
 }
