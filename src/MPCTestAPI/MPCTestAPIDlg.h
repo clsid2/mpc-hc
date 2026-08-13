@@ -70,5 +70,6 @@ public:
     CString     m_txtCommand;
     int         m_nCommandType;
     afx_msg void OnBnClickedButtonSendcommand();
+    void        OnOK() override;
     void        Senddata(MPCAPI_COMMAND nCmd, LPCTSTR strCommand);
 };

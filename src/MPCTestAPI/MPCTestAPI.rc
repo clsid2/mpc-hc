@@ -71,8 +71,8 @@ CAPTION "About MPC-HC Test API"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MPC-HC Test API Version 1.0.1.0",IDC_STATIC,40,10,120,10,SS_NOPREFIX
-    LTEXT           "Copyright © 2005-2013 all contributors, see Authors.txt",IDC_STATIC,40,27,197,10
+    LTEXT           "MPC-HC Test API Version 1.0.2.0",IDC_STATIC,40,10,120,10,SS_NOPREFIX
+    LTEXT           "Copyright © 2005-2026 all contributors, see Authors.txt",IDC_STATIC,40,27,197,10
     DEFPUSHBUTTON   "OK",IDOK,187,7,50,14,WS_GROUP
 END
 
@@ -98,8 +98,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION    1,0,1,0
- PRODUCTVERSION 1,0,1,0
+ FILEVERSION    1,0,2,0
+ PRODUCTVERSION 1,0,2,0
  FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
 #ifdef _DEBUG
  FILEFLAGS      VS_FF_DEBUG
@@ -116,12 +116,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName",      "MPC-HC Team"
             VALUE "FileDescription",  "MPC-HC Test API"
-            VALUE "FileVersion",      "1.0.1.0"
+            VALUE "FileVersion",      "1.0.2.0"
             VALUE "InternalName",     "MPC-HC Test API"
-            VALUE "LegalCopyright",   "Copyright © 2005-2013 all contributors, see Authors.txt"
+            VALUE "LegalCopyright",   "Copyright © 2005-2026 all contributors, see Authors.txt"
             VALUE "OriginalFilename", "MPCTestAPI.exe"
             VALUE "ProductName",      "MPC-HC Test API"
-            VALUE "ProductVersion",   "1.0.1.0"
+            VALUE "ProductVersion",   "1.0.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -163,67 +163,6 @@ END
 //
 // Dialog Info
 //
-
-IDD_REGISTERCOPYDATA_DIALOG DLGINIT
-BEGIN
-    IDC_COMBO1, 0x403, 10, 0
-0x704f, 0x6e65, 0x6620, 0x6c69, 0x0065, 
-    IDC_COMBO1, 0x403, 5, 0
-0x7453, 0x706f, "\000" 
-    IDC_COMBO1, 0x403, 6, 0
-0x6c43, 0x736f, 0x0065, 
-    IDC_COMBO1, 0x403, 11, 0
-0x6c50, 0x7961, 0x502d, 0x7561, 0x6573, "\000" 
-    IDC_COMBO1, 0x403, 16, 0
-0x6441, 0x2064, 0x6f74, 0x7020, 0x616c, 0x6c79, 0x7369, 0x0074, 
-    IDC_COMBO1, 0x403, 15, 0
-0x7453, 0x7261, 0x2074, 0x6c70, 0x7961, 0x696c, 0x7473, "\000" 
-    IDC_COMBO1, 0x403, 15, 0
-0x6c43, 0x6165, 0x2072, 0x6c70, 0x7961, 0x696c, 0x7473, "\000" 
-    IDC_COMBO1, 0x403, 13, 0
-0x6553, 0x2074, 0x6f70, 0x6973, 0x6974, 0x6e6f, "\000" 
-    IDC_COMBO1, 0x403, 16, 0
-0x6553, 0x2074, 0x7561, 0x6964, 0x206f, 0x6564, 0x616c, 0x0079, 
-    IDC_COMBO1, 0x403, 19, 0
-0x6553, 0x2074, 0x7573, 0x7462, 0x7469, 0x656c, 0x6420, 0x6c65, 0x7961, 
-"\000" 
-    IDC_COMBO1, 0x403, 17, 0
-0x6547, 0x2074, 0x7561, 0x6964, 0x206f, 0x7274, 0x6361, 0x736b, "\000" 
-    IDC_COMBO1, 0x403, 20, 0
-0x6547, 0x2074, 0x7573, 0x7462, 0x7469, 0x656c, 0x7420, 0x6172, 0x6b63, 
-0x0073, 
-    IDC_COMBO1, 0x403, 13, 0
-0x6547, 0x2074, 0x6c70, 0x7961, 0x696c, 0x7473, "\000" 
-    IDC_COMBO1, 0x403, 25, 0
-0x6553, 0x2074, 0x6f70, 0x6973, 0x6974, 0x6e6f, 0x6920, 0x206e, 0x6c70, 
-0x7961, 0x696c, 0x7473, "\000" 
-    IDC_COMBO1, 0x403, 16, 0
-0x6553, 0x2074, 0x7561, 0x6964, 0x206f, 0x7274, 0x6361, 0x006b, 
-    IDC_COMBO1, 0x403, 19, 0
-0x6553, 0x2074, 0x7573, 0x7462, 0x7469, 0x656c, 0x7420, 0x6172, 0x6b63, 
-"\000" 
-    IDC_COMBO1, 0x403, 11, 0
-0x7546, 0x6c6c, 0x6353, 0x6572, 0x6e65, "\000" 
-    IDC_COMBO1, 0x403, 19, 0
-0x4d43, 0x5f44, 0x554a, 0x504d, 0x4f46, 0x5752, 0x5241, 0x4d44, 0x4445, 
-"\000" 
-    IDC_COMBO1, 0x403, 20, 0
-0x4d43, 0x5f44, 0x554a, 0x504d, 0x4142, 0x4b43, 0x4157, 0x4452, 0x454d, 
-0x0044, 
-    IDC_COMBO1, 0x403, 19, 0
-0x4d43, 0x5f44, 0x4e49, 0x5243, 0x4145, 0x4553, 0x4f56, 0x554c, 0x454d, 
-"\000" 
-    IDC_COMBO1, 0x403, 19, 0
-0x4d43, 0x5f44, 0x4544, 0x5243, 0x4145, 0x4553, 0x4f56, 0x554c, 0x454d, 
-"\000" 
-    IDC_COMBO1, 0x403, 18, 0
-0x4d43, 0x5f44, 0x4853, 0x4441, 0x5245, 0x545f, 0x474f, 0x4c47, 0x0045, 
-
-    IDC_COMBO1, 0x403, 13, 0
-0x4d43, 0x5f44, 0x4c43, 0x534f, 0x4145, 0x5050, "\000" 
-    0
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
