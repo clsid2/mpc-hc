@@ -130,6 +130,10 @@ typedef enum MPCAPI_COMMAND :
     // Send index of currently selected subtitle track
     CMD_CURRENTSUBTITLETRACK   = 0x5000000D,
 
+    // Send the HWND of the currently connected API host in response to CMD_GETHOST
+    // Parameter 1: host HWND as an unsigned decimal value, or 0 if no live host is connected
+    CMD_CURRENTHOST         = 0x50000010,
+
     // Send current playback position in response
     // of CMD_GETCURRENTPOSITION.
     // Parameter 1: current position in seconds
@@ -252,6 +256,11 @@ typedef enum MPCAPI_COMMAND :
     // Ask for the index of the currently selected subtitle track
     // return a CMD_CURRENTSUBTITLETRACK
     CMD_GETCURRENTSUBTITLETRACK   = 0xA0003008,
+
+    // Ask which API host is currently connected
+    // The reply is sent to the requesting HWND, even when no host is connected
+    // Returns CMD_CURRENTHOST
+    CMD_GETHOST             = 0xA000300B,
 
     // Toggle FullScreen
     CMD_TOGGLEFULLSCREEN    = 0xA0004000,

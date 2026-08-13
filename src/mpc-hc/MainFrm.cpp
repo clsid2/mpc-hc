@@ -296,6 +296,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_SHUTDOWN, OnDoShutdown)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
+    ON_MESSAGE(WM_SENDAPICURRENTHOST, OnSendApiCurrentHost)
 
     ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
     ON_MESSAGE(WM_SMTC_AUTOREPEAT, OnSmtcAutoRepeat)
@@ -5092,6 +5093,31 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
         PLAYER_LOG(_T("CMainFrame::OnCopyData"));
     }
 
+    if (pCDS->dwData == CMD_GETHOST) {
+        const HWND hReply = pWnd ? pWnd->GetSafeHwnd() : nullptr;
+        DWORD requesterPid = 0;
+        if (!hReply || !IsWindow(hReply) || !GetWindowThreadProcessId(hReply, &requesterPid)) {
+            return FALSE;
+        }
+
+        const auto duplicate = std::find_if(m_pendingApiHostReplies.cbegin(), m_pendingApiHostReplies.cend(),
+                                            [hReply, requesterPid](const PendingApiHostReply& reply) {
+                                                return reply.window == hReply && reply.processId == requesterPid;
+                                            });
+        if (duplicate == m_pendingApiHostReplies.cend()) {
+            if (m_pendingApiHostReplies.size() >= MAX_PENDING_API_HOST_REPLIES) {
+                return FALSE;
+            }
+
+            m_pendingApiHostReplies.push_back({ hReply, requesterPid });
+            if (m_pendingApiHostReplies.size() == 1) {
+                PostMessage(WM_SENDAPICURRENTHOST);
+            }
+        }
+
+        return TRUE;
+    }
+
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
         if (s.hMasterWnd) {
             ProcessAPICommand(pCDS);
@@ -5121,6 +5147,8 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
     s.ParseCommandLine(cmdln);
 
     if (s.nCLSwitches & CLSW_SLAVE) {
+        m_apiHostPid = 0;
+        GetWindowThreadProcessId(s.hMasterWnd, &m_apiHostPid);
         SendAPICommand(CMD_CONNECT, L"%d", PtrToInt(GetSafeHwnd()));
         s.nCLSwitches &= ~CLSW_SLAVE;
     }
@@ -21445,6 +21473,52 @@ void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
             ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
             break;
     }
+}
+
+LRESULT CMainFrame::OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam)
+{
+    if (m_pendingApiHostReplies.empty()) {
+        return 0;
+    }
+
+    const PendingApiHostReply reply = m_pendingApiHostReplies.front();
+    m_pendingApiHostReplies.pop_front();
+
+    DWORD currentReplyPid = 0;
+    if (IsWindow(reply.window)
+            && GetWindowThreadProcessId(reply.window, &currentReplyPid)
+            && currentReplyPid == reply.processId) {
+        HWND hHost = AfxGetAppSettings().hMasterWnd;
+        DWORD currentHostPid = 0;
+        if (!hHost || !m_apiHostPid || !IsWindow(hHost)
+                || !GetWindowThreadProcessId(hHost, &currentHostPid)
+                || currentHostPid != m_apiHostPid) {
+            hHost = nullptr;
+        }
+
+        CStringW payload;
+        payload.Format(L"%Iu", reinterpret_cast<UINT_PTR>(hHost));
+        SendAPIStringTo(reply.window, CMD_CURRENTHOST, payload);
+    }
+
+    if (!m_pendingApiHostReplies.empty()) {
+        PostMessage(WM_SENDAPICURRENTHOST);
+    }
+
+    return 0;
+}
+
+void CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
+{
+    COPYDATASTRUCT data = {};
+    data.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
+    data.dwData = nCommand;
+    data.lpData = const_cast<wchar_t*>(payload.GetString());
+
+    DWORD_PTR result = 0;
+    SendMessageTimeout(hTarget, WM_COPYDATA, reinterpret_cast<WPARAM>(GetSafeHwnd()),
+                       reinterpret_cast<LPARAM>(&data),
+                       SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT | SMTO_BLOCK, 100, &result);
 }
 
 void CMainFrame::SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...)

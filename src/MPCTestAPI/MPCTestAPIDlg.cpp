@@ -44,6 +44,8 @@ LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
             return _T("CMD_LISTAUDIOTRACKS");
         case CMD_PLAYLIST:
             return _T("CMD_PLAYLIST");
+        case CMD_CURRENTHOST:
+            return _T("CMD_CURRENTHOST");
         default:
             return _T("CMD_UNK");
     }
@@ -187,6 +189,10 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
 #else
     m_strMPCPath += _T("mpc-hc.exe");
 #endif // _WIN64
+
+    if (CComboBox* pCommand = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO1))) {
+        pCommand->AddString(_T("Get host"));
+    }
 
     UpdateData(FALSE);
 
@@ -354,6 +360,9 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
             break;
         case 22:
             Senddata(CMD_CLOSEAPP, m_txtCommand);
+            break;
+        case 23:
+            Senddata(CMD_GETHOST, strEmpty);
             break;
     }
 }

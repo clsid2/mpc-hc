@@ -53,6 +53,7 @@
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
+#include <deque>
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -471,6 +472,15 @@ private:
 
     void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
     CString m_tempstatus_msg, m_closingmsg;
+
+    static constexpr size_t MAX_PENDING_API_HOST_REPLIES = 32;
+    DWORD m_apiHostPid = 0;
+    struct PendingApiHostReply {
+        HWND window;
+        DWORD processId;
+    };
+    std::deque<PendingApiHostReply> m_pendingApiHostReplies;
+    void SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
 
     REFERENCE_TIME m_rtDurationOverride;
 
@@ -908,6 +918,7 @@ public:
     afx_msg LRESULT OnDoShutdown(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoLogOff(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam);
 
     afx_msg void SaveAppSettings();
 
