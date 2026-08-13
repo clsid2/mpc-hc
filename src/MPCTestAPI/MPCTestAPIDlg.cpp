@@ -27,14 +27,7 @@
 #include <psapi.h>
 
 
-enum CLIENT_COMMAND_INDEX {
-    CLIENT_SETVOLUME = 23,
-    CLIENT_SETMUTE,
-    CLIENT_GETVOLUME,
-    CLIENT_GETMUTE,
-    CLIENT_QUERYPLAYERSTATE,
-};
-
+static const DWORD_PTR CLIENT_QUERYPLAYERSTATE_TOKEN = static_cast<DWORD_PTR>(-2);
 static const UINT_PTR PLAYER_STATE_QUERY_TIMER_ID = 0x5150;
 
 
@@ -205,11 +198,18 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
 #endif // _WIN64
 
     if (CComboBox* commandList = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO1))) {
-        commandList->AddString(_T("Set volume (0-100)"));
-        commandList->AddString(_T("Set mute (0 or 1)"));
-        commandList->AddString(_T("Get volume"));
-        commandList->AddString(_T("Get mute"));
-        commandList->AddString(_T("CLIENT_QUERYPLAYERSTATE (non-atomic)"));
+        const auto addCommand = [commandList](LPCTSTR label, DWORD_PTR command) {
+            const int item = commandList->AddString(label);
+            if (item >= 0) {
+                VERIFY(commandList->SetItemData(item, command) != CB_ERR);
+            }
+        };
+
+        addCommand(_T("Set volume (0-100)"), CMD_SETVOLUME);
+        addCommand(_T("Set mute (0 or 1)"), CMD_SETMUTE);
+        addCommand(_T("Get volume"), CMD_GETVOLUME);
+        addCommand(_T("Get mute"), CMD_GETMUTE);
+        addCommand(_T("CLIENT_QUERYPLAYERSTATE (non-atomic)"), CLIENT_QUERYPLAYERSTATE_TOKEN);
     }
 
     UpdateData(FALSE);
@@ -351,6 +351,31 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
     CString strEmpty(_T(""));
     UpdateData(TRUE);
 
+    if (CComboBox* commandList = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO1))) {
+        const int item = commandList->GetCurSel();
+        if (item != CB_ERR) {
+            const DWORD_PTR commandData = commandList->GetItemData(item);
+            if (commandData == CLIENT_QUERYPLAYERSTATE_TOKEN) {
+                StartPlayerStateQuery();
+                return;
+            }
+
+            if (commandData != static_cast<DWORD_PTR>(CB_ERR)) {
+                const MPCAPI_COMMAND command = static_cast<MPCAPI_COMMAND>(commandData);
+                switch (command) {
+                    case CMD_SETVOLUME:
+                    case CMD_SETMUTE:
+                        Senddata(command, m_txtCommand);
+                        return;
+                    case CMD_GETVOLUME:
+                    case CMD_GETMUTE:
+                        Senddata(command, strEmpty);
+                        return;
+                }
+            }
+        }
+    }
+
     switch (m_nCommandType) {
         case 0:
             Senddata(CMD_OPENFILE, m_txtCommand);
@@ -420,21 +445,6 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
             break;
         case 22:
             Senddata(CMD_CLOSEAPP, m_txtCommand);
-            break;
-        case CLIENT_SETVOLUME:
-            Senddata(CMD_SETVOLUME, m_txtCommand);
-            break;
-        case CLIENT_SETMUTE:
-            Senddata(CMD_SETMUTE, m_txtCommand);
-            break;
-        case CLIENT_GETVOLUME:
-            Senddata(CMD_GETVOLUME, strEmpty);
-            break;
-        case CLIENT_GETMUTE:
-            Senddata(CMD_GETMUTE, strEmpty);
-            break;
-        case CLIENT_QUERYPLAYERSTATE:
-            StartPlayerStateQuery();
             break;
     }
 }
