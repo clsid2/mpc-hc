@@ -472,6 +472,11 @@ private:
     void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
     CString m_tempstatus_msg, m_closingmsg;
 
+    int m_lastApiVolume = -1;
+    int m_lastApiMute = -1;
+    int m_lastProcessedVolume = -1;
+    int m_lastProcessedMute = -1;
+
     REFERENCE_TIME m_rtDurationOverride;
 
     void CleanGraph();
@@ -536,7 +541,7 @@ public:
     }
     void SetPlaybackMode(int iNewStatus);
     bool IsMuted() {
-        return m_wndToolBar.GetVolume() == -10000;
+        return m_wndToolBar.IsMuted();
     }
     int GetVolume() {
         return m_wndToolBar.m_volctrl.GetPos();
@@ -1287,8 +1292,9 @@ public:
     void        ResetSubtitlePosAndSize(bool repaint = false);
 
     // MPC API functions
-    void        ProcessAPICommand(COPYDATASTRUCT* pCDS);
+    void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
+    void        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();
@@ -1296,6 +1302,8 @@ public:
     afx_msg void OnFileOpendirectory();
 
     void        SendCurrentPositionToApi(bool fNotifySeek = false);
+    void        SendCurrentVolumeToApi(bool force = false);
+    void        SendCurrentMuteToApi(bool force = false);
     void        ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData);
     void        JumpOfNSeconds(int seconds);
 

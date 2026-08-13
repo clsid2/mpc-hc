@@ -130,6 +130,14 @@ typedef enum MPCAPI_COMMAND :
     // Send index of currently selected subtitle track
     CMD_CURRENTSUBTITLETRACK   = 0x5000000D,
 
+    // Send the current volume after it changes or in response to CMD_GETVOLUME
+    // Parameter 1: volume (0-100)
+    CMD_CURRENTVOLUME       = 0x5000000E,
+
+    // Send the current mute state after it changes or in response to CMD_GETMUTE
+    // Parameter 1: mute state (0 or 1)
+    CMD_CURRENTMUTE         = 0x5000000F,
+
     // Send current playback position in response
     // of CMD_GETCURRENTPOSITION.
     // Parameter 1: current position in seconds
@@ -252,6 +260,22 @@ typedef enum MPCAPI_COMMAND :
     // Ask for the index of the currently selected subtitle track
     // return a CMD_CURRENTSUBTITLETRACK
     CMD_GETCURRENTSUBTITLETRACK   = 0xA0003008,
+
+    // Ask for the current volume
+    // Returns CMD_CURRENTVOLUME
+    CMD_GETVOLUME           = 0xA0003009,
+
+    // Ask for the current mute state
+    // Returns CMD_CURRENTMUTE
+    CMD_GETMUTE             = 0xA000300A,
+
+    // Set the volume without changing the mute state
+    // Parameter 1: volume (0-100)
+    CMD_SETVOLUME           = 0xA0003010,
+
+    // Set the mute state without changing the volume
+    // Parameter 1: mute state (0 or 1)
+    CMD_SETMUTE             = 0xA0003011,
 
     // Toggle FullScreen
     CMD_TOGGLEFULLSCREEN    = 0xA0004000,
