@@ -27,6 +27,17 @@
 #include <psapi.h>
 
 
+enum CLIENT_COMMAND_INDEX {
+    CLIENT_SETVOLUME = 23,
+    CLIENT_SETMUTE,
+    CLIENT_GETVOLUME,
+    CLIENT_GETMUTE,
+    CLIENT_QUERYPLAYERSTATE,
+};
+
+static const UINT_PTR PLAYER_STATE_QUERY_TIMER_ID = 0x5150;
+
+
 LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
 {
     switch (nCmd) {
@@ -44,6 +55,10 @@ LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
             return _T("CMD_LISTAUDIOTRACKS");
         case CMD_PLAYLIST:
             return _T("CMD_PLAYLIST");
+        case CMD_CURRENTVOLUME:
+            return _T("CMD_CURRENTVOLUME");
+        case CMD_CURRENTMUTE:
+            return _T("CMD_CURRENTMUTE");
         default:
             return _T("CMD_UNK");
     }
@@ -130,6 +145,7 @@ BEGIN_MESSAGE_MAP(CRegisterCopyDataDlg, CDialog)
     ON_WM_QUERYDRAGICON()
     ON_BN_CLICKED(IDC_BUTTON_FINDWINDOW, OnButtonFindwindow)
     ON_WM_COPYDATA()
+    ON_WM_TIMER()
     //}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_SENDCOMMAND, &CRegisterCopyDataDlg::OnBnClickedButtonSendcommand)
 END_MESSAGE_MAP()
@@ -187,6 +203,14 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
 #else
     m_strMPCPath += _T("mpc-hc.exe");
 #endif // _WIN64
+
+    if (CComboBox* commandList = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO1))) {
+        commandList->AddString(_T("Set volume (0-100)"));
+        commandList->AddString(_T("Set mute (0 or 1)"));
+        commandList->AddString(_T("Get volume"));
+        commandList->AddString(_T("Get mute"));
+        commandList->AddString(_T("CLIENT_QUERYPLAYERSTATE (non-atomic)"));
+    }
 
     UpdateData(FALSE);
 
@@ -275,9 +299,51 @@ BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruc
         m_hWndMPC = (HWND)IntToPtr(_ttoi((LPCTSTR)pCopyDataStruct->lpData));
     }
 
-    strMsg.Format(_T("%s : %s"), GetMPCCommandName((MPCAPI_COMMAND)pCopyDataStruct->dwData), (LPCTSTR)pCopyDataStruct->lpData);
-    m_listBox.InsertString(0, strMsg);
+    const MPCAPI_COMMAND command = (MPCAPI_COMMAND)pCopyDataStruct->dwData;
+    const LPCTSTR value = (LPCTSTR)pCopyDataStruct->lpData;
+    if (!m_playerStateSnapshot.Capture(command, value)) {
+        strMsg.Format(_T("%s : %s"), GetMPCCommandName(command), value);
+        m_listBox.InsertString(0, strMsg);
+    }
     return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+}
+
+void CRegisterCopyDataDlg::OnTimer(UINT_PTR nIDEvent)
+{
+    if (nIDEvent == PLAYER_STATE_QUERY_TIMER_ID) {
+        KillTimer(PLAYER_STATE_QUERY_TIMER_ID);
+        CompletePlayerStateQuery();
+        return;
+    }
+
+    CDialog::OnTimer(nIDEvent);
+}
+
+void CRegisterCopyDataDlg::StartPlayerStateQuery()
+{
+    if (m_playerStateSnapshot.IsActive()) {
+        KillTimer(PLAYER_STATE_QUERY_TIMER_ID);
+        CompletePlayerStateQuery();
+    }
+
+    m_playerStateSnapshot.Begin();
+    const UINT_PTR timer = SetTimer(PLAYER_STATE_QUERY_TIMER_ID,
+                                    CPlayerStateSnapshot::COLLECTION_WINDOW_MS, nullptr);
+
+    for (size_t i = 0; i < CPlayerStateSnapshot::GetRequestCount(); i++) {
+        Senddata(CPlayerStateSnapshot::GetRequest(i), _T(""));
+    }
+
+    if (!timer) {
+        CompletePlayerStateQuery();
+    }
+}
+
+void CRegisterCopyDataDlg::CompletePlayerStateQuery()
+{
+    if (m_playerStateSnapshot.IsActive()) {
+        m_listBox.InsertString(0, m_playerStateSnapshot.Complete());
+    }
 }
 
 void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
@@ -354,6 +420,21 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
             break;
         case 22:
             Senddata(CMD_CLOSEAPP, m_txtCommand);
+            break;
+        case CLIENT_SETVOLUME:
+            Senddata(CMD_SETVOLUME, m_txtCommand);
+            break;
+        case CLIENT_SETMUTE:
+            Senddata(CMD_SETMUTE, m_txtCommand);
+            break;
+        case CLIENT_GETVOLUME:
+            Senddata(CMD_GETVOLUME, strEmpty);
+            break;
+        case CLIENT_GETMUTE:
+            Senddata(CMD_GETMUTE, strEmpty);
+            break;
+        case CLIENT_QUERYPLAYERSTATE:
+            StartPlayerStateQuery();
             break;
     }
 }
