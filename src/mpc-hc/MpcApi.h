@@ -20,17 +20,17 @@
 
 
 /*
-This file defines commands used for "MPC-HC" API. To send commands
-to MPC-HC and receive playback notifications, first launch MPC-HC with the /slave command line
-argument followed by a HWnd handle used to receive notification:
+This file defines commands used for the MPC-HC API. To send commands
+to MPC-HC and receive playback notifications, first launch MPC-HC with the /slave command-line
+argument followed by an HWND that will receive notifications:
 
 ..\bin\mpc-hc /slave 125421
 
-After startup, MPC-HC sends a WM_COPYDATA message to host with COPYDATASTRUCT struct filled with:
+After startup, MPC-HC sends the host a WM_COPYDATA message with COPYDATASTRUCT filled with:
      - dwData :  CMD_CONNECT
      - lpData :  Unicode string containing MPC-HC's main window handle
 
-To control MPC-HC, send WM_COPYDATA messages to Hwnd provided on connection. All messages should be
+To control MPC-HC, send WM_COPYDATA messages to the HWND provided on connection. All messages must be
 formatted as null-terminated Unicode strings. For commands or notifications with multiple parameters,
 values are separated by |.
 If a string contains a |, it will be escaped with a \ so a \| is not a separator.
@@ -84,15 +84,15 @@ typedef enum MPCAPI_COMMAND :
     unsigned int {
     // ==== Commands from MPC-HC to host
 
-    // Send after connection
-    // Parameter 1: MPC-HC window handle (command should be sent to this HWnd)
+    // Sent after connecting to the host
+    // Parameter 1: MPC-HC window handle (commands must be sent to this HWND)
     CMD_CONNECT             = 0x50000000,
 
     // Send when opening or closing file
     // Parameter 1: current state (see MPC_LOADSTATE enum)
     CMD_STATE               = 0x50000001,
 
-    // Send when playing, pausing or closing file
+    // Send when playing, pausing or closing a file
     // Parameter 1: current play mode (see MPC_PLAYSTATE enum)
     CMD_PLAYMODE            = 0x50000002,
 
@@ -153,7 +153,7 @@ typedef enum MPCAPI_COMMAND :
     // Parameter 1: none.
     CMD_NOTIFYENDOFSTREAM   = 0x50000009,
 
-    // Send version str
+    // Send version string
     // Parameter 1: MPC-HC's version
     CMD_VERSION             = 0x5000000A,
 
@@ -229,16 +229,16 @@ typedef enum MPCAPI_COMMAND :
     // return a CMD_LISTSUBTITLETRACKS
     CMD_GETSUBTITLETRACKS   = 0xA0003000,
 
-    // Ask for the current playback position,
-    // see CMD_CURRENTPOSITION.
-    // Parameter 1: current position in seconds
+    // Ask for the current playback position
+    // Returns CMD_CURRENTPOSITION
     CMD_GETCURRENTPOSITION  = 0xA0003004,
 
     // Jump forward/backward of N seconds,
     // Parameter 1: seconds (negative values for backward)
     CMD_JUMPOFNSECONDS      = 0xA0003005,
 
-    // Ask slave for version
+    // Ask MPC-HC for its version
+    // Returns CMD_VERSION
     CMD_GETVERSION          = 0xA0003006,
 
     // Ask for a list of the audio tracks of the file
