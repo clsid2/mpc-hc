@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>MPC-HC</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="dark light">
+        <link rel="icon" href="/favicon.ico">
+        <style>
+:root {
+    --bg: #191919;
+    --surface: #202020;
+    --raised: #262626;
+    --line: #383838;
+    --text: #f2f2f0;
+    --dim: #97978f;
+    --accent: #f2a93b;
+    --accent-ink: #1a1408;
+    --radius: 4px;
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #f7f6f3;
+        --surface: #ffffff;
+        --raised: #f0eee9;
+        --line: #dcd9d1;
+        --text: #1a1a18;
+        --dim: #6b6862;
+        --accent: #a8640c;
+        --accent-ink: #ffffff;
+    }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: contain;
+}
+button, select, input { font: inherit; color: inherit; }
+.hide { display: none !important; }
+
+.app {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    container-type: inline-size;
+    /* Past this width the layout stops growing: a wider seek bar and more
+       whitespace do not make the remote more useful. */
+    max-width: 1100px;
+    margin: 0 auto;
+}
+/* On a desktop the remote is a compact panel, not a full-screen app: it takes
+   the height its controls need and sits in the middle of the window. */
+@media (min-width: 760px) {
+    body { display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .app {
+        height: auto;
+        max-height: calc(100vh - 40px);
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--bg);
+    }
+    .side { max-height: 56vh; }
+}
+.panes { display: grid; grid-template-rows: 1fr; min-height: 0; min-width: 0; }
+.panes > * { min-width: 0; }
+.main { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow-y: auto; }
+.side { display: none; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--surface); }
+.side.active { display: flex; }
+
+/* ---- stage ---- */
+.stage {
+    aspect-ratio: 16 / 9;
+    background: #0c0c0c;
+    display: grid;
+    place-items: center;
+    position: relative;
+    overflow: hidden;
+    flex: none;
+}
+.stage img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.stage .ph { width: 40px; height: 40px; fill: #ffffff; opacity: .16; }
+.stage .note {
+    position: absolute; bottom: 8px; left: 8px;
+    font-size: 11px; color: var(--dim);
+    background: rgba(0,0,0,.55); border-radius: 2px; padding: 2px 6px;
+}
+
+/* ---- meta ---- */
+.meta { padding: 12px 14px 2px; display: flex; flex-direction: column; gap: 3px; }
+.title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub { font-size: 12px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.state { color: var(--accent); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+
+/* ---- seek ---- */
+.seek { padding: 10px 14px 0; }
+.times {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--dim);
+    font-variant-numeric: tabular-nums;
+}
+input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 28px; margin: 0; background: transparent; cursor: pointer; display: block;
+}
+input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--p,0%), var(--line) var(--p,0%));
+}
+input[type=range]::-moz-range-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--p,0%), var(--line) var(--p,0%));
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px;
+    border: 0; border-radius: 50%; background: var(--accent);
+}
+input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--accent);
+}
+input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+/* ---- transport ---- */
+.transport {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; padding: 6px 10px 8px; flex-wrap: wrap;
+}
+.btn {
+    appearance: none; border: 0; background: transparent; color: var(--text);
+    width: 46px; height: 46px; border-radius: var(--radius);
+    display: grid; place-items: center; cursor: pointer;
+}
+/* Buttons are drawn from the player's own toolbar artwork (res/buttons24.svg),
+   a 26 x 4 sheet of 24px cells. Rows are: 0 normal light, 1 disabled light,
+   2 normal dark, 3 disabled dark — so the theme is a background-position-y. */
+.tbico {
+    --sz: 24px;
+    width: var(--sz); height: var(--sz); pointer-events: none; flex: none;
+    background-image: url(/img/buttons.svg);
+    background-repeat: no-repeat;
+    /* N columns x 4 rows, scaled to whatever --sz asks for. The column count
+       comes from the sheet itself, since a custom toolbar may differ. */
+    background-size: calc(var(--sz) * var(--tb-cols, 26)) calc(var(--sz) * 4);
+    background-position: calc(var(--i, 0) * var(--sz) * -1) calc(var(--sz) * -2);
+}
+@media (prefers-color-scheme: light) {
+    .tbico { background-position-y: 0; }
+}
+/* On the amber button the light-theme (dark ink) cell reads better. */
+.btn.primary .tbico { background-position-y: 0; }
+.btn svg { width: 20px; height: 20px; fill: currentColor; pointer-events: none; }
+.btn:hover { background: var(--raised); }
+.btn:active { transform: scale(.94); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.btn.primary {
+    background: var(--accent); color: var(--accent-ink);
+    width: 56px; height: 56px; border-radius: 50%;
+}
+.btn.primary:hover { background: var(--accent); filter: brightness(1.08); }
+.btn.primary svg { width: 24px; height: 24px; }
+.btn.small { width: 38px; height: 38px; }
+.btn.small svg { width: 17px; height: 17px; }
+.btn.small .tbico { --sz: 20px; }
+
+.rack { display: flex; align-items: center; gap: 8px; padding: 0 12px 12px; flex-wrap: wrap; min-width: 0; }
+.rack .grow { flex: 1 1 60px; }
+.vol { max-width: 130px; flex: 1 1 90px; }
+/* Track pickers get their own row: a select is as wide as its longest option,
+   and track names are long enough to push the whole page sideways. */
+.tracks { display: flex; gap: 8px; padding: 0 12px 12px; min-width: 0; }
+.tracks:empty { display: none; }
+select.pick {
+    appearance: none; background: var(--raised); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 8px 9px; min-height: 38px;
+    flex: 1 1 0; min-width: 0;
+    cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---- side panels ---- */
+.phead {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 12px; border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+}
+.phead h2 { margin: 0; font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--dim); font-weight: 600; }
+.phead .grow { flex: 1; }
+.search {
+    width: 100%; background: var(--bg); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 8px 10px; min-height: 38px;
+}
+.search:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.plist { list-style: none; margin: 0; padding: 0 0 12px; }
+.plist li { border-bottom: 1px solid var(--line); }
+.plist button, .plist a {
+    width: 100%; text-align: left; background: transparent; border: 0;
+    padding: 11px 12px; min-height: 46px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; color: inherit;
+    text-decoration: none; font: inherit;
+}
+.plist button:hover, .plist a:hover { background: var(--raised); }
+.plist button:focus-visible, .plist a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.plist .n { font-size: 12px; color: var(--dim); min-width: 18px; font-variant-numeric: tabular-nums; }
+.plist .t { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plist .d { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.plist .ico { width: 16px; height: 16px; fill: var(--dim); flex: none; }
+.plist li.cur button { box-shadow: inset 2px 0 0 var(--accent); }
+.plist li.cur .t { color: var(--accent); }
+.crumb { padding: 8px 12px; font-size: 12px; color: var(--dim); word-break: break-all; border-bottom: 1px solid var(--line); }
+.empty { padding: 22px 14px; color: var(--dim); font-size: 13px; }
+
+/* ---- tabs ---- */
+.tabs { display: flex; background: var(--surface); border-top: 1px solid var(--line); }
+.tabs button {
+    flex: 1 1 0; min-width: 0; appearance: none; border: 0; background: transparent; color: var(--dim);
+    padding: 8px 4px; min-height: 52px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    font-size: 11px;
+}
+.tabs button svg { width: 18px; height: 18px; fill: currentColor; }
+.tabs button .tbico { --sz: 18px; }
+.tabs button[aria-selected=true] { color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.toast {
+    position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%);
+    background: var(--raised); border: 1px solid var(--line); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .18s ease;
+    max-width: 88vw; text-align: center;
+}
+.toast.show { opacity: 1; }
+.offline .title { opacity: .5; }
+
+/* Wide container: side panel docks next to the player and the tab bar moves up. */
+@container (min-width: 700px) {
+    .panes { grid-template-columns: minmax(0,1fr) 300px; grid-template-rows: 1fr; }
+    .side { display: flex; border-left: 1px solid var(--line); }
+    .side:not(.active) { display: flex; }
+    .transport { justify-content: flex-start; padding-left: 12px; }
+    .stage { max-height: 58vh; }
+    .tabs { border-top: 1px solid var(--line); }
+    .tabs button { flex-direction: row; gap: 7px; min-height: 40px; font-size: 12px; }
+    .toast { bottom: 64px; }
+    /* A mouse does not need 46px targets, so tighten the controls instead of
+       letting them float in the extra space. */
+    .btn { width: 38px; height: 38px; }
+    .btn svg { width: 18px; height: 18px; }
+    .btn.primary { width: 44px; height: 44px; }
+    .btn.primary svg { width: 20px; height: 20px; }
+    .btn.small { width: 32px; height: 32px; }
+    .transport { gap: 2px; padding-bottom: 6px; }
+    .meta { padding-top: 10px; }
+    .plist button, .plist a { min-height: 38px; padding: 7px 12px; }
+    .tabs button svg { width: 16px; height: 16px; }
+    .tabs button .tbico { --sz: 16px; }
+    .tracks { justify-content: flex-end; }
+    .tracks select.pick { flex: 0 1 240px; }
+    /* The player never leaves the screen here, so this tab would do nothing. */
+    .tabs button[data-pane="now"] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    .btn:active { transform: none; }
+}
+        </style>
+    </head>
+    <body>
+        <noscript>
+            <p style="padding:14px">This remote needs JavaScript. The
+            <a href="/controls.html">classic controls page</a> works without it.</p>
+        </noscript>
+
+        <svg style="display:none" aria-hidden="true">
+            <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></symbol>
+            <symbol id="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
+            <symbol id="i-stop" viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/></symbol>
+            <symbol id="i-prev" viewBox="0 0 24 24"><path d="M7 6h2.2v12H7zm3.6 6L19 6v12z"/></symbol>
+            <symbol id="i-next" viewBox="0 0 24 24"><path d="M14.8 6H17v12h-2.2zM5 6l8.4 6L5 18z"/></symbol>
+            <symbol id="i-rew" viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.9 8.2l1.9-.4A5.1 5.1 0 1 0 12 6.9V9L8.2 6 12 3z"/></symbol>
+            <symbol id="i-ff" viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 0 6.9 8.2l-1.9-.4A5.1 5.1 0 1 1 12 6.9V9l3.8-3L12 3z"/></symbol>
+            <symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 10h3l4-3.5v11L7 14H4zm10.5-1.4a4.5 4.5 0 0 1 0 6.8l-1-1.5a2.7 2.7 0 0 0 0-3.8z"/></symbol>
+            <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 10h3l4-3.5v11L7 14H4zm11.8.3 1.3 1.3 1.3-1.3 1.1 1.1-1.3 1.3 1.3 1.3-1.1 1.1-1.3-1.3-1.3 1.3-1.1-1.1 1.3-1.3-1.3-1.3z"/></symbol>
+            <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h10v2H4z"/></symbol>
+            <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h6l2 2h10v10H3z"/></symbol>
+            <symbol id="i-disc" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 7.2a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6z"/></symbol>
+            <symbol id="i-cmd" viewBox="0 0 24 24"><path d="M4 5h16v3H4zm0 5h16v2H4zm0 4h16v2H4zm0 4h10v2H4z"/></symbol>
+            <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zm7 1.5V8h3.5z"/></symbol>
+            <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 5l7 7h-4v7h-6v-7H5z"/></symbol>
+            <symbol id="i-fs" viewBox="0 0 24 24"><path d="M4 4h7v2H6v5H4zm9 0h7v7h-2V6h-5zM4 13h2v5h5v2H4zm14 0h2v7h-7v-2h5z"/></symbol>
+        </svg>
+
+        <div class="app">
+            <div class="panes">
+                <div class="main" id="main">
+                    <div class="stage hide" id="stage">
+                        <svg class="ph" aria-hidden="true"><use href="#i-play"></use></svg>
+                        <img id="snap" alt="">
+                    </div>
+
+                    <div class="meta">
+                        <div class="title" id="title">Not connected</div>
+                        <div class="sub">
+                            <span class="state" id="state">&mdash;</span>
+                            <span id="rate"></span>
+                            <span id="size"></span>
+                        </div>
+                    </div>
+
+                    <div class="seek">
+                        <input type="range" id="seek" min="0" max="1000" value="0" step="1"
+                               aria-label="Seek position" style="--p:0%">
+                        <div class="times"><span id="pos">00:00</span><span id="dur">00:00</span></div>
+                    </div>
+
+                    <div class="transport">
+                        <button class="btn" id="b-prev" aria-label="Previous track"><span class="tbico" style="--i:3"></span></button>
+                        <button class="btn" id="b-rew" aria-label="Jump backward"><span class="tbico" style="--i:16"></span></button>
+                        <button class="btn primary" id="b-play" aria-label="Play"><span class="tbico" style="--i:0"></span></button>
+                        <button class="btn" id="b-ff" aria-label="Jump forward"><span class="tbico" style="--i:17"></span></button>
+                        <button class="btn" id="b-next" aria-label="Next track"><span class="tbico" style="--i:4"></span></button>
+                        <button class="btn" id="b-stop" aria-label="Stop"><span class="tbico" style="--i:2"></span></button>
+                        <button class="btn" id="b-fs" aria-label="Toggle fullscreen"><span class="tbico" style="--i:12"></span></button>
+                    </div>
+
+                    <div class="rack">
+                        <button class="btn small" id="b-mute" aria-label="Mute"><span class="tbico" style="--i:24"></span></button>
+                        <input type="range" class="vol" id="vol" min="0" max="100" value="0"
+                               aria-label="Volume" style="--p:0%">
+                    </div>
+
+                    <div class="tracks">
+                        <select class="pick hide" id="pick-audio" aria-label="Audio track"></select>
+                        <select class="pick hide" id="pick-sub" aria-label="Subtitle track"></select>
+                    </div>
+                </div>
+
+                <div class="side" id="side">
+                    <div id="pane-playlist">
+                        <div class="phead"><h2>Playlist</h2></div>
+                        <ul class="plist" id="playlist"></ul>
+                    </div>
+                    <div id="pane-files" class="hide">
+                        <div class="phead"><h2>Files</h2></div>
+                        <div class="crumb" id="crumb">&nbsp;</div>
+                        <ul class="plist" id="files"></ul>
+                    </div>
+                    <div id="pane-commands" class="hide">
+                        <div class="phead">
+                            <input class="search" id="cmdsearch" type="search" placeholder="Search commands" aria-label="Search commands">
+                        </div>
+                        <ul class="plist" id="commands"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="tabs" role="tablist">
+                <button role="tab" aria-selected="true" data-pane="now"><span class="tbico tabico" style="--i:0"></span>Now playing</button>
+                <button role="tab" aria-selected="false" data-pane="playlist"><span class="tbico tabico" style="--i:13"></span>Playlist</button>
+                <button role="tab" aria-selected="false" data-pane="files"><span class="tbico tabico" style="--i:10"></span>Files</button>
+                <button role="tab" aria-selected="false" data-pane="commands"><span class="tbico tabico" style="--i:11"></span>Commands</button>
+            </nav>
+        </div>
+
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+        <script>
+"use strict";
+(function () {
+    var CMD = {
+        playpause: 889,     // ID_PLAY_PLAYPAUSE
+        stop: 890,          // ID_PLAY_STOP
+        prev: 919,          // ID_NAVIGATE_SKIPBACKFILE
+        next: 920,          // ID_NAVIGATE_SKIPFORWARDFILE
+        rew: 901,           // ID_PLAY_SEEKBACKWARDMED
+        ff: 902,            // ID_PLAY_SEEKFORWARDMED
+        mute: 909,          // ID_VOLUME_MUTE
+        fullscreen: 830     // ID_VIEW_FULLSCREEN
+    };
+    var SETPOS = -1, SETVOL = -2;
+
+    var $ = function (id) { return document.getElementById(id); };
+
+    // The toolbar sheet is always 4 rows of square cells, but a user-selected
+    // toolbar can have a different number of buttons, so measure it.
+    (function measureToolbar() {
+        var sheet = new Image();
+        sheet.onload = function () {
+            var cell = sheet.naturalHeight / 4;
+            if (cell > 0) {
+                var cols = Math.round(sheet.naturalWidth / cell);
+                if (cols > 0) {
+                    document.documentElement.style.setProperty("--tb-cols", cols);
+                }
+            }
+        };
+        sheet.src = "/img/buttons.svg";
+    }());
+    var el = {
+        title: $("title"), state: $("state"), rate: $("rate"), size: $("size"),
+        seek: $("seek"), pos: $("pos"), dur: $("dur"), vol: $("vol"),
+        play: $("b-play"), mute: $("b-mute"), snap: $("snap"), stage: $("stage"),
+        toast: $("toast"), side: $("side"),
+        pickAudio: $("pick-audio"), pickSub: $("pick-sub")
+    };
+
+    var last = {};
+    var seeking = false, volDragging = false;
+    var pollTimer = null, snapTimer = null, snapCounter = 0;
+    var currentPane = "now", currentDir = null, commandsLoaded = false;
+
+    function fmt(ms) {
+        if (!isFinite(ms) || ms < 0) { ms = 0; }
+        var t = Math.floor(ms / 1000);
+        var h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = t % 60;
+        var p2 = function (n) { return (n < 10 ? "0" : "") + n; };
+        return (h > 0 ? h + ":" : "") + p2(m) + ":" + p2(s);
+    }
+
+    function toast(msg) {
+        el.toast.textContent = msg;
+        el.toast.classList.add("show");
+        clearTimeout(toast.t);
+        toast.t = setTimeout(function () { el.toast.classList.remove("show"); }, 1800);
+    }
+
+    function send(id, extra) {
+        var url = "/command.html?wm_command=" + id + (extra || "");
+        return fetch(url, { method: "GET", cache: "no-store" })
+            .then(function () { setTimeout(poll, 120); })
+            .catch(function () { toast("Command failed"); });
+    }
+
+    function setFill(range) {
+        var span = range.max - range.min;
+        var pct = span > 0 ? (range.value - range.min) * 100 / span : 0;
+        range.style.setProperty("--p", pct + "%");
+    }
+
+    /* ---------- status ---------- */
+    function apply(s) {
+        document.body.classList.remove("offline");
+
+        if (s.file !== last.file) {
+            el.title.textContent = s.file || "Nothing playing";
+            document.title = s.file ? s.file + " — MPC-HC" : "MPC-HC";
+            loadPlaylist();
+        }
+        var names = ["Stopped", "Paused", "Playing"];
+        el.state.textContent = s.duration > 0 || s.file ? (names[s.state] || "Idle") : "Idle";
+        el.rate.textContent = s.rate && s.rate !== 1 ? s.rate.toFixed(2) + "×" : "";
+        el.size.textContent = s.size || "";
+
+        el.play.setAttribute("aria-label", s.state === 2 ? "Pause" : "Play");
+        el.play.firstElementChild.style.setProperty("--i", s.state === 2 ? 1 : 0);
+
+        if (!seeking) {
+            el.seek.max = Math.max(1, s.duration || 0);
+            el.seek.value = Math.min(s.position || 0, el.seek.max);
+            setFill(el.seek);
+            el.pos.textContent = fmt(s.position);
+            el.dur.textContent = fmt(s.duration);
+        }
+        if (!volDragging) {
+            el.vol.value = s.volume || 0;
+            setFill(el.vol);
+        }
+        el.mute.setAttribute("aria-label", s.muted ? "Unmute" : "Mute");
+        el.mute.firstElementChild.style.setProperty("--i", s.muted ? 25 : 24);
+
+        fillTracks(el.pickAudio, s.audio, "Audio");
+        fillTracks(el.pickSub, s.subtitle, "Subtitles");
+
+        // Only give up the space for a video area when there is something to
+        // put in it; with preview off it would just be a large empty box.
+        last = s;
+        if (s.preview) {
+            el.stage.classList.remove("hide");
+        } else {
+            el.stage.classList.add("hide");
+        }
+        syncSnapshots();
+    }
+
+    function fillTracks(sel, data, label) {
+        if (!data || !data.tracks || !data.tracks.length) { sel.classList.add("hide"); return; }
+        var sig = label + "|" + data.tracks.map(function (t) { return t.name; }).join("|");
+        if (sel.dataset.sig !== sig) {
+            sel.dataset.sig = sig;
+            sel.textContent = "";
+            data.tracks.forEach(function (t, i) {
+                var o = document.createElement("option");
+                o.value = i;
+                // The server supplies the exact command that selects this track,
+                // because the menu index arithmetic differs per playback mode.
+                o.dataset.cmd = t.id;
+                o.textContent = label + ": " + t.name;
+                sel.appendChild(o);
+            });
+        }
+        sel.value = data.active;
+        sel.classList.remove("hide");
+    }
+
+    function poll() {
+        fetch("/status.json", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(apply)
+            .catch(function () {
+                document.body.classList.add("offline");
+                el.state.textContent = "Offline";
+            });
+    }
+
+    function startPolling() {
+        stopPolling();
+        poll();
+        pollTimer = setInterval(poll, 1000);
+    }
+    function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+    /* ---------- snapshot preview ---------- */
+    function tickSnapshot() {
+        el.snap.src = "/snapshot.jpg?" + (snapCounter++);
+    }
+    function isWide() { return document.querySelector(".app").clientWidth >= 700; }
+
+    function syncSnapshots() {
+        if (last.preview && (isWide() || currentPane === "now")) { startSnapshots(); }
+        else { stopSnapshots(); }
+    }
+
+    function startSnapshots() {
+        if (snapTimer) { return; }
+        el.snap.classList.remove("hide");
+        tickSnapshot();
+        snapTimer = setInterval(tickSnapshot, 1000);
+    }
+    function stopSnapshots() {
+        if (snapTimer) { clearInterval(snapTimer); snapTimer = null; }
+        el.snap.classList.add("hide");
+    }
+    el.snap.addEventListener("error", function () { el.snap.classList.add("hide"); });
+    el.snap.addEventListener("load", function () { el.snap.classList.remove("hide"); });
+
+    /* ---------- playlist ---------- */
+    function loadPlaylist() {
+        fetch("/playlist.json", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                var ul = $("playlist");
+                ul.textContent = "";
+                if (!d.items || !d.items.length) {
+                    ul.innerHTML = '<li class="empty">The playlist is empty.</li>';
+                    return;
+                }
+                d.items.forEach(function (item) {
+                    var li = document.createElement("li");
+                    if (item.index === d.active) { li.className = "cur"; }
+                    var b = document.createElement("button");
+                    b.type = "button";
+                    b.innerHTML = '<span class="n"></span><span class="t"></span><span class="d"></span>';
+                    b.children[0].textContent = item.index + 1;
+                    b.children[1].textContent = item.label;
+                    b.children[2].textContent = item.duration ? fmt(item.duration) : "";
+                    b.addEventListener("click", function () {
+                        send(item.id);
+                        toast("Playing " + item.label);
+                    });
+                    li.appendChild(b);
+                    ul.appendChild(li);
+                });
+            })
+            .catch(function () {});
+    }
+
+    /* ---------- file browser ---------- */
+    function loadFiles(path) {
+        var url = "/browse.json" + (path ? "?path=" + encodeURIComponent(path) : "");
+        fetch(url, { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                currentDir = d.path || "";
+                $("crumb").textContent = d.path || "Drives";
+                var ul = $("files");
+                ul.textContent = "";
+
+                if (d.parent !== undefined && d.parent !== null) {
+                    ul.appendChild(row("..", "#i-up", function () { loadFiles(d.parent); }));
+                }
+                (d.dirs || []).forEach(function (e) {
+                    ul.appendChild(row(e.name, "#i-folder", function () { loadFiles(e.path); }));
+                });
+                (d.files || []).forEach(function (e) {
+                    ul.appendChild(row(e.name, "#i-file", function () {
+                        fetch("/browser.html?path=" + encodeURIComponent(e.path) + "&focus=no",
+                              { cache: "no-store" })
+                            .then(function () { toast("Opening " + e.name); setTimeout(poll, 400); })
+                            .catch(function () { toast("Could not open file"); });
+                    }, e.size));
+                });
+                if (!ul.children.length) {
+                    ul.innerHTML = '<li class="empty">Nothing here.</li>';
+                }
+            })
+            .catch(function () { $("files").innerHTML = '<li class="empty">Could not read that folder.</li>'; });
+    }
+
+    function row(name, icon, onClick, meta) {
+        var li = document.createElement("li");
+        var b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = '<svg class="ico"><use href="' + icon + '"></use></svg>' +
+                      '<span class="t"></span><span class="d"></span>';
+        b.children[1].textContent = name;
+        b.children[2].textContent = meta || "";
+        b.addEventListener("click", onClick);
+        li.appendChild(b);
+        return li;
+    }
+
+    /* ---------- commands ---------- */
+    function loadCommands() {
+        if (commandsLoaded) { return; }
+        commandsLoaded = true;
+        fetch("/commands.json", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                var ul = $("commands");
+                ul.textContent = "";
+                (d.commands || []).forEach(function (c) {
+                    var li = document.createElement("li");
+                    li.dataset.name = c.name.toLowerCase();
+                    var b = document.createElement("button");
+                    b.type = "button";
+                    b.innerHTML = '<span class="t"></span><span class="d"></span>';
+                    b.children[0].textContent = c.name;
+                    b.children[1].textContent = c.id;
+                    b.addEventListener("click", function () { send(c.id); toast(c.name); });
+                    li.appendChild(b);
+                    ul.appendChild(li);
+                });
+            })
+            .catch(function () {
+                commandsLoaded = false;
+                $("commands").innerHTML = '<li class="empty">Could not load the command list.</li>';
+            });
+    }
+
+    $("cmdsearch").addEventListener("input", function (e) {
+        var q = e.target.value.toLowerCase();
+        Array.prototype.forEach.call($("commands").children, function (li) {
+            li.style.display = !q || (li.dataset.name && li.dataset.name.indexOf(q) >= 0) ? "" : "none";
+        });
+    });
+
+    /* ---------- panes ---------- */
+    function showPane(name) {
+        var wide = isWide();
+        lastWide = wide;
+        // On a wide layout the player is always on screen, so "Now playing"
+        // would be a no-op; there the tabs choose what the side panel shows.
+        if (wide && name === "now") { name = "playlist"; }
+        currentPane = name;
+
+        $("pane-playlist").classList.toggle("hide", name !== "playlist");
+        $("pane-files").classList.toggle("hide", name !== "files");
+        $("pane-commands").classList.toggle("hide", name !== "commands");
+        el.side.classList.toggle("active", name !== "now");
+        $("main").classList.toggle("hide", !wide && name !== "now");
+
+        Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (b) {
+            b.setAttribute("aria-selected", String(b.dataset.pane === name));
+        });
+
+        if (name === "files" && currentDir === null) { loadFiles(""); }
+        if (name === "commands") { loadCommands(); }
+        syncSnapshots();
+    }
+
+    // The first width measurement can be taken before layout settles (in an
+    // iframe it is always wrong), so re-run the pane logic whenever the app
+    // actually crosses between the narrow and wide layouts.
+    var lastWide = null, resizeTimer;
+    function relayout() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            var w = isWide();
+            if (w !== lastWide) { lastWide = w; showPane(currentPane); }
+        }, 80);
+    }
+    window.addEventListener("resize", relayout);
+    if (window.ResizeObserver) {
+        new ResizeObserver(relayout).observe(document.querySelector(".app"));
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (b) {
+        b.addEventListener("click", function () { showPane(b.dataset.pane); });
+    });
+
+    /* ---------- controls ---------- */
+    el.play.addEventListener("click", function () { send(CMD.playpause); });
+    $("b-stop").addEventListener("click", function () { send(CMD.stop); });
+    $("b-prev").addEventListener("click", function () { send(CMD.prev); });
+    $("b-next").addEventListener("click", function () { send(CMD.next); });
+    $("b-rew").addEventListener("click", function () { send(CMD.rew); });
+    $("b-ff").addEventListener("click", function () { send(CMD.ff); });
+    $("b-fs").addEventListener("click", function () { send(CMD.fullscreen); });
+    el.mute.addEventListener("click", function () { send(CMD.mute); });
+
+    el.seek.addEventListener("input", function () {
+        seeking = true;
+        setFill(el.seek);
+        el.pos.textContent = fmt(el.seek.value);
+    });
+    el.seek.addEventListener("change", function () {
+        var pct = el.seek.max > 0 ? (el.seek.value * 100 / el.seek.max) : 0;
+        send(SETPOS, "&percent=" + pct).then(function () { seeking = false; });
+    });
+
+    el.vol.addEventListener("input", function () { volDragging = true; setFill(el.vol); });
+    el.vol.addEventListener("change", function () {
+        send(SETVOL, "&volume=" + el.vol.value).then(function () { volDragging = false; });
+    });
+
+    function pickTrack(sel) {
+        var opt = sel.options[sel.selectedIndex];
+        var cmd = opt && parseInt(opt.dataset.cmd, 10);
+        if (cmd) { send(cmd); }
+    }
+    el.pickAudio.addEventListener("change", function () { pickTrack(el.pickAudio); });
+    el.pickSub.addEventListener("change", function () { pickTrack(el.pickSub); });
+
+    document.addEventListener("keydown", function (e) {
+        if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) { return; }
+        var k = e.key;
+        if (k === " ") { e.preventDefault(); send(CMD.playpause); }
+        else if (k === "ArrowRight") { send(CMD.ff); }
+        else if (k === "ArrowLeft") { send(CMD.rew); }
+        else if (k === "m" || k === "M") { send(CMD.mute); }
+        else if (k === "f" || k === "F") { send(CMD.fullscreen); }
+    });
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) { stopPolling(); stopSnapshots(); }
+        else { startPolling(); if (last.preview && currentPane === "now") { startSnapshots(); } }
+    });
+
+    showPane("now");
+    startPolling();
+}());
+        </script>
+[debug]
+    </body>
+</html>

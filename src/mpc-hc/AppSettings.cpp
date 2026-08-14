@@ -2324,7 +2324,7 @@ void CAppSettings::LoadSettings()
     bSaveImagePosition = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_POSITION, TRUE);
     bSaveImageCurrentTime = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SAVEIMAGE_CURRENTTIME, FALSE);
 
-    bAllowInaccurateFastseek = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ALLOW_INACCURATE_FASTSEEK, TRUE);
+    bAllowInaccurateFastseek = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ALLOW_INACCURATE_FASTSEEK, FALSE);
     bLoopFolderOnPlayNextFile = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOOP_FOLDER_NEXT_FILE, FALSE);
     bNextFileInFolderSortByDate = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_NEXT_FILE_SORT_BY_DATE, FALSE);
 

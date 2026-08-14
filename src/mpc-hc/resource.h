@@ -69,6 +69,7 @@
 #define IDR_HTML_VARIABLES              537
 #define IDF_JAVASCRIPT                  538
 #define IDF_FAVICON                     539
+#define IDR_HTML_REMOTE                 540
 #define IDF_SHADER_RESIZER              700
 #define IDF_SHADER_EMPTY                701
 #define IDF_SHADER_FINAL                702

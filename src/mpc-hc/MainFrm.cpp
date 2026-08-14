@@ -20574,6 +20574,13 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
                     }
 
                     if (extendedwait || m_fFullScreen || s.hMasterWnd || hibernating || app_closing) {
+                        #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER && (MPC_VERSION_REV > 10)
+                        if (extendedwait && CrashReporter::IsEnabled()) {
+                            if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
+                                throw 0xdead;
+                            }
+                        }
+                        #endif
                         processmsg = false;
                     } else {
                         if (!m_pGB && !m_pGB_preview) {

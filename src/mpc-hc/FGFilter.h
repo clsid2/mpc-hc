@@ -119,6 +119,8 @@ public:
     CFGFilterFile(const CLSID& clsid, CString path, CStringW name = L"", UINT64 merit = MERIT64_DO_USE);
 
     HRESULT Create(IBaseFilter** ppBF, CInterfaceList<IUnknown, &IID_IUnknown>& pUnks);
+
+    CString GetPath() { return m_path; };
 };
 
 class CFGFilterVideoRenderer : public CFGFilter

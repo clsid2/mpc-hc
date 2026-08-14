@@ -25,7 +25,7 @@
 #include <atomic>
 
 // Set to 0 to disable capturing video frames for the SMTC thumbnail
-#define MPC_SMTC_VIDEO_THUMBNAIL 1
+#define MPC_SMTC_VIDEO_THUMBNAIL 0
 
 // Messages posted to CMainFrame from SMTC event callbacks, which arrive on WinRT threadpool threads
 #define WM_SMTC_SEEK        (WM_APP + 900)

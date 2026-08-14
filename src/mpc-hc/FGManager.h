@@ -136,6 +136,8 @@ public:
     bool PreviewSupportsRotation() { return m_bPreviewSupportsRotation; }
     static CUnknown* WINAPI GetMpcAudioRendererInstance(LPUNKNOWN lpunk, HRESULT* phr);
 
+    QWORD GetFileVersionFromRegCLSID(CString clsid);
+
     void SetUserAgent(CString ua) { m_useragent = ua; };
     void SetReferrer(CString ref) { m_referrer = ref; };
 

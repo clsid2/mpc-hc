@@ -75,11 +75,20 @@ public:
     bool OnStatus(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnError404(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnPlayer(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnRemote(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnToolbarImage(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnViewRes(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnDVBChannels(CStringA& hdr, CStringA& body, CStringA& mime);
     bool OnDVBSetChannel(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnStatusJSON(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnCommandsJSON(CStringA& hdr, CStringA& body, CStringA& mime);
+    bool OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mime);
 
 private:
     CString GetSize() const;
+    void GetNavStreamTracksJSON(DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active) const;
+    CStringA GetAudioTracksJSON() const;
+    CStringA GetSubtitleTracksJSON() const;
 };
