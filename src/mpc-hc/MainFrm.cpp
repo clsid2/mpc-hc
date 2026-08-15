@@ -297,6 +297,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
     ON_MESSAGE(WM_SENDAPICURRENTHOST, OnSendApiCurrentHost)
+    ON_MESSAGE(WM_FLUSHAPISTATE, OnFlushApiState)
 
     ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
     ON_MESSAGE(WM_SMTC_AUTOREPEAT, OnSmtcAutoRepeat)
@@ -5145,7 +5146,13 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
         if (s.hMasterWnd) {
+            // Mark that we are inside the host's blocking send so volume/mute notifications
+            // triggered by this command defer instead of sending back inline (see
+            // SendCurrentVolumeToApi). Save/restore in case a nested command reenters.
+            const bool wasProcessing = m_bProcessingApiCommand;
+            m_bProcessingApiCommand = true;
             ProcessAPICommand(pWnd ? pWnd->GetSafeHwnd() : nullptr, pCDS);
+            m_bProcessingApiCommand = wasProcessing;
             return TRUE;
         } else {
             return FALSE;
@@ -21615,7 +21622,9 @@ void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             ApplyPanNScanPresetString();
             break;
         case CMD_OSDSHOWMESSAGE:
-            ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
+            if (pCDS->lpData && pCDS->cbData >= sizeof(MPC_OSDDATA)) {
+                ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
+            }
             break;
         case CMD_STATUSSHOWMESSAGE: {
             CStringW message;
@@ -21657,7 +21666,9 @@ LRESULT CMainFrame::OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam)
 
         CStringW payload;
         payload.Format(L"%d", PtrToInt(hHost));
-        SendAPIStringTo(reply.window, CMD_CURRENTHOST, payload);
+        // Short timeout: the reply target is an unauthenticated requester, so a set of
+        // deliberately-slow windows must not be able to stall our UI thread for long.
+        SendAPIStringTo(reply.window, CMD_CURRENTHOST, payload, 100);
     }
 
     if (!m_pendingApiHostReplies.empty() && !PostMessage(WM_SENDAPICURRENTHOST)) {
@@ -21669,7 +21680,22 @@ LRESULT CMainFrame::OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
+LRESULT CMainFrame::OnFlushApiState(WPARAM wParam, LPARAM lParam)
+{
+    // Runs on our UI thread outside any inbound host send, so the notifications below
+    // send without nesting inside the host's blocking WM_COPYDATA.
+    const int flush = m_pendingApiStateFlush;
+    m_pendingApiStateFlush = 0;
+    if (flush & API_FLUSH_VOLUME) {
+        SendCurrentVolumeToApi(true);
+    }
+    if (flush & API_FLUSH_MUTE) {
+        SendCurrentMuteToApi(true);
+    }
+    return 0;
+}
+
+bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload, UINT timeoutMs)
 {
     COPYDATASTRUCT data = {};
     data.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
@@ -21681,7 +21707,7 @@ bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CS
                               reinterpret_cast<LPARAM>(&data),
                               // fire-and-forget; the timeout keeps a slow target from stalling our UI
                               // thread, but is generous enough that a merely busy target still gets it
-                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 500, &result) != 0;
+                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, timeoutMs, &result) != 0;
 }
 
 void CMainFrame::SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...)
@@ -22071,6 +22097,13 @@ void CMainFrame::SendCurrentVolumeToApi(bool force)
         return;
     }
 
+    if (m_bProcessingApiCommand) {
+        // Inside a host command: defer the reply to our own UI thread to avoid a nested send.
+        m_pendingApiStateFlush |= API_FLUSH_VOLUME;
+        PostMessage(WM_FLUSHAPISTATE);
+        return;
+    }
+
     const int volume = GetVolume();
     if (force || volume != m_lastApiVolume) {
         CStringW payload;
@@ -22089,6 +22122,12 @@ void CMainFrame::SendCurrentMuteToApi(bool force)
         return;
     }
 
+    if (m_bProcessingApiCommand) {
+        m_pendingApiStateFlush |= API_FLUSH_MUTE;
+        PostMessage(WM_FLUSHAPISTATE);
+        return;
+    }
+
     const int mute = IsMuted() ? 1 : 0;
     if (force || mute != m_lastApiMute) {
         CStringW payload;
@@ -22101,7 +22140,10 @@ void CMainFrame::SendCurrentMuteToApi(bool force)
 
 void CMainFrame::ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData)
 {
-    m_OSD.DisplayMessage((OSD_MESSAGEPOS)osdData->nMsgPos, osdData->strMsg, osdData->nDurationMS);
+    // strMsg is a fixed-size field in a host-supplied buffer; bound the read so a
+    // non-terminated field cannot over-read past the struct.
+    const CStringW msg(osdData->strMsg, static_cast<int>(wcsnlen(osdData->strMsg, _countof(osdData->strMsg))));
+    m_OSD.DisplayMessage((OSD_MESSAGEPOS)osdData->nMsgPos, msg, osdData->nDurationMS);
 }
 
 void CMainFrame::JumpOfNSeconds(int nSeconds)

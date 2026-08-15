@@ -917,6 +917,7 @@ public:
     afx_msg LRESULT OnDoLogOff(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnFlushApiState(WPARAM wParam, LPARAM lParam);
 
     afx_msg void SaveAppSettings();
 
@@ -1298,7 +1299,7 @@ public:
     // MPC API functions
     void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
-    bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
+    bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload, UINT timeoutMs = 500);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     static constexpr size_t MAX_PENDING_API_HOST_REPLIES = 32;
     struct PendingApiHostReply {
@@ -1306,6 +1307,12 @@ public:
         DWORD processId;
     };
     std::deque<PendingApiHostReply> m_pendingApiHostReplies;
+    // Deferred volume/mute notifications: replying with WM_COPYDATA from inside OnCopyData
+    // (the host's blocking send) risks nested-send reentrancy, so flush on our own UI thread
+    // via WM_FLUSHAPISTATE, mirroring the CMD_GETHOST reply path.
+    enum { API_FLUSH_VOLUME = 1, API_FLUSH_MUTE = 2 };
+    int         m_pendingApiStateFlush = 0;
+    bool        m_bProcessingApiCommand = false;
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();
     void        SendPlaylistToApi();
