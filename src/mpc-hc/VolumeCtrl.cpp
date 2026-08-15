@@ -71,12 +71,12 @@ bool CVolumeCtrl::Create(CWnd* pParentWnd)
 
 void CVolumeCtrl::SetPosInternal(int pos)
 {
-    const int previousPos = GetPos();
     SetPos(pos);
     const int currentPos = GetPos();
-    if (currentPos != previousPos) {
-        GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(currentPos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
-    }
+    // Post even when the clamped position is unchanged (e.g. Volume Up at 100):
+    // the frame handler owes the user OSD feedback on every press and dedups the
+    // renderer/API work itself.
+    GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(currentPos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
     POINT p;
     ::GetCursorPos(&p);
     ScreenToClient(&p);

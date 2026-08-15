@@ -1298,7 +1298,7 @@ public:
     // MPC API functions
     void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
-    void        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
+    bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     static constexpr size_t MAX_PENDING_API_HOST_REPLIES = 32;
     struct PendingApiHostReply {

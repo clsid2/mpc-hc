@@ -4028,7 +4028,12 @@ void CMainFrame::OnMenuFilters()
 void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
 {
     const MLS loadState = GetLoadState();
-    if (loadState != MLS::CLOSING && !m_tempstatus_msg.IsEmpty()) {
+    // Only a message flagged to survive media loads (the API status message) may be
+    // shown outside the LOADED state; an ordinary transient message must not mask
+    // "Opening..." or a closing error while a load is in progress or has failed.
+    if (!m_tempstatus_msg.IsEmpty()
+            && (loadState == MLS::LOADED
+                || (m_bKeepTempStatusBarVisibleOnMediaLoad && loadState != MLS::CLOSING))) {
         m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
         if (loadState == MLS::LOADING && AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
             m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
@@ -10739,16 +10744,19 @@ void CMainFrame::OnPlayVolume(UINT nID)
 {
     const int volume = GetVolume();
     const int mute = IsMuted() ? 1 : 0;
-    if (volume == m_lastProcessedVolume && mute == m_lastProcessedMute) {
-        return;
-    }
+    const bool changed = volume != m_lastProcessedVolume || mute != m_lastProcessedMute;
     m_lastProcessedVolume = volume;
     m_lastProcessedMute = mute;
 
     if (GetLoadState() == MLS::LOADED) {
         CString strVolume;
-        m_pBA->put_Volume(m_wndToolBar.Volume);
+        if (changed) {
+            m_pBA->put_Volume(m_wndToolBar.Volume);
+        }
 
+        // Show the OSD even when the value did not change (e.g. Volume Up pressed
+        // at 100): the user still gets feedback for every press; only the renderer,
+        // LCD and API notifications are deduplicated.
         //strVolume.Format (L"Vol : %d dB", m_wndToolBar.Volume / 100);
         if (mute) {
             strVolume.Format(IDS_VOLUME_OSD, 0);
@@ -10757,6 +10765,10 @@ void CMainFrame::OnPlayVolume(UINT nID)
         }
         m_OSD.DisplayMessage(OSD_TOPLEFT, strVolume);
         //SendStatusMessage(strVolume, 3000); // Now the volume is displayed in three places at once.
+    }
+
+    if (!changed) {
+        return;
     }
 
     m_Lcd.SetVolume(mute ? 1 : volume);
@@ -21657,7 +21669,7 @@ LRESULT CMainFrame::OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
+bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
 {
     COPYDATASTRUCT data = {};
     data.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
@@ -21665,12 +21677,11 @@ void CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CS
     data.lpData = const_cast<wchar_t*>(payload.GetString());
 
     DWORD_PTR result = 0;
-    SendMessageTimeout(hTarget, WM_COPYDATA, reinterpret_cast<WPARAM>(GetSafeHwnd()),
-                       reinterpret_cast<LPARAM>(&data),
-                       // reply is fire-and-forget; the timeout keeps a slow target from stalling our UI
-                       // thread, but is generous enough that a merely busy requester still gets the reply
-                       // (clients treat a missing reply as "feature not supported")
-                       SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 500, &result);
+    return SendMessageTimeout(hTarget, WM_COPYDATA, reinterpret_cast<WPARAM>(GetSafeHwnd()),
+                              reinterpret_cast<LPARAM>(&data),
+                              // fire-and-forget; the timeout keeps a slow target from stalling our UI
+                              // thread, but is generous enough that a merely busy target still gets it
+                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 500, &result) != 0;
 }
 
 void CMainFrame::SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...)
@@ -22064,8 +22075,11 @@ void CMainFrame::SendCurrentVolumeToApi(bool force)
     if (force || volume != m_lastApiVolume) {
         CStringW payload;
         payload.Format(L"%d", volume);
-        SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTVOLUME, payload);
-        m_lastApiVolume = volume;
+        // Only latch the value when the host actually received it, so a send that
+        // timed out against a busy host is retried on the next change.
+        if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTVOLUME, payload)) {
+            m_lastApiVolume = volume;
+        }
     }
 }
 
@@ -22079,8 +22093,9 @@ void CMainFrame::SendCurrentMuteToApi(bool force)
     if (force || mute != m_lastApiMute) {
         CStringW payload;
         payload.Format(L"%d", mute);
-        SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTMUTE, payload);
-        m_lastApiMute = mute;
+        if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTMUTE, payload)) {
+            m_lastApiMute = mute;
+        }
     }
 }
 

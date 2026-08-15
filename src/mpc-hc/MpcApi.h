@@ -301,10 +301,14 @@ typedef enum MPCAPI_COMMAND :
 
     // Set the volume without changing the mute state
     // Parameter 1: volume (0-100)
+    // Honored only when the WM_COPYDATA wParam is the connected host's registered
+    // window handle; sends from other windows are ignored
     CMD_SETVOLUME           = 0xA0003010,
 
     // Set the mute state without changing the volume
     // Parameter 1: mute state (0 or 1)
+    // Honored only when the WM_COPYDATA wParam is the connected host's registered
+    // window handle; sends from other windows are ignored
     CMD_SETMUTE             = 0xA0003011,
 
     // Toggle FullScreen
@@ -339,7 +343,13 @@ typedef enum MPCAPI_COMMAND :
 
     // Show a host-defined message in the status bar for three seconds
     // Parameter 1: non-empty, single-line, well-formed UTF-16 text; maximum
-    //              512 UTF-16 code units, excluding the terminating null
+    //              512 UTF-16 code units, excluding the terminating null.
+    //              Control characters (including TAB), DEL, C1 controls and the
+    //              U+2028/U+2029 line separators are rejected; a rejected message
+    //              is silently ignored.
+    // Unlike other commands, this one is honored only when the WM_COPYDATA wParam
+    // is the connected host's registered window handle; sends from other windows
+    // are ignored.
     CMD_STATUSSHOWMESSAGE   = 0xA0005001
 
 } MPCAPI_COMMAND;
