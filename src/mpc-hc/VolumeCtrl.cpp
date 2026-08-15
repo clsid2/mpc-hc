@@ -71,8 +71,12 @@ bool CVolumeCtrl::Create(CWnd* pParentWnd)
 
 void CVolumeCtrl::SetPosInternal(int pos)
 {
+    const int previousPos = GetPos();
     SetPos(pos);
-    GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(pos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
+    const int currentPos = GetPos();
+    if (currentPos != previousPos) {
+        GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(currentPos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
+    }
     POINT p;
     ::GetCursorPos(&p);
     ScreenToClient(&p);
@@ -292,8 +296,8 @@ void CVolumeCtrl::HScroll(UINT nSBCode, UINT nPos)
 
     CFrameWnd* pFrame = GetParentFrame();
     if (pFrame && pFrame != GetParent()) {
-        pFrame->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(nPos), static_cast<WORD>(nSBCode)), reinterpret_cast<LPARAM>(m_hWnd));
         if (s.nVolume != oldVolume) {
+            pFrame->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(nPos), static_cast<WORD>(nSBCode)), reinterpret_cast<LPARAM>(m_hWnd));
             CRect r;
             getCustomChannelRect(r);
             InvalidateRect(r); //needed to redraw the volume text

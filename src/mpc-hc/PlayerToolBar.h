@@ -40,6 +40,8 @@ public:
         LOCK_RIGHT,
     };
 private:
+    friend class CMainFrame;
+
     CMainFrame* m_pMainFrame;
 
     CImage volumeOn, volumeOff;

@@ -1015,13 +1015,15 @@ BOOL CPlayerToolBar::OnCustomAction(UINT nID) {
 BOOL CPlayerToolBar::OnVolumeUp(UINT nID)
 {
     m_volctrl.IncreaseVolume();
-    return FALSE;
+    // SetPosInternal posts the canonical WM_HSCROLL notification.
+    return TRUE;
 }
 
 BOOL CPlayerToolBar::OnVolumeDown(UINT nID)
 {
     m_volctrl.DecreaseVolume();
-    return FALSE;
+    // SetPosInternal posts the canonical WM_HSCROLL notification.
+    return TRUE;
 }
 
 BOOL CPlayerToolBar::OnFullscreenButton(UINT nID) {

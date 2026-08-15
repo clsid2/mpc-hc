@@ -53,6 +53,7 @@
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
+#include <deque>
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -469,8 +470,15 @@ private:
 
     bool m_bIsMPCVRExclusiveMode = false;
 
-    void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
+    void SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar = false,
+                           bool bKeepVisibleOnMediaLoad = false);
     CString m_tempstatus_msg, m_closingmsg;
+    bool m_bKeepTempStatusBarVisibleOnMediaLoad = false;
+
+    int m_lastApiVolume = -1;
+    int m_lastApiMute = -1;
+    int m_lastProcessedVolume = -1;
+    int m_lastProcessedMute = -1;
 
     REFERENCE_TIME m_rtDurationOverride;
 
@@ -536,7 +544,7 @@ public:
     }
     void SetPlaybackMode(int iNewStatus);
     bool IsMuted() {
-        return m_wndToolBar.GetVolume() == -10000;
+        return m_wndToolBar.IsMuted();
     }
     int GetVolume() {
         return m_wndToolBar.m_volctrl.GetPos();
@@ -908,6 +916,7 @@ public:
     afx_msg LRESULT OnDoShutdown(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoLogOff(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam);
 
     afx_msg void SaveAppSettings();
 
@@ -1287,15 +1296,24 @@ public:
     void        ResetSubtitlePosAndSize(bool repaint = false);
 
     // MPC API functions
-    void        ProcessAPICommand(COPYDATASTRUCT* pCDS);
+    void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
+    void        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
+    static constexpr size_t MAX_PENDING_API_HOST_REPLIES = 32;
+    struct PendingApiHostReply {
+        HWND window;
+        DWORD processId;
+    };
+    std::deque<PendingApiHostReply> m_pendingApiHostReplies;
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();
     void        SendPlaylistToApi();
     afx_msg void OnFileOpendirectory();
 
     void        SendCurrentPositionToApi(bool fNotifySeek = false);
+    void        SendCurrentVolumeToApi(bool force = false);
+    void        SendCurrentMuteToApi(bool force = false);
     void        ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData);
     void        JumpOfNSeconds(int seconds);
 

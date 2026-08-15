@@ -947,6 +947,7 @@ public:
     bool            fEnableEDLEditor;
 
     HWND            hMasterWnd;
+    DWORD           hMasterWndPid;
 
     bool            bHideWindowedControls;
 
