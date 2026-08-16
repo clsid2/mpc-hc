@@ -75,7 +75,6 @@ public:
     afx_msg void OnBnClickedButtonSendcommand();
     void        OnOK() override;
     void        Senddata(MPCAPI_COMMAND nCmd, LPCTSTR strCommand);
-    void        SenddataTo(HWND hWndTarget, MPCAPI_COMMAND nCmd, LPCTSTR strCommand);
     void        StartPlayerStateQuery();
     void        CompletePlayerStateQuery();
 };

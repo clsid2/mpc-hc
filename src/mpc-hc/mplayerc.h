@@ -43,6 +43,8 @@
 #include <mutex>
 #include <afxwinappex.h>
 
+#define MPC_WND_CLASS_NAME L"MediaPlayerClassicW"
+
 // define the default logo we use
 #define DEF_LOGO IDF_LOGO3
 
@@ -103,7 +105,6 @@ enum {
     WM_MPC_LOGOFF,
     WM_MPC_OPENCURPLAYLIST,
     WM_LAV_PROPPAGE_CALLBACK,
-    WM_SENDAPICURRENTHOST,
     WM_FLUSHAPISTATE,
     WM_MPCVR_SWITCH_FULLSCREEN = WM_APP + 4096,
 };

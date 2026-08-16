@@ -43,27 +43,9 @@ Ex: When a DVD is playing, use CMD_GETNOWPLAYING to get:
      - dwData :  CMD_NOWPLAYING
      - lpData :  dvddomain|titlenumber|numberofchapters|currentchapter|titleduration
                  dvddomains: DVD - Stopped, DVD - FirstPlay, DVD - RootMenu, DVD - TitleMenu, DVD - Title
-
-A process that did not launch MPC-HC can still discover a running instance and ask which
-API host (if any) it is connected to. Find the player window with
-FindWindow(MPC_WND_CLASS_NAME, nullptr), then send it a WM_COPYDATA with
-     - dwData :  CMD_GETHOST (empty payload)
-     - wParam :  the requester's own HWND
-MPC-HC replies asynchronously with a WM_COPYDATA where:
-     - dwData :  CMD_CURRENTHOST
-     - lpData :  the configured host's HWND as decimal text, or "0" if no live host is connected
-     - wParam :  MPC-HC's own HWND (so an observer can correlate replies from multiple player instances)
-Feature detection: an older MPC-HC never replies, and its WM_COPYDATA return value is not
-reliable either (TRUE when an API host happens to be connected, FALSE otherwise), so a client
-must treat "no CMD_CURRENTHOST within a short timeout" as "not supported" rather than relying
-on the send's return value.
 */
 
 #pragma once
-
-// Class name of MPC-HC's top-level window; external clients pass this to
-// FindWindow to locate a running MPC-HC instance.
-#define MPC_WND_CLASS_NAME L"MediaPlayerClassicW"
 
 typedef enum MPC_LOADSTATE {
     MLS_CLOSED,
@@ -155,11 +137,6 @@ typedef enum MPCAPI_COMMAND :
     // Send the current mute state after it changes or in response to CMD_GETMUTE
     // Parameter 1: mute state (0 or 1)
     CMD_CURRENTMUTE         = 0x5000000F,
-
-    // Send the HWND of the currently connected API host in response to CMD_GETHOST
-    // Parameter 1: host HWND as a signed decimal value (same encoding as CMD_CONNECT),
-    // or 0 if no live host is connected
-    CMD_CURRENTHOST         = 0x50000010,
 
     // Send current playback position in response
     // of CMD_GETCURRENTPOSITION.
@@ -291,13 +268,6 @@ typedef enum MPCAPI_COMMAND :
     // Ask for the current mute state
     // Returns CMD_CURRENTMUTE
     CMD_GETMUTE             = 0xA000300A,
-
-    // Ask which API host is currently connected
-    // The reply is sent to the requesting HWND, even when no host is connected
-    // Returns CMD_CURRENTHOST
-    // The reply is asynchronous; older MPC-HC versions never send it, so clients
-    // must use a timeout for feature detection
-    CMD_GETHOST             = 0xA000300B,
 
     // Set the volume without changing the mute state
     // Parameter 1: volume (0-100)

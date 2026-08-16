@@ -72,7 +72,6 @@ static const APICommandEntry apiCommands[] = {
     { _T("CMD_CLOSEAPP"), CMD_CLOSEAPP, false },
     { _T("CMD_SETSPEED"), CMD_SETSPEED, true },
     { _T("CMD_SETPANSCAN"), CMD_SETPANSCAN, true },
-    { _T("CMD_GETHOST"), CMD_GETHOST, false },
     { _T("CMD_STATUSSHOWMESSAGE"), CMD_STATUSSHOWMESSAGE, true },
     { _T("CMD_SETVOLUME (0-100)"), CMD_SETVOLUME, true },
     { _T("CMD_SETMUTE (0/1)"), CMD_SETMUTE, true },
@@ -100,8 +99,6 @@ LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
             return _T("CMD_LISTAUDIOTRACKS");
         case CMD_PLAYLIST:
             return _T("CMD_PLAYLIST");
-        case CMD_CURRENTHOST:
-            return _T("CMD_CURRENTHOST");
         case CMD_CURRENTPOSITION:
             return _T("CMD_CURRENTPOSITION");
         case CMD_NOTIFYSEEK:
@@ -358,12 +355,7 @@ void CRegisterCopyDataDlg::OnButtonFindwindow()
 
 void CRegisterCopyDataDlg::Senddata(MPCAPI_COMMAND nCmd, LPCTSTR strCommand)
 {
-    SenddataTo(m_hWndMPC, nCmd, strCommand);
-}
-
-void CRegisterCopyDataDlg::SenddataTo(HWND hWndTarget, MPCAPI_COMMAND nCmd, LPCTSTR strCommand)
-{
-    if (hWndTarget && IsWindow(hWndTarget)) {
+    if (m_hWndMPC && IsWindow(m_hWndMPC)) {
         COPYDATASTRUCT MyCDS;
 
         MyCDS.dwData = nCmd;
@@ -371,7 +363,7 @@ void CRegisterCopyDataDlg::SenddataTo(HWND hWndTarget, MPCAPI_COMMAND nCmd, LPCT
         MyCDS.lpData = (LPVOID) strCommand;
 
         DWORD_PTR result = 0;
-        SendMessageTimeout(hWndTarget, WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&MyCDS,
+        SendMessageTimeout(m_hWndMPC, WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&MyCDS,
                            SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 1000, &result);
     }
 }
@@ -454,14 +446,6 @@ void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
         LPCTSTR param = entry.usesParameter ? m_txtCommand.GetString() : _T("");
         if (entry.command == CLIENT_QUERYPLAYERSTATE_CMD) {
             StartPlayerStateQuery();
-        } else if (entry.command == CMD_GETHOST) {
-            // Unlike the other commands, host discovery is meaningful even for an
-            // MPC-HC instance we did not launch. If we have no connection, find a
-            // running player by its window class for this query only; the reply's
-            // wParam identifies the responding instance, so there is no need to
-            // remember the window (and misdirect every later command to it).
-            SenddataTo(m_hWndMPC ? m_hWndMPC : ::FindWindow(MPC_WND_CLASS_NAME, nullptr),
-                       entry.command, param);
         } else {
             Senddata(entry.command, param);
         }

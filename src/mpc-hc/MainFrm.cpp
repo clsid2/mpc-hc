@@ -296,7 +296,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_SHUTDOWN, OnDoShutdown)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
-    ON_MESSAGE(WM_SENDAPICURRENTHOST, OnSendApiCurrentHost)
     ON_MESSAGE(WM_FLUSHAPISTATE, OnFlushApiState)
 
     ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
@@ -5112,36 +5111,6 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if (USE_LOGGER(s)) {
         PLAYER_LOG(_T("CMainFrame::OnCopyData"));
-    }
-
-    // The reply cannot be returned synchronously: ON_WM_COPYDATA truncates the handler's
-    // return value to BOOL, and sending back to the requester while still inside its
-    // SendMessage(WM_COPYDATA) risks a nested-send deadlock. So queue the request and
-    // answer from our own UI thread via WM_SENDAPICURRENTHOST.
-    if (pCDS->dwData == CMD_GETHOST) {
-        const HWND hReply = pWnd ? pWnd->GetSafeHwnd() : nullptr;
-        DWORD requesterPid = 0;
-        if (!hReply || !IsWindow(hReply) || !GetWindowThreadProcessId(hReply, &requesterPid)) {
-            return FALSE;
-        }
-
-        const auto duplicate = std::find_if(m_pendingApiHostReplies.cbegin(), m_pendingApiHostReplies.cend(),
-                                            [hReply, requesterPid](const PendingApiHostReply& reply) {
-                                                return reply.window == hReply && reply.processId == requesterPid;
-                                            });
-        if (duplicate == m_pendingApiHostReplies.cend()) {
-            if (m_pendingApiHostReplies.size() >= MAX_PENDING_API_HOST_REPLIES) {
-                return FALSE;
-            }
-
-            m_pendingApiHostReplies.push_back({ hReply, requesterPid });
-            if (m_pendingApiHostReplies.size() == 1 && !PostMessage(WM_SENDAPICURRENTHOST)) {
-                m_pendingApiHostReplies.pop_back();
-                return FALSE;
-            }
-        }
-
-        return TRUE;
     }
 
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
@@ -21638,48 +21607,6 @@ void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
     }
 }
 
-LRESULT CMainFrame::OnSendApiCurrentHost(WPARAM wParam, LPARAM lParam)
-{
-    if (m_pendingApiHostReplies.empty()) {
-        return 0;
-    }
-
-    const PendingApiHostReply reply = m_pendingApiHostReplies.front();
-    m_pendingApiHostReplies.pop_front();
-
-    DWORD currentReplyPid = 0;
-    if (IsWindow(reply.window)
-            && GetWindowThreadProcessId(reply.window, &currentReplyPid)
-            && currentReplyPid == reply.processId) {
-        const CAppSettings& s = AfxGetAppSettings();
-        HWND hHost = s.hMasterWnd;
-        DWORD currentHostPid = 0;
-        if (!hHost || !s.hMasterWndPid || !IsWindow(hHost)
-                || !GetWindowThreadProcessId(hHost, &currentHostPid)
-                || currentHostPid != s.hMasterWndPid) {
-            // Host window is gone or was reused by another process: report "no host",
-            // but leave hMasterWnd untouched. Incoming command routing only requires it
-            // to be non-null, and a host may legitimately keep sending commands after
-            // its registered window is destroyed; a query must not sever that.
-            hHost = nullptr;
-        }
-
-        CStringW payload;
-        payload.Format(L"%d", PtrToInt(hHost));
-        // Short timeout: the reply target is an unauthenticated requester, so a set of
-        // deliberately-slow windows must not be able to stall our UI thread for long.
-        SendAPIStringTo(reply.window, CMD_CURRENTHOST, payload, 100);
-    }
-
-    if (!m_pendingApiHostReplies.empty() && !PostMessage(WM_SENDAPICURRENTHOST)) {
-        // Cannot schedule another pass; drop the remainder rather than stranding
-        // entries that the duplicate check would then suppress forever.
-        m_pendingApiHostReplies.clear();
-    }
-
-    return 0;
-}
-
 LRESULT CMainFrame::OnFlushApiState(WPARAM wParam, LPARAM lParam)
 {
     // Runs on our UI thread outside any inbound host send, so the notifications below
@@ -21695,7 +21622,7 @@ LRESULT CMainFrame::OnFlushApiState(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload, UINT timeoutMs)
+bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
 {
     COPYDATASTRUCT data = {};
     data.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
@@ -21707,7 +21634,7 @@ bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CS
                               reinterpret_cast<LPARAM>(&data),
                               // fire-and-forget; the timeout keeps a slow target from stalling our UI
                               // thread, but is generous enough that a merely busy target still gets it
-                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, timeoutMs, &result) != 0;
+                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 500, &result) != 0;
 }
 
 void CMainFrame::SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...)
