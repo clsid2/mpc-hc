@@ -323,3 +323,38 @@ typedef enum MPCAPI_COMMAND :
     CMD_STATUSSHOWMESSAGE   = 0xA0005001
 
 } MPCAPI_COMMAND;
+
+
+// ---------------------------------------------------------------------------
+// Non-blocking integer message API (companion to the WM_COPYDATA API above)
+//
+// The WM_COPYDATA API passes every value as string data, which must be sent
+// synchronously (the payload buffer has to outlive delivery). For plain integer
+// values that is unnecessary overhead. This companion channel carries a command
+// and a small integer entirely inside a window message, so it can be delivered
+// with a non-blocking PostMessage.
+//
+// Both MPC-HC and the host obtain the message id at runtime with
+//     UINT msg = RegisterWindowMessage(MPCAPI_INT_MESSAGE_NAME);
+// (a system-wide unique id, so it cannot collide with either side's WM_APP range)
+// and exchange values as:
+//     wParam :  the sender's HWND (as with WM_COPYDATA)
+//     lParam :  MAKELPARAM(value, command)   // LOWORD = value, HIWORD = command
+//
+// Capability negotiation: after connecting, a host sends MPCINT_HELLO carrying its
+// MPCAPI_INT_VERSION. MPC-HC records it and replies with its own MPCINT_HELLO. Once
+// MPC-HC knows the host speaks this channel it sends change notifications through it
+// instead of WM_COPYDATA; a host that never says HELLO keeps getting the WM_COPYDATA
+// notifications, so old and new hosts both work.
+#define MPCAPI_INT_MESSAGE_NAME  L"MPC-HC API Integer Message"
+#define MPCAPI_INT_VERSION       1
+
+typedef enum MPCAPI_INT_COMMAND {
+    MPCINT_HELLO         = 1,  // host<->MPC : value = sender's MPCAPI_INT_VERSION
+    MPCINT_CURRENTVOLUME = 2,  // MPC->host  : value = current volume (0-100)
+    MPCINT_CURRENTMUTE   = 3,  // MPC->host  : value = mute state (0 or 1)
+    MPCINT_SETVOLUME     = 4,  // host->MPC  : value = volume (0-100)
+    MPCINT_SETMUTE       = 5,  // host->MPC  : value = mute (0 or 1)
+    MPCINT_GETVOLUME     = 6,  // host->MPC  : request -> MPC posts MPCINT_CURRENTVOLUME
+    MPCINT_GETMUTE       = 7,  // host->MPC  : request -> MPC posts MPCINT_CURRENTMUTE
+} MPCAPI_INT_COMMAND;

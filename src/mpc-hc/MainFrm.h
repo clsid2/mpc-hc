@@ -477,6 +477,7 @@ private:
 
     int m_lastApiVolume = -1;
     int m_lastApiMute = -1;
+    int m_hostIntApiVersion = 0; // >0 once the connected host says MPCINT_HELLO (integer channel)
     int m_lastProcessedVolume = -1;
     int m_lastProcessedMute = -1;
 
@@ -1298,6 +1299,8 @@ public:
     void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
     bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
+    void        PostApiInt(HWND hTarget, WORD command, int value);
+    afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();

@@ -64,6 +64,7 @@ protected:
     afx_msg HCURSOR OnQueryDragIcon();
     afx_msg void OnButtonFindwindow();
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+    afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
     afx_msg void OnTimer(UINT_PTR nIDEvent);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()

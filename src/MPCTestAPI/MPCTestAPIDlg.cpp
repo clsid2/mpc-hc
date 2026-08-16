@@ -38,6 +38,9 @@ struct APICommandEntry {
     bool usesParameter;
 };
 
+// Non-blocking integer message channel (see MpcApi.h). Both sides register the same name.
+static const UINT WM_MPCAPI_INT = RegisterWindowMessage(MPCAPI_INT_MESSAGE_NAME);
+
 static const APICommandEntry apiCommands[] = {
     { _T("CMD_OPENFILE"), CMD_OPENFILE, true },
     { _T("CMD_STOP"), CMD_STOP, false },
@@ -204,6 +207,7 @@ BEGIN_MESSAGE_MAP(CRegisterCopyDataDlg, CDialog)
     ON_BN_CLICKED(IDC_BUTTON_FINDWINDOW, OnButtonFindwindow)
     ON_WM_COPYDATA()
     ON_WM_TIMER()
+    ON_REGISTERED_MESSAGE(WM_MPCAPI_INT, OnApiIntMessage)
     //}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_SENDCOMMAND, &CRegisterCopyDataDlg::OnBnClickedButtonSendcommand)
 END_MESSAGE_MAP()
@@ -387,6 +391,12 @@ BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruc
     if (command == CMD_CONNECT && hSender && IsWindow(hSender)) {
         m_hWndMPC = hSender;
         Senddata(CMD_GETVERSION, _T(""));
+        // Opt into the non-blocking integer channel: MPC-HC will then send volume/mute
+        // change notifications through it instead of WM_COPYDATA.
+        if (WM_MPCAPI_INT) {
+            ::PostMessage(m_hWndMPC, WM_MPCAPI_INT, (WPARAM)GetSafeHwnd(),
+                          MAKELPARAM((WORD)MPCAPI_INT_VERSION, MPCINT_HELLO));
+        }
     } else if (command == CMD_DISCONNECT && hSender == m_hWndMPC) {
         m_hWndMPC = nullptr;
     }
@@ -397,6 +407,17 @@ BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruc
         m_listBox.InsertString(0, strMsg);
     }
     return TRUE;
+}
+
+LRESULT CRegisterCopyDataDlg::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
+{
+    // Integer channel notification from MPC-HC: HIWORD(lParam) = command, LOWORD = value.
+    const WORD command = HIWORD(lParam);
+    const int value = (short)LOWORD(lParam);
+    CString strMsg;
+    strMsg.Format(_T("INT cmd=%u : %d"), command, value);
+    m_listBox.InsertString(0, strMsg);
+    return 0;
 }
 
 void CRegisterCopyDataDlg::OnTimer(UINT_PTR nIDEvent)

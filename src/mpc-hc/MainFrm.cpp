@@ -132,6 +132,7 @@ DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0
 static UINT s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
 static UINT WM_NOTIFYICON = RegisterWindowMessage(_T("MYWM_NOTIFYICON"));
 static UINT s_uTBBC = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+static UINT WM_MPCAPI_INT = RegisterWindowMessage(MPCAPI_INT_MESSAGE_NAME);
 
 CMainFrame::PlaybackRateMap CMainFrame::filePlaybackRates = {
     { ID_PLAY_PLAYBACKRATE_025,  .25f},
@@ -265,6 +266,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_REGISTERED_MESSAGE(WM_NOTIFYICON, OnNotifyIcon)
 
     ON_REGISTERED_MESSAGE(s_uTBBC, OnTaskBarThumbnailsCreate)
+    ON_REGISTERED_MESSAGE(WM_MPCAPI_INT, OnApiIntMessage)
 
     ON_WM_SETFOCUS()
     ON_WM_GETMINMAXINFO()
@@ -5143,6 +5145,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
     if (s.nCLSwitches & CLSW_SLAVE) {
         m_lastApiVolume = GetVolume();
         m_lastApiMute = IsMuted() ? 1 : 0;
+        m_hostIntApiVersion = 0; // new host: integer channel unconfirmed until it says HELLO
         SendAPICommand(CMD_CONNECT, L"%d", PtrToInt(GetSafeHwnd()));
         s.nCLSwitches &= ~CLSW_SLAVE;
     }
@@ -22004,12 +22007,18 @@ void CMainFrame::SendCurrentVolumeToApi(bool force)
 
     const int volume = GetVolume();
     if (force || volume != m_lastApiVolume) {
-        CStringW payload;
-        payload.Format(L"%d", volume);
-        // Only latch the value when the host actually received it, so a send that
-        // timed out against a busy host is retried on the next change.
-        if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTVOLUME, payload)) {
+        if (m_hostIntApiVersion > 0) {
+            // Host speaks the integer channel: deliver non-blocking, no buffer to keep alive.
+            PostApiInt(AfxGetAppSettings().hMasterWnd, MPCINT_CURRENTVOLUME, volume);
             m_lastApiVolume = volume;
+        } else {
+            CStringW payload;
+            payload.Format(L"%d", volume);
+            // Only latch the value when the host actually received it, so a send that
+            // timed out against a busy host is retried on the next change.
+            if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTVOLUME, payload)) {
+                m_lastApiVolume = volume;
+            }
         }
     }
 }
@@ -22022,12 +22031,66 @@ void CMainFrame::SendCurrentMuteToApi(bool force)
 
     const int mute = IsMuted() ? 1 : 0;
     if (force || mute != m_lastApiMute) {
-        CStringW payload;
-        payload.Format(L"%d", mute);
-        if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTMUTE, payload)) {
+        if (m_hostIntApiVersion > 0) {
+            PostApiInt(AfxGetAppSettings().hMasterWnd, MPCINT_CURRENTMUTE, mute);
             m_lastApiMute = mute;
+        } else {
+            CStringW payload;
+            payload.Format(L"%d", mute);
+            if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTMUTE, payload)) {
+                m_lastApiMute = mute;
+            }
         }
     }
+}
+
+void CMainFrame::PostApiInt(HWND hTarget, WORD command, int value)
+{
+    if (hTarget && WM_MPCAPI_INT) {
+        // Non-blocking: the value travels inside the message, so there is no buffer to
+        // keep alive and no need to wait for the target to process it (unlike WM_COPYDATA).
+        ::PostMessage(hTarget, WM_MPCAPI_INT, reinterpret_cast<WPARAM>(GetSafeHwnd()),
+                      MAKELPARAM(static_cast<WORD>(value), command));
+    }
+}
+
+LRESULT CMainFrame::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
+{
+    const HWND hSender = reinterpret_cast<HWND>(wParam);
+    const WORD command = HIWORD(lParam);
+    const int value = static_cast<short>(LOWORD(lParam));
+    CAppSettings& s = AfxGetAppSettings();
+
+    // Every integer command is honored only from the connected host (same gate as the
+    // WM_COPYDATA setters). HELLO establishes that the host speaks this channel.
+    if (hSender != s.hMasterWnd) {
+        return 0;
+    }
+
+    switch (command) {
+        case MPCINT_HELLO:
+            m_hostIntApiVersion = value;
+            PostApiInt(hSender, MPCINT_HELLO, MPCAPI_INT_VERSION);
+            break;
+        case MPCINT_SETVOLUME:
+            if (value >= 0 && value <= 100 && value != GetVolume()) {
+                m_wndToolBar.SetVolume(value);
+            }
+            break;
+        case MPCINT_SETMUTE:
+            if ((value != 0) != IsMuted()) {
+                m_wndToolBar.SetMute(value != 0);
+                OnPlayVolume(ID_VOLUME_MUTE);
+            }
+            break;
+        case MPCINT_GETVOLUME:
+            SendCurrentVolumeToApi(true);
+            break;
+        case MPCINT_GETMUTE:
+            SendCurrentMuteToApi(true);
+            break;
+    }
+    return 0;
 }
 
 void CMainFrame::ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData)
