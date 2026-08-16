@@ -1300,6 +1300,7 @@ public:
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
     bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
     void        PostApiInt(HWND hTarget, WORD command, int value);
+    void        SendApiNotify(MPCAPI_COMMAND cmd, int value); // integer channel if host supports it, else WM_COPYDATA
     afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();

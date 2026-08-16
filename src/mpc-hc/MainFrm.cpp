@@ -20920,7 +20920,7 @@ void CMainFrame::SetLoadState(MLS eState)
     }
 
     m_eMediaLoadState = eState;
-    SendAPICommand(CMD_STATE, L"%d", static_cast<int>(eState));
+    SendApiNotify(CMD_STATE, static_cast<int>(eState));
     if (eState == MLS::LOADED) {
         m_controls.DelayShowNotLoaded(false);
         m_eventc.FireEvent(MpcEvent::MEDIA_LOADED);
@@ -20961,7 +20961,7 @@ inline bool CMainFrame::IsStateClosingAborting()
 void CMainFrame::SetPlayState(MPC_PLAYSTATE iState)
 {
     m_Lcd.SetPlayState((CMPC_Lcd::PlayState)iState);
-    SendAPICommand(CMD_PLAYMODE, L"%d", iState);
+    SendApiNotify(CMD_PLAYMODE, iState);
 
     if (m_fEndOfStream) {
         SendAPICommand(CMD_NOTIFYENDOFSTREAM, L"\0");     // do not pass NULL here!
@@ -21535,10 +21535,10 @@ void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             SendAudioTracksToApi();
             break;
         case CMD_GETCURRENTAUDIOTRACK:
-            SendAPICommand(CMD_CURRENTAUDIOTRACK, L"%d", GetCurrentAudioTrackIdx());
+            SendApiNotify(CMD_CURRENTAUDIOTRACK, GetCurrentAudioTrackIdx());
             break;
         case CMD_GETCURRENTSUBTITLETRACK:
-            SendAPICommand(CMD_CURRENTSUBTITLETRACK, L"%d", GetCurrentSubtitleTrackIdx());
+            SendApiNotify(CMD_CURRENTSUBTITLETRACK, GetCurrentSubtitleTrackIdx());
             break;
         case CMD_GETCURRENTPOSITION:
             SendCurrentPositionToApi();
@@ -22054,6 +22054,51 @@ void CMainFrame::PostApiInt(HWND hTarget, WORD command, int value)
     }
 }
 
+// Map a host->MPC integer command to its WM_COPYDATA equivalent (0 if not INT-able).
+static MPCAPI_COMMAND IntCommandToApi(WORD intCmd)
+{
+    switch (intCmd) {
+        case MPCINT_SETVOLUME:              return CMD_SETVOLUME;
+        case MPCINT_SETMUTE:                return CMD_SETMUTE;
+        case MPCINT_GETVOLUME:              return CMD_GETVOLUME;
+        case MPCINT_GETMUTE:                return CMD_GETMUTE;
+        case MPCINT_STOP:                   return CMD_STOP;
+        case MPCINT_CLOSEFILE:              return CMD_CLOSEFILE;
+        case MPCINT_PLAYPAUSE:              return CMD_PLAYPAUSE;
+        case MPCINT_PLAY:                   return CMD_PLAY;
+        case MPCINT_PAUSE:                  return CMD_PAUSE;
+        case MPCINT_CLEARPLAYLIST:          return CMD_CLEARPLAYLIST;
+        case MPCINT_STARTPLAYLIST:          return CMD_STARTPLAYLIST;
+        case MPCINT_TOGGLEFULLSCREEN:       return CMD_TOGGLEFULLSCREEN;
+        case MPCINT_JUMPFORWARDMED:         return CMD_JUMPFORWARDMED;
+        case MPCINT_JUMPBACKWARDMED:        return CMD_JUMPBACKWARDMED;
+        case MPCINT_INCREASEVOLUME:         return CMD_INCREASEVOLUME;
+        case MPCINT_DECREASEVOLUME:         return CMD_DECREASEVOLUME;
+        case MPCINT_SHADER_TOGGLE:          return CMD_SHADER_TOGGLE;
+        case MPCINT_CLOSEAPP:               return CMD_CLOSEAPP;
+        case MPCINT_SETAUDIOTRACK:          return CMD_SETAUDIOTRACK;
+        case MPCINT_SETSUBTITLETRACK:       return CMD_SETSUBTITLETRACK;
+        case MPCINT_JUMPOFNSECONDS:         return CMD_JUMPOFNSECONDS;
+        case MPCINT_GETCURRENTAUDIOTRACK:   return CMD_GETCURRENTAUDIOTRACK;
+        case MPCINT_GETCURRENTSUBTITLETRACK:return CMD_GETCURRENTSUBTITLETRACK;
+        default:                            return static_cast<MPCAPI_COMMAND>(0);
+    }
+}
+
+// Map a MPC->host notification to its integer-channel command (0 if not INT-able).
+static WORD ApiCommandToInt(MPCAPI_COMMAND cmd)
+{
+    switch (cmd) {
+        case CMD_CURRENTVOLUME:        return MPCINT_CURRENTVOLUME;
+        case CMD_CURRENTMUTE:          return MPCINT_CURRENTMUTE;
+        case CMD_STATE:                return MPCINT_STATE;
+        case CMD_PLAYMODE:             return MPCINT_PLAYMODE;
+        case CMD_CURRENTAUDIOTRACK:    return MPCINT_CURRENTAUDIOTRACK;
+        case CMD_CURRENTSUBTITLETRACK: return MPCINT_CURRENTSUBTITLETRACK;
+        default:                       return 0;
+    }
+}
+
 LRESULT CMainFrame::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
 {
     const HWND hSender = reinterpret_cast<HWND>(wParam);
@@ -22067,30 +22112,39 @@ LRESULT CMainFrame::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
-    switch (command) {
-        case MPCINT_HELLO:
-            m_hostIntApiVersion = value;
-            PostApiInt(hSender, MPCINT_HELLO, MPCAPI_INT_VERSION);
-            break;
-        case MPCINT_SETVOLUME:
-            if (value >= 0 && value <= 100 && value != GetVolume()) {
-                m_wndToolBar.SetVolume(value);
-            }
-            break;
-        case MPCINT_SETMUTE:
-            if ((value != 0) != IsMuted()) {
-                m_wndToolBar.SetMute(value != 0);
-                OnPlayVolume(ID_VOLUME_MUTE);
-            }
-            break;
-        case MPCINT_GETVOLUME:
-            SendCurrentVolumeToApi(true);
-            break;
-        case MPCINT_GETMUTE:
-            SendCurrentMuteToApi(true);
-            break;
+    if (command == MPCINT_HELLO) {
+        m_hostIntApiVersion = value;
+        PostApiInt(hSender, MPCINT_HELLO, MPCAPI_INT_VERSION);
+        return 0;
+    }
+
+    // Reuse ProcessAPICommand so an integer command shares exactly the same handling and
+    // sender gating as its WM_COPYDATA form; the value is passed as the string parameter.
+    const MPCAPI_COMMAND cmd = IntCommandToApi(command);
+    if (cmd) {
+        CStringW payload;
+        payload.Format(L"%d", value); // ignored by parameterless commands
+        COPYDATASTRUCT cds = {};
+        cds.dwData = cmd;
+        cds.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
+        cds.lpData = const_cast<wchar_t*>(payload.GetString());
+        ProcessAPICommand(hSender, &cds);
     }
     return 0;
+}
+
+void CMainFrame::SendApiNotify(MPCAPI_COMMAND cmd, int value)
+{
+    const CAppSettings& s = AfxGetAppSettings();
+    if (!s.hMasterWnd) {
+        return;
+    }
+    const WORD intCmd = ApiCommandToInt(cmd);
+    if (m_hostIntApiVersion > 0 && intCmd) {
+        PostApiInt(s.hMasterWnd, intCmd, value);
+    } else {
+        SendAPICommand(cmd, L"%d", value);
+    }
 }
 
 void CMainFrame::ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData)

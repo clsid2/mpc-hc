@@ -83,17 +83,21 @@ typedef enum {
 typedef enum MPCAPI_COMMAND :
     unsigned int {
     // ==== Commands from MPC-HC to host
+    // (Each entry notes its equivalent on the integer message channel, or "INT API: no".)
 
     // Sent after connecting to the host
     // Parameter 1: MPC-HC window handle (commands must be sent to this HWND)
+    // INT API: no (connection handshake is WM_COPYDATA only)
     CMD_CONNECT             = 0x50000000,
 
     // Send when opening or closing file
     // Parameter 1: current state (see MPC_LOADSTATE enum)
+    // INT API: MPCINT_STATE
     CMD_STATE               = 0x50000001,
 
     // Send when playing, pausing or closing a file
     // Parameter 1: current play mode (see MPC_PLAYSTATE enum)
+    // INT API: MPCINT_PLAYMODE
     CMD_PLAYMODE            = 0x50000002,
 
     // Send after opening a new file
@@ -102,6 +106,7 @@ typedef enum MPCAPI_COMMAND :
     // Parameter 3: description
     // Parameter 4: complete filename (path included)
     // Parameter 5: duration in seconds
+    // INT API: no (string data)
     CMD_NOWPLAYING          = 0x50000003,
 
     // List of subtitle tracks
@@ -112,6 +117,7 @@ typedef enum MPCAPI_COMMAND :
     //
     // if no subtitle track present, returns -1
     // if no file loaded, returns -2
+    // INT API: no (string list)
     CMD_LISTSUBTITLETRACKS  = 0x50000004,
 
     // List of audio tracks
@@ -122,39 +128,48 @@ typedef enum MPCAPI_COMMAND :
     //
     // if no audio track is present, returns -1
     // if no file is loaded, returns -2
+    // INT API: no (string list)
     CMD_LISTAUDIOTRACKS     = 0x50000005,
 
     // Send index of currently selected audio track
+    // INT API: MPCINT_CURRENTAUDIOTRACK
     CMD_CURRENTAUDIOTRACK   = 0x5000000C,
 
     // Send index of currently selected subtitle track
+    // INT API: MPCINT_CURRENTSUBTITLETRACK
     CMD_CURRENTSUBTITLETRACK   = 0x5000000D,
 
     // Send the current volume after it changes or in response to CMD_GETVOLUME
     // Parameter 1: volume (0-100)
+    // INT API: MPCINT_CURRENTVOLUME
     CMD_CURRENTVOLUME       = 0x5000000E,
 
     // Send the current mute state after it changes or in response to CMD_GETMUTE
     // Parameter 1: mute state (0 or 1)
+    // INT API: MPCINT_CURRENTMUTE
     CMD_CURRENTMUTE         = 0x5000000F,
 
     // Send current playback position in response
     // of CMD_GETCURRENTPOSITION.
     // Parameter 1: current position in seconds
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_CURRENTPOSITION     = 0x50000007,
 
     // Send the current playback position after a jump.
     // (Automatically sent after a seek event).
     // Parameter 1: new playback position (in seconds).
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_NOTIFYSEEK          = 0x50000008,
 
     // Notify the end of current playback
     // (Automatically sent).
     // Parameter 1: none.
+    // INT API: no (kept WM_COPYDATA only)
     CMD_NOTIFYENDOFSTREAM   = 0x50000009,
 
     // Send version string
     // Parameter 1: MPC-HC's version
+    // INT API: no (string data)
     CMD_VERSION             = 0x5000000A,
 
     // List of files in the playlist
@@ -162,153 +177,193 @@ typedef enum MPCAPI_COMMAND :
     // Parameter 2: file path 1
     // ...
     // Parameter n: active file, -1 if no active file
+    // INT API: no (string list)
     CMD_PLAYLIST            = 0x50000006,
 
     // Send information about MPC-HC closing
+    // INT API: no (kept WM_COPYDATA only)
     CMD_DISCONNECT          = 0x5000000B,
 
     // ==== Commands from host to MPC-HC
 
     // Open new file
     // Parameter 1: file path
+    // INT API: no (string data)
     CMD_OPENFILE            = 0xA0000000,
 
     // Stop playback, but keep file / playlist
+    // INT API: MPCINT_STOP
     CMD_STOP                = 0xA0000001,
 
     // Stop playback and close file / playlist
+    // INT API: MPCINT_CLOSEFILE
     CMD_CLOSEFILE           = 0xA0000002,
 
     // Pause or restart playback
+    // INT API: MPCINT_PLAYPAUSE
     CMD_PLAYPAUSE           = 0xA0000003,
 
     // Unpause playback
+    // INT API: MPCINT_PLAY
     CMD_PLAY                = 0xA0000004,
 
     // Pause playback
+    // INT API: MPCINT_PAUSE
     CMD_PAUSE               = 0xA0000005,
 
     // Add a new file to playlist (did not start playing)
     // Parameter 1: file path
+    // INT API: no (string data)
     CMD_ADDTOPLAYLIST       = 0xA0001000,
 
     // Remove all files from playlist
+    // INT API: MPCINT_CLEARPLAYLIST
     CMD_CLEARPLAYLIST       = 0xA0001001,
 
     // Start playing playlist
+    // INT API: MPCINT_STARTPLAYLIST
     CMD_STARTPLAYLIST       = 0xA0001002,
 
     CMD_REMOVEFROMPLAYLIST  = 0xA0001003,   // TODO
 
     // Cue current file to specific position
     // Parameter 1: new position in seconds
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_SETPOSITION         = 0xA0002000,
 
     // Set the audio delay
     // Parameter 1: new audio delay in ms
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_SETAUDIODELAY       = 0xA0002001,
 
     // Set the subtitle delay
     // Parameter 1: new subtitle delay in ms
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_SETSUBTITLEDELAY    = 0xA0002002,
 
     // Set the active file in the playlist
     // Parameter 1: index of the active file, -1 for no file selected
     // DOESN'T WORK
+    // INT API: no
     CMD_SETINDEXPLAYLIST    = 0xA0002003,
 
     // Set the audio track
     // Parameter 1: index of the audio track
+    // INT API: MPCINT_SETAUDIOTRACK
     CMD_SETAUDIOTRACK       = 0xA0002004,
 
     // Set the subtitle track
     // Parameter 1: index of the subtitle track, -1 for disabling subtitles
+    // INT API: MPCINT_SETSUBTITLETRACK
     CMD_SETSUBTITLETRACK    = 0xA0002005,
 
     // Ask for a list of the subtitles tracks of the file
     // return a CMD_LISTSUBTITLETRACKS
+    // INT API: no (string-list response)
     CMD_GETSUBTITLETRACKS   = 0xA0003000,
 
     // Ask for the current playback position
     // Returns CMD_CURRENTPOSITION
+    // INT API: no (value can exceed a signed 16-bit range)
     CMD_GETCURRENTPOSITION  = 0xA0003004,
 
     // Jump forward/backward of N seconds,
     // Parameter 1: seconds (negative values for backward)
+    // INT API: MPCINT_JUMPOFNSECONDS
     CMD_JUMPOFNSECONDS      = 0xA0003005,
 
     // Ask MPC-HC for its version
     // Returns CMD_VERSION
+    // INT API: no (string response)
     CMD_GETVERSION          = 0xA0003006,
 
     // Ask for a list of the audio tracks of the file
     // return a CMD_LISTAUDIOTRACKS
+    // INT API: no (string-list response)
     CMD_GETAUDIOTRACKS      = 0xA0003001,
 
     // Ask for the properties of the current loaded file
     // return a CMD_NOWPLAYING
+    // INT API: no (string response)
     CMD_GETNOWPLAYING       = 0xA0003002,
 
     // Ask for the current playlist
     // return a CMD_PLAYLIST
+    // INT API: no (string-list response)
     CMD_GETPLAYLIST         = 0xA0003003,
 
     // Ask for the index of the currently selected audio track
     // return a CMD_CURRENTAUDIOTRACK
+    // INT API: MPCINT_GETCURRENTAUDIOTRACK
     CMD_GETCURRENTAUDIOTRACK      = 0xA0003007,
 
     // Ask for the index of the currently selected subtitle track
     // return a CMD_CURRENTSUBTITLETRACK
+    // INT API: MPCINT_GETCURRENTSUBTITLETRACK
     CMD_GETCURRENTSUBTITLETRACK   = 0xA0003008,
 
     // Ask for the current volume
     // Returns CMD_CURRENTVOLUME
+    // INT API: MPCINT_GETVOLUME
     CMD_GETVOLUME           = 0xA0003009,
 
     // Ask for the current mute state
     // Returns CMD_CURRENTMUTE
+    // INT API: MPCINT_GETMUTE
     CMD_GETMUTE             = 0xA000300A,
 
     // Set the volume without changing the mute state
     // Parameter 1: volume (0-100)
     // Honored only when the WM_COPYDATA wParam is the connected host's registered
     // window handle; sends from other windows are ignored
+    // INT API: MPCINT_SETVOLUME
     CMD_SETVOLUME           = 0xA0003010,
 
     // Set the mute state without changing the volume
     // Parameter 1: mute state (0 or 1)
     // Honored only when the WM_COPYDATA wParam is the connected host's registered
     // window handle; sends from other windows are ignored
+    // INT API: MPCINT_SETMUTE
     CMD_SETMUTE             = 0xA0003011,
 
     // Toggle FullScreen
+    // INT API: MPCINT_TOGGLEFULLSCREEN
     CMD_TOGGLEFULLSCREEN    = 0xA0004000,
 
     // Jump forward(medium)
+    // INT API: MPCINT_JUMPFORWARDMED
     CMD_JUMPFORWARDMED      = 0xA0004001,
 
     // Jump backward(medium)
+    // INT API: MPCINT_JUMPBACKWARDMED
     CMD_JUMPBACKWARDMED     = 0xA0004002,
 
     // Increase Volume
+    // INT API: MPCINT_INCREASEVOLUME
     CMD_INCREASEVOLUME      = 0xA0004003,
 
     // Decrease volume
+    // INT API: MPCINT_DECREASEVOLUME
     CMD_DECREASEVOLUME      = 0xA0004004,
 
     // Toggle shader
+    // INT API: MPCINT_SHADER_TOGGLE
     CMD_SHADER_TOGGLE       = 0xA0004005,
 
     // Close App
+    // INT API: MPCINT_CLOSEAPP
     CMD_CLOSEAPP            = 0xA0004006,
 
     // Set playing rate
+    // INT API: no (fractional value)
     CMD_SETSPEED            = 0xA0004008,
 
     // Set Pan & Scan
+    // INT API: no (string preset name)
     CMD_SETPANSCAN          = 0xA0004009,
 
     // Show host defined OSD message string
+    // INT API: no (struct data)
     CMD_OSDSHOWMESSAGE      = 0xA0005000,
 
     // Show a host-defined message in the status bar for three seconds
@@ -320,6 +375,7 @@ typedef enum MPCAPI_COMMAND :
     // Unlike other commands, this one is honored only when the WM_COPYDATA wParam
     // is the connected host's registered window handle; sends from other windows
     // are ignored.
+    // INT API: no (string data)
     CMD_STATUSSHOWMESSAGE   = 0xA0005001
 
 } MPCAPI_COMMAND;
@@ -349,12 +405,43 @@ typedef enum MPCAPI_COMMAND :
 #define MPCAPI_INT_MESSAGE_NAME  L"MPC-HC API Integer Message"
 #define MPCAPI_INT_VERSION       1
 
+// Only commands whose value fits in a signed 16-bit LOWORD are available on this channel
+// (volume, mute, track indices, and the small state enums). Commands that carry strings,
+// structs, or values that can exceed that range (file paths, playback position, delays,
+// playback speed) stay WM_COPYDATA-only; see the per-command notes in MPCAPI_COMMAND above.
 typedef enum MPCAPI_INT_COMMAND {
-    MPCINT_HELLO         = 1,  // host<->MPC : value = sender's MPCAPI_INT_VERSION
-    MPCINT_CURRENTVOLUME = 2,  // MPC->host  : value = current volume (0-100)
-    MPCINT_CURRENTMUTE   = 3,  // MPC->host  : value = mute state (0 or 1)
-    MPCINT_SETVOLUME     = 4,  // host->MPC  : value = volume (0-100)
-    MPCINT_SETMUTE       = 5,  // host->MPC  : value = mute (0 or 1)
-    MPCINT_GETVOLUME     = 6,  // host->MPC  : request -> MPC posts MPCINT_CURRENTVOLUME
-    MPCINT_GETMUTE       = 7,  // host->MPC  : request -> MPC posts MPCINT_CURRENTMUTE
+    MPCINT_HELLO                  = 1,  // host<->MPC: value = sender's MPCAPI_INT_VERSION
+
+    // ==== Notifications MPC-HC -> host (mirror the CMD_* notifications) ====
+    MPCINT_CURRENTVOLUME          = 2,  // value = current volume (0-100)          (CMD_CURRENTVOLUME)
+    MPCINT_CURRENTMUTE            = 3,  // value = mute state (0 or 1)             (CMD_CURRENTMUTE)
+    MPCINT_STATE                  = 8,  // value = MPC_LOADSTATE                   (CMD_STATE)
+    MPCINT_PLAYMODE               = 9,  // value = MPC_PLAYSTATE                   (CMD_PLAYMODE)
+    MPCINT_CURRENTAUDIOTRACK      = 10, // value = current audio track index      (CMD_CURRENTAUDIOTRACK)
+    MPCINT_CURRENTSUBTITLETRACK   = 11, // value = current subtitle track index   (CMD_CURRENTSUBTITLETRACK)
+
+    // ==== Commands host -> MPC-HC (mirror the CMD_* commands) ====
+    MPCINT_SETVOLUME              = 4,  // value = volume (0-100)                  (CMD_SETVOLUME)
+    MPCINT_SETMUTE                = 5,  // value = mute (0 or 1)                   (CMD_SETMUTE)
+    MPCINT_GETVOLUME              = 6,  // request -> MPCINT_CURRENTVOLUME         (CMD_GETVOLUME)
+    MPCINT_GETMUTE                = 7,  // request -> MPCINT_CURRENTMUTE           (CMD_GETMUTE)
+    MPCINT_STOP                   = 20, // (CMD_STOP)
+    MPCINT_CLOSEFILE              = 21, // (CMD_CLOSEFILE)
+    MPCINT_PLAYPAUSE              = 22, // (CMD_PLAYPAUSE)
+    MPCINT_PLAY                   = 23, // (CMD_PLAY)
+    MPCINT_PAUSE                  = 24, // (CMD_PAUSE)
+    MPCINT_CLEARPLAYLIST          = 25, // (CMD_CLEARPLAYLIST)
+    MPCINT_STARTPLAYLIST          = 26, // (CMD_STARTPLAYLIST)
+    MPCINT_TOGGLEFULLSCREEN       = 27, // (CMD_TOGGLEFULLSCREEN)
+    MPCINT_JUMPFORWARDMED         = 28, // (CMD_JUMPFORWARDMED)
+    MPCINT_JUMPBACKWARDMED        = 29, // (CMD_JUMPBACKWARDMED)
+    MPCINT_INCREASEVOLUME         = 30, // (CMD_INCREASEVOLUME)
+    MPCINT_DECREASEVOLUME         = 31, // (CMD_DECREASEVOLUME)
+    MPCINT_SHADER_TOGGLE          = 32, // (CMD_SHADER_TOGGLE)
+    MPCINT_CLOSEAPP               = 33, // (CMD_CLOSEAPP)
+    MPCINT_SETAUDIOTRACK          = 40, // value = audio track index               (CMD_SETAUDIOTRACK)
+    MPCINT_SETSUBTITLETRACK       = 41, // value = subtitle track index (-1 = off) (CMD_SETSUBTITLETRACK)
+    MPCINT_JUMPOFNSECONDS         = 42, // value = seconds to jump (+/-)           (CMD_JUMPOFNSECONDS)
+    MPCINT_GETCURRENTAUDIOTRACK   = 50, // request -> MPCINT_CURRENTAUDIOTRACK     (CMD_GETCURRENTAUDIOTRACK)
+    MPCINT_GETCURRENTSUBTITLETRACK= 51, // request -> MPCINT_CURRENTSUBTITLETRACK  (CMD_GETCURRENTSUBTITLETRACK)
 } MPCAPI_INT_COMMAND;
