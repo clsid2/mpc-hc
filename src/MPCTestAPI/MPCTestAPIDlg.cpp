@@ -395,7 +395,7 @@ BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruc
         // change notifications through it instead of WM_COPYDATA.
         if (WM_MPCAPI_INT) {
             ::PostMessage(m_hWndMPC, WM_MPCAPI_INT, (WPARAM)GetSafeHwnd(),
-                          MAKELPARAM((WORD)MPCAPI_INT_VERSION, MPCINT_HELLO));
+                          MPCAPI_INT_MAKELPARAM(MPCAPI_INT_VERSION, MPCINT_HELLO));
         }
     } else if (command == CMD_DISCONNECT && hSender == m_hWndMPC) {
         m_hWndMPC = nullptr;
@@ -411,9 +411,9 @@ BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruc
 
 LRESULT CRegisterCopyDataDlg::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
 {
-    // Integer channel notification from MPC-HC: HIWORD(lParam) = command, LOWORD = value.
-    const WORD command = HIWORD(lParam);
-    const int value = (short)LOWORD(lParam);
+    // Integer channel notification from MPC-HC (see MpcApi.h pack/unpack macros).
+    const WORD command = MPCAPI_INT_COMMAND_OF(lParam);
+    const int value = MPCAPI_INT_VALUE_OF(lParam);
     CString strMsg;
     strMsg.Format(_T("INT cmd=%u : %d"), command, value);
     m_listBox.InsertString(0, strMsg);

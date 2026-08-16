@@ -152,13 +152,13 @@ typedef enum MPCAPI_COMMAND :
     // Send current playback position in response
     // of CMD_GETCURRENTPOSITION.
     // Parameter 1: current position in seconds
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: no (fractional seconds; the integer channel can't carry sub-second precision)
     CMD_CURRENTPOSITION     = 0x50000007,
 
     // Send the current playback position after a jump.
     // (Automatically sent after a seek event).
     // Parameter 1: new playback position (in seconds).
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: no (fractional seconds)
     CMD_NOTIFYSEEK          = 0x50000008,
 
     // Notify the end of current playback
@@ -228,17 +228,17 @@ typedef enum MPCAPI_COMMAND :
 
     // Cue current file to specific position
     // Parameter 1: new position in seconds
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: no (fractional seconds)
     CMD_SETPOSITION         = 0xA0002000,
 
     // Set the audio delay
     // Parameter 1: new audio delay in ms
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: MPCINT_SETAUDIODELAY
     CMD_SETAUDIODELAY       = 0xA0002001,
 
     // Set the subtitle delay
     // Parameter 1: new subtitle delay in ms
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: MPCINT_SETSUBTITLEDELAY
     CMD_SETSUBTITLEDELAY    = 0xA0002002,
 
     // Set the active file in the playlist
@@ -264,7 +264,7 @@ typedef enum MPCAPI_COMMAND :
 
     // Ask for the current playback position
     // Returns CMD_CURRENTPOSITION
-    // INT API: no (value can exceed a signed 16-bit range)
+    // INT API: no (fractional-seconds response)
     CMD_GETCURRENTPOSITION  = 0xA0003004,
 
     // Jump forward/backward of N seconds,
@@ -395,7 +395,16 @@ typedef enum MPCAPI_COMMAND :
 // (a system-wide unique id, so it cannot collide with either side's WM_APP range)
 // and exchange values as:
 //     wParam :  the sender's HWND (as with WM_COPYDATA)
-//     lParam :  MAKELPARAM(value, command)   // LOWORD = value, HIWORD = command
+//     lParam :  low 24 bits = signed value, high 8 bits = command id
+//               (use the MPCAPI_INT_* pack/unpack macros below)
+//
+// Why 24 bits of value and 8 of command, rather than a 32-bit value: the sender's HWND has
+// to occupy wParam (it authenticates the sender, exactly as with WM_COPYDATA), so the command
+// id and the value must share the single lParam -- and lParam is only 32 bits wide on 32-bit
+// MPC-HC (host and player can be different bitness, so the extra width of a 64-bit lParam
+// cannot be relied on). An 8-bit command id (up to 256 commands) leaves 24 bits for a signed
+// value of +/-8388607, which covers every integer parameter in this API; a full 32-bit value
+// would leave no room for the command id.
 //
 // Capability negotiation: after connecting, a host sends MPCINT_HELLO carrying its
 // MPCAPI_INT_VERSION. MPC-HC records it and replies with its own MPCINT_HELLO. Once
@@ -405,10 +414,17 @@ typedef enum MPCAPI_COMMAND :
 #define MPCAPI_INT_MESSAGE_NAME  L"MPC-HC API Integer Message"
 #define MPCAPI_INT_VERSION       1
 
-// Only commands whose value fits in a signed 16-bit LOWORD are available on this channel
-// (volume, mute, track indices, and the small state enums). Commands that carry strings,
-// structs, or values that can exceed that range (file paths, playback position, delays,
-// playback speed) stay WM_COPYDATA-only; see the per-command notes in MPCAPI_COMMAND above.
+// Pack/unpack the integer-channel lParam (both sides must use these).
+#define MPCAPI_INT_MAKELPARAM(value, command) \
+    ((LPARAM)((((DWORD)(command) & 0xFF) << 24) | ((DWORD)(value) & 0x00FFFFFF)))
+#define MPCAPI_INT_COMMAND_OF(lparam)  ((WORD)(((DWORD)(DWORD_PTR)(lparam) >> 24) & 0xFF))
+#define MPCAPI_INT_VALUE_OF(lparam) \
+    ((int)((((DWORD)(DWORD_PTR)(lparam) & 0x00FFFFFF) ^ 0x00800000) - 0x00800000))
+
+// Commands available on this channel carry a signed value that fits the 24-bit field
+// (volume, mute, track indices, small state enums, jump/delay amounts). Commands that carry
+// strings or structs, or a fractional value (playback position/seek, playback speed), stay
+// WM_COPYDATA-only; see the per-command "INT API:" notes in MPCAPI_COMMAND above.
 typedef enum MPCAPI_INT_COMMAND {
     MPCINT_HELLO                  = 1,  // host<->MPC: value = sender's MPCAPI_INT_VERSION
 
@@ -442,6 +458,8 @@ typedef enum MPCAPI_INT_COMMAND {
     MPCINT_SETAUDIOTRACK          = 40, // value = audio track index               (CMD_SETAUDIOTRACK)
     MPCINT_SETSUBTITLETRACK       = 41, // value = subtitle track index (-1 = off) (CMD_SETSUBTITLETRACK)
     MPCINT_JUMPOFNSECONDS         = 42, // value = seconds to jump (+/-)           (CMD_JUMPOFNSECONDS)
+    MPCINT_SETAUDIODELAY          = 43, // value = audio delay in ms               (CMD_SETAUDIODELAY)
+    MPCINT_SETSUBTITLEDELAY       = 44, // value = subtitle delay in ms            (CMD_SETSUBTITLEDELAY)
     MPCINT_GETCURRENTAUDIOTRACK   = 50, // request -> MPCINT_CURRENTAUDIOTRACK     (CMD_GETCURRENTAUDIOTRACK)
     MPCINT_GETCURRENTSUBTITLETRACK= 51, // request -> MPCINT_CURRENTSUBTITLETRACK  (CMD_GETCURRENTSUBTITLETRACK)
 } MPCAPI_INT_COMMAND;

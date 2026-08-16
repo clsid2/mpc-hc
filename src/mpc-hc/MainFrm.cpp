@@ -22050,7 +22050,7 @@ void CMainFrame::PostApiInt(HWND hTarget, WORD command, int value)
         // Non-blocking: the value travels inside the message, so there is no buffer to
         // keep alive and no need to wait for the target to process it (unlike WM_COPYDATA).
         ::PostMessage(hTarget, WM_MPCAPI_INT, reinterpret_cast<WPARAM>(GetSafeHwnd()),
-                      MAKELPARAM(static_cast<WORD>(value), command));
+                      MPCAPI_INT_MAKELPARAM(value, command));
     }
 }
 
@@ -22079,6 +22079,8 @@ static MPCAPI_COMMAND IntCommandToApi(WORD intCmd)
         case MPCINT_SETAUDIOTRACK:          return CMD_SETAUDIOTRACK;
         case MPCINT_SETSUBTITLETRACK:       return CMD_SETSUBTITLETRACK;
         case MPCINT_JUMPOFNSECONDS:         return CMD_JUMPOFNSECONDS;
+        case MPCINT_SETAUDIODELAY:          return CMD_SETAUDIODELAY;
+        case MPCINT_SETSUBTITLEDELAY:       return CMD_SETSUBTITLEDELAY;
         case MPCINT_GETCURRENTAUDIOTRACK:   return CMD_GETCURRENTAUDIOTRACK;
         case MPCINT_GETCURRENTSUBTITLETRACK:return CMD_GETCURRENTSUBTITLETRACK;
         default:                            return static_cast<MPCAPI_COMMAND>(0);
@@ -22102,8 +22104,8 @@ static WORD ApiCommandToInt(MPCAPI_COMMAND cmd)
 LRESULT CMainFrame::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
 {
     const HWND hSender = reinterpret_cast<HWND>(wParam);
-    const WORD command = HIWORD(lParam);
-    const int value = static_cast<short>(LOWORD(lParam));
+    const WORD command = MPCAPI_INT_COMMAND_OF(lParam);
+    const int value = MPCAPI_INT_VALUE_OF(lParam);
     CAppSettings& s = AfxGetAppSettings();
 
     // Every integer command is honored only from the connected host (same gate as the
