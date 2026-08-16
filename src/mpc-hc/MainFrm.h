@@ -916,7 +916,6 @@ public:
     afx_msg LRESULT OnDoShutdown(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoLogOff(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnFlushApiState(WPARAM wParam, LPARAM lParam);
 
     afx_msg void SaveAppSettings();
 
@@ -1300,12 +1299,6 @@ public:
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
     bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
-    // Deferred volume/mute notifications: replying with WM_COPYDATA from inside OnCopyData
-    // (the host's blocking send) risks nested-send reentrancy, so flush on our own UI thread
-    // via WM_FLUSHAPISTATE.
-    enum { API_FLUSH_VOLUME = 1, API_FLUSH_MUTE = 2 };
-    int         m_pendingApiStateFlush = 0;
-    bool        m_bProcessingApiCommand = false;
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();
     void        SendPlaylistToApi();

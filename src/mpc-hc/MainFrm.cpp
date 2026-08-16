@@ -296,7 +296,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_SHUTDOWN, OnDoShutdown)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
-    ON_MESSAGE(WM_FLUSHAPISTATE, OnFlushApiState)
 
     ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
     ON_MESSAGE(WM_SMTC_AUTOREPEAT, OnSmtcAutoRepeat)
@@ -5115,13 +5114,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
         if (s.hMasterWnd) {
-            // Mark that we are inside the host's blocking send so volume/mute notifications
-            // triggered by this command defer instead of sending back inline (see
-            // SendCurrentVolumeToApi). Save/restore in case a nested command reenters.
-            const bool wasProcessing = m_bProcessingApiCommand;
-            m_bProcessingApiCommand = true;
             ProcessAPICommand(pWnd ? pWnd->GetSafeHwnd() : nullptr, pCDS);
-            m_bProcessingApiCommand = wasProcessing;
             return TRUE;
         } else {
             return FALSE;
@@ -21607,21 +21600,6 @@ void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
     }
 }
 
-LRESULT CMainFrame::OnFlushApiState(WPARAM wParam, LPARAM lParam)
-{
-    // Runs on our UI thread outside any inbound host send, so the notifications below
-    // send without nesting inside the host's blocking WM_COPYDATA.
-    const int flush = m_pendingApiStateFlush;
-    m_pendingApiStateFlush = 0;
-    if (flush & API_FLUSH_VOLUME) {
-        SendCurrentVolumeToApi(true);
-    }
-    if (flush & API_FLUSH_MUTE) {
-        SendCurrentMuteToApi(true);
-    }
-    return 0;
-}
-
 bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
 {
     COPYDATASTRUCT data = {};
@@ -22024,13 +22002,6 @@ void CMainFrame::SendCurrentVolumeToApi(bool force)
         return;
     }
 
-    if (m_bProcessingApiCommand) {
-        // Inside a host command: defer the reply to our own UI thread to avoid a nested send.
-        m_pendingApiStateFlush |= API_FLUSH_VOLUME;
-        PostMessage(WM_FLUSHAPISTATE);
-        return;
-    }
-
     const int volume = GetVolume();
     if (force || volume != m_lastApiVolume) {
         CStringW payload;
@@ -22046,12 +22017,6 @@ void CMainFrame::SendCurrentVolumeToApi(bool force)
 void CMainFrame::SendCurrentMuteToApi(bool force)
 {
     if (!AfxGetAppSettings().hMasterWnd) {
-        return;
-    }
-
-    if (m_bProcessingApiCommand) {
-        m_pendingApiStateFlush |= API_FLUSH_MUTE;
-        PostMessage(WM_FLUSHAPISTATE);
         return;
     }
 
