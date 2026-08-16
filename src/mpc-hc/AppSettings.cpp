@@ -249,7 +249,6 @@ CAppSettings::CAppSettings()
     , fLastFullScreen(false)
     , fEnableEDLEditor(false)
     , hMasterWnd(nullptr)
-    , hMasterWndPid(0)
     , bHideWindowedControls(false)
     , nJpegQuality(90)
     , bEnableCoverArt(true)
@@ -2809,8 +2808,6 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 if (slavewnd != nullptr && ::IsWindow(slavewnd)) {
                     nCLSwitches |= CLSW_SLAVE;
                     hMasterWnd = slavewnd;
-                    hMasterWndPid = 0;
-                    GetWindowThreadProcessId(slavewnd, &hMasterWndPid);
                 } else {
                     ASSERT(false);
                 }
