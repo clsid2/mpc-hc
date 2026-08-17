@@ -48,4 +48,4 @@
 	url = https://github.com/nothings/stb
 [submodule "src/thirdparty/ResizableLib/ResizableLib"]
 	path = src/thirdparty/ResizableLib/ResizableLib
-	url = https://github.com/ppescher/resizablelib
+	url = https://github.com/adipose/resizablelib

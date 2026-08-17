@@ -184,12 +184,6 @@ BOOL CDpiAwareResizableDialog::OnInitDialog() {
     UpdateMinMaxTrackSizeForDPI();
     ApplyDialogSizeAndDpi(m_currentDpi, GetTargetDluSize());
 
-    // Refresh grip (initialized with primary monitor DPI, not current monitor)
-    CWnd* pGrip = GetSizeGripWnd();
-    if (pGrip && ::IsWindow(pGrip->GetSafeHwnd())) {
-        pGrip->SendMessage(WM_SETTINGCHANGE, 0, 0);
-    }
-
     return ret;
 }
 
@@ -424,11 +418,6 @@ LRESULT CDpiAwareResizableDialog::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 
     ApplyDialogSizeAndDpi(m_currentDpi, targetDluSize);
     RefreshStaticImages();
-
-    CWnd* pGrip = GetSizeGripWnd();
-    if (pGrip && ::IsWindow(pGrip->GetSafeHwnd())) {
-        pGrip->SendMessage(WM_SETTINGCHANGE, 0, 0);
-    }
 
     SetupAnchors();
 
