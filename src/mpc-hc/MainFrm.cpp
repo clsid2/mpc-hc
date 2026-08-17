@@ -12695,7 +12695,9 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
             }
 
             if (m_wndPlaylistBar.IsHiddenDueToFullscreen() && !m_controls.ControlChecked(CMainFrameControls::Panel::PLAYLIST)) {
-                if (s.bHideWindowedControls) {
+                // A floating playlist can not be revealed by the autohide logic, which only knows about dock zones,
+                // so it has to be restored right away even when windowed controls are set to autohide.
+                if (s.bHideWindowedControls && !m_wndPlaylistBar.IsFloating()) {
                     m_wndPlaylistBar.SetHiddenDueToFullscreen(false, true);
                 } else {
                     m_wndPlaylistBar.SetHiddenDueToFullscreen(false);
