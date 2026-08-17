@@ -1185,7 +1185,8 @@ BEGIN
     CONTROL         "Snap to desktop edges",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,143,160,8
     CONTROL         "Hide Windowed Controls",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,157,160,8
     GROUPBOX        "Windows Integration",IDC_STATIC,181,175,168,43
-    CONTROL         "Use enhanced taskbar features",IDC_CHECK_ENHANCED_TASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,189,160,8
+    CONTROL         "Use enhanced taskbar features",IDC_CHECK_ENHANCED_TASKBAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,189,160,8
     CONTROL         "Control via Windows UI (SMTC)",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,203,160,8
     GROUPBOX        "Custom Preset (4)",IDC_STATIC,181,221,168,62
     CONTROL         "Menu",IDC_CUSTOMPRESET_MENU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,235,78,8
