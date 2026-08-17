@@ -72,7 +72,11 @@ bool CVolumeCtrl::Create(CWnd* pParentWnd)
 void CVolumeCtrl::SetPosInternal(int pos)
 {
     SetPos(pos);
-    GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(pos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
+    const int currentPos = GetPos();
+    // Post even when the clamped position is unchanged (e.g. Volume Up at 100):
+    // the frame handler owes the user OSD feedback on every press and dedups the
+    // renderer/API work itself.
+    GetParent()->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(currentPos), SB_THUMBPOSITION), reinterpret_cast<LPARAM>(m_hWnd)); // this will be reflected back on us
     POINT p;
     ::GetCursorPos(&p);
     ScreenToClient(&p);
@@ -292,6 +296,9 @@ void CVolumeCtrl::HScroll(UINT nSBCode, UINT nPos)
 
     CFrameWnd* pFrame = GetParentFrame();
     if (pFrame && pFrame != GetParent()) {
+        // Always forward so the frame shows the volume OSD on every press, including when
+        // the value is clamped and unchanged (e.g. Volume Up at 100); the frame dedups the
+        // renderer/LCD/API work itself. Only the text redraw is conditioned on a change.
         pFrame->PostMessage(WM_HSCROLL, MAKEWPARAM(static_cast<WORD>(nPos), static_cast<WORD>(nSBCode)), reinterpret_cast<LPARAM>(m_hWnd));
         if (s.nVolume != oldVolume) {
             CRect r;

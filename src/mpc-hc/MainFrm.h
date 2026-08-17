@@ -53,6 +53,7 @@
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
+#include <deque>
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -345,6 +346,7 @@ private:
     std::list<ISubStream*> m_ExternalSubstreams;
     POSITION m_posFirstExtSub;
     SubtitleInput m_pCurrentSubInput;
+    SubtitleInput m_pSecondarySubInput; // secondary subtitle track, limited to externally loaded text subtitles
 
     // last subtitle segment copied to the clipboard by auto-copy, and the time
     // before which there is nothing new to copy
@@ -363,6 +365,11 @@ private:
     CString m_statusbarVideoSize;
 
     SubtitleInput* GetSubtitleInput(int& i, bool bIsOffset = false);
+    // Secondary subtitle track helpers. The same eligibility predicate drives the
+    // menu builder and the command handler, so the handler can never select an
+    // entry the menu did not offer.
+    bool IsEligibleSecondarySubtitle(const SubtitleInput& subInput) const;
+    SubtitleInput* GetSecondarySubtitleInput(int idx);
     int UpdateSelectedAudioStreamInfo(int index, AM_MEDIA_TYPE* pmt, LCID lcid);
     bool IsValidSubtitleStream(int i);
     int GetSelectedSubtitleTrackIndex();
@@ -399,6 +406,7 @@ private:
     void SetupFiltersSubMenu();
     void SetupAudioSubMenu();
     void SetupSubtitlesSubMenu();
+    void SetupSecondarySubtitleSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
     void SetupFavoritesSubMenu();
@@ -416,7 +424,7 @@ private:
 
     CMPCThemeMenu m_mainPopupMenu, m_popupMenu;
     CMPCThemeMenu m_openCDsMenu;
-    CMPCThemeMenu m_filtersMenu, m_subtitlesMenu, m_audiosMenu, m_videoStreamsMenu;
+    CMPCThemeMenu m_filtersMenu, m_subtitlesMenu, m_subtitlesSecondaryMenu, m_audiosMenu, m_videoStreamsMenu;
     CMPCThemeMenu m_chaptersMenu, m_titlesMenu, m_playlistMenu, m_BDPlaylistMenu, m_channelsMenu;
     CMPCThemeMenu m_favoritesMenu;
     CMPCThemeMenu m_shadersMenu;
@@ -478,8 +486,16 @@ private:
 
     bool m_bIsMPCVRExclusiveMode = false;
 
-    void SendStatusMessage(CString msg, int nTimeOut, bool bError = false);
+    void SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar = false,
+                           bool bKeepVisibleOnMediaLoad = false);
     CString m_tempstatus_msg, m_closingmsg;
+    bool m_bKeepTempStatusBarVisibleOnMediaLoad = false;
+
+    int m_lastApiVolume = -1;
+    int m_lastApiMute = -1;
+    int m_hostIntApiVersion = 0; // >0 once the connected host says MPCINT_HELLO (integer channel)
+    int m_lastProcessedVolume = -1;
+    int m_lastProcessedMute = -1;
 
     REFERENCE_TIME m_rtDurationOverride;
 
@@ -545,7 +561,7 @@ public:
     }
     void SetPlaybackMode(int iNewStatus);
     bool IsMuted() {
-        return m_wndToolBar.GetVolume() == -10000;
+        return m_wndToolBar.IsMuted();
     }
     int GetVolume() {
         return m_wndToolBar.m_volctrl.GetPos();
@@ -734,11 +750,14 @@ public:
     bool LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub);
     bool SetSubtitle(int i, bool bIsOffset = false, bool bDisplayMessage = false);
     void SetSubtitle(const SubtitleInput& subInput, bool skip_lcid = false);
+    void SetSecondarySubtitle(const SubtitleInput& subInput);
+    CComPtr<ISubPicProvider> GetSubtitleSubPicProvider();
     void UpdateSubtitleColorInfo();
     void ToggleSubtitleOnOff(bool bDisplayMessage = false);
     void ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pSubStreamNew);
     void InvalidateSubtitle(DWORD_PTR nSubtitleId = DWORD_PTR_MAX, REFERENCE_TIME rtInvalidate = -1);
     void ReloadSubtitle();
+    bool ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary);
     void UpdateSubtitleRenderingParameters();
     HRESULT InsertTextPassThruFilter(IBaseFilter* pBF, IPin* pPin, IPin* pPinto);
 
@@ -1185,6 +1204,8 @@ public:
     afx_msg void OnSubtitlesDefaultStyle();
     afx_msg void OnSubtitlesOverrideStyles();
     afx_msg void OnPlaySubtitles(UINT nID);
+    afx_msg void OnPlaySecondarySubtitle(UINT nID);
+    afx_msg void OnSecondarySubtitleLoad();
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
     afx_msg void OnPlayVolume(UINT nID);
@@ -1297,8 +1318,12 @@ public:
     void        ResetSubtitlePosAndSize(bool repaint = false);
 
     // MPC API functions
-    void        ProcessAPICommand(COPYDATASTRUCT* pCDS);
+    void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
     void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
+    bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
+    void        PostApiInt(HWND hTarget, WORD command, int value);
+    void        SendApiNotify(MPCAPI_COMMAND cmd, int value); // integer channel if host supports it, else WM_COPYDATA
+    afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
     void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();
     void        SendAudioTracksToApi();
@@ -1306,6 +1331,8 @@ public:
     afx_msg void OnFileOpendirectory();
 
     void        SendCurrentPositionToApi(bool fNotifySeek = false);
+    void        SendCurrentVolumeToApi(bool force = false);
+    void        SendCurrentMuteToApi(bool force = false);
     void        ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData);
     void        JumpOfNSeconds(int seconds);
 

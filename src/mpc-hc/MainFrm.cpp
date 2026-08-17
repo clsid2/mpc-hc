@@ -66,6 +66,7 @@
 #include <DSUtil.h>
 
 #include "../DeCSS/VobFile.h"
+#include "../SubPic/DualSubPicProvider.h"
 #include "../Subtitles/PGSSub.h"
 #include "../Subtitles/RLECodedSubtitle.h"
 #include "../Subtitles/RTS.h"
@@ -132,6 +133,7 @@ DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0
 static UINT s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
 static UINT WM_NOTIFYICON = RegisterWindowMessage(_T("MYWM_NOTIFYICON"));
 static UINT s_uTBBC = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+static UINT WM_MPCAPI_INT = RegisterWindowMessage(MPCAPI_INT_MESSAGE_NAME);
 
 CMainFrame::PlaybackRateMap CMainFrame::filePlaybackRates = {
     { ID_PLAY_PLAYBACKRATE_025,  .25f},
@@ -265,6 +267,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_REGISTERED_MESSAGE(WM_NOTIFYICON, OnNotifyIcon)
 
     ON_REGISTERED_MESSAGE(s_uTBBC, OnTaskBarThumbnailsCreate)
+    ON_REGISTERED_MESSAGE(WM_MPCAPI_INT, OnApiIntMessage)
 
     ON_WM_SETFOCUS()
     ON_WM_GETMINMAXINFO()
@@ -576,6 +579,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_SHADERS_PRESETS_START, ID_SHADERS_PRESETS_END, OnPlayShadersPresets)
     ON_COMMAND_RANGE(ID_AUDIO_SUBITEM_START, ID_AUDIO_SUBITEM_END, OnPlayAudio)
     ON_COMMAND_RANGE(ID_SUBTITLES_SUBITEM_START, ID_SUBTITLES_SUBITEM_END, OnPlaySubtitles)
+    ON_COMMAND_RANGE(ID_SUBTITLES_SECONDARY_SUBITEM_START, ID_SUBTITLES_SECONDARY_SUBITEM_END, OnPlaySecondarySubtitle)
+    ON_COMMAND(ID_SUBTITLES_SECONDARY_LOAD, OnSecondarySubtitleLoad)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_DEFAULT_STYLE, OnSubtitlesDefaultStyle)
     ON_COMMAND(ID_SUBTITLES_OVERRIDE_ALL_STYLES, OnSubtitlesOverrideStyles)
     ON_COMMAND_RANGE(ID_VIDEO_STREAMS_SUBITEM_START, ID_VIDEO_STREAMS_SUBITEM_END, OnPlayVideoStreams)
@@ -1294,6 +1299,8 @@ void CMainFrame::OnClose()
         FLUSH_LOGGER();
     }
 
+    ASSERT(GetCurrentThreadId() == AfxGetApp()->m_nThreadID);
+
     s.bToggleShader = m_bToggleShader;
     s.bToggleShaderScreenSpace = m_bToggleShaderScreenSpace;
     s.dZoomX = m_ZoomX;
@@ -1321,6 +1328,14 @@ void CMainFrame::OnClose()
     SendAPICommand(CMD_DISCONNECT, L"\0");  // according to CMD_NOTIFYENDOFSTREAM (ctrl+f it here), you're not supposed to send NULL here
 
     ASSERT(!m_bOpenMediaActive);
+
+    #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER && (MPC_VERSION_REV > 10)
+    if (CrashReporter::IsEnabled()) {
+        if (GetCurrentThreadId() != AfxGetApp()->m_nThreadID) {
+            throw 0xdead;
+        }
+    }
+    #endif
 
     if (GetLoadState() != MLS::CLOSED) {
 #if MPC_VERSION_REV > 0
@@ -3807,6 +3822,9 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         } else if (itemID == ID_SUBTITLES) {
             SetupSubtitlesSubMenu();
             pSubMenu = &m_subtitlesMenu;
+        } else if (itemID == ID_SUBTITLES_SECONDARY) {
+            SetupSecondarySubtitleSubMenu();
+            pSubMenu = &m_subtitlesSecondaryMenu;
         } else if (itemID == ID_VIDEO_STREAMS) {
             CString menuStr;
             menuStr.LoadString(GetPlaybackMode() == PM_DVD ? IDS_MENU_VIDEO_ANGLE : IDS_MENU_VIDEO_STREAM);
@@ -3857,6 +3875,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
                 || nID >= ID_FAVORITES_FILE_START && nID <= ID_FAVORITES_FILE_END
                 || nID >= ID_RECENT_FILE_START && nID <= ID_RECENT_FILE_END
                 || nID >= ID_SUBTITLES_SUBITEM_START && nID <= ID_SUBTITLES_SUBITEM_END
+                || nID >= ID_SUBTITLES_SECONDARY_SUBITEM_START && nID <= ID_SUBTITLES_SECONDARY_SUBITEM_END
                 || nID >= ID_NAVIGATE_JUMPTO_SUBITEM_START && nID <= ID_NAVIGATE_JUMPTO_SUBITEM_END) {
                 continue;
             }
@@ -4023,16 +4042,26 @@ void CMainFrame::OnMenuFilters()
 
 void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
 {
-    if (GetLoadState() == MLS::LOADING) {
+    const MLS loadState = GetLoadState();
+    // Only a message flagged to survive media loads (the API status message) may be
+    // shown outside the LOADED state; an ordinary transient message must not mask
+    // "Opening..." or a closing error while a load is in progress or has failed.
+    if (!m_tempstatus_msg.IsEmpty()
+            && (loadState == MLS::LOADED
+                || (m_bKeepTempStatusBarVisibleOnMediaLoad && loadState != MLS::CLOSING))) {
+        m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
+        if (loadState == MLS::LOADING && AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
+            m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
+        }
+        return;
+    }
+
+    if (loadState == MLS::LOADING) {
         m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_OPENING));
         if (AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
             m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
         }
-    } else if (GetLoadState() == MLS::LOADED) {
-        if (!m_tempstatus_msg.IsEmpty()) {
-            m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
-            return;
-        }
+    } else if (loadState == MLS::LOADED) {
         CString msg;
         if (m_fCapturing) {
             msg.LoadString(IDS_CONTROLS_CAPTURING);
@@ -4223,7 +4252,7 @@ void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
         }
 
         m_wndStatusBar.SetStatusMessage(msg);
-    } else if (GetLoadState() == MLS::CLOSING) {
+    } else if (loadState == MLS::CLOSING) {
         m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_CLOSING));
         if (AfxGetAppSettings().bUseEnhancedTaskBar && m_pTaskbarList) {
             m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
@@ -5109,7 +5138,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if (pCDS->dwData != 0x6ABE51 || pCDS->cbData < sizeof(DWORD)) {
         if (s.hMasterWnd) {
-            ProcessAPICommand(pCDS);
+            ProcessAPICommand(pWnd ? pWnd->GetSafeHwnd() : nullptr, pCDS);
             return TRUE;
         } else {
             return FALSE;
@@ -5136,6 +5165,9 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
     s.ParseCommandLine(cmdln);
 
     if (s.nCLSwitches & CLSW_SLAVE) {
+        m_lastApiVolume = GetVolume();
+        m_lastApiMute = IsMuted() ? 1 : 0;
+        m_hostIntApiVersion = 0; // new host: integer channel unconfirmed until it says HELLO
         SendAPICommand(CMD_CONNECT, L"%d", PtrToInt(GetSafeHwnd()));
         s.nCLSwitches &= ~CLSW_SLAVE;
     }
@@ -10805,6 +10837,61 @@ void CMainFrame::OnPlaySubtitles(UINT nID)
     }
 }
 
+void CMainFrame::OnPlaySecondarySubtitle(UINT nID)
+{
+    int i = (int)nID - ID_SUBTITLES_SECONDARY_SUBITEM_START;
+
+    if (i == 0) {
+        // the "Off" entry
+        SetSecondarySubtitle(SubtitleInput(nullptr));
+    } else if (SubtitleInput* pSubInput = GetSecondarySubtitleInput(i - 1)) {
+        AfxGetAppSettings().fEnableSubtitles = true;
+        SetSecondarySubtitle(*pSubInput);
+    }
+}
+
+void CMainFrame::OnSecondarySubtitleLoad()
+{
+    if (!m_pCAP || GetLoadState() != MLS::LOADED || m_fAudioOnly) {
+        return;
+    }
+
+    DWORD dwFlags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_NOCHANGEDIR;
+    if (!AfxGetAppSettings().fKeepHistory) {
+        dwFlags |= OFN_DONTADDTORECENT;
+    }
+    CString filters;
+    filters.Format(_T("%s|*.srt;*.sub;*.smi;*.psb;*.txt;*.rt;*.webvtt;*.vtt|%s"),
+                   ResStr(IDS_SUBTITLE_FILES_FILTER).GetString(), ResStr(IDS_ALL_FILES_FILTER).GetString());
+
+    CFileDialog fd(TRUE, nullptr, nullptr, dwFlags, filters, GetModalParent());
+
+    OPENFILENAME& ofn = fd.GetOFN();
+    // Set the current file directory as default folder
+    CString curfile = m_wndPlaylistBar.GetCurFileName();
+    CPathW defaultDir; // must outlive DoModal(), ofn.lpstrInitialDir points into it
+    if (!PathUtils::IsURL(curfile)) {
+        ExtendMaxPathLengthIfNeeded(curfile, true);
+        defaultDir = curfile.GetString();
+        defaultDir.RemoveFileSpec();
+        if (!defaultDir.m_strPath.IsEmpty() && defaultDir.IsDirectory()) {
+            ofn.lpstrInitialDir = defaultDir.m_strPath;
+        }
+    }
+
+    if (fd.DoModal() != IDOK) {
+        return;
+    }
+
+    SubtitleInput subInput;
+    if (!LoadSubtitle(fd.GetPathName(), &subInput) || !IsEligibleSecondarySubtitle(subInput)) {
+        AfxMessageBox(IDS_SUBTITLES_SECONDARY_BAD_FORMAT, MB_ICONINFORMATION | MB_OK, 0);
+        return;
+    }
+    AfxGetAppSettings().fEnableSubtitles = true;
+    SetSecondarySubtitle(subInput);
+}
+
 void CMainFrame::OnPlayVideoStreams(UINT nID)
 {
     nID -= ID_VIDEO_STREAMS_SUBITEM_START;
@@ -10839,21 +10926,39 @@ void CMainFrame::OnPlayFiltersStreams(UINT nID)
 
 void CMainFrame::OnPlayVolume(UINT nID)
 {
+    const int volume = GetVolume();
+    const int mute = IsMuted() ? 1 : 0;
+    const bool changed = volume != m_lastProcessedVolume || mute != m_lastProcessedMute;
+    m_lastProcessedVolume = volume;
+    m_lastProcessedMute = mute;
+
     if (GetLoadState() == MLS::LOADED) {
         CString strVolume;
-        m_pBA->put_Volume(m_wndToolBar.Volume);
+        if (changed) {
+            m_pBA->put_Volume(m_wndToolBar.Volume);
+        }
 
+        // Show the OSD even when the value did not change (e.g. Volume Up pressed
+        // at 100): the user still gets feedback for every press; only the renderer,
+        // LCD and API notifications are deduplicated.
         //strVolume.Format (L"Vol : %d dB", m_wndToolBar.Volume / 100);
-        if (m_wndToolBar.Volume == -10000) {
+        if (mute) {
             strVolume.Format(IDS_VOLUME_OSD, 0);
         } else {
-            strVolume.Format(IDS_VOLUME_OSD, m_wndToolBar.m_volctrl.GetPos());
+            strVolume.Format(IDS_VOLUME_OSD, volume);
         }
         m_OSD.DisplayMessage(OSD_TOPLEFT, strVolume);
         //SendStatusMessage(strVolume, 3000); // Now the volume is displayed in three places at once.
     }
 
-    m_Lcd.SetVolume((m_wndToolBar.Volume > -10000 ? m_wndToolBar.m_volctrl.GetPos() : 1));
+    if (!changed) {
+        return;
+    }
+
+    m_Lcd.SetVolume(mute ? 1 : volume);
+
+    SendCurrentVolumeToApi();
+    SendCurrentMuteToApi();
 }
 
 void CMainFrame::OnPlayVolumeBoost(UINT nID)
@@ -12835,7 +12940,9 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
             }
 
             if (m_wndPlaylistBar.IsHiddenDueToFullscreen() && !m_controls.ControlChecked(CMainFrameControls::Panel::PLAYLIST)) {
-                if (s.bHideWindowedControls) {
+                // A floating playlist can not be revealed by the autohide logic, which only knows about dock zones,
+                // so it has to be restored right away even when windowed controls are set to autohide.
+                if (s.bHideWindowedControls && !m_wndPlaylistBar.IsFloating()) {
                     m_wndPlaylistBar.SetHiddenDueToFullscreen(false, true);
                 } else {
                     m_wndPlaylistBar.SetHiddenDueToFullscreen(false);
@@ -16824,6 +16931,7 @@ void CMainFrame::CloseMediaPrivate()
     {
         CAutoLock cAutoLock(&m_csSubLock);
         m_pCurrentSubInput = SubtitleInput(nullptr);
+        m_pSecondarySubInput = SubtitleInput(nullptr);
         m_pSubStreams.RemoveAll();
         m_ExternalSubstreams.clear();
     }
@@ -17177,6 +17285,7 @@ void CMainFrame::CreateDynamicMenus()
     VERIFY(m_openCDsMenu.CreatePopupMenu());
     VERIFY(m_filtersMenu.CreatePopupMenu());
     VERIFY(m_subtitlesMenu.CreatePopupMenu());
+    VERIFY(m_subtitlesSecondaryMenu.CreatePopupMenu());
     VERIFY(m_audiosMenu.CreatePopupMenu());
     VERIFY(m_videoStreamsMenu.CreatePopupMenu());
     VERIFY(m_chaptersMenu.CreatePopupMenu());
@@ -17194,6 +17303,7 @@ void CMainFrame::DestroyDynamicMenus()
     VERIFY(m_openCDsMenu.DestroyMenu());
     VERIFY(m_filtersMenu.DestroyMenu());
     VERIFY(m_subtitlesMenu.DestroyMenu());
+    VERIFY(m_subtitlesSecondaryMenu.DestroyMenu());
     VERIFY(m_audiosMenu.DestroyMenu());
     VERIFY(m_videoStreamsMenu.DestroyMenu());
     VERIFY(m_chaptersMenu.DestroyMenu());
@@ -17807,6 +17917,108 @@ void CMainFrame::SetupSubtitlesSubMenu()
     } else if (GetPlaybackMode() == PM_FILE) {
         SetupNavStreamSelectSubMenu(subMenu, id, 2);
     }
+}
+
+bool CMainFrame::IsEligibleSecondarySubtitle(const SubtitleInput& subInput) const
+{
+    // Only externally loaded text subtitles can be used as the secondary track,
+    // and never the stream that is currently selected as the primary one.
+    // Embedded/IAMStreamSelect tracks are excluded because selecting one calls
+    // IAMStreamSelect::Enable, which would disturb the primary selection.
+    if (!subInput.pSubStream || subInput.pSourceFilter
+            || subInput.pSubStream == m_pCurrentSubInput.pSubStream
+            || std::find(m_ExternalSubstreams.cbegin(), m_ExternalSubstreams.cend(),
+                         (ISubStream*)subInput.pSubStream) == m_ExternalSubstreams.cend()) {
+        return false;
+    }
+    auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)subInput.pSubStream);
+    if (!pRTS) {
+        return false;
+    }
+    // Restrict to simple text formats: SSA/ASS and the XML-based formats can
+    // carry their own positioning, which would collide with the primary track.
+    switch (pRTS->m_subtitleType) {
+        case Subtitle::SRT:
+        case Subtitle::SUB:
+        case Subtitle::SMI:
+        case Subtitle::PSB:
+        case Subtitle::TXT:
+        case Subtitle::RT:
+        case Subtitle::VTT:
+            return true;
+        default:
+            return false;
+    }
+}
+
+SubtitleInput* CMainFrame::GetSecondarySubtitleInput(int idx)
+{
+    // Returns the idx-th (0-based) eligible secondary subtitle stream, or nullptr.
+    if (idx >= 0) {
+        POSITION pos = m_pSubStreams.GetHeadPosition();
+        while (pos) {
+            SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
+            if (IsEligibleSecondarySubtitle(subInput) && idx-- == 0) {
+                return &subInput;
+            }
+        }
+    }
+    return nullptr;
+}
+
+void CMainFrame::SetupSecondarySubtitleSubMenu()
+{
+    CMenu& subMenu = m_subtitlesSecondaryMenu;
+    // Empty the menu
+    while (subMenu.RemoveMenu(0, MF_BYPOSITION));
+
+    if (GetLoadState() != MLS::LOADED || m_fAudioOnly || !m_pCAP) {
+        return;
+    }
+
+    UINT id = ID_SUBTITLES_SECONDARY_SUBITEM_START;
+    int i = 0, iSelected = -1;
+
+    POSITION pos = m_pSubStreams.GetHeadPosition();
+    while (pos) {
+        SubtitleInput& subInput = m_pSubStreams.GetNext(pos);
+        if (!IsEligibleSecondarySubtitle(subInput)) {
+            continue;
+        }
+        if (i == 0) {
+            VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, ResStr(IDS_AG_DISABLED)));
+            VERIFY(subMenu.AppendMenu(MF_SEPARATOR));
+        }
+        // Never hand out a command id beyond the dispatched range
+        if (id > ID_SUBTITLES_SECONDARY_SUBITEM_END) {
+            break;
+        }
+        if (subInput.pSubStream == m_pSecondarySubInput.pSubStream) {
+            iSelected = i;
+        }
+
+        CComHeapPtr<WCHAR> pName;
+        CString name;
+        if (SUCCEEDED(subInput.pSubStream->GetStreamInfo(0, &pName, nullptr)) && pName) {
+            name = pName;
+            name.Replace(_T("&"), _T("&&"));
+        } else {
+            name.LoadString(IDS_AG_UNKNOWN_STREAM);
+        }
+        VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, name)); // entry i is at menu position i + 2
+        i++;
+    }
+
+    if (i > 0) {
+        // Check the active entry, or "Disabled" (position 0) when no secondary is selected
+        int checkPos = (iSelected >= 0) ? (iSelected + 2) : 0;
+        VERIFY(subMenu.CheckMenuRadioItem(0, subMenu.GetMenuItemCount() - 1, checkPos, MF_BYPOSITION));
+        VERIFY(subMenu.AppendMenu(MF_SEPARATOR));
+    }
+
+    // Load a subtitle file directly as the secondary track, without going
+    // through the regular load path which changes the primary selection.
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_SUBTITLES_SECONDARY_LOAD, ResStr(IDS_AG_LOAD_SUBTITLES)));
 }
 
 void CMainFrame::SetupVideoStreamsSubMenu()
@@ -18837,7 +19049,8 @@ bool CMainFrame::SetSubtitle(int i, bool bIsOffset /*= false*/, bool bDisplayMes
 
 void CMainFrame::UpdateSubtitleColorInfo()
 {
-    if (!IsStateLoaded() || !m_pCAP || !m_pCurrentSubInput.pSubStream) {
+    if (!IsStateLoaded() || !m_pCAP
+            || (!m_pCurrentSubInput.pSubStream && !m_pSecondarySubInput.pSubStream)) {
         return;
     }
 
@@ -18876,7 +19089,12 @@ void CMainFrame::UpdateSubtitleColorInfo()
         }
     }
 
-    m_pCurrentSubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    if (m_pCurrentSubInput.pSubStream) {
+        m_pCurrentSubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    }
+    if (m_pSecondarySubInput.pSubStream) {
+        m_pSecondarySubInput.pSubStream->SetSourceTargetInfo(yuvMatrix, targetBlackLevel, targetWhiteLevel);
+    }
     LocalFree(yuvMatrix);
 }
 
@@ -18915,6 +19133,11 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
 
         m_pCurrentSubInput = subInput;
 
+        if (m_pSecondarySubInput.pSubStream && m_pSecondarySubInput.pSubStream == subInput.pSubStream) {
+            // the new primary is the current secondary; drop the secondary to avoid rendering the same track twice
+            m_pSecondarySubInput = SubtitleInput(nullptr);
+        }
+
         UpdateSubtitleColorInfo();
         UpdateSubtitleRenderingParameters();
 
@@ -18949,12 +19172,49 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
     }
 
     if (m_pCAP && s.fEnableSubtitles) {
-        m_pCAP->SetSubPicProvider(CComQIPtr<ISubPicProvider>(subInput.pSubStream));
+        m_pCAP->SetSubPicProvider(GetSubtitleSubPicProvider());
     }
 
     if (s.fKeepHistory && s.bRememberTrackSelection) {
         s.MRU.UpdateCurrentSubtitleTrack(GetSelectedSubtitleTrackIndex());
     }
+}
+
+void CMainFrame::SetSecondarySubtitle(const SubtitleInput& subInput)
+{
+    {
+        CAutoLock cAutoLock(&m_csSubLock);
+
+        // The menu already filters, but guard the sink as well.
+        if (subInput.pSubStream && !IsEligibleSecondarySubtitle(subInput)) {
+            return;
+        }
+
+        m_pSecondarySubInput = subInput;
+
+        UpdateSubtitleColorInfo();
+        UpdateSubtitleRenderingParameters();
+    }
+
+    if (m_pCAP && AfxGetAppSettings().fEnableSubtitles) {
+        m_pCAP->SetSubPicProvider(GetSubtitleSubPicProvider());
+    }
+}
+
+CComPtr<ISubPicProvider> CMainFrame::GetSubtitleSubPicProvider()
+{
+    // The provider for the current subtitle selection: normally the primary
+    // subtitle stream itself, but when a secondary subtitle track is active both
+    // streams are wrapped in a merging provider that composites them into the
+    // same subpics, so every renderer works unchanged.
+    CComPtr<ISubPicProvider> pSubPicProvider(CComQIPtr<ISubPicProvider>(m_pCurrentSubInput.pSubStream));
+    CComQIPtr<ISubPicProvider> pSecondarySubPicProvider(m_pSecondarySubInput.pSubStream);
+    if (pSubPicProvider && pSecondarySubPicProvider) {
+        pSubPicProvider = DEBUG_NEW CDualSubPicProvider(pSubPicProvider, pSecondarySubPicProvider);
+    } else if (pSecondarySubPicProvider) {
+        pSubPicProvider = pSecondarySubPicProvider;
+    }
+    return pSubPicProvider;
 }
 
 void CMainFrame::OnAudioShiftOnOff()
@@ -18998,6 +19258,8 @@ void CMainFrame::ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pS
             m_pSubStreams.GetAt(cur).pSubStream = pSubStreamNew;
             if (m_pCurrentSubInput.pSubStream == pSubStreamOld) {
                 SetSubtitle(m_pSubStreams.GetAt(cur), true);
+            } else if (m_pSecondarySubInput.pSubStream == pSubStreamOld) {
+                SetSecondarySubtitle(m_pSubStreams.GetAt(cur));
             }
             break;
         }
@@ -19007,7 +19269,9 @@ void CMainFrame::ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pS
 void CMainFrame::InvalidateSubtitle(DWORD_PTR nSubtitleId /*= DWORD_PTR_MAX*/, REFERENCE_TIME rtInvalidate /*= -1*/)
 {
     if (m_pCAP) {
-        if (nSubtitleId == DWORD_PTR_MAX || nSubtitleId == (DWORD_PTR)(ISubStream*)m_pCurrentSubInput.pSubStream) {
+        if (nSubtitleId == DWORD_PTR_MAX
+                || nSubtitleId == (DWORD_PTR)(ISubStream*)m_pCurrentSubInput.pSubStream
+                || (m_pSecondarySubInput.pSubStream && nSubtitleId == (DWORD_PTR)(ISubStream*)m_pSecondarySubInput.pSubStream)) {
             m_pCAP->Invalidate(rtInvalidate);
         }
     }
@@ -19934,11 +20198,19 @@ void CMainFrame::StopWebServer()
     }
 }
 
-void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bError /* = false */)
+void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar /* = false */,
+                                   bool bKeepVisibleOnMediaLoad /* = false */)
 {
     const auto timerId = TimerOneTimeSubscriber::STATUS_ERASE;
 
     m_timerOneTime.Unsubscribe(timerId);
+
+    // A non-revealing replacement cannot inherit a forced-visible status bar from an API
+    // message whose timer has just been cancelled.
+    if (m_bKeepTempStatusBarVisibleOnMediaLoad && !(nTimeOut > 0 && bRevealStatusBar)) {
+        RestoreStatusBarMessageHold();
+    }
+    m_bKeepTempStatusBarVisibleOnMediaLoad = false;
 
     m_tempstatus_msg.Empty();
     if (nTimeOut <= 0) {
@@ -19946,19 +20218,21 @@ void CMainFrame::SendStatusMessage(CString msg, int nTimeOut, bool bError /* = f
     }
 
     m_tempstatus_msg = msg;
-    // For a transient error we briefly reveal a preset-hidden status bar; re-hide it when the
-    // message times out so a recurring error (e.g. a failing shader on each load) can't pin it open (#3256).
-    m_timerOneTime.Subscribe(timerId, [this, bError] {
+    m_bKeepTempStatusBarVisibleOnMediaLoad = bRevealStatusBar && bKeepVisibleOnMediaLoad;
+    // A caller may briefly reveal a preset-hidden status bar; re-hide it when the
+    // message times out so recurring messages cannot pin it open (#3256).
+    m_timerOneTime.Subscribe(timerId, [this, bRevealStatusBar] {
         m_tempstatus_msg.Empty();
-        if (bError) {
+        m_bKeepTempStatusBarVisibleOnMediaLoad = false;
+        if (bRevealStatusBar) {
             RestoreStatusBarMessageHold();
         }
     }, nTimeOut);
 
     if (!m_tempstatus_msg.IsEmpty()) {
         m_wndStatusBar.SetStatusMessage(m_tempstatus_msg);
-        if (bError) {
-            ShowStatusBarForMessage(); // reveal the status bar (if a preset hides it) for errors only
+        if (bRevealStatusBar) {
+            ShowStatusBarForMessage();
         }
     }
 
@@ -20015,8 +20289,11 @@ void CMainFrame::AddCurDevToPlaylist()
 
 void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
 {
-    // Next media load: stop force-showing the status bar that an earlier error revealed.
-    RestoreStatusBarMessageHold();
+    // Next media load: stop force-showing the status bar that an earlier error revealed. A
+    // host-supplied status message keeps its own three-second reveal across this transition.
+    if (!m_bKeepTempStatusBarVisibleOnMediaLoad) {
+        RestoreStatusBarMessageHold();
+    }
 
     auto pFileData = dynamic_cast<const OpenFileData*>(pOMD.m_p);
     //auto pDVDData = dynamic_cast<const OpenDVDData*>(pOMD.m_p);
@@ -20728,6 +21005,13 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
                     }
 
                     if (extendedwait || m_fFullScreen || s.hMasterWnd || hibernating || app_closing) {
+                        #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER && (MPC_VERSION_REV > 10)
+                        if (extendedwait && CrashReporter::IsEnabled()) {
+                            if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
+                                throw 0xdead;
+                            }
+                        }
+                        #endif
                         processmsg = false;
                     } else {
                         if (!m_pGB && !m_pGB_preview) {
@@ -21011,7 +21295,7 @@ void CMainFrame::SetLoadState(MLS eState)
     }
 
     m_eMediaLoadState = eState;
-    SendAPICommand(CMD_STATE, L"%d", static_cast<int>(eState));
+    SendApiNotify(CMD_STATE, static_cast<int>(eState));
     if (eState == MLS::LOADED) {
         m_controls.DelayShowNotLoaded(false);
         m_eventc.FireEvent(MpcEvent::MEDIA_LOADED);
@@ -21052,7 +21336,7 @@ inline bool CMainFrame::IsStateClosingAborting()
 void CMainFrame::SetPlayState(MPC_PLAYSTATE iState)
 {
     m_Lcd.SetPlayState((CMPC_Lcd::PlayState)iState);
-    SendAPICommand(CMD_PLAYMODE, L"%d", iState);
+    SendApiNotify(CMD_PLAYMODE, iState);
 
     if (m_fEndOfStream) {
         SendAPICommand(CMD_NOTIFYENDOFSTREAM, L"\0");     // do not pass NULL here!
@@ -21437,7 +21721,65 @@ void CMainFrame::ResetSubtitlePosAndSize(bool repaint /* = false*/)
 }
 
 
-void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
+static bool ParseAPIStatusMessage(const COPYDATASTRUCT* pCDS, CStringW& message)
+{
+    constexpr size_t maxCodeUnits = 512;
+    if (!pCDS || !pCDS->lpData || pCDS->cbData < 2 * sizeof(wchar_t)
+            || pCDS->cbData > (maxCodeUnits + 1) * sizeof(wchar_t)
+            || pCDS->cbData % sizeof(wchar_t) != 0) {
+        return false;
+    }
+
+    const wchar_t* const value = static_cast<const wchar_t*>(pCDS->lpData);
+    const size_t codeUnits = pCDS->cbData / sizeof(wchar_t) - 1;
+    if (value[codeUnits] != L'\0' || wmemchr(value, L'\0', codeUnits)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < codeUnits; i++) {
+        const wchar_t codeUnit = value[i];
+        if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF) {
+            if (++i >= codeUnits || value[i] < 0xDC00 || value[i] > 0xDFFF) {
+                return false;
+            }
+        } else if ((codeUnit >= 0xDC00 && codeUnit <= 0xDFFF)
+                   || codeUnit < 0x20
+                   || (codeUnit >= 0x7F && codeUnit <= 0x9F)
+                   || codeUnit == 0x2028 || codeUnit == 0x2029) {
+            return false;
+        }
+    }
+
+    message.SetString(value, static_cast<int>(codeUnits));
+    return true;
+}
+
+static bool ParseAPIInteger(const COPYDATASTRUCT* pCDS, int minimum, int maximum, int& result)
+{
+    if (!pCDS || !pCDS->lpData || pCDS->cbData < sizeof(wchar_t)
+            || pCDS->cbData % sizeof(wchar_t) != 0) {
+        return false;
+    }
+
+    const wchar_t* const value = static_cast<const wchar_t*>(pCDS->lpData);
+    const size_t length = pCDS->cbData / sizeof(wchar_t);
+    if (length > 4 || value[length - 1] != L'\0'
+            || wmemchr(value, L'\0', length - 1)
+            || value[0] < L'0' || value[0] > L'9') {
+        return false;
+    }
+
+    wchar_t* end = nullptr;
+    const long parsed = wcstol(value, &end, 10);
+    if (end == value || *end != L'\0' || parsed < minimum || parsed > maximum) {
+        return false;
+    }
+
+    result = static_cast<int>(parsed);
+    return true;
+}
+
+void CMainFrame::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
 {
     CAtlList<CString> fns;
     REFERENCE_TIME rtPos = 0;
@@ -21522,6 +21864,24 @@ void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
                 m_OSD.DisplayMessage(OSD_TOPLEFT, m_wndStatusBar.GetStatusTimer(), 2000);
             }
             break;
+        case CMD_SETVOLUME: {
+            int volume;
+            if (hSender == AfxGetAppSettings().hMasterWnd
+                    && ParseAPIInteger(pCDS, 0, 100, volume) && volume != GetVolume()) {
+                // SetVolume posts the canonical volume-change notification.
+                m_wndToolBar.SetVolume(volume);
+            }
+            break;
+        }
+        case CMD_SETMUTE: {
+            int mute;
+            if (hSender == AfxGetAppSettings().hMasterWnd
+                    && ParseAPIInteger(pCDS, 0, 1, mute) && (mute != 0) != IsMuted()) {
+                m_wndToolBar.SetMute(mute != 0);
+                OnPlayVolume(ID_VOLUME_MUTE);
+            }
+            break;
+        }
         case CMD_SETAUDIODELAY:
             rtPos = (REFERENCE_TIME)_wtol((LPCWSTR)pCDS->lpData) * 10000;
             SetAudioDelay(rtPos);
@@ -21550,13 +21910,19 @@ void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
             SendAudioTracksToApi();
             break;
         case CMD_GETCURRENTAUDIOTRACK:
-            SendAPICommand(CMD_CURRENTAUDIOTRACK, L"%d", GetCurrentAudioTrackIdx());
+            SendApiNotify(CMD_CURRENTAUDIOTRACK, GetCurrentAudioTrackIdx());
             break;
         case CMD_GETCURRENTSUBTITLETRACK:
-            SendAPICommand(CMD_CURRENTSUBTITLETRACK, L"%d", GetCurrentSubtitleTrackIdx());
+            SendApiNotify(CMD_CURRENTSUBTITLETRACK, GetCurrentSubtitleTrackIdx());
             break;
         case CMD_GETCURRENTPOSITION:
             SendCurrentPositionToApi();
+            break;
+        case CMD_GETVOLUME:
+            SendCurrentVolumeToApi(true);
+            break;
+        case CMD_GETMUTE:
+            SendCurrentMuteToApi(true);
             break;
         case CMD_GETNOWPLAYING:
             SendNowPlayingToApi();
@@ -21596,9 +21962,35 @@ void CMainFrame::ProcessAPICommand(COPYDATASTRUCT* pCDS)
             ApplyPanNScanPresetString();
             break;
         case CMD_OSDSHOWMESSAGE:
-            ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
+            if (pCDS->lpData && pCDS->cbData >= sizeof(MPC_OSDDATA)) {
+                ShowOSDCustomMessageApi((MPC_OSDDATA*)pCDS->lpData);
+            }
             break;
+        case CMD_STATUSSHOWMESSAGE: {
+            CStringW message;
+            const CAppSettings& settings = AfxGetAppSettings();
+            if (hSender == settings.hMasterWnd && IsWindow(hSender)
+                    && ParseAPIStatusMessage(pCDS, message)) {
+                SendStatusMessage(message, 3000, true, true);
+            }
+            break;
+        }
     }
+}
+
+bool CMainFrame::SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload)
+{
+    COPYDATASTRUCT data = {};
+    data.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
+    data.dwData = nCommand;
+    data.lpData = const_cast<wchar_t*>(payload.GetString());
+
+    DWORD_PTR result = 0;
+    return SendMessageTimeout(hTarget, WM_COPYDATA, reinterpret_cast<WPARAM>(GetSafeHwnd()),
+                              reinterpret_cast<LPARAM>(&data),
+                              // fire-and-forget; the timeout keeps a slow target from stalling our UI
+                              // thread, but is generous enough that a merely busy target still gets it
+                              SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 500, &result) != 0;
 }
 
 void CMainFrame::SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...)
@@ -21982,9 +22374,162 @@ void CMainFrame::SendCurrentPositionToApi(bool fNotifySeek)
     }
 }
 
+void CMainFrame::SendCurrentVolumeToApi(bool force)
+{
+    if (!AfxGetAppSettings().hMasterWnd) {
+        return;
+    }
+
+    const int volume = GetVolume();
+    if (force || volume != m_lastApiVolume) {
+        if (m_hostIntApiVersion > 0) {
+            // Host speaks the integer channel: deliver non-blocking, no buffer to keep alive.
+            PostApiInt(AfxGetAppSettings().hMasterWnd, MPCINT_CURRENTVOLUME, volume);
+            m_lastApiVolume = volume;
+        } else {
+            CStringW payload;
+            payload.Format(L"%d", volume);
+            // Only latch the value when the host actually received it, so a send that
+            // timed out against a busy host is retried on the next change.
+            if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTVOLUME, payload)) {
+                m_lastApiVolume = volume;
+            }
+        }
+    }
+}
+
+void CMainFrame::SendCurrentMuteToApi(bool force)
+{
+    if (!AfxGetAppSettings().hMasterWnd) {
+        return;
+    }
+
+    const int mute = IsMuted() ? 1 : 0;
+    if (force || mute != m_lastApiMute) {
+        if (m_hostIntApiVersion > 0) {
+            PostApiInt(AfxGetAppSettings().hMasterWnd, MPCINT_CURRENTMUTE, mute);
+            m_lastApiMute = mute;
+        } else {
+            CStringW payload;
+            payload.Format(L"%d", mute);
+            if (SendAPIStringTo(AfxGetAppSettings().hMasterWnd, CMD_CURRENTMUTE, payload)) {
+                m_lastApiMute = mute;
+            }
+        }
+    }
+}
+
+void CMainFrame::PostApiInt(HWND hTarget, WORD command, int value)
+{
+    if (hTarget && WM_MPCAPI_INT) {
+        // Non-blocking: the value travels inside the message, so there is no buffer to
+        // keep alive and no need to wait for the target to process it (unlike WM_COPYDATA).
+        ::PostMessage(hTarget, WM_MPCAPI_INT, reinterpret_cast<WPARAM>(GetSafeHwnd()),
+                      MPCAPI_INT_MAKELPARAM(value, command));
+    }
+}
+
+// Map a host->MPC integer command to its WM_COPYDATA equivalent (0 if not INT-able).
+static MPCAPI_COMMAND IntCommandToApi(WORD intCmd)
+{
+    switch (intCmd) {
+        case MPCINT_SETVOLUME:              return CMD_SETVOLUME;
+        case MPCINT_SETMUTE:                return CMD_SETMUTE;
+        case MPCINT_GETVOLUME:              return CMD_GETVOLUME;
+        case MPCINT_GETMUTE:                return CMD_GETMUTE;
+        case MPCINT_STOP:                   return CMD_STOP;
+        case MPCINT_CLOSEFILE:              return CMD_CLOSEFILE;
+        case MPCINT_PLAYPAUSE:              return CMD_PLAYPAUSE;
+        case MPCINT_PLAY:                   return CMD_PLAY;
+        case MPCINT_PAUSE:                  return CMD_PAUSE;
+        case MPCINT_CLEARPLAYLIST:          return CMD_CLEARPLAYLIST;
+        case MPCINT_STARTPLAYLIST:          return CMD_STARTPLAYLIST;
+        case MPCINT_TOGGLEFULLSCREEN:       return CMD_TOGGLEFULLSCREEN;
+        case MPCINT_JUMPFORWARDMED:         return CMD_JUMPFORWARDMED;
+        case MPCINT_JUMPBACKWARDMED:        return CMD_JUMPBACKWARDMED;
+        case MPCINT_INCREASEVOLUME:         return CMD_INCREASEVOLUME;
+        case MPCINT_DECREASEVOLUME:         return CMD_DECREASEVOLUME;
+        case MPCINT_SHADER_TOGGLE:          return CMD_SHADER_TOGGLE;
+        case MPCINT_CLOSEAPP:               return CMD_CLOSEAPP;
+        case MPCINT_SETAUDIOTRACK:          return CMD_SETAUDIOTRACK;
+        case MPCINT_SETSUBTITLETRACK:       return CMD_SETSUBTITLETRACK;
+        case MPCINT_JUMPOFNSECONDS:         return CMD_JUMPOFNSECONDS;
+        case MPCINT_SETAUDIODELAY:          return CMD_SETAUDIODELAY;
+        case MPCINT_SETSUBTITLEDELAY:       return CMD_SETSUBTITLEDELAY;
+        case MPCINT_GETCURRENTAUDIOTRACK:   return CMD_GETCURRENTAUDIOTRACK;
+        case MPCINT_GETCURRENTSUBTITLETRACK:return CMD_GETCURRENTSUBTITLETRACK;
+        default:                            return static_cast<MPCAPI_COMMAND>(0);
+    }
+}
+
+// Map a MPC->host notification to its integer-channel command (0 if not INT-able).
+static WORD ApiCommandToInt(MPCAPI_COMMAND cmd)
+{
+    switch (cmd) {
+        case CMD_CURRENTVOLUME:        return MPCINT_CURRENTVOLUME;
+        case CMD_CURRENTMUTE:          return MPCINT_CURRENTMUTE;
+        case CMD_STATE:                return MPCINT_STATE;
+        case CMD_PLAYMODE:             return MPCINT_PLAYMODE;
+        case CMD_CURRENTAUDIOTRACK:    return MPCINT_CURRENTAUDIOTRACK;
+        case CMD_CURRENTSUBTITLETRACK: return MPCINT_CURRENTSUBTITLETRACK;
+        default:                       return 0;
+    }
+}
+
+LRESULT CMainFrame::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
+{
+    const HWND hSender = reinterpret_cast<HWND>(wParam);
+    const WORD command = MPCAPI_INT_COMMAND_OF(lParam);
+    const int value = MPCAPI_INT_VALUE_OF(lParam);
+    CAppSettings& s = AfxGetAppSettings();
+
+    // Every integer command is honored only from the connected host (same gate as the
+    // WM_COPYDATA setters). HELLO establishes that the host speaks this channel.
+    if (hSender != s.hMasterWnd) {
+        return 0;
+    }
+
+    if (command == MPCINT_HELLO) {
+        m_hostIntApiVersion = value;
+        PostApiInt(hSender, MPCINT_HELLO, MPCAPI_INT_VERSION);
+        return 0;
+    }
+
+    // Reuse ProcessAPICommand so an integer command shares exactly the same handling and
+    // sender gating as its WM_COPYDATA form; the value is passed as the string parameter.
+    const MPCAPI_COMMAND cmd = IntCommandToApi(command);
+    if (cmd) {
+        CStringW payload;
+        payload.Format(L"%d", value); // ignored by parameterless commands
+        COPYDATASTRUCT cds = {};
+        cds.dwData = cmd;
+        cds.cbData = static_cast<DWORD>((payload.GetLength() + 1) * sizeof(wchar_t));
+        cds.lpData = const_cast<wchar_t*>(payload.GetString());
+        ProcessAPICommand(hSender, &cds);
+    }
+    return 0;
+}
+
+void CMainFrame::SendApiNotify(MPCAPI_COMMAND cmd, int value)
+{
+    const CAppSettings& s = AfxGetAppSettings();
+    if (!s.hMasterWnd) {
+        return;
+    }
+    const WORD intCmd = ApiCommandToInt(cmd);
+    if (m_hostIntApiVersion > 0 && intCmd) {
+        PostApiInt(s.hMasterWnd, intCmd, value);
+    } else {
+        SendAPICommand(cmd, L"%d", value);
+    }
+}
+
 void CMainFrame::ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData)
 {
-    m_OSD.DisplayMessage((OSD_MESSAGEPOS)osdData->nMsgPos, osdData->strMsg, osdData->nDurationMS);
+    // strMsg is a fixed-size field in a host-supplied buffer; bound the read so a
+    // non-terminated field cannot over-read past the struct.
+    const CStringW msg(osdData->strMsg, static_cast<int>(wcsnlen(osdData->strMsg, _countof(osdData->strMsg))));
+    m_OSD.DisplayMessage((OSD_MESSAGEPOS)osdData->nMsgPos, msg, osdData->nDurationMS);
 }
 
 void CMainFrame::JumpOfNSeconds(int nSeconds)
@@ -23143,14 +23688,10 @@ bool CMainFrame::GetDecoderType(CString& type) const
     return false;
 }
 
-void CMainFrame::UpdateSubtitleRenderingParameters()
+bool CMainFrame::ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary)
 {
-    if (!m_pCAP) {
-        return;
-    }
-
     const CAppSettings& s = AfxGetAppSettings();
-    if (auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream)) {
+    if (auto pRTS = dynamic_cast<CRenderedTextSubtitle*>(pSubStream)) {
         bool bChangeStorageRes = false;
         bool bChangePARComp = false;
         double dPARCompensation = 1.0;
@@ -23209,17 +23750,38 @@ void CMainFrame::UpdateSubtitleRenderingParameters()
                 pRTS->SetDefaultStyle(style);
             }
             pRTS->SetOverride(s.bSubtitleOverrideDefaultStyle, s.bSubtitleOverrideAllStyles, s.subtitlesDefStyle);
-            pRTS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            if (bSecondary) {
+                // the secondary subtitle track is always anchored to the top of the frame
+                pRTS->SetAlignment(true, s.nHorPos, s.nSecondarySubVerPos, true);
+            } else {
+                pRTS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
+            }
             pRTS->SetUseFreeType(s.bUseFreeType);
             pRTS->SetOpenTypeLangHint(s.strOpenTypeLangHint);
             pRTS->Deinit();
         }
-        m_pCAP->Invalidate();
-    } else if (auto pVSS = dynamic_cast<CVobSubSettings*>((ISubStream*)m_pCurrentSubInput.pSubStream)) {
+        return true;
+    } else if (auto pVSS = dynamic_cast<CVobSubSettings*>(pSubStream)) {
         {
             CAutoLock cAutoLock(&m_csSubLock);
             pVSS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
         }
+        return true;
+    }
+    return false;
+}
+
+void CMainFrame::UpdateSubtitleRenderingParameters()
+{
+    if (!m_pCAP) {
+        return;
+    }
+
+    bool bInvalidate = ApplySubtitleRenderingParameters((ISubStream*)m_pCurrentSubInput.pSubStream, false);
+    if (m_pSecondarySubInput.pSubStream) {
+        bInvalidate |= ApplySubtitleRenderingParameters((ISubStream*)m_pSecondarySubInput.pSubStream, true);
+    }
+    if (bInvalidate) {
         m_pCAP->Invalidate();
     }
 }

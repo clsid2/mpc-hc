@@ -910,7 +910,95 @@ HRESULT CFGManager::Connect(IPin* pPinOut, IPin* pPinIn, bool bContinueRender)
             }
 #endif
 
-            if (pMadVRAllocatorPresenter && (pFGF->GetCLSID() == CLSID_madVR)) {
+            if (candidate == CLSID_VapourSynthFilter) {
+                static bool vapoursynth_checked = false;
+                static bool vapoursynth_ignore = false;
+                if (vapoursynth_ignore) {
+                    continue;
+                }
+                if (!vapoursynth_checked) {
+                    vapoursynth_checked = true;
+                    // Versions older than 1.4.9 crash if VapourSynth runtime isn't installed
+                    QWORD qwFileVersion = 0;
+                    CFGFilterFile* fgf2 = dynamic_cast<CFGFilterFile*>(pFGF);
+                    if (fgf2) {
+                        qwFileVersion = FileVersionInfo::GetFileVersionNum(fgf2->GetPath());
+                    } else {
+                        qwFileVersion = GetFileVersionFromRegCLSID(CLSIDToString(candidate));
+                    }
+                    if (qwFileVersion < 0x1000400090000ui64) {
+                        CString vsscript_path = L"VSScript.dll";
+                        wchar_t* env_value = nullptr;
+                        size_t size = 0;
+                        errno_t result = _wdupenv_s(&env_value, &size, L"VSSCRIPT_PATH");
+                        if (result == 0 && env_value != nullptr)
+                        {
+                            vsscript_path = env_value;
+                            free(env_value);
+                        }
+                        HMODULE hVS = LoadLibraryExW(vsscript_path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+                        if (hVS) {
+                            FreeLibrary(hVS);
+                        } else {
+                            TRACE(_T("FGM: missing vsscript.dll\n"));
+                            vapoursynth_ignore = true;
+                        }
+                    }
+                    if (vapoursynth_ignore) {
+                        // disable external filter in settings
+                        CAppSettings& s2 = AfxGetAppSettings();
+                        if (s2.m_filters.GetCount() > 0) {
+                            POSITION efpos = s2.m_filters.GetHeadPosition();
+                            while (efpos) {
+                                FilterOverride* fo = s2.m_filters.GetNext(efpos);
+                                if (!fo->fDisabled && fo->clsid == candidate) {
+                                    fo->fDisabled = true;
+                                    s2.SaveExternalFilters();
+                                    break;
+                                }
+                            }
+                        }
+                        // don't use the filter
+                        continue;
+                    }
+                }
+            }
+            if (candidate == CLSID_AviSynthFilter) {
+                static bool avisynth_checked = false;
+                static bool avisynth_ignore = false;
+                if (avisynth_ignore) {
+                    continue;
+                }
+                if (!avisynth_checked) {
+                    avisynth_checked = true;
+                    HMODULE hAVS = LoadLibraryExW(L"avisynth.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+                    if (hAVS) {
+                        FreeLibrary(hAVS);
+                    } else {
+                        TRACE(_T("FGM: missing avisynth.dll\n"));
+                        avisynth_ignore = true;
+                    }
+                    if (avisynth_ignore) {
+                        // disable external filter in settings
+                        CAppSettings& s2 = AfxGetAppSettings();
+                        if (s2.m_filters.GetCount() > 0) {
+                            POSITION efpos = s2.m_filters.GetHeadPosition();
+                            while (efpos) {
+                                FilterOverride* fo = s2.m_filters.GetNext(efpos);
+                                if (!fo->fDisabled && fo->clsid == candidate) {
+                                    fo->fDisabled = true;
+                                    s2.SaveExternalFilters();
+                                    break;
+                                }
+                            }
+                        }
+                        // don't use the filter
+                        continue;
+                    }
+                }
+            }
+
+            if (pMadVRAllocatorPresenter && (candidate == CLSID_madVR)) {
                 // the pure madVR filter was selected (without the allocator presenter)
                 // subtitles, OSD etc don't work correctly without the allocator presenter
                 // so we prefer the allocator presenter over the pure filter
@@ -1101,6 +1189,18 @@ HRESULT CFGManager::RenderRFSFileEntry(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrP
 
 CUnknown* WINAPI CFGManager::GetMpcAudioRendererInstance(LPUNKNOWN lpunk, HRESULT* phr) {
     return CreateInstance<CMpcAudioRenderer>(lpunk, phr);
+}
+
+QWORD CFGManager::GetFileVersionFromRegCLSID(CString clsid)
+{
+    QWORD qwFileVersion = 0;
+    CRegKey key;
+    TCHAR buff[512] = { 0 };
+    ULONG len = 512;
+    if (ERROR_SUCCESS == key.Open(HKEY_CLASSES_ROOT, _T("CLSID\\") + clsid + _T("\\InprocServer32"), KEY_READ) && ERROR_SUCCESS == key.QueryStringValue(nullptr, buff, &len)) {
+        qwFileVersion = FileVersionInfo::GetFileVersionNum(buff);
+    }
+    return qwFileVersion;
 }
 
 STDMETHODIMP CFGManager::RenderFile(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrPlayList)
@@ -2625,20 +2725,10 @@ void CFGManagerCustom::InsertBlockedFilters()
     }
 
     // DCDSPFilter (early versions crash mpc)
+    CString clsid_dcdsp = _T("{B38C58A0-1809-11D6-A458-EDAE78F1DF12}");
+    if (GetFileVersionFromRegCLSID(clsid_dcdsp) < 0x0001000000030000ui64)
     {
-        CRegKey key;
-
-        TCHAR buff[256];
-        ULONG len = sizeof(buff);
-        ZeroMemory(buff, sizeof(buff));
-
-        CString clsid = _T("{B38C58A0-1809-11D6-A458-EDAE78F1DF12}");
-
-        if (ERROR_SUCCESS == key.Open(HKEY_CLASSES_ROOT, _T("CLSID\\") + clsid + _T("\\InprocServer32"), KEY_READ)
-            && ERROR_SUCCESS == key.QueryStringValue(nullptr, buff, &len)
-            && FileVersionInfo::GetFileVersionNum(buff) < 0x0001000000030000ui64) {
-            m_transform.AddTail(DEBUG_NEW CFGFilterRegistry(GUIDFromCString(clsid), MERIT64_DO_NOT_USE));
-        }
+        m_transform.AddTail(DEBUG_NEW CFGFilterRegistry(GUIDFromCString(clsid_dcdsp), MERIT64_DO_NOT_USE));
     }
 }
 

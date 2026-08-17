@@ -1857,11 +1857,15 @@ void CPlayerPlaylistBar::ScaleFont()
     }
 
     CDC* pDC = m_list.GetDC();
-    CFont* old = pDC->SelectObject(m_list.GetFont());
-    m_nTimeColWidth = pDC->GetTextExtent(_T("000:00:00")).cx + m_pMainFrame->m_dpi.ScaleX(5);
-    pDC->SelectObject(old);
-    m_list.ReleaseDC(pDC);
-    m_list.SetColumnWidth(COL_TIME, m_nTimeColWidth);
+    if (pDC) {
+        CFont* old = pDC->SelectObject(m_list.GetFont());
+        m_nTimeColWidth = pDC->GetTextExtent(_T("000:00:00")).cx + m_pMainFrame->m_dpi.ScaleX(5);
+        pDC->SelectObject(old);
+        m_list.ReleaseDC(pDC);
+        m_list.SetColumnWidth(COL_TIME, m_nTimeColWidth);
+    } else {
+        ASSERT(false);
+    }
 }
 
 void CPlayerPlaylistBar::EventCallback(MpcEvent ev)

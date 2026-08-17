@@ -28,6 +28,7 @@
 #include "tinyxml2/library/tinyxml2.h"
 #include "rapidjson/include/rapidjson/pointer.h"
 #include <wincrypt.h>
+#include <regex>
 
 #pragma warning(disable: 4244)
 
@@ -380,8 +381,8 @@ SRESULT OpenSubtitles2::Login(const std::string& sUserName, const std::string& s
         headers.Append(_T("Accept: application/json\r\n"));
 
         std::string body(R"({ "username": ")");
-        body = body + sUserName + R"(", "password": ")" + sPassword + R"(" })";
-
+        std::string escaped_pw = std::regex_replace(sPassword, std::regex("\""), "\\\"");
+        body = body + sUserName + R"(", "password": ")" + escaped_pw + R"(" })";
 
         Response response;
         if (CallAPI(httpFile, headers, body, response))

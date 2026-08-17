@@ -42,6 +42,10 @@ textarea{overflow:auto}
 
 
 /* common */
+:root {
+    color-scheme: light dark;
+}
+
 * {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -53,6 +57,10 @@ textarea{overflow:auto}
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+html, body {
+    min-height: 100%;
 }
 
 body {
@@ -104,6 +112,14 @@ img {
     font-weight: bold;
 }
 
+@media (prefers-color-scheme: dark) {
+    .browser-table,
+    .browser-table th,
+    .browser-table td {
+        border-color: gray;
+    }
+}
+
 
 
 /* controls.html */
@@ -151,6 +167,9 @@ form input {
 /* player.html */
 #player {
     margin: 0 auto;
+    /* The player is drawn over light background images, keep the text
+       readable when the browser switches to the dark color scheme */
+    color: black;
 }
 
 #player,
@@ -347,4 +366,24 @@ form input {
 #center,
 #header {
     width: 100%;
+}
+
+
+
+/* variables.html */
+.page-variables {
+    display: table;
+    margin: 1em;
+}
+
+.page-variables p {
+    display: table-row;
+    line-height: 1.5;
+}
+
+.page-variables p:before {
+    content: attr(id) ": ";
+    display: table-cell;
+    color: gray;
+    padding-right: 1em;
 }

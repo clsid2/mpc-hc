@@ -2208,8 +2208,10 @@ CStringW GetShortAudioNameFromMediaType(AM_MEDIA_TYPE* pmt) {
         return L"RT29";
     } else if (pmt->subtype == MEDIASUBTYPE_MPEG_LOAS) {
         return L"LOAS";
-    } else if (pmt->subtype == MEDIASUBTYPE_DOLBY_AC4) {
+    } else if (pmt->subtype == MEDIASUBTYPE_DOLBY_AC4 || pmt->subtype == MEDIASUBTYPE_DOLBY_AC4_lc) {
         return L"AC4";
+    } else if (pmt->subtype == MEDIASUBTYPE_ALAC) {
+        return L"ALAC";
     }
 
     if (pmt->subtype == MEDIASUBTYPE_FFMPEG_AUDIO) {
@@ -2223,15 +2225,24 @@ CStringW GetShortAudioNameFromMediaType(AM_MEDIA_TYPE* pmt) {
     }
 
     if (_IsFourCC(pmt->subtype)) {
+        auto isNumberLetterDash = [](DWORD d) 
+        { 
+            return d == 0x2d || d >= 0x30 && d <= 0x39 || d >= 0x41 && d <= 0x5A || d >= 0x61 && d <= 0x7A; 
+        };
+
         CString fcc;
         DWORD a = (pmt->subtype.Data1 >> 24) & 0xFF;
         DWORD b = (pmt->subtype.Data1 >> 16) & 0xFF;
         DWORD c = (pmt->subtype.Data1 >> 8) & 0xFF;
         DWORD d = (pmt->subtype.Data1 >> 0) & 0xFF;
-        if (a != 0 || b != 0) {
-            fcc.Format(_T("%02x%02x%02x%02x"), a, b, c, d);
+        if (isNumberLetterDash(a) && isNumberLetterDash(b) && isNumberLetterDash(c) && isNumberLetterDash(d)) {
+            fcc.Format(_T("%c%c%c%c"), d, c, b, a);
         } else {
-            fcc.Format(_T("%02x%02x"), c, d);
+            if (a != 0 || b != 0) {
+                fcc.Format(_T("%02x%02x%02x%02x"), a, b, c, d);
+            } else {
+                fcc.Format(_T("%02x%02x"), c, d);
+            }
         }
         return fcc;
     }
@@ -2247,8 +2258,10 @@ bool GetVideoFormatNameFromMediaType(const GUID& guid, CString& name) {
             name = L"H264";
         } else if (name == L"VP90") {
             name = L"VP9";
-        } else if (name == L"AV01") {
+        } else if (name == L"AV01" || name == L"DAV1") {
             name = L"AV1";
+        } else if (name == L"VVC1") {
+            name = L"VVC";
         }
         return true;
     } else if (guid == MEDIASUBTYPE_MPEG1Payload || guid == MEDIASUBTYPE_MPEG1Video) {
