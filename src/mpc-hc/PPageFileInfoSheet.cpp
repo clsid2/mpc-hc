@@ -73,7 +73,7 @@ BOOL CPPageFileInfoSheet::OnInitDialog()
     GetDlgItem(ID_APPLY_NOW)->GetWindowRect(&r);
     ScreenToClient(r);
     RemoveAnchor(IDOK); //otherwise it crashes when we add it later
-    AddAnchor(IDOK, BOTTOM_LEFT);
+    AddAnchor(IDOK, BOTTOM_RIGHT);
     GetDlgItem(IDOK)->MoveWindow(r);
 
     r.MoveToX(5);

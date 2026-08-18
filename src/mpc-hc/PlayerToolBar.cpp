@@ -520,8 +520,13 @@ void CPlayerToolBar::ArrangeControls() {
         float dpiScaling = (float)std::min(m_pMainFrame->m_dpi.ScaleFactorX(), m_pMainFrame->m_dpi.ScaleFactorY());
         int targetsize = int(dpiScaling * AfxGetAppSettings().nDefaultToolbarSize);
         m_volumeCtrlSize = targetsize * 2.5f;
-        vrTop = r.top + targetsize / 4;
-        vrBottom = r.bottom - targetsize / 4;
+        // Use m_nButtonHeight (the actual icon height set by MakeImageList, rounded to a
+        // multiple of 4) rather than recomputing targetsize here: targetsize is truncated,
+        // not rounded to a multiple of 4 like MakeImageList's calculation, so at most DPI
+        // scale factors it disagrees with the button row's real height and the volume
+        // slider ends up a few pixels off from the buttons vertically.
+        vrTop = r.top + m_nButtonHeight / 4;
+        vrBottom = r.bottom - m_nButtonHeight / 4;
     } else {
         CRect vrTemp = CRect(r.right + br.right - 58, r.top - 2, r.right + br.right + 6, r.bottom);
         m_volctrl.MoveWindow(vrTemp);
