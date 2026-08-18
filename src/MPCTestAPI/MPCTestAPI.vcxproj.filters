@@ -27,6 +27,9 @@
     <ClCompile Include="HScrollListBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerStateSnapshot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MPCTestAPI.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HScrollListBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStateSnapshot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -288,7 +288,7 @@ struct AutoChangeFullscreenMode {
     unsigned                    uDelay = 0u;
 };
 
-#define ACCEL_LIST_SIZE 205
+#define ACCEL_LIST_SIZE 206
 
 struct wmcmd_base : public ACCEL {
     BYTE mouse;
@@ -818,6 +818,7 @@ public:
     // Subtitles
     bool            fOverridePlacement;
     int             nHorPos, nVerPos;
+    int             nSecondarySubVerPos; // top placement (%) of the secondary subtitle track
     bool            bSubtitleARCompensation;
     int             nSubDelayStep;
 
@@ -836,6 +837,7 @@ public:
     CString         strAutoDownloadSubtitlesExclude;
     bool            bAutoUploadSubtitles;
     bool            bPreferHearingImpairedSubtitles;
+    bool            bAutoCopySubtitleToClipboard;
 #if USE_LIBASS
     bool            bRenderSSAUsingLibass;
     bool            bRenderSRTUsingLibass;

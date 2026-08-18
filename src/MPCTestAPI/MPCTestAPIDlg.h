@@ -25,6 +25,7 @@
 
 #include "../mpc-hc/MpcApi.h"
 #include "HScrollListBox.h"
+#include "PlayerStateSnapshot.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,6 +54,7 @@ protected:
 protected:
     HICON   m_hIcon;
     HWND    m_hWndMPC;
+    CPlayerStateSnapshot m_playerStateSnapshot;
 
     // Generated message map functions
     //{{AFX_MSG(CRegisterCopyDataDlg)
@@ -62,6 +64,8 @@ protected:
     afx_msg HCURSOR OnQueryDragIcon();
     afx_msg void OnButtonFindwindow();
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+    afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 public:
@@ -70,5 +74,8 @@ public:
     CString     m_txtCommand;
     int         m_nCommandType;
     afx_msg void OnBnClickedButtonSendcommand();
+    void        OnOK() override;
     void        Senddata(MPCAPI_COMMAND nCmd, LPCTSTR strCommand);
+    void        StartPlayerStateQuery();
+    void        CompletePlayerStateQuery();
 };

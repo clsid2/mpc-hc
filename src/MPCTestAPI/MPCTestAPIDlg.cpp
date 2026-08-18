@@ -1,4 +1,4 @@
-/*
+﻿/*
  * (C) 2008-2015, 2017 see Authors.txt
  *
  * This file is part of MPC-HC.
@@ -27,11 +27,69 @@
 #include <psapi.h>
 
 
+// Client-side pseudo-command: composes a state snapshot from several GET replies.
+static const DWORD_PTR CLIENT_QUERYPLAYERSTATE_TOKEN = static_cast<DWORD_PTR>(-2);
+static const MPCAPI_COMMAND CLIENT_QUERYPLAYERSTATE_CMD = static_cast<MPCAPI_COMMAND>(CLIENT_QUERYPLAYERSTATE_TOKEN);
+static const UINT_PTR PLAYER_STATE_QUERY_TIMER_ID = 0x5150;
+
+struct APICommandEntry {
+    LPCTSTR label;
+    MPCAPI_COMMAND command;
+    bool usesParameter;
+};
+
+// Non-blocking integer message channel (see MpcApi.h). Both sides register the same name.
+static const UINT WM_MPCAPI_INT = RegisterWindowMessage(MPCAPI_INT_MESSAGE_NAME);
+
+static const APICommandEntry apiCommands[] = {
+    { _T("CMD_OPENFILE"), CMD_OPENFILE, true },
+    { _T("CMD_STOP"), CMD_STOP, false },
+    { _T("CMD_CLOSEFILE"), CMD_CLOSEFILE, false },
+    { _T("CMD_PLAYPAUSE"), CMD_PLAYPAUSE, false },
+    { _T("CMD_PLAY"), CMD_PLAY, false },
+    { _T("CMD_PAUSE"), CMD_PAUSE, false },
+    { _T("CMD_ADDTOPLAYLIST"), CMD_ADDTOPLAYLIST, true },
+    { _T("CMD_STARTPLAYLIST"), CMD_STARTPLAYLIST, false },
+    { _T("CMD_CLEARPLAYLIST"), CMD_CLEARPLAYLIST, false },
+    { _T("CMD_SETPOSITION"), CMD_SETPOSITION, true },
+    { _T("CMD_SETAUDIODELAY"), CMD_SETAUDIODELAY, true },
+    { _T("CMD_SETSUBTITLEDELAY"), CMD_SETSUBTITLEDELAY, true },
+    { _T("CMD_GETAUDIOTRACKS"), CMD_GETAUDIOTRACKS, false },
+    { _T("CMD_GETSUBTITLETRACKS"), CMD_GETSUBTITLETRACKS, false },
+    { _T("CMD_GETPLAYLIST"), CMD_GETPLAYLIST, false },
+    { _T("CMD_SETINDEXPLAYLIST"), CMD_SETINDEXPLAYLIST, true },
+    { _T("CMD_SETAUDIOTRACK"), CMD_SETAUDIOTRACK, true },
+    { _T("CMD_SETSUBTITLETRACK"), CMD_SETSUBTITLETRACK, true },
+    { _T("CMD_GETCURRENTAUDIOTRACK"), CMD_GETCURRENTAUDIOTRACK, false },
+    { _T("CMD_GETCURRENTSUBTITLETRACK"), CMD_GETCURRENTSUBTITLETRACK, false },
+    { _T("CMD_GETCURRENTPOSITION"), CMD_GETCURRENTPOSITION, false },
+    { _T("CMD_GETNOWPLAYING"), CMD_GETNOWPLAYING, false },
+    { _T("CMD_JUMPOFNSECONDS"), CMD_JUMPOFNSECONDS, true },
+    { _T("CMD_TOGGLEFULLSCREEN"), CMD_TOGGLEFULLSCREEN, false },
+    { _T("CMD_JUMPFORWARDMED"), CMD_JUMPFORWARDMED, false },
+    { _T("CMD_JUMPBACKWARDMED"), CMD_JUMPBACKWARDMED, false },
+    { _T("CMD_INCREASEVOLUME"), CMD_INCREASEVOLUME, false },
+    { _T("CMD_DECREASEVOLUME"), CMD_DECREASEVOLUME, false },
+    { _T("CMD_GETVERSION"), CMD_GETVERSION, false },
+    { _T("CMD_SHADER_TOGGLE"), CMD_SHADER_TOGGLE, false },
+    { _T("CMD_CLOSEAPP"), CMD_CLOSEAPP, false },
+    { _T("CMD_SETSPEED"), CMD_SETSPEED, true },
+    { _T("CMD_SETPANSCAN"), CMD_SETPANSCAN, true },
+    { _T("CMD_STATUSSHOWMESSAGE"), CMD_STATUSSHOWMESSAGE, true },
+    { _T("CMD_SETVOLUME (0-100)"), CMD_SETVOLUME, true },
+    { _T("CMD_SETMUTE (0/1)"), CMD_SETMUTE, true },
+    { _T("CMD_GETVOLUME"), CMD_GETVOLUME, false },
+    { _T("CMD_GETMUTE"), CMD_GETMUTE, false },
+    { _T("CLIENT_QUERYPLAYERSTATE (non-atomic)"), CLIENT_QUERYPLAYERSTATE_CMD, false },
+};
+
 LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
 {
     switch (nCmd) {
         case CMD_CONNECT:
             return _T("CMD_CONNECT");
+        case CMD_DISCONNECT:
+            return _T("CMD_DISCONNECT");
         case CMD_STATE:
             return _T("CMD_STATE");
         case CMD_PLAYMODE:
@@ -44,8 +102,26 @@ LPCTSTR GetMPCCommandName(MPCAPI_COMMAND nCmd)
             return _T("CMD_LISTAUDIOTRACKS");
         case CMD_PLAYLIST:
             return _T("CMD_PLAYLIST");
+        case CMD_CURRENTPOSITION:
+            return _T("CMD_CURRENTPOSITION");
+        case CMD_NOTIFYSEEK:
+            return _T("CMD_NOTIFYSEEK");
+        case CMD_NOTIFYENDOFSTREAM:
+            return _T("CMD_NOTIFYENDOFSTREAM");
+        case CMD_VERSION:
+            return _T("CMD_VERSION");
+        case CMD_CURRENTAUDIOTRACK:
+            return _T("CMD_CURRENTAUDIOTRACK");
+        case CMD_CURRENTSUBTITLETRACK:
+            return _T("CMD_CURRENTSUBTITLETRACK");
+        case CMD_CURRENTVOLUME:
+            return _T("CMD_CURRENTVOLUME");
+        case CMD_CURRENTMUTE:
+            return _T("CMD_CURRENTMUTE");
         default:
-            return _T("CMD_UNK");
+            static CString strResult;
+            strResult.Format(_T("UNKNOWN (0x%08X)"), (unsigned int)nCmd);
+            return strResult;
     }
 }
 
@@ -130,6 +206,8 @@ BEGIN_MESSAGE_MAP(CRegisterCopyDataDlg, CDialog)
     ON_WM_QUERYDRAGICON()
     ON_BN_CLICKED(IDC_BUTTON_FINDWINDOW, OnButtonFindwindow)
     ON_WM_COPYDATA()
+    ON_WM_TIMER()
+    ON_REGISTERED_MESSAGE(WM_MPCAPI_INT, OnApiIntMessage)
     //}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON_SENDCOMMAND, &CRegisterCopyDataDlg::OnBnClickedButtonSendcommand)
 END_MESSAGE_MAP()
@@ -162,8 +240,6 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
     SetIcon(m_hIcon, TRUE);         // Set big icon
     SetIcon(m_hIcon, FALSE);        // Set small icon
 
-    // TODO: Add extra initialization here
-
 #if (_MSC_VER < 1910)
     m_strMPCPath = _T("..\\..\\..\\..\\bin15\\");
 #else
@@ -187,6 +263,14 @@ BOOL CRegisterCopyDataDlg::OnInitDialog()
 #else
     m_strMPCPath += _T("mpc-hc.exe");
 #endif // _WIN64
+
+    CComboBox* pCombo = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO1));
+    if (pCombo) {
+        pCombo->ResetContent();
+        for (const auto& entry : apiCommands) {
+            pCombo->AddString(entry.label);
+        }
+    }
 
     UpdateData(FALSE);
 
@@ -238,122 +322,168 @@ HCURSOR CRegisterCopyDataDlg::OnQueryDragIcon()
 
 void CRegisterCopyDataDlg::OnButtonFindwindow()
 {
-    CString             strExec;
-    STARTUPINFO         StartupInfo;
-    PROCESS_INFORMATION ProcessInfo;
-
-    strExec.Format(_T("%s /slave %d"), (LPCTSTR)m_strMPCPath, PtrToInt(GetSafeHwnd()));
     UpdateData(TRUE);
 
-    ZeroMemory(&StartupInfo, sizeof(StartupInfo));
-    StartupInfo.cb = sizeof(StartupInfo);
-    GetStartupInfo(&StartupInfo);
-    if (CreateProcess(nullptr, (LPTSTR)(LPCTSTR)strExec, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo)) {
-        CloseHandle(ProcessInfo.hProcess);
-        CloseHandle(ProcessInfo.hThread);
+    CString commandLine;
+    commandLine.Format(_T("\"%s\" /slave %d"), m_strMPCPath.GetString(), PtrToInt(GetSafeHwnd()));
+
+    STARTUPINFO startupInfo = { sizeof(startupInfo) };
+    PROCESS_INFORMATION processInfo = {};
+    const BOOL created = CreateProcess(m_strMPCPath.GetString(), commandLine.GetBuffer(), nullptr, nullptr,
+                                       FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo);
+    const DWORD error = created ? ERROR_SUCCESS : GetLastError();
+    commandLine.ReleaseBuffer();
+
+    if (!created) {
+        LPTSTR systemMessage = nullptr;
+        CString detail;
+        if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                          nullptr, error, 0, reinterpret_cast<LPTSTR>(&systemMessage), 0, nullptr) && systemMessage) {
+            detail = systemMessage;
+            detail.Trim();
+            LocalFree(systemMessage);
+        }
+        if (detail.IsEmpty()) {
+            detail = _T("No system error message is available.");
+        }
+
+        CString message;
+        message.Format(_T("Failed to start MPC-HC.\nError %lu: %s"), error, detail.GetString());
+        AfxMessageBox(message, MB_ICONERROR | MB_OK);
+        return;
     }
+
+    CloseHandle(processInfo.hProcess);
+    CloseHandle(processInfo.hThread);
 }
 
 void CRegisterCopyDataDlg::Senddata(MPCAPI_COMMAND nCmd, LPCTSTR strCommand)
 {
-    if (m_hWndMPC) {
+    if (m_hWndMPC && IsWindow(m_hWndMPC)) {
         COPYDATASTRUCT MyCDS;
 
         MyCDS.dwData = nCmd;
         MyCDS.cbData = (DWORD)(_tcslen(strCommand) + 1) * sizeof(TCHAR);
         MyCDS.lpData = (LPVOID) strCommand;
 
-        ::SendMessage(m_hWndMPC, WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&MyCDS);
+        DWORD_PTR result = 0;
+        SendMessageTimeout(m_hWndMPC, WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&MyCDS,
+                           SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 1000, &result);
     }
 }
 
 BOOL CRegisterCopyDataDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 {
-    CString strMsg;
-
-    if (pCopyDataStruct->dwData == CMD_CONNECT) {
-        m_hWndMPC = (HWND)IntToPtr(_ttoi((LPCTSTR)pCopyDataStruct->lpData));
+    if (!pCopyDataStruct || !pCopyDataStruct->lpData
+            || pCopyDataStruct->cbData < sizeof(TCHAR)
+            || pCopyDataStruct->cbData % sizeof(TCHAR) != 0) {
+        return FALSE;
     }
 
-    strMsg.Format(_T("%s : %s"), GetMPCCommandName((MPCAPI_COMMAND)pCopyDataStruct->dwData), (LPCTSTR)pCopyDataStruct->lpData);
+    const LPCTSTR value = static_cast<LPCTSTR>(pCopyDataStruct->lpData);
+    const size_t length = pCopyDataStruct->cbData / sizeof(TCHAR);
+    if (value[length - 1] != _T('\0') || wmemchr(value, L'\0', length - 1)) {
+        return FALSE;
+    }
+
+    const MPCAPI_COMMAND command = (MPCAPI_COMMAND)pCopyDataStruct->dwData;
+    const HWND hSender = pWnd ? pWnd->GetSafeHwnd() : nullptr;
+    if (command == CMD_CONNECT && hSender && IsWindow(hSender)) {
+        m_hWndMPC = hSender;
+        Senddata(CMD_GETVERSION, _T(""));
+        // Opt into the non-blocking integer channel: MPC-HC will then send volume/mute
+        // change notifications through it instead of WM_COPYDATA.
+        if (WM_MPCAPI_INT) {
+            ::PostMessage(m_hWndMPC, WM_MPCAPI_INT, (WPARAM)GetSafeHwnd(),
+                          MPCAPI_INT_MAKELPARAM(MPCAPI_INT_VERSION, MPCINT_HELLO));
+        }
+    } else if (command == CMD_DISCONNECT && hSender == m_hWndMPC) {
+        m_hWndMPC = nullptr;
+    }
+
+    if (!m_playerStateSnapshot.Capture(command, value)) {
+        CString strMsg;
+        strMsg.Format(_T("%s : %s"), GetMPCCommandName(command), value);
+        m_listBox.InsertString(0, strMsg);
+    }
+    return TRUE;
+}
+
+LRESULT CRegisterCopyDataDlg::OnApiIntMessage(WPARAM wParam, LPARAM lParam)
+{
+    // Integer channel notification from MPC-HC (see MpcApi.h pack/unpack macros).
+    const WORD command = MPCAPI_INT_COMMAND_OF(lParam);
+    const int value = MPCAPI_INT_VALUE_OF(lParam);
+    CString strMsg;
+    strMsg.Format(_T("INT cmd=%u : %d"), command, value);
     m_listBox.InsertString(0, strMsg);
-    return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+    return 0;
+}
+
+void CRegisterCopyDataDlg::OnTimer(UINT_PTR nIDEvent)
+{
+    if (nIDEvent == PLAYER_STATE_QUERY_TIMER_ID) {
+        KillTimer(PLAYER_STATE_QUERY_TIMER_ID);
+        CompletePlayerStateQuery();
+        return;
+    }
+
+    CDialog::OnTimer(nIDEvent);
+}
+
+void CRegisterCopyDataDlg::StartPlayerStateQuery()
+{
+    if (m_playerStateSnapshot.IsActive()) {
+        KillTimer(PLAYER_STATE_QUERY_TIMER_ID);
+        CompletePlayerStateQuery();
+    }
+
+    m_playerStateSnapshot.Begin();
+    const UINT_PTR timer = SetTimer(PLAYER_STATE_QUERY_TIMER_ID,
+                                    CPlayerStateSnapshot::COLLECTION_WINDOW_MS, nullptr);
+
+    for (size_t i = 0; i < CPlayerStateSnapshot::GetRequestCount(); i++) {
+        Senddata(CPlayerStateSnapshot::GetRequest(i), _T(""));
+    }
+
+    if (!timer) {
+        CompletePlayerStateQuery();
+    }
+}
+
+void CRegisterCopyDataDlg::CompletePlayerStateQuery()
+{
+    if (m_playerStateSnapshot.IsActive()) {
+        m_listBox.InsertString(0, m_playerStateSnapshot.Complete());
+    }
 }
 
 void CRegisterCopyDataDlg::OnBnClickedButtonSendcommand()
 {
-    CString strEmpty(_T(""));
     UpdateData(TRUE);
 
-    switch (m_nCommandType) {
-        case 0:
-            Senddata(CMD_OPENFILE, m_txtCommand);
-            break;
-        case 1:
-            Senddata(CMD_STOP, strEmpty);
-            break;
-        case 2:
-            Senddata(CMD_CLOSEFILE, strEmpty);
-            break;
-        case 3:
-            Senddata(CMD_PLAYPAUSE, strEmpty);
-            break;
-        case 4:
-            Senddata(CMD_ADDTOPLAYLIST, m_txtCommand);
-            break;
-        case 5:
-            Senddata(CMD_STARTPLAYLIST, strEmpty);
-            break;
-        case 6:
-            Senddata(CMD_CLEARPLAYLIST, strEmpty);
-            break;
-        case 7:
-            Senddata(CMD_SETPOSITION, m_txtCommand);
-            break;
-        case 8:
-            Senddata(CMD_SETAUDIODELAY, m_txtCommand);
-            break;
-        case 9:
-            Senddata(CMD_SETSUBTITLEDELAY, m_txtCommand);
-            break;
-        case 10:
-            Senddata(CMD_GETAUDIOTRACKS, strEmpty);
-            break;
-        case 11:
-            Senddata(CMD_GETSUBTITLETRACKS, strEmpty);
-            break;
-        case 12:
-            Senddata(CMD_GETPLAYLIST, strEmpty);
-            break;
-        case 13:
-            Senddata(CMD_SETINDEXPLAYLIST, m_txtCommand);
-            break;
-        case 14:
-            Senddata(CMD_SETAUDIOTRACK, m_txtCommand);
-            break;
-        case 15:
-            Senddata(CMD_SETSUBTITLETRACK, m_txtCommand);
-            break;
-        case 16:
-            Senddata(CMD_TOGGLEFULLSCREEN, m_txtCommand);
-            break;
-        case 17:
-            Senddata(CMD_JUMPFORWARDMED, m_txtCommand);
-            break;
-        case 18:
-            Senddata(CMD_JUMPBACKWARDMED, m_txtCommand);
-            break;
-        case 19:
-            Senddata(CMD_INCREASEVOLUME, m_txtCommand);
-            break;
-        case 20:
-            Senddata(CMD_DECREASEVOLUME, m_txtCommand);
-            break;
-        case 21:
-            //Senddata(CMD_SHADER_TOGGLE, m_txtCommand);
-            break;
-        case 22:
-            Senddata(CMD_CLOSEAPP, m_txtCommand);
-            break;
+    if (m_nCommandType >= 0 && m_nCommandType < _countof(apiCommands)) {
+        const APICommandEntry& entry = apiCommands[m_nCommandType];
+        LPCTSTR param = entry.usesParameter ? m_txtCommand.GetString() : _T("");
+        if (entry.command == CLIENT_QUERYPLAYERSTATE_CMD) {
+            StartPlayerStateQuery();
+        } else {
+            Senddata(entry.command, param);
+        }
+    }
+}
+
+void CRegisterCopyDataDlg::OnOK()
+{
+    CWnd* pFocus = GetFocus();
+    if (!pFocus) {
+        return;
+    }
+
+    const int controlId = pFocus->GetDlgCtrlID();
+    if (controlId == IDC_EDIT1 || controlId == IDC_BUTTON_FINDWINDOW) {
+        OnButtonFindwindow();
+    } else if (controlId == IDC_EDIT2 || controlId == IDC_COMBO1 || controlId == IDC_BUTTON_SENDCOMMAND) {
+        OnBnClickedButtonSendcommand();
     }
 }

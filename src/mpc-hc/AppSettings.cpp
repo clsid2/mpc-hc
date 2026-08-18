@@ -174,6 +174,7 @@ CAppSettings::CAppSettings()
     , fOverridePlacement(false)
     , nHorPos(50)
     , nVerPos(90)
+    , nSecondarySubVerPos(8)
     , bSubtitleARCompensation(true)
     , nSubDelayStep(500)
     , bPreferDefaultForcedSubtitles(true)
@@ -186,6 +187,7 @@ CAppSettings::CAppSettings()
     , nAutoDownloadScoreSeries(0x18)
     , bAutoUploadSubtitles(false)
     , bPreferHearingImpairedSubtitles(false)
+    , bAutoCopySubtitleToClipboard(false)
     , bMPCTheme(true)
     , bWindows10DarkThemeActive(false)
     , bWindows10AccentColorsEnabled(false)
@@ -737,6 +739,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_STREAM_SUB_NEXT,                 'S', 0,                 IDS_AG_NEXT_SUBTITLE },
     { ID_STREAM_SUB_PREV,                 'S', FSHIFT,            IDS_AG_PREV_SUBTITLE },
     { ID_STREAM_SUB_ONOFF,                'W', 0,                 IDS_MPLAYERC_85 },
+    { ID_SUBTITLES_AUTOCOPY,                0, 0,                 IDS_AG_AUTOCOPY_SUBTITLE },
     { ID_SUBTITLES_SUBITEM_START + 2,       0, 0,                 IDS_MPLAYERC_86 },
     { ID_DVD_ANGLE_NEXT,                    0, 0,                 IDS_MPLAYERC_91 },
     { ID_DVD_ANGLE_PREV,                    0, 0,                 IDS_MPLAYERC_92 },
@@ -1054,6 +1057,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, fOverridePlacement);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, nHorPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, nVerPos);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, nSecondarySubVerPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLEARCOMPENSATION, bSubtitleARCompensation);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBDELAYINTERVAL, nSubDelayStep);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLESUBTITLES, fEnableSubtitles);
@@ -1908,6 +1912,10 @@ void CAppSettings::LoadSettings()
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
     nHorPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, 50);
     nVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, 90);
+    nSecondarySubVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, 0);
+    if (nSecondarySubVerPos < 0 || nSecondarySubVerPos > 100) {
+        nSecondarySubVerPos = 8;
+    }
     bSubtitleARCompensation = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLEARCOMPENSATION, TRUE);
     nSubDelayStep = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBDELAYINTERVAL, 500);
     if (nSubDelayStep < 10) {

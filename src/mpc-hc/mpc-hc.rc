@@ -1779,6 +1779,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -1972,6 +1973,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -2345,6 +2347,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Audio Track",                ID_AUDIOS
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
+        MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
         MENUITEM SEPARATOR
         POPUP "&Volume"
@@ -3387,6 +3390,7 @@ STRINGTABLE
 BEGIN
     IDS_AG_NEXT_SUBTITLE    "Next Subtitle Track"
     IDS_AG_PREV_SUBTITLE    "Prev Subtitle Track"
+    IDS_AG_AUTOCOPY_SUBTITLE "Auto-Copy Subtitle to Clipboard"
     IDS_MPLAYERC_85         "On/Off Subtitle"
     IDS_MPLAYERC_86         "Reload Subtitles"
     IDS_MPLAYERC_91         "Next Angle (DVD)"
@@ -4107,6 +4111,9 @@ BEGIN
     IDS_TOOLBAR_ALIGNMENT_LEFT "Left"
     IDS_TOOLBAR_ALIGNMENT_CENTER "Center"
     IDS_TOOLBAR_ALIGNMENT_RIGHT "Right"
+    IDS_OSD_AUTOCOPY_SUBTITLE_ON "Auto-Copy Subtitle to Clipboard: On"
+    IDS_OSD_AUTOCOPY_SUBTITLE_OFF "Auto-Copy Subtitle to Clipboard: Off"
+    IDS_SUBTITLES_SECONDARY_BAD_FORMAT "This subtitle format cannot be used as a secondary subtitle track. Only simple text formats such as SRT are supported."
 END
 
 STRINGTABLE
