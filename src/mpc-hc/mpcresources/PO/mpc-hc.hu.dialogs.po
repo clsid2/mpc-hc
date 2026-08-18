@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
+"POT-Creation-Date: 2026-08-08 15:18:32+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
@@ -1114,7 +1114,7 @@ msgstr "Tallózás..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Videó renderelő"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1338,7 +1338,7 @@ msgstr "Szűrő gráf megállítása"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Általános"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1370,11 +1370,11 @@ msgstr "VMR-9 keverő mód"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "D3D9 renderelő eszköz kiválasztása"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Renderelő szinkronizálása"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1432,11 +1432,11 @@ msgstr ""
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "A „Lejátszás” menüben további renderelő beállítások érhetők el"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Visszaállítás"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
 msgid "Launch files in fullscreen"
@@ -1796,43 +1796,43 @@ msgstr "Mégsem"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Előzmények"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menü"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Kijelöltek eltávolítása"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Színbeállítások"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Brightness"
-msgstr ""
+msgstr "Fényerő"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Contrast"
-msgstr ""
+msgstr "Kontraszt"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Hue"
-msgstr ""
+msgstr "Színárnyalat"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Saturation"
-msgstr ""
+msgstr "Telítettség"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Visszaállítás"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Bezárás"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"

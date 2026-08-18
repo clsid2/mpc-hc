@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
+"POT-Creation-Date: 2026-08-08 15:18:32+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Maik Dießner, 2026\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
@@ -261,7 +261,7 @@ msgstr "&Bildzeitkorrektur"
 
 msgctxt "POPUP"
 msgid "&Color Management"
-msgstr "&Farbabstimmung"
+msgstr "&Farbmanagement"
 
 msgctxt "ID_VIEW_CM_ENABLE"
 msgid "&Enable"
@@ -325,7 +325,7 @@ msgstr "&Absolut farbmetrisch"
 
 msgctxt "POPUP"
 msgid "&VSync"
-msgstr "&VSync-Kontrolle"
+msgstr "&VSync"
 
 msgctxt "ID_VIEW_VSYNC"
 msgid "&VSync"
@@ -669,7 +669,7 @@ msgstr "Fi&lter"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "&Farbeinstellungen..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"

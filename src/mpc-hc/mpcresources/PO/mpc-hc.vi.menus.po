@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
+"POT-Creation-Date: 2026-08-08 15:18:32+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Huy Võ <hoanghuy309@gmail.com>, 2026\n"
 "Language-Team: Vietnamese (https://app.transifex.com/mpchc/teams/106126/vi/)\n"
@@ -665,7 +665,7 @@ msgstr "&Bộ lọc"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "Kiểm soát màu sắ&c..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"

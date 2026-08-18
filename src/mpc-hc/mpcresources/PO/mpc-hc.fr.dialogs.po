@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
+"POT-Creation-Date: 2026-08-08 15:18:32+0000\n"
 "PO-Revision-Date: 2020-01-02 07:46+0000\n"
 "Last-Translator: Cyril Provence <ywa78408@eveav.com>, 2026\n"
 "Language-Team: French (https://app.transifex.com/mpchc/teams/106126/fr/)\n"
@@ -1112,7 +1112,7 @@ msgstr "Parcourir..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Moteur de rendu vidéo"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1336,19 +1336,19 @@ msgstr "Arrêter le graphe"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Commun"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
-msgstr "Algorithme :"
+msgstr "Redimensionnement:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Surface:"
-msgstr "Surface :"
+msgstr "Surface:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "Tampons EVR :"
+msgstr "Tampons EVR:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
@@ -1360,7 +1360,7 @@ msgstr "Mettre en cache les effets vidéo compilés"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "Plein écran Direct3D"
+msgstr "Plein écran D3D"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
@@ -1368,27 +1368,27 @@ msgstr "Mode mélangeur VMR-9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Sélectionner le périphérique de rendu D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Moteur de rendu Sync"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "Synchroniser la fréquence de la vidéo avec celle de l'écran"
+msgstr "Synchroniser la vidéo avec l'écran"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
 msgid "Frequency adjustment:"
-msgstr "Ajustement de la fréquence :"
+msgstr "Ajustement de la fréquence:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "Synchroniser la fréquence de l'écran avec celle de la vidéo"
+msgstr "Synchroniser l'écran avec la vidéo"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
-msgstr "Ajustement de la fréquence :"
+msgstr "Ajustement de la fréquence:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
@@ -1404,7 +1404,7 @@ msgstr "Présenter à la synchronisation verticale la plus proche"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Décalage de synchronisation cible :"
+msgstr "Décalage de synchronisation cible:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1412,7 +1412,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Limites de contrôle :"
+msgstr "Limites de contrôles:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1431,10 +1431,12 @@ msgstr ""
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
 msgstr ""
+"Des réglages supplémentaires du moteur de rendu sont accessibles via le menu"
+" Lecture"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Réinitialiser"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK1"
 msgid "Launch files in fullscreen"
@@ -1802,43 +1804,43 @@ msgstr "Annuler"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Historique"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Supprimer la sélection"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Contrôles de couleur"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Brightness"
-msgstr ""
+msgstr "Luminosité"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Contrast"
-msgstr ""
+msgstr "Contraste"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Hue"
-msgstr ""
+msgstr "Teinte"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
 msgid "Saturation"
-msgstr ""
+msgstr "Saturation"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Réinitialiser"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
