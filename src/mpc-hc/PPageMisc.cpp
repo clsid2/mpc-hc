@@ -26,6 +26,7 @@
 #include <psapi.h>
 #include "PPageSheet.h"
 #include "CMPCThemeMsgBox.h"
+#include "MainFrm.h"
 
 // CPPageMisc dialog
 
@@ -64,6 +65,7 @@ BEGIN_MESSAGE_MAP(CPPageMisc, CMPCThemePPageBase)
     ON_BN_CLICKED(IDC_RESET_SETTINGS, OnResetSettings)
     ON_BN_CLICKED(IDC_EXPORT_SETTINGS, OnExportSettings)
     ON_BN_CLICKED(IDC_EXPORT_KEYS, OnExportKeys)
+    ON_BN_CLICKED(IDC_COLOR_CONTROLS, OnColorControls)
     ON_UPDATE_COMMAND_UI(IDC_EDIT1, OnUpdateDelayEditBox)
     ON_UPDATE_COMMAND_UI(IDC_SPIN1, OnUpdateDelayEditBox)
     ON_UPDATE_COMMAND_UI(IDC_STATIC5, OnUpdateDelayEditBox)
@@ -179,6 +181,11 @@ void CPPageMisc::OnExportKeys()
             }
         }
     }
+}
+
+void CPPageMisc::OnColorControls()
+{
+    AfxGetMainFrame()->PostMessage(WM_COMMAND, ID_COLOR_CONTROLS);
 }
 
 void CPPageMisc::AdjustDynamicWidgets() {

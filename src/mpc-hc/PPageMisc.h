@@ -64,6 +64,7 @@ public:
     afx_msg void OnResetSettings();
     afx_msg void OnExportSettings();
     afx_msg void OnExportKeys();
+    afx_msg void OnColorControls();
 
     void AdjustDynamicWidgets();
 };
