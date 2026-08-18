@@ -1301,6 +1301,12 @@ void CMainFrame::OnClose()
 
     ASSERT(GetCurrentThreadId() == AfxGetApp()->m_nThreadID);
 
+    // Set the closing state before doing anything else, so that the various m_fClosingState
+    // guards throughout this file (and the pre-close MediaControlPause below) take effect
+    // immediately and no further UI/media work (e.g. a synchronous renderer frame grab) is
+    // kicked off while we're already tearing down.
+    AfxGetMyApp()->SetClosingState();
+
     s.bToggleShader = m_bToggleShader;
     s.bToggleShaderScreenSpace = m_bToggleShaderScreenSpace;
     s.dZoomX = m_ZoomX;
@@ -1351,7 +1357,6 @@ void CMainFrame::OnClose()
 
     {
         CAutoLock ga(&lockGraphAccess);
-        AfxGetMyApp()->SetClosingState();
 
         MSG msg;
         while (PeekMessage(&msg, nullptr, WM_GRAPHNOTIFY, WM_MPC_OPENCURPLAYLIST, PM_REMOVE)) {
@@ -24534,6 +24539,11 @@ void CMainFrame::MediaTransportControlUpdateAutoRepeat() {
 
 #if MPC_SMTC_VIDEO_THUMBNAIL
 void CMainFrame::MediaTransportControlUpdateThumbnail() {
+    if (AfxGetMyApp()->m_fClosingState) {
+        // Avoid a synchronous renderer frame grab (CaptureVideoThumbnail) while closing;
+        // with madVR this can block for several seconds.
+        return;
+    }
     if (m_fAudioOnly || GetLoadState() != MLS::LOADED || IsPlaybackCaptureMode() || !m_media_trans_control.IsActive()) {
         return;
     }
