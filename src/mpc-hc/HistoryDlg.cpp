@@ -463,7 +463,7 @@ void CHistoryDlg::SetupAnchors()
 {
     AddAnchor(IDC_BUTTON1, TOP_LEFT);
     AddAnchor(IDC_EDIT1, TOP_LEFT);
-    AddAnchor(IDC_BUTTON2, TOP_LEFT);
+    AddAnchor(IDC_BUTTON2, TOP_RIGHT);
     AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
 }
 
