@@ -430,6 +430,17 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
             } else if (arg == _T(WEB_CMD_SETVOLUME) && m_request.Lookup("volume", arg)) {
                 int volume = _tcstol(arg, nullptr, 10);
                 m_pMainFrame->m_wndToolBar.Volume = std::min(std::max(volume, 0), 100);
+            } else if (arg == _T(CMD_SETPLAYLISTINDEX) && m_request.Lookup("index", arg)) {
+                int index = _tstoi(arg);
+                if (index >= 0 && index < m_pMainFrame->m_wndPlaylistBar.GetCount()) {
+                    m_pMainFrame->m_wndPlaylistBar.SetSelIdx(index);
+                    // Post rather than call directly: OpenCurPlaylistItem() tears down and
+                    // rebuilds the graph, which is only safe from the top of the message
+                    // loop. Every other call site (playlist double-click, context menu,
+                    // X-button prev/next) posts this same message instead of calling it
+                    // inline; calling it synchronously from here crashes MPC-HC.
+                    m_pMainFrame->PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
+                }
             }
         }
     }
@@ -1415,10 +1426,9 @@ bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& m
         if (!items.IsEmpty()) {
             items += ",";
         }
-        items.AppendFormat("{\"index\":%d,\"label\":%s,\"duration\":%ld,\"id\":%u}",
+        items.AppendFormat("{\"index\":%d,\"label\":%s,\"duration\":%ld}",
                            index, JSONString(pli.GetLabel()).GetString(),
-                           std::lround(pli.m_duration / 10000i64),
-                           ID_NAVIGATE_JUMPTO_SUBITEM_START + index);
+                           std::lround(pli.m_duration / 10000i64));
         index++;
     }
 

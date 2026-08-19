@@ -383,7 +383,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
         mute: 909,          // ID_VOLUME_MUTE
         fullscreen: 830     // ID_VIEW_FULLSCREEN
     };
-    var SETPOS = -1, SETVOL = -2;
+    var SETPOS = -1, SETVOL = -2, SETPLIDX = -3;
 
     var $ = function (id) { return document.getElementById(id); };
 
@@ -570,7 +570,7 @@ select.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1p
                     b.children[1].textContent = item.label;
                     b.children[2].textContent = item.duration ? fmt(item.duration) : "";
                     b.addEventListener("click", function () {
-                        send(item.id);
+                        send(SETPLIDX, "&index=" + item.index);
                         toast("Playing " + item.label);
                     });
                     li.appendChild(b);
