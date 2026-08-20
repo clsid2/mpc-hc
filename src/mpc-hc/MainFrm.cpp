@@ -11361,7 +11361,7 @@ void CMainFrame::OnNavigateGoto()
 
     REFERENCE_TIME start, dur = -1;
     m_wndSeekBar.GetRange(start, dur);
-    CGoToDlg dlg(m_wndSeekBar.GetPos(), dur, atpf > 0.0 ? (1.0 / atpf) : 0.0);
+    CGoToDlg dlg(m_wndSeekBar.GetPos(), dur, atpf > 0.0 ? (1.0 / atpf) : 0.0, m_fAudioOnly);
     if (IDOK != dlg.DoModal() || dlg.m_time < 0) {
         return;
     }
