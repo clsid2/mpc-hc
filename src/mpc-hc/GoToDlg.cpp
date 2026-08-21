@@ -77,10 +77,16 @@ BOOL CGoToDlg::OnInitDialog()
         GetDlgItem(IDC_OK2)->EnableWindow(FALSE);
 
         // Crop off the now-unused Frame section (instructions, IDC_EDIT2, IDC_OK2).
-        CRect rc(0, 0, 186, 63);
-        MapDialogRect(&rc);
-        AdjustWindowRectEx(&rc, GetStyle(), FALSE, GetExStyle());
-        SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(), SWP_NOMOVE | SWP_NOZORDER);
+        // Shrink by the client-height delta so the non-client metrics stay DPI-correct.
+        CRect rcFull(0, 0, 186, 120);
+        CRect rcCropped(0, 0, 186, 63);
+        MapDialogRect(&rcFull);
+        MapDialogRect(&rcCropped);
+        CRect rcWindow;
+        GetWindowRect(&rcWindow);
+        SetWindowPos(nullptr, 0, 0, rcWindow.Width(),
+                     rcWindow.Height() - (rcFull.Height() - rcCropped.Height()),
+                     SWP_NOMOVE | SWP_NOZORDER);
     }
 
     int time = (int)(m_time / 10000);
