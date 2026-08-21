@@ -73,10 +73,16 @@ BOOL CPPageFileInfoSheet::OnInitDialog()
     GetDlgItem(ID_APPLY_NOW)->GetWindowRect(&r);
     ScreenToClient(r);
     RemoveAnchor(IDOK); //otherwise it crashes when we add it later
-    AddAnchor(IDOK, BOTTOM_RIGHT);
     GetDlgItem(IDOK)->MoveWindow(r);
+    AddAnchor(IDOK, BOTTOM_RIGHT); // must be added after the move, since AddAnchor bases its margin on the button's current position
 
-    r.MoveToX(5);
+    CRect pageRect;
+    GetActivePage()->GetWindowRect(&pageRect);
+    ScreenToClient(&pageRect);
+    CRect margin(5, 0, 0, 0);
+    GetActivePage()->MapDialogRect(&margin);
+
+    r.MoveToX(pageRect.left + margin.left);
     r.right += 24;
     m_Button_MI.Create(ResStr(IDS_AG_SAVE_AS), WS_CHILD | BS_PUSHBUTTON | WS_VISIBLE, r, this, IDC_BUTTON_MI);
     m_Button_MI.SetFont(GetFont());
