@@ -37,9 +37,9 @@ BOOL CColorControlsDlg::OnInitDialog()
 {
     EnableSaveRestoreKey(IDS_R_DLG_COLOR_CONTROLS);
 
-    SetupAnchors();
-
     __super::OnInitDialog();
+
+    SetupAnchors();
 
     m_SliBrightness.EnableWindow(TRUE);
     m_SliBrightness.SetRange(-100, 100, true);
@@ -86,6 +86,15 @@ void CColorControlsDlg::SetupAnchors()
     AddAnchor(IDC_SLI_SATURATION, TOP_LEFT, TOP_RIGHT);
     AddAnchor(IDC_RESET, TOP_RIGHT);
     AddAnchor(IDCANCEL,  TOP_RIGHT);
+}
+
+TrackSizeConstraints CColorControlsDlg::GetTrackSizeConstraints() const
+{
+    // The dialog's height is fixed; only its width can be resized, and only up to 2x the template width.
+    TrackSizeConstraints constraints;
+    constraints.max.enabled = true;
+    constraints.max.xMultiplier = 2.0;
+    return constraints;
 }
 
 void CColorControlsDlg::UpdateSliders()
