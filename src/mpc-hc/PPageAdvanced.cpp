@@ -78,7 +78,7 @@ BOOL CPPageAdvanced::OnInitDialog()
 
     InitSettings();
 
-    m_list.SetColumnWidth(COL_VALUE, LVSCW_AUTOSIZE_USEHEADER);
+    AutoSizeValueColumn();
     m_list.SetColumnWidth(COL_NAME, LVSCW_AUTOSIZE_USEHEADER);
     m_list.SetColumnWidth(COL_DUMMYCOL, 0);
 
@@ -218,6 +218,88 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif
     addIntItem(LOGGING, IDS_RS_LOGGING, 0, s.DebugLogMask, std::make_pair(0, 31), /*StrRes(IDS_PPAGEADVANCED_LOGGER)*/ L"Enables logging to file (requires restart).\nThis option for debugging purposes only and should not be enabled during normal use!\nLogs are saved in folder: %appdata%\\MPC-HC\nValue to set is the sum of the loggers that you want to enable:\n1: General\n2: Graph builder\n4: Subtitle search\n8: yt-dlp processing\n16: DVB scanning");
+}
+
+std::pair<CString, bool> CPPageAdvanced::GetWidestValue(const std::shared_ptr<SettingsBase>& pItem, CDC* pDC)
+{
+    // Every value the setting can display, paired with the flagged (bold) state it would be drawn in.
+    std::deque<std::pair<CString, bool>> candidates;
+
+    if (auto pItemBool = std::dynamic_pointer_cast<SettingsBool>(pItem)) {
+        candidates.emplace_back(m_strTrue, !pItemBool->GetDefaultValue());
+        candidates.emplace_back(m_strFalse, pItemBool->GetDefaultValue());
+    } else if (auto pItemCombo = std::dynamic_pointer_cast<SettingsCombo>(pItem)) {
+        int nValue = 0;
+        for (const auto& str : pItemCombo->GetList()) {
+            candidates.emplace_back(str, nValue != pItemCombo->GetDefaultValue());
+            nValue++;
+        }
+    } else if (auto pItemInt = std::dynamic_pointer_cast<SettingsInt>(pItem)) {
+        const auto& range = pItemInt->GetRange();
+        CString str;
+        for (const auto& nValue : { range.first, range.second }) {
+            str.Format(_T("%d"), nValue);
+            candidates.emplace_back(str, nValue != pItemInt->GetDefaultValue());
+        }
+    } else if (auto pItemCString = std::dynamic_pointer_cast<SettingsCString>(pItem)) {
+        // Free text, so only the current value is knowable.
+        candidates.emplace_back(pItemCString->GetValue(), !pItemCString->IsDefault());
+    } else {
+        UNREACHABLE_CODE();
+    }
+
+    CFont* pNormalFont = m_list.GetFont();
+    std::pair<CString, bool> widest(_T(""), false);
+    int nMaxWidth = -1;
+    for (const auto& candidate : candidates) {
+        CFont* pFont = (candidate.second && m_fontBold.m_hObject) ? &m_fontBold : pNormalFont;
+        CFont* pOldFont = pFont ? pDC->SelectObject(pFont) : nullptr;
+        const int nWidth = pDC->GetTextExtent(candidate.first).cx;
+        if (pOldFont) {
+            pDC->SelectObject(pOldFont);
+        }
+        if (nWidth > nMaxWidth) {
+            nMaxWidth = nWidth;
+            widest = candidate;
+        }
+    }
+
+    return widest;
+}
+
+// The value column is sized once, to the widest value any setting can ever display, so that
+// changing a value during the session neither truncates it nor resizes the column. The list
+// control does the measuring itself (it reports the flagged/bold font through the custom draw
+// win32 runs for auto-size), which keeps the padding exact.
+void CPPageAdvanced::AutoSizeValueColumn()
+{
+    const int nCount = m_list.GetItemCount();
+    std::vector<std::pair<CString, bool>> savedValues(nCount);
+    CClientDC dc(&m_list);
+
+    m_list.SetRedraw(FALSE);
+
+    for (int i = 0; i < nCount; i++) {
+        if (IsHeaderRow(i)) {
+            continue;
+        }
+        auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(i));
+        savedValues[i] = std::make_pair(m_list.GetItemText(i, COL_VALUE), m_list.getFlaggedItem(i));
+        const auto widest = GetWidestValue(m_hiddenOptions.at(eSetting), &dc);
+        m_list.setItemTextWithDefaultFlag(i, COL_VALUE, widest.first, widest.second);
+    }
+
+    m_list.SetColumnWidth(COL_VALUE, LVSCW_AUTOSIZE_USEHEADER);
+    const int nWidth = m_list.GetColumnWidth(COL_VALUE);
+
+    for (int i = 0; i < nCount; i++) {
+        if (!IsHeaderRow(i)) {
+            m_list.setItemTextWithDefaultFlag(i, COL_VALUE, savedValues[i].first, savedValues[i].second);
+        }
+    }
+
+    m_list.SetColumnWidth(COL_VALUE, nWidth);
+    m_list.SetRedraw(TRUE);
 }
 
 BOOL CPPageAdvanced::OnApply()
@@ -371,8 +453,8 @@ void CPPageAdvanced::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
                     ::SelectObject(pLVCD->nmcd.hdc, m_fontBold.GetSafeHandle());
                     *pResult |= CDRF_NEWFONT;
                 } else {
-                    auto eSetting = static_cast<ADVANCED_SETTINGS>(m_list.GetItemData(iItem));
-                    if (!IsDefault(eSetting)) {
+                    // the flagged state, not IsDefault(), so that auto-size measures the font the value will be drawn in
+                    if (m_list.getFlaggedItem(iItem)) {
                         ::SelectObject(pLVCD->nmcd.hdc, m_fontBold.GetSafeHandle());
                         *pResult |= CDRF_NEWFONT;
                     } else {
@@ -591,4 +673,5 @@ void CPPageAdvanced::DoDPIChanged()
     }
     initBoldFont();
     m_list.DoDPIChanged(); //themed listctrl stores its own font, and isn't drawn through CPPageAdvanced::OnNMCustomdraw
+    AutoSizeValueColumn(); //the widest value is measured in pixels, so it must be recalculated
 }
