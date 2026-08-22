@@ -28,13 +28,14 @@
 // CGoToDlg dialog
 
 IMPLEMENT_DYNAMIC(CGoToDlg, CMPCThemeDialog)
-CGoToDlg::CGoToDlg(REFERENCE_TIME time, REFERENCE_TIME maxTime, double fps, CWnd* pParent /*=nullptr*/)
+CGoToDlg::CGoToDlg(REFERENCE_TIME time, REFERENCE_TIME maxTime, double fps, bool audioOnly, CWnd* pParent /*=nullptr*/)
     : CMPCThemeDialog(CGoToDlg::IDD, pParent)
     , m_time(time)
     , m_maxTime(maxTime)
     , m_fps(fps)
+    , m_bAudioOnly(audioOnly)
 {
-    if (m_fps == 0) {
+    if (m_fps == 0 && !m_bAudioOnly) {
         CString str = AfxGetApp()->GetProfileString(IDS_R_SETTINGS, IDS_RS_GOTO_FPS, _T("0"));
         float fps2;
         if (_stscanf_s(str, _T("%f"), &fps2) == 1) {
@@ -71,6 +72,23 @@ BOOL CGoToDlg::OnInitDialog()
     m_timeedit.EnableGetMaskedCharsOnly(false);
     m_timeedit.EnableSelectByGroup(false);
 
+    if (m_bAudioOnly) {
+        GetDlgItem(IDC_EDIT2)->EnableWindow(FALSE);
+        GetDlgItem(IDC_OK2)->EnableWindow(FALSE);
+
+        // Crop off the now-unused Frame section (instructions, IDC_EDIT2, IDC_OK2).
+        // Shrink by the client-height delta so the non-client metrics stay DPI-correct.
+        CRect rcFull(0, 0, 186, 120);
+        CRect rcCropped(0, 0, 186, 63);
+        MapDialogRect(&rcFull);
+        MapDialogRect(&rcCropped);
+        CRect rcWindow;
+        GetWindowRect(&rcWindow);
+        SetWindowPos(nullptr, 0, 0, rcWindow.Width(),
+                     rcWindow.Height() - (rcFull.Height() - rcCropped.Height()),
+                     SWP_NOMOVE | SWP_NOZORDER);
+    }
+
     int time = (int)(m_time / 10000);
     if (time >= 0) {
         if (showHours) {
@@ -85,22 +103,27 @@ BOOL CGoToDlg::OnInitDialog()
                              time % 1000);
         }
 
-        if (m_fps > 0) {
+        if (m_fps > 0 && !m_bAudioOnly) {
             m_framestr.Format(_T("%d, %.3f"), (int)(m_fps * m_time / 10000000 + 1.5), m_fps);
         }
 
         UpdateData(FALSE);
 
-        switch (AfxGetApp()->GetProfileInt(IDS_R_SETTINGS, IDS_RS_GOTO_LAST_USED, TYPE_TIME)) {
-            default:
-            case TYPE_TIME:
-                m_timeedit.SetFocus();
-                m_timeedit.SetSel(0, 0);
-                break;
-            case TYPE_FRAME:
-                m_frameedit.SetFocus();
-                m_frameedit.SetSel(0, m_framestr.Find(','));
-                break;
+        if (m_bAudioOnly) {
+            m_timeedit.SetFocus();
+            m_timeedit.SetSel(0, 0);
+        } else {
+            switch (AfxGetApp()->GetProfileInt(IDS_R_SETTINGS, IDS_RS_GOTO_LAST_USED, TYPE_TIME)) {
+                default:
+                case TYPE_TIME:
+                    m_timeedit.SetFocus();
+                    m_timeedit.SetSel(0, 0);
+                    break;
+                case TYPE_FRAME:
+                    m_frameedit.SetFocus();
+                    m_frameedit.SetSel(0, m_framestr.Find(','));
+                    break;
+            }
         }
 
     }

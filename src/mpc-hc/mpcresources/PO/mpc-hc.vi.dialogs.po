@@ -1797,19 +1797,19 @@ msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
 msgstr ""
 
@@ -1853,10 +1853,6 @@ msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
 msgstr "Di Chuột Thanh Tua"
 
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr "Vị Trí Di Chuột:"
-
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
 msgstr "Hiển thị xem thử video"
@@ -1864,6 +1860,10 @@ msgstr "Hiển thị xem thử video"
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
 msgstr "Hiển thị thời gian"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "Vị Trí Di Chuột:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"

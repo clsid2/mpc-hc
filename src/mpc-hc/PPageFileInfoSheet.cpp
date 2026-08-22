@@ -69,14 +69,20 @@ BOOL CPPageFileInfoSheet::OnInitDialog()
     GetDlgItem(ID_APPLY_NOW)->ShowWindow(SW_HIDE);
     GetDlgItem(IDOK)->SetWindowText(ResStr(IDS_AG_CLOSE));
 
+    // align the buttons with the page above: Save As flush left, Close flush right (also keeps Close clear of the size grip)
+    CRect pageRect;
+    GetActivePage()->GetWindowRect(&pageRect);
+    ScreenToClient(&pageRect);
+
     CRect r;
     GetDlgItem(ID_APPLY_NOW)->GetWindowRect(&r);
     ScreenToClient(r);
+    r.MoveToX(pageRect.right - r.Width());
     RemoveAnchor(IDOK); //otherwise it crashes when we add it later
-    AddAnchor(IDOK, BOTTOM_LEFT);
     GetDlgItem(IDOK)->MoveWindow(r);
+    AddAnchor(IDOK, BOTTOM_RIGHT); // must be added after the move, since AddAnchor bases its margin on the button's current position
 
-    r.MoveToX(5);
+    r.MoveToX(pageRect.left);
     r.right += 24;
     m_Button_MI.Create(ResStr(IDS_AG_SAVE_AS), WS_CHILD | BS_PUSHBUTTON | WS_VISIBLE, r, this, IDC_BUTTON_MI);
     m_Button_MI.SetFont(GetFont());

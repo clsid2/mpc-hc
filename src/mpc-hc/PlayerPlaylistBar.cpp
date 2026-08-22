@@ -1310,6 +1310,19 @@ void CPlayerPlaylistBar::EnsureVisible(POSITION pos)
     m_list.Invalidate();
 }
 
+void CPlayerPlaylistBar::EnsureCurrentVisible()
+{
+    if (!m_pl.IsEmpty()) {
+        POSITION pos = m_pl.GetPos();
+        int i = FindItem(pos);
+        if (i < 0) {
+            return;
+        }
+        m_list.EnsureVisible(i, TRUE);
+        m_list.Invalidate();
+    }
+}
+
 int CPlayerPlaylistBar::FindItem(const POSITION pos) const
 {
     auto it = m_posToIndex.find(pos);

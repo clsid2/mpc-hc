@@ -49,6 +49,7 @@ public:
         m_EventRegistrationTokenAutoRepeatChange.value = 0;
         requested_seek_position = 0;
         requested_playback_rate = 0.0;
+        m_active = false;
     }
     ~MediaTransControls(void) {
         if (smtc_controls && m_EventRegistrationToken.value) {
@@ -93,6 +94,7 @@ public:
     // callback threads and read by the main frame handlers on the UI thread
     std::atomic<REFERENCE_TIME> requested_seek_position;
     std::atomic<double> requested_playback_rate;
+    bool m_active = false;
 protected:
     CMainFrame* m_pMainFrame;
     EventRegistrationToken m_EventRegistrationToken;

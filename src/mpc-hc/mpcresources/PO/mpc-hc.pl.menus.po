@@ -682,6 +682,10 @@ msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
 msgstr "Ścieżka &napisów"
 
+msgctxt "ID_SUBTITLES_SECONDARY"
+msgid "Secondary Subtitle Track"
+msgstr ""
+
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
 msgstr "Ścieżka wide&o"

@@ -1801,19 +1801,19 @@ msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
 msgstr ""
 
@@ -1857,10 +1857,6 @@ msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
 msgstr "Подсказка"
 
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr "Позиция:"
-
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
 msgstr "Предпросмотр видео"
@@ -1868,6 +1864,10 @@ msgstr "Предпросмотр видео"
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
 msgstr "Показывать время"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "Позиция:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"

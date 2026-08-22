@@ -1799,19 +1799,19 @@ msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
 msgstr ""
 
@@ -1855,10 +1855,6 @@ msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
 msgstr "Trickplay"
 
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr "Positie:"
-
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
 msgstr "Toon voorvertoning bij aanwijzen tijdlijn"
@@ -1866,6 +1862,10 @@ msgstr "Toon voorvertoning bij aanwijzen tijdlijn"
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
 msgstr "Toon label met tijd"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "Positie:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"

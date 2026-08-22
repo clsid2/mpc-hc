@@ -240,6 +240,7 @@
 #define ID_STREAM_SUB_PREV              955
 #define ID_STREAM_SUB_ONOFF             956
 #define ID_LEFTSEPARATOR                957
+#define ID_SUBTITLES_AUTOCOPY           958
 #define ID_AUDIOSHIFT_ONOFF             960
 #define ID_DVD_ANGLE_NEXT               961
 #define ID_DVD_ANGLE_PREV               962
@@ -261,6 +262,8 @@
 #define ID_AUDIOS                       978
 #define ID_SUBTITLES                    979
 #define ID_VIDEO_STREAMS                980
+#define ID_SUBTITLES_SECONDARY          981
+#define ID_SUBTITLES_SECONDARY_LOAD     982
 #define ID_COLOR_BRIGHTNESS_INC         984
 #define ID_COLOR_BRIGHTNESS_DEC         985
 #define ID_COLOR_CONTRAST_INC           986
@@ -295,6 +298,8 @@
 #define ID_SUBTITLES_SUBITEM_END        2399
 #define ID_VIDEO_STREAMS_SUBITEM_START  2400
 #define ID_VIDEO_STREAMS_SUBITEM_END    2499
+#define ID_SUBTITLES_SECONDARY_SUBITEM_START 2500
+#define ID_SUBTITLES_SECONDARY_SUBITEM_END 2599
 #define ID_FAVORITES_FILE_START         2800
 #define ID_FAVORITES_FILE_END           3799
 #define ID_FAVORITES_DVD_START          3800
@@ -911,6 +916,7 @@
 #define IDS_AG_PREV_SUBTITLE            32961
 #define IDS_MPLAYERC_85                 32962
 #define IDS_MPLAYERC_86                 32963
+#define IDS_AG_AUTOCOPY_SUBTITLE        32964
 #define IDS_MPLAYERC_91                 32968
 #define IDS_MPLAYERC_92                 32969
 #define IDS_MPLAYERC_93                 32970
@@ -1793,6 +1799,9 @@
 #define IDS_TOOLBAR_ALIGNMENT_LEFT      57653
 #define IDS_TOOLBAR_ALIGNMENT_CENTER    57654
 #define IDS_TOOLBAR_ALIGNMENT_RIGHT     57655
+#define IDS_OSD_AUTOCOPY_SUBTITLE_ON    57656
+#define IDS_OSD_AUTOCOPY_SUBTITLE_OFF   57657
+#define IDS_SUBTITLES_SECONDARY_BAD_FORMAT 57658
 // MPC Audio Renderer
 #define IDS_FILTER_RESET_SETTINGS       57700
 #define IDS_ARS_WASAPI_MODE             57701

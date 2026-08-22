@@ -47,6 +47,9 @@
     <ClCompile Include="DX11SubPic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DualSubPicProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoordGeom.h">
@@ -95,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ISubRender11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DualSubPicProvider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

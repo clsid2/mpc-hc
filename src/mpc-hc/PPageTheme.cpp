@@ -183,7 +183,7 @@ BOOL CPPageTheme::OnInitDialog()
     m_TimeOnSeekBar.AddString(ResStr(IDS_TIME_ON_SEEKBAR_ALWAYS));
     m_TimeOnSeekBar.AddString(ResStr(IDS_TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN));
     m_TimeOnSeekBar.SetCurSel(s.nTimeOnSeekBar);
-    m_TimeOnSeekBar.SetDroppedWidth(200); // the longest option is wider than the combo field
+    CorrectComboListWidth(m_TimeOnSeekBar); // the longest option is wider than the combo field
 
     m_nOSDSize = s.nOSDSize;
     m_strOSDFont = s.strOSDFont;

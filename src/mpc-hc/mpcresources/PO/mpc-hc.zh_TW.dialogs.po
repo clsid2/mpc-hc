@@ -1767,19 +1767,19 @@ msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
 msgstr ""
 
@@ -1823,10 +1823,6 @@ msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
 msgstr "滑鼠停留於時間軸"
 
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr "預覽圖顯示位置："
-
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
 msgstr "顯示視訊預覽圖"
@@ -1834,6 +1830,10 @@ msgstr "顯示視訊預覽圖"
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
 msgstr "顯示時間"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "預覽圖顯示位置："
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"

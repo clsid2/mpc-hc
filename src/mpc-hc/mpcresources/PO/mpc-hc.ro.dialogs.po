@@ -1822,19 +1822,19 @@ msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
 msgstr ""
 
-msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC"
+msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
 msgstr ""
 
@@ -1878,10 +1878,6 @@ msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
 msgstr "Plasarea cursorului pe bara de căutare"
 
-msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
-msgid "Hover Position:"
-msgstr "Poziția plasării cursorului"
-
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
 msgstr "Afișează previzualizarea videoclipului"
@@ -1889,6 +1885,10 @@ msgstr "Afișează previzualizarea videoclipului"
 msgctxt "IDD_PPAGETHEME_IDC_CHECK14"
 msgid "Show time"
 msgstr "Afișează timpul"
+
+msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
+msgid "Hover Position:"
+msgstr "Poziția plasării cursorului"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"

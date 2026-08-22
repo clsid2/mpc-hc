@@ -28,6 +28,7 @@
 #include "EventDispatcher.h"
 #include "DpiHelper.h"
 #include "AppSettings.h"
+#include "MpcApi.h"
 #include "Profile.h"
 #include "../filters/renderer/VideoRenderers/RenderersSettings.h"
 #include "resource.h"

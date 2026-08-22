@@ -2482,6 +2482,10 @@ msgctxt "IDS_AG_PREV_SUBTITLE"
 msgid "Prev Subtitle Track"
 msgstr "Следующая дорожка субтитров"
 
+msgctxt "IDS_AG_AUTOCOPY_SUBTITLE"
+msgid "Auto-Copy Subtitle to Clipboard"
+msgstr ""
+
 msgctxt "IDS_MPLAYERC_85"
 msgid "On/Off Subtitle"
 msgstr "Вкл/откл субтитры"
@@ -4684,6 +4688,20 @@ msgstr "По центру"
 msgctxt "IDS_TOOLBAR_ALIGNMENT_RIGHT"
 msgid "Right"
 msgstr "Вправо"
+
+msgctxt "IDS_OSD_AUTOCOPY_SUBTITLE_ON"
+msgid "Auto-Copy Subtitle to Clipboard: On"
+msgstr ""
+
+msgctxt "IDS_OSD_AUTOCOPY_SUBTITLE_OFF"
+msgid "Auto-Copy Subtitle to Clipboard: Off"
+msgstr ""
+
+msgctxt "IDS_SUBTITLES_SECONDARY_BAD_FORMAT"
+msgid ""
+"This subtitle format cannot be used as a secondary subtitle track. Only "
+"simple text formats such as SRT are supported."
+msgstr ""
 
 msgctxt "IDS_MESSAGEBOX_CANCEL"
 msgid "Cancel"

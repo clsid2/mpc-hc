@@ -169,12 +169,14 @@ bool MediaTransControls::Init(CMainFrame* main) {
         smtc_controls2->add_AutoRepeatModeChangeRequested(callbackAutoRepeatChange.Get(), &m_EventRegistrationTokenAutoRepeatChange);
     }
 
+    m_active = true;
     return true;
 }
 
 void MediaTransControls::close() {
-    if (smtc_controls != nullptr) {
+    if (IsActive()) {
         TRACE(_T("MediaTransControls::close()"));
+        m_active = false;
         smtc_controls->put_PlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Closed);
         smtc_controls->put_IsEnabled(false);
         if (smtc_updater) smtc_updater->ClearAll();
@@ -306,14 +308,7 @@ void MediaTransControls::OnButtonPressed(SystemMediaTransportControlsButton butt
 }
 
 bool MediaTransControls::IsActive() {
-    if (smtc_controls) {
-        boolean enabled;
-        HRESULT hr;
-        if ((hr = smtc_controls->get_IsEnabled(&enabled)) == S_OK) {
-            return enabled;
-        }
-    }
-    return false;
+    return m_active && smtc_controls;
 }
 
 void MediaTransControls::SetAutoRepeatMode(ABI::Windows::Media::MediaPlaybackAutoRepeatMode mode) {
@@ -335,7 +330,7 @@ void MediaTransControls::SetPlaybackRate(double rate) {
 }
 
 void MediaTransControls::UpdateTimelineProperties(REFERENCE_TIME startTime, REFERENCE_TIME endTime, REFERENCE_TIME position) {
-    if (!smtc_controls2) {
+    if (!IsActive() || !smtc_controls2) {
         return;
     }
 

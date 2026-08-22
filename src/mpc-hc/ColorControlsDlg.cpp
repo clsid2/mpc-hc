@@ -39,29 +39,62 @@ BOOL CColorControlsDlg::OnInitDialog()
 
     __super::OnInitDialog();
 
+    SetupAnchors();
+
     m_SliBrightness.EnableWindow(TRUE);
     m_SliBrightness.SetRange(-100, 100, true);
     m_SliBrightness.SetTic(0);
+    m_SliBrightness.SetPageSize(5);
     m_SliBrightness.SetLockToZero();
 
     m_SliContrast.EnableWindow(TRUE);
     m_SliContrast.SetRange(-100, 100, true);
     m_SliContrast.SetTic(0);
+    m_SliContrast.SetPageSize(5);
     m_SliContrast.SetLockToZero();
 
     m_SliHue.EnableWindow(TRUE);
     m_SliHue.SetRange(-180, 180, true);
     m_SliHue.SetTic(0);
+    m_SliHue.SetPageSize(10);
     m_SliHue.SetLockToZero();
 
     m_SliSaturation.EnableWindow(TRUE);
     m_SliSaturation.SetRange(-100, 100, true);
     m_SliSaturation.SetTic(0);
+    m_SliSaturation.SetPageSize(5);
     m_SliSaturation.SetLockToZero();
 
     UpdateSliders();
 
     return TRUE;
+}
+
+void CColorControlsDlg::SetupAnchors()
+{
+    AddAnchor(IDC_STATIC1, TOP_LEFT);
+    AddAnchor(IDC_STATIC2, TOP_LEFT);
+    AddAnchor(IDC_STATIC3, TOP_LEFT);
+    AddAnchor(IDC_STATIC4, TOP_LEFT);
+    AddAnchor(IDC_STATIC5, TOP_LEFT);
+    AddAnchor(IDC_STATIC6, TOP_LEFT);
+    AddAnchor(IDC_STATIC7, TOP_LEFT);
+    AddAnchor(IDC_STATIC8, TOP_LEFT);
+    AddAnchor(IDC_SLI_BRIGHTNESS, TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_SLI_CONTRAST,   TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_SLI_HUE,        TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_SLI_SATURATION, TOP_LEFT, TOP_RIGHT);
+    AddAnchor(IDC_RESET, TOP_RIGHT);
+    AddAnchor(IDCANCEL,  TOP_RIGHT);
+}
+
+TrackSizeConstraints CColorControlsDlg::GetTrackSizeConstraints() const
+{
+    // The dialog's height is fixed; only its width can be resized, and only up to 2x the template width.
+    TrackSizeConstraints constraints;
+    constraints.max.enabled = true;
+    constraints.max.xMultiplier = 2.0;
+    return constraints;
 }
 
 void CColorControlsDlg::UpdateSliders()

@@ -34,6 +34,8 @@ public:
     enum { IDD = IDD_COLORCONTROLS_DLG };
 
     UINT GetDialogTemplateID() const override { return IDD; }
+    void SetupAnchors() override;
+    TrackSizeConstraints GetTrackSizeConstraints() const override;
 
 protected:
     CMPCThemeSliderCtrl m_SliBrightness;

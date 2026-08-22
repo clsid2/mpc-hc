@@ -217,7 +217,11 @@ bool CYoutubeDLInstance::Run(CString url)
                 // abort without showing error message
                 return false;
             }
-            if (err.GetLength() > 1000) {
+            if (err.Find(_T("HTTP Error 429")) >= 0) {
+                err = L"HTTP Error 429: Too Many Requests";
+            } else if (err.Find(_T("HTTP Error 403")) >= 0) {
+                err = L"HTTP Error 403: Access Denied";
+            } else if (err.GetLength() > 1000) {
                 err = err.Left(1000) + L" <...>";
             }
             err = _T("yt-dlp/youtube-dl error message:\n\n") + err;
