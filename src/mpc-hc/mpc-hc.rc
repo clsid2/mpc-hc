@@ -4312,6 +4312,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_AG_COLOR_CONTROLS   "Color Controls"
+    IDC_COLOR_CONTROLS      "You can also open Color controls from the Play menu"
 END
 
 #endif    // English (United States) resources
