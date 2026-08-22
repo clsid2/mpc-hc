@@ -1291,6 +1291,10 @@ void CPlayerPlaylistBar::SyncSelectionToPos(POSITION pos)
     m_list.SetItemState(-1, 0, LVIS_SELECTED | LVIS_FOCUSED);
     m_list.SetItemState(idx, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     m_list.SetSelectionMark(idx);
+    if (!ListHasGeometry()) {
+        m_bScrollToCurrentPending = true;
+        return;
+    }
     m_list.EnsureVisible(idx, TRUE);
 }
 
@@ -1300,10 +1304,27 @@ void CPlayerPlaylistBar::UpdateList()
     m_list.Invalidate();
 }
 
+bool CPlayerPlaylistBar::ListHasGeometry() const
+{
+    if (!::IsWindow(m_list.GetSafeHwnd())) {
+        return false;
+    }
+    CRect r;
+    m_list.GetClientRect(r);
+    return r.Height() > 0;
+}
+
 void CPlayerPlaylistBar::EnsureVisible(POSITION pos)
 {
     int i = FindItem(pos);
     if (i < 0) {
+        return;
+    }
+    if (!ListHasGeometry()) {
+        // A hidden bar is collapsed to zero height. LVM_ENSUREVISIBLE would bottom-align
+        // the row in a zero-height viewport, leaving the scroll one row past it, and
+        // showing the bar later does not undo that. Defer instead. (#4094)
+        m_bScrollToCurrentPending = true;
         return;
     }
     m_list.EnsureVisible(i, TRUE);
@@ -1312,15 +1333,21 @@ void CPlayerPlaylistBar::EnsureVisible(POSITION pos)
 
 void CPlayerPlaylistBar::EnsureCurrentVisible()
 {
-    if (!m_pl.IsEmpty()) {
-        POSITION pos = m_pl.GetPos();
-        int i = FindItem(pos);
-        if (i < 0) {
-            return;
-        }
-        m_list.EnsureVisible(i, TRUE);
-        m_list.Invalidate();
+    // Only scroll if one was deferred while the bar had no geometry; a plain panel
+    // toggle must not move the user's scroll position. (#3899)
+    if (!m_bScrollToCurrentPending) {
+        return;
     }
+    m_bScrollToCurrentPending = false;
+    if (m_pl.IsEmpty()) {
+        return;
+    }
+    int i = FindItem(m_pl.GetPos());
+    if (i < 0) {
+        return;
+    }
+    m_list.EnsureVisible(i, TRUE);
+    m_list.Invalidate();
 }
 
 int CPlayerPlaylistBar::FindItem(const POSITION pos) const
