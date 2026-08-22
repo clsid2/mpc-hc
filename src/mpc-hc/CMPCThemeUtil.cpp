@@ -1226,7 +1226,7 @@ CPoint CMPCThemeUtil::GetClientRectOffset(CWnd* window) {
     return offset;
 }
 
-void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget) {
+void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget, bool allowShrinkRight) {
     if (window && IsWindow(window->m_hWnd)) {
         DpiHelper dpiWindow;
         dpiWindow.Override(window->GetSafeHwnd());
@@ -1301,9 +1301,24 @@ void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int ri
                 }
             }
             CRect cl = l, cr = r;
-            if (leftWantsRight > rightWantsLeft - dynamicSpace //overlaps; we will assume defaults are best
-                || (leftWantsRight < l.right && rightWantsLeft > r.left) // there is no need to resize
-                || (lType == WidgetPairText && DT_RIGHT == (leftW->GetStyle() & DT_RIGHT)) ) //right aligned text not supported, as the right edge is fixed
+            if (lType == WidgetPairText && DT_RIGHT == (leftW->GetStyle() & DT_RIGHT)) //right aligned text not supported, as the right edge is fixed
+            {
+                //do nothing
+            } else if (allowShrinkRight) {
+                //the left widget always gets the width its text needs, and the right widget yields from its left edge
+                //a combo box still lists full width text when the dropdown is opened, so a narrower closed state
+                //is an acceptable trade for a label which is not overdrawn
+                //never shrink the right widget below a usable minimum: the drop-down arrow plus a readable
+                //sample of its text, and never past half the width the template gave it
+                LONG minWidth = std::max(dpiWindow.GetSystemMetricsDPI(SM_CXVSCROLL) + dpiWindow.ScaleX(40), cr.Width() / 2);
+                minWidth = std::min(minWidth, (LONG)cr.Width()); //a widget that is already narrower than the floor just keeps its size
+                LONG want = std::min(leftWantsRight, r.right - minWidth - dynamicSpace);
+                if (want > l.left) { //a pathological translation clips the label rather than collapsing the right widget
+                    l.right = want;
+                    r.left = std::max(l.right + dynamicSpace, r.left); //only ever shrinks the right widget, never widens it
+                }
+            } else if (leftWantsRight > rightWantsLeft - dynamicSpace //overlaps; we will assume defaults are best
+                || (leftWantsRight < l.right && rightWantsLeft > r.left) ) // there is no need to resize
             {
                 //do nothing
             } else {

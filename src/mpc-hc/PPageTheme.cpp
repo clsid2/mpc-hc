@@ -440,6 +440,6 @@ void CPPageTheme::AdjustDynamicWidgets() {
     AdjustDynamicWidgetPair(this, IDC_STATIC5, IDC_COMBO2);
     AdjustDynamicWidgetPair(this, IDC_STATIC11, IDC_COMBO3);
     AdjustDynamicWidgetPair(this, IDC_STATIC7, IDC_EDIT4);
-    AdjustDynamicWidgetPair(this, IDC_STATIC6, IDC_COMBO5);
+    AdjustDynamicWidgetPair(this, IDC_STATIC6, IDC_COMBO5, true);
     AdjustDynamicWidgetPair(this, IDC_STATIC23, IDC_COMBO6);
 }
