@@ -19,7 +19,16 @@ BEGIN_MESSAGE_MAP(CMPCThemeButton, CButton)
     ON_WM_GETFONT()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMPCThemeButton::OnNMCustomdraw)
     ON_MESSAGE(BCM_SETSHIELD, &setShieldIcon)
+    ON_WM_UPDATEUISTATE()
 END_MESSAGE_MAP()
+
+void CMPCThemeButton::OnUpdateUIState(UINT nAction, UINT nUIElement)
+{
+    if (nUIElement & (UISF_HIDEACCEL | UISF_HIDEFOCUS)) {
+        Invalidate(); //we draw the accel and focus indicators ourselves, so repaint when windows toggles them
+    }
+    return __super::OnUpdateUIState(nAction, nUIElement);
+}
 
 LRESULT CMPCThemeButton::setShieldIcon(WPARAM wParam, LPARAM lParam)
 {
@@ -27,7 +36,7 @@ LRESULT CMPCThemeButton::setShieldIcon(WPARAM wParam, LPARAM lParam)
     return Default(); //pass it along so the native button draws the shield when we don't paint it ourselves
 }
 
-void CMPCThemeButton::drawButtonBase(CDC* pDC, CRect rect, CString strText, bool selected, bool highLighted, bool focused, bool disabled, bool thin, bool shield, HWND accelWindow)
+void CMPCThemeButton::drawButtonBase(CDC* pDC, CRect rect, CString strText, bool selected, bool highLighted, bool focused, bool isDefault, bool disabled, bool thin, bool shield, HWND accelWindow)
 {
     CBrush fb, fb2;
     fb.CreateSolidBrush(CMPCTheme::ButtonBorderOuterColor);
@@ -46,7 +55,7 @@ void CMPCThemeButton::drawButtonBase(CDC* pDC, CRect rect, CString strText, bool
         fb2.CreateSolidBrush(CMPCTheme::ButtonBorderInnerColor);
         bg = CMPCTheme::ButtonFillHoverColor;
         dottedClr = CMPCTheme::ButtonBorderHoverKBFocusColor;
-    } else if (focused) {
+    } else if (focused || isDefault) {
         fb2.CreateSolidBrush(CMPCTheme::ButtonBorderInnerFocusedColor);
     } else {
         fb2.CreateSolidBrush(CMPCTheme::ButtonBorderInnerColor);
@@ -114,9 +123,15 @@ void CMPCThemeButton::drawButton(HDC hdc, CRect rect, UINT state)
     CString strText;
     GetWindowText(strText);
     bool selected = CDIS_SELECTED == (state & CDIS_SELECTED);
-    bool focused = CDIS_FOCUS == (state & CDIS_FOCUS);
+    //comctl32 still reports CDIS_FOCUS while the ui state asks for focus indicators to be hidden,
+    //so query it ourselves or we draw the dotted rect where native draws none.
+    bool focused = CDIS_FOCUS == (state & CDIS_FOCUS) && (::SendMessage(m_hWnd, WM_QUERYUISTATE, 0, 0) & UISF_HIDEFOCUS) == 0;
     bool disabled = CDIS_DISABLED == (state & CDIS_DISABLED);
     bool hot = CDIS_HOT == (state & CDIS_HOT);
+    //comctl32 never actually sets CDIS_DEFAULT in the custom draw notification for push buttons
+    //(confirmed: state came back 0 for the property sheet's OK button even though its window
+    //style has BS_DEFPUSHBUTTON set), so the default-button state has to be read from the style bit.
+    bool isDefault = BS_DEFPUSHBUTTON == (GetStyle() & BS_DEFPUSHBUTTON);
 
     BUTTON_IMAGELIST imgList;
     GetImageList(&imgList);
@@ -125,7 +140,7 @@ void CMPCThemeButton::drawButton(HDC hdc, CRect rect, UINT state)
     bool thin = true;
 
 
-    drawButtonBase(pDC, rect, strText, selected, hot, focused, disabled, thin, drawShield, m_hWnd);
+    drawButtonBase(pDC, rect, strText, selected, hot, focused, isDefault, disabled, thin, drawShield, m_hWnd);
 
     int imageIndex = 0; //Normal
     if (disabled) {

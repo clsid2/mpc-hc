@@ -63,7 +63,9 @@ void CMPCThemeRadioOrCheck::OnPaint()
         COLORREF oldTextColor = dc.GetTextColor();
 
         bool isDisabled = !IsWindowEnabled();
-        bool isFocused = (GetFocus() == this);
+        //windows hides focus indicators until the user navigates by keyboard, and native drawing honors
+        //that ui state.  match it, or we draw a focus rect where classic/light draw none.
+        bool isFocused = (GetFocus() == this) && (::SendMessage(m_hWnd, WM_QUERYUISTATE, 0, 0) & UISF_HIDEFOCUS) == 0;
 
         LRESULT checkState = SendMessage(BM_GETCHECK);
 
@@ -74,7 +76,7 @@ void CMPCThemeRadioOrCheck::OnPaint()
         if (0 != (buttonStyle & BS_PUSHLIKE)) {
             CFont* oFont, *font = GetFont();
             oFont = dc.SelectObject(font);
-            CMPCThemeButton::drawButtonBase(&dc, rectItem, sTitle, checkState != BST_UNCHECKED, isHover, isFocused, checkState == BST_INDETERMINATE, false, false, m_hWnd);
+            CMPCThemeButton::drawButtonBase(&dc, rectItem, sTitle, checkState != BST_UNCHECKED, isHover, isFocused, false, checkState == BST_INDETERMINATE, false, false, m_hWnd);
             dc.SelectObject(oFont);
         } else {
             CRect rectCheck;
@@ -159,6 +161,15 @@ void CMPCThemeRadioOrCheck::OnPaint()
                     cb.Detach();
                 }
 
+                if (isFocused) { //drawn before the text like drawButtonBase does: the halftone brush is
+                                 //opaque, so framing over the glyphs would erase the pixels it runs across
+                    dc.SetTextColor(CMPCTheme::ButtonBorderKBFocusColor); //no example of this in explorer, but white seems too harsh
+                    CBrush* dotted = dc.GetHalftoneBrush();
+                    dc.FrameRect(focusRect, dotted);
+                    DeleteObject(dotted);
+                }
+
+                int nMode = dc.SetBkMode(TRANSPARENT); //keep the text from filling over the focus rect
                 if (isDisabled) {
                     dc.SetTextColor(CMPCTheme::ButtonDisabledFGColor);
                     dc.DrawTextW(sTitle, -1, &rectItem, uFormat); // DT_NOPREFIX not needed
@@ -166,14 +177,8 @@ void CMPCThemeRadioOrCheck::OnPaint()
                     dc.SetTextColor(CMPCTheme::TextFGColor);
                     dc.DrawTextW(sTitle, -1, &rectItem, uFormat); // DT_NOPREFIX not needed
                 }
+                dc.SetBkMode(nMode);
                 dc.SelectObject(pOldFont);
-
-                if (isFocused) {
-                    dc.SetTextColor(CMPCTheme::ButtonBorderKBFocusColor); //no example of this in explorer, but white seems too harsh
-                    CBrush* dotted = dc.GetHalftoneBrush();
-                    dc.FrameRect(focusRect, dotted);
-                    DeleteObject(dotted);
-                }
 
             }
         }
@@ -272,7 +277,7 @@ BOOL CMPCThemeRadioOrCheck::OnEraseBkgnd(CDC* pDC)
 
 
 void CMPCThemeRadioOrCheck::OnUpdateUIState(UINT nAction, UINT nUIElement) {
-    if (nUIElement & UISF_HIDEACCEL) {
+    if (nUIElement & (UISF_HIDEACCEL | UISF_HIDEFOCUS)) {
         Invalidate();
     }
     return __super::OnUpdateUIState(nAction, nUIElement);
