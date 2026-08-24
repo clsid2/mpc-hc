@@ -64,4 +64,5 @@ public:
 
     bool IsAutohidden() const;
     bool HasActivePopup() const;
+    void SetHasActivePopup(bool bValue);
 };

@@ -197,3 +197,8 @@ bool CPlayerBar::HasActivePopup() const
 {
     return m_bHasActivePopup;
 }
+
+void CPlayerBar::SetHasActivePopup(bool bValue)
+{
+    m_bHasActivePopup = bValue;
+}

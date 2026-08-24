@@ -1085,7 +1085,11 @@ void CPlayerSubresyncBar::OnRclickList(NMHDR* pNMHDR, LRESULT* pResult)
         if (AppNeedsThemedControls()) {
             m.fulfillThemeReqs();
         }
+        SetHasActivePopup(true);
+        //mainframe is the menu owner, so it receives WM_ENTERMENULOOP instead of us,
+        //bypassing CPlayerBar::OnEnterMenuLoop; set the flag directly to avoid autohiding
         UINT id = m.TrackPopupMenu(TPM_LEFTBUTTON | TPM_RETURNCMD, p.x, p.y, m_pMainFrame);
+        SetHasActivePopup(false);
 
         bool bNeedsUpdate = false;
 
