@@ -717,7 +717,7 @@ void CDpiAwareResizableDialog::LoadStaticIcon(int controlID, LPCTSTR iconResourc
     int iconSize = std::min(controlRect.Width(), controlRect.Height());
 
     HICON hIcon = nullptr;
-    HINSTANCE hInst = isSystemIcon ? nullptr : AfxGetResourceHandle();
+    HINSTANCE hInst = isSystemIcon ? nullptr : AfxGetInstanceHandle();
 
     if (SUCCEEDED(LoadIconWithScaleDown(hInst, iconResourceID, iconSize, iconSize, &hIcon))) {
         pStatic->SetIcon(hIcon);
@@ -744,7 +744,7 @@ void CDpiAwareResizableDialog::RefreshStaticImages()
 
         HICON hOldIcon = pStatic->GetIcon();
         HICON hIcon = nullptr;
-        HINSTANCE hInst = info.isSystemIcon ? nullptr : AfxGetResourceHandle();
+        HINSTANCE hInst = info.isSystemIcon ? nullptr : AfxGetInstanceHandle();
 
         if (SUCCEEDED(LoadIconWithScaleDown(hInst, info.resourceID, iconSize, iconSize, &hIcon))) {
             pStatic->SetIcon(hIcon);
