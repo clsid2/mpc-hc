@@ -258,10 +258,34 @@ BOOL CPPageOutput::OnInitDialog()
     m_cross = svgIcon(IDF_SVG_CROSS);
     LoadIconWithScaleDown(nullptr, (PCWSTR)IDI_WARNING, iconSize, iconSize, &m_warn);
 
-    CRect brc;
-    GetDlgItem(IDC_BUTTON1)->GetWindowRect(brc);
-    SetMPCThemeButtonIcon(IDC_BUTTON1, { IDF_SVG_GEAR, int(0.7f * brc.Width()) });
-    SetMPCThemeButtonIcon(IDC_BUTTON2, { IDF_SVG_GEAR, int(0.7f * brc.Width()) });
+    // A dropdown-list combobox resizes itself to a closed height derived from its font,
+    // while a button keeps the height mapped from the dialog template, so the two can
+    // never be made to match in the resource. Square the setup buttons up against their
+    // comboboxes here instead, right-aligning them with the subtitle renderer combobox
+    // so that all three groups keep the same margin.
+    CRect subrc;
+    GetDlgItem(IDC_COMBO1)->GetWindowRect(subrc);
+    ScreenToClient(subrc);
+
+    auto sizeSetupButton = [this, &subrc](UINT nIDButton, UINT nIDCombo) {
+        CRect crc;
+        GetDlgItem(nIDCombo)->GetWindowRect(crc);
+        ScreenToClient(crc);
+        const int size = crc.Height();
+        GetDlgItem(nIDButton)->SetWindowPos(nullptr, subrc.right - size, crc.top, size, size, SWP_NOZORDER | SWP_NOACTIVATE);
+
+        // The themed button centres its image list with integer division, so an odd
+        // leftover would push the icon a pixel up and to the left. Round the icon up
+        // to the button's parity to keep the margins equal on all four sides.
+        int gearSize = int(0.7f * size);
+        if ((size - gearSize) & 1) {
+            gearSize++;
+        }
+        SetMPCThemeButtonIcon(nIDButton, { IDF_SVG_GEAR, gearSize });
+    };
+
+    sizeSetupButton(IDC_BUTTON1, IDC_VIDRND_COMBO);
+    sizeSetupButton(IDC_BUTTON2, IDC_AUDRND_COMBO);
 
     CreateToolTip();
 
