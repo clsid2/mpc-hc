@@ -97,7 +97,8 @@ enum : UINT64 {
     CLSW_MUTE = CLSW_CONFIGLAVVIDEO << 1,
     CLSW_VOLUME = CLSW_MUTE << 1,
     CLSW_THUMBNAILS = CLSW_VOLUME << 1,
-    CLSW_UNRECOGNIZEDSWITCH = CLSW_THUMBNAILS << 1, // 47
+    CLSW_CASTTO = CLSW_THUMBNAILS << 1,
+    CLSW_UNRECOGNIZEDSWITCH = CLSW_CASTTO << 1, // 48
 };
 
 enum MpcCaptionState {
@@ -957,6 +958,9 @@ public:
     bool            bEnableCoverArt;
     int             nCoverArtSizeLimit;
 
+    bool            bEnableCasting;
+    int             nCastServerPort;
+
     int             DebugLogMask;
 
     bool            IsD3DFullscreen() const;
@@ -971,6 +975,7 @@ public:
 
     DWORD           iLAVGPUDevice;
     unsigned        nCmdVolume;
+    CString         strCastTo; // the /castto device, empty when the switch was not given
 
     enum class SubtitleRenderer {
         INTERNAL,

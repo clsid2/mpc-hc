@@ -53,6 +53,7 @@
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
+#include "CastTarget.h"
 #include <deque>
 
 class CDebugShadersDlg;
@@ -224,6 +225,7 @@ private:
         TIMER_HIDER,
         TIMER_WINDOW_FULLSCREEN,
         TIMER_DELAYEDSEEK,
+        TIMER_CASTTO,
         TIMER_ONETIME_START,
         TIMER_ONETIME_END = TIMER_ONETIME_START + 127,
     };
@@ -412,6 +414,7 @@ private:
     void SetupFavoritesSubMenu();
     bool SetupShadersSubMenu();
     void SetupRecentFilesSubMenu();
+    void SetupCastSubMenu();
 
     DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
     void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
@@ -429,7 +432,30 @@ private:
     CMPCThemeMenu m_favoritesMenu;
     CMPCThemeMenu m_shadersMenu;
     CMPCThemeMenu m_recentFilesMenu;
+    CMPCThemeMenu m_castMenu;
     int recentFilesMenuFromMRUSequence;
+
+    // casting (Chromecast and DLNA)
+    std::unique_ptr<CCastTarget> m_pCastTarget;
+    std::vector<CastTargetDevice> m_castMenuDevices; // devices shown in the cast submenu, by position
+    bool IsCasting() const { return m_pCastTarget && m_pCastTarget->IsCasting(); }
+    void EnsureCastTarget(); // builds the target on first use; touches no socket
+    void StartCastDiscovery();
+    UINT StartCastingTo(const CastTargetDevice& device); // 0, or the string id of what went wrong
+    void StopCastingSession(bool resumeLocal, bool showOSD = true);
+public:
+    // Ends casting and the discovery behind it, releasing every socket the
+    // feature holds. Called when casting is switched off in the options.
+    void ShutdownCasting();
+private:
+
+    // /castto: the device is only discovered a second or two after the file is
+    // open, so the search runs on a timer instead of blocking the UI thread.
+    CString m_strCastToPending;        // device asked for, empty when not searching
+    ULONGLONG m_castToDeadline = 0;    // GetTickCount64() when the search gives up
+    void BeginCastTo(const CString& device);
+    void CastToSearchStep();
+    void EndCastTo(const CString& strReason); // strReason empty when there is nothing to report
 
     UINT m_nJumpToSubMenusCount;
 
@@ -1224,6 +1250,11 @@ public:
     afx_msg void OnUpdateABRepeat(CCmdUI* pCmdUI);
     afx_msg void OnPlayRepeatForever();
     afx_msg void OnUpdatePlayRepeatForever(CCmdUI* pCmdUI);
+
+    afx_msg void OnCastDevice(UINT nID);
+    afx_msg void OnCastStop();
+    afx_msg void OnUpdateCastStop(CCmdUI* pCmdUI);
+    afx_msg LRESULT OnCastStateChanged(WPARAM wParam, LPARAM lParam);
 
     afx_msg void OnNavigateSkip(UINT nID);
     afx_msg void OnUpdateNavigateSkip(CCmdUI* pCmdUI);

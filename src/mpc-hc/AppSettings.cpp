@@ -255,6 +255,8 @@ CAppSettings::CAppSettings()
     , nJpegQuality(90)
     , bEnableCoverArt(true)
     , nCoverArtSizeLimit(600)
+    , bEnableCasting(true)
+    , nCastServerPort(13580)
     , DebugLogMask(0)
     , iLAVGPUDevice(DWORD_MAX)
     , nCmdVolume(0)
@@ -1321,6 +1323,9 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART, bEnableCoverArt);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, nCoverArtSizeLimit);
 
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLE_CASTING, bEnableCasting);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_SERVER_PORT, nCastServerPort);
+
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, DebugLogMask);
 
     VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER,
@@ -2302,6 +2307,12 @@ void CAppSettings::LoadSettings()
     bEnableCoverArt = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART, TRUE);
     nCoverArtSizeLimit = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_COVER_ART_SIZE_LIMIT, 600);
 
+    bEnableCasting = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLE_CASTING, TRUE);
+    nCastServerPort = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_SERVER_PORT, 13580);
+    if (nCastServerPort < 1024 || nCastServerPort > 65535) {
+        nCastServerPort = 13580;
+    }
+
     DebugLogMask = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, 0);
 
     eSubtitleRenderer = static_cast<SubtitleRenderer>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_RENDERER, static_cast<int>(SubtitleRenderer::INTERNAL)));
@@ -2715,6 +2726,7 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
     fixedWindowPosition = NO_FIXED_POSITION;
     iMonitor = 0;
     strPnSPreset.Empty();
+    strCastTo.Empty();
 
     POSITION pos = cmdln.GetHeadPosition();
     while (pos) {
@@ -2767,6 +2779,14 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 if (setVolumeVal >= 0 && setVolumeVal <= 100) {
                     nCmdVolume = setVolumeVal;
                     nCLSwitches |= CLSW_VOLUME;
+                } else {
+                    nCLSwitches |= CLSW_UNRECOGNIZEDSWITCH;
+                }
+            } else if (sw == _T("castto") && pos) {
+                strCastTo = cmdln.GetNext(pos);
+                strCastTo.Trim();
+                if (!strCastTo.IsEmpty()) {
+                    nCLSwitches |= CLSW_CASTTO;
                 } else {
                     nCLSwitches |= CLSW_UNRECOGNIZEDSWITCH;
                 }

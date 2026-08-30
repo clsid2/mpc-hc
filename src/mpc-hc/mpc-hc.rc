@@ -232,12 +232,13 @@ BEGIN
     CONTROL         "File name only",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,12,184,126,8
     CONTROL         "Don't prefix anything",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,12,198,126,8
     CONTROL         "Replace file name with title",IDC_CHECK13,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP | WS_GROUP,12,212,126,18
-    GROUPBOX        "Other",IDC_STATIC,149,6,200,90,WS_GROUP
+    GROUPBOX        "Other",IDC_STATIC,149,6,200,105,WS_GROUP
     CONTROL         "Tray icon",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,20,192,8
     CONTROL         "Store settings in .ini file",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,35,192,8
     CONTROL         "Disable ""Open Disc"" menu",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,50,192,8
     CONTROL         "Process priority above normal",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,65,192,8
     CONTROL         "Enable cover-art support",IDC_CHECK14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,80,192,8
+    CONTROL         "Enable casting to network devices",IDC_CHECK15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,95,192,8
     GROUPBOX        "History",IDC_STATIC,149,155,200,124
     CONTROL         "Keep history of recently opened files",IDC_CHECK1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,169,192,8
@@ -1783,6 +1784,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -1977,6 +1979,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -2351,6 +2354,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -4257,6 +4261,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_CMD_THUMBNAILS      "/thumbnails\tCreate thumbnails"
+    IDS_CMD_CASTTO          "/castto ""device""\tCast the file to a device, by name, address or id"
     IDS_CUSTOM_ACTION1      "Custom Action 1"
     IDS_CUSTOM_ACTION2      "Custom Action 2"
     IDS_CUSTOM_ACTION3      "Custom Action 3"
@@ -4313,6 +4318,20 @@ STRINGTABLE
 BEGIN
     IDS_AG_COLOR_CONTROLS   "Color Controls"
     IDC_COLOR_CONTROLS      "You can also open Color controls from the Play menu"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CAST_SEARCHING      "(searching for devices...)"
+    IDS_CAST_STOP_CASTING   "Stop &casting"
+    IDS_CAST_CASTING_TO     "Casting to %s"
+    IDS_CAST_STOPPED        "Stopped casting"
+    IDS_CAST_UNSUPPORTED_FILE "Casting is not supported for this file. Only MP4 and WebM files can be played directly on the device."
+    IDS_CAST_FAILED         "Casting failed"
+    IDS_CAST_TAKEN_OVER     "Another device took over casting"
+    IDS_CAST_LOCAL_FEATURE  "This feature is not available while casting."
+    IDS_CAST_NO_DEVICE      "No cast device named ""%s"" was found"
+    IDS_CAST_DISABLED       "Casting is disabled in the options"
 END
 
 #endif    // English (United States) resources

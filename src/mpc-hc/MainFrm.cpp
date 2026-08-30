@@ -61,6 +61,7 @@
 #include "Translations.h"
 #include "UpdateChecker.h"
 #include "WebServer.h"
+#include "CastTargetMulti.h"
 #include <ISOLang.h>
 #include <PathUtils.h>
 #include <DSUtil.h>
@@ -129,6 +130,9 @@ DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0
 #define MIN_LOGO_HEIGHT 150
 
 #define PREV_CHAP_THRESHOLD 2
+
+// how long /castto waits for its device to answer discovery
+#define CASTTO_SEARCH_TIMEOUT 15000
 
 static UINT s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
 static UINT WM_NOTIFYICON = RegisterWindowMessage(_T("MYWM_NOTIFYICON"));
@@ -603,6 +607,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_UPDATE_COMMAND_UI_RANGE(ID_PLAY_REPEAT_AB, ID_PLAY_REPEAT_AB_MARK_B, OnUpdateABRepeat)
     ON_COMMAND(ID_PLAY_REPEAT_FOREVER, OnPlayRepeatForever)
     ON_UPDATE_COMMAND_UI(ID_PLAY_REPEAT_FOREVER, OnUpdatePlayRepeatForever)
+
+    ON_COMMAND_RANGE(ID_CAST_SUBITEM_START, ID_CAST_SUBITEM_END, OnCastDevice)
+    ON_COMMAND(ID_CAST_STOP, OnCastStop)
+    ON_UPDATE_COMMAND_UI(ID_CAST_STOP, OnUpdateCastStop)
+    ON_MESSAGE(WM_CAST_STATE_CHANGED, OnCastStateChanged)
 
     ON_COMMAND_RANGE(ID_NAVIGATE_SKIPBACK, ID_NAVIGATE_SKIPFORWARD, OnNavigateSkip)
     ON_UPDATE_COMMAND_UI_RANGE(ID_NAVIGATE_SKIPBACK, ID_NAVIGATE_SKIPFORWARD, OnUpdateNavigateSkip)
@@ -1252,6 +1261,13 @@ LRESULT CMainFrame::OnLAVPropPageCallback(WPARAM, LPARAM lParam)
 
 void CMainFrame::OnDestroy()
 {
+    EndCastTo(CString()); // a /castto search may still be running
+    if (m_pCastTarget) {
+        m_pCastTarget->StopCasting();
+        m_pCastTarget->StopDiscovery();
+        m_pCastTarget = nullptr;
+    }
+
     WTSUnRegisterSessionNotification();
     ShowTrayIcon(false);
     m_dropTarget.Revoke();
@@ -2282,6 +2298,46 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
             break;
         case TIMER_STREAMPOSPOLLER:
             if (GetLoadState() == MLS::LOADED) {
+                if (IsCasting()) {
+                    // while casting the seekbar and time display follow the
+                    // device-derived clock, not the paused local graph
+                    const REFERENCE_TIME rtNow = REFERENCE_TIME(m_pCastTarget->GetPosition() * 10000000.0);
+                    REFERENCE_TIME rtDur = REFERENCE_TIME(m_pCastTarget->GetDuration() * 10000000.0);
+                    if (rtDur <= 0 && m_pMS) {
+                        m_pMS->GetDuration(&rtDur);
+                    }
+                    g_bNoDuration = rtDur <= 0;
+                    // a device that turned out not to be able to seek gets a
+                    // dead seekbar rather than one that ignores every drag
+                    m_wndSeekBar.Enable(!g_bNoDuration && m_pCastTarget->CanSeek());
+                    m_wndSeekBar.SetRange(0, rtDur);
+                    m_wndSeekBar.SetPos(rtNow);
+                    m_wndSeekBar.UpdateTime();
+                    m_OSD.SetRange(rtDur);
+                    m_OSD.SetPos(rtNow);
+                    m_wndStatusBar.SetStatusTimer(rtNow, rtDur, IsSubresyncBarVisible(), GetTimeFormat());
+
+                    // what is watched on the device is what the history has to
+                    // remember, otherwise the resume position would be frozen
+                    // at wherever the local graph was paused when casting began
+                    if (m_bRememberFilePos && !m_fEndOfStream && rtNow > 0) {
+                        AfxGetAppSettings().MRU.UpdateCurrentFilePosition(rtNow);
+                    }
+
+                    // Casimir666 : autosave subtitle sync after play
+                    if (m_nCurSubtitle >= 0 && m_rtCurSubPos != rtNow) {
+                        if (m_lSubtitleShift) {
+                            if (m_wndSubresyncBar.SaveToDisk()) {
+                                m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_AG_SUBTITLES_SAVED), 500);
+                            } else {
+                                m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_MAINFRM_4));
+                            }
+                        }
+                        m_nCurSubtitle = -1;
+                        m_lSubtitleShift = 0;
+                    }
+                    break;
+                }
                 REFERENCE_TIME rtNow = 0, rtDur = 0;
                 switch (GetPlaybackMode()) {
                     case PM_FILE:
@@ -2748,6 +2804,9 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                 SeekTo(queuedSeek.rtPos, queuedSeek.bShowOSD);
             }
             break;
+        case TIMER_CASTTO:
+            CastToSearchStep();
+            break;
         default:
             if (nIDEvent >= TIMER_ONETIME_START && nIDEvent <= TIMER_ONETIME_END) {
                 m_timerOneTime.NotifySubscribers(nIDEvent);
@@ -2940,7 +2999,8 @@ void CMainFrame::DoAfterPlaybackEvent()
 }
 
 void CMainFrame::OnUpdateABRepeat(CCmdUI* pCmdUI) {
-    bool canABRepeat = GetPlaybackMode() == PM_FILE || GetPlaybackMode() == PM_DVD;
+    // A-B repeat loops the local graph, which stands still while casting
+    bool canABRepeat = !IsCasting() && (GetPlaybackMode() == PM_FILE || GetPlaybackMode() == PM_DVD);
     bool abRepeatActive = static_cast<bool>(abRepeat);
 
     switch (pCmdUI->m_nID) {
@@ -2967,6 +3027,10 @@ void CMainFrame::OnUpdateABRepeat(CCmdUI* pCmdUI) {
 
 
 void CMainFrame::OnABRepeat(UINT nID) {
+    if (IsCasting()) { // nothing to loop: the local graph is not what plays
+        return;
+    }
+
     switch (nID) {
     case ID_PLAY_REPEAT_AB:
         if (abRepeat) { //only support disabling from the menu
@@ -3731,6 +3795,15 @@ void CMainFrame::OnInitMenu(CMenu* pMenu)
 }
 
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
+    if (!bSysMenu && pPopupMenu->m_hMenu == m_castMenu.m_hMenu) {
+        // The cast submenu itself is opening: only now is it worth spending a
+        // socket and a thread on looking for devices. Rebuilt before the base
+        // class so that its update-UI pass sees the items.
+        StartCastDiscovery();
+        SetupCastSubMenu();
+        m_castMenu.fulfillThemeReqs();
+    }
+
     __super::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
 
     if (bSysMenu) {
@@ -3851,6 +3924,9 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         } else if (itemID == ID_RECENT_FILES) {
             SetupRecentFilesSubMenu();
             pSubMenu = &m_recentFilesMenu;
+        } else if (itemID == ID_CAST) {
+            SetupCastSubMenu();
+            pSubMenu = &m_castMenu;
         } else if (itemID == ID_SHADERS) {
             if (SetupShadersSubMenu()) {
                 pPopupMenu->EnableMenuItem(ID_SHADERS, MF_BYPOSITION | MF_ENABLED);
@@ -4470,6 +4546,12 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
         }
     }
     s.nCLSwitches &= ~CLSW_OPEN;  
+
+    // cast this file if /castto asked for it
+    if (s.nCLSwitches & CLSW_CASTTO) {
+        s.nCLSwitches &= ~CLSW_CASTTO;
+        BeginCastTo(s.strCastTo);
+    }
 
     LoadDynamicMenus();
 
@@ -5435,6 +5517,18 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
             SendMessage(WM_COMMAND, ID_VOLUME_MUTE);
         }
         s.nCLSwitches &= ~CLSW_MUTE;
+    }
+
+    // /castto without a file, sent to a running instance: cast what is already
+    // playing. With a file it waits for OnFilePostOpenmedia() instead, because
+    // there is nothing to cast until that file is open.
+    if ((s.nCLSwitches & CLSW_CASTTO) && s.slFiles.IsEmpty()) {
+        s.nCLSwitches &= ~CLSW_CASTTO;
+        if (GetLoadState() == MLS::LOADED) {
+            BeginCastTo(s.strCastTo);
+        } else {
+            TRACE(_T("/castto: nothing is playing\n"));
+        }
     }
 
     if (fSetForegroundWindow && !(s.nCLSwitches & CLSW_NOFOCUS)) {
@@ -6415,6 +6509,13 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
         return;
     }
 
+    if (IsCasting()) {
+        // the seeks this needs would go to the device and the local graph would
+        // never move, producing a sheet of identical frames
+        AfxMessageBox(IDS_CAST_LOCAL_FEATURE, MB_ICONINFORMATION | MB_OK, 0);
+        return;
+    }
+
     REFERENCE_TIME rtPos = GetPos();
     REFERENCE_TIME rtDur = GetDur();
 
@@ -7047,7 +7148,7 @@ void CMainFrame::OnUpdateFileSaveThumbnails(CCmdUI* pCmdUI)
 {
     OAFilterState fs = GetMediaState();
     UNREFERENCED_PARAMETER(fs);
-    pCmdUI->Enable(GetLoadState() == MLS::LOADED && !m_fAudioOnly && (GetPlaybackMode() == PM_FILE /*|| GetPlaybackMode() == PM_DVD*/));
+    pCmdUI->Enable(GetLoadState() == MLS::LOADED && !m_fAudioOnly && !IsCasting() && (GetPlaybackMode() == PM_FILE /*|| GetPlaybackMode() == PM_DVD*/));
 }
 
 void CMainFrame::OnFileSubtitlesLoad()
@@ -9513,6 +9614,15 @@ void CMainFrame::OnPlayPlay()
 {
     const CAppSettings& s = AfxGetAppSettings();
 
+    if (IsCasting()) {
+        m_pCastTarget->Play();
+        SetPlayState(PS_PLAY);
+        // MediaControlRun() is bypassed, so the lock screen controls have to be
+        // told about the new state here
+        MediaTransportControlUpdateState(State_Running);
+        return;
+    }
+
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
@@ -9653,6 +9763,13 @@ void CMainFrame::OnPlayPlay()
 
 void CMainFrame::OnPlayPause()
 {
+    if (IsCasting()) {
+        m_pCastTarget->Pause();
+        SetPlayState(PS_PAUSE);
+        MediaTransportControlUpdateState(State_Paused);
+        return;
+    }
+
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
 
@@ -9691,6 +9808,15 @@ void CMainFrame::OnPlayPause()
 
 void CMainFrame::OnPlayPlaypause()
 {
+    if (IsCasting()) {
+        // Connecting and Loading fall through to pause as well: the device is
+        // on its way to playing and the session keeps the intent until it has
+        // a media session to apply it to.
+        PostMessage(WM_COMMAND, m_pCastTarget->GetState() == CastTargetState::Paused
+                    ? ID_PLAY_PLAY : ID_PLAY_PAUSE);
+        return;
+    }
+
     if (GetLoadState() == MLS::LOADED) {
         OAFilterState fs = GetMediaState();
         if (fs == State_Running) {
@@ -9725,6 +9851,10 @@ void CMainFrame::OnPlayStop()
 
 void CMainFrame::OnPlayStop(bool is_closing)
 {
+    if (IsCasting()) {
+        StopCastingSession(false, !is_closing);
+    }
+
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
@@ -9834,6 +9964,17 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
     if (GetLoadState() == MLS::LOADED) {
         OAFilterState fs = m_fFrameSteppingActive ? State_Paused : GetMediaState();
 
+        if (IsCasting()) {
+            // reflect the device state on the transport buttons while casting
+            const CastTargetState ts = m_pCastTarget->GetState();
+            if (ts == CastTargetState::Paused) {
+                fs = State_Paused;
+            } else if (ts == CastTargetState::Playing || ts == CastTargetState::Buffering
+                       || ts == CastTargetState::Loading || ts == CastTargetState::Connecting) {
+                fs = State_Running;
+            }
+        }
+
         fCheck = pCmdUI->m_nID == ID_PLAY_PLAY && fs == State_Running ||
             pCmdUI->m_nID == ID_PLAY_PAUSE && fs == State_Paused ||
             pCmdUI->m_nID == ID_PLAY_STOP && fs == State_Stopped ||
@@ -9883,6 +10024,12 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
 void CMainFrame::OnPlayFramestep(UINT nID)
 {
     if (!m_pFS && !m_pMS || m_fAudioOnly || GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE && GetPlaybackMode() != PM_DVD) {
+        return;
+    }
+
+    if (IsCasting()) {
+        // stepping the local graph is invisible while casting, and it would
+        // mute the local audio for a playback the user cannot see anyway
         return;
     }
 
@@ -9972,7 +10119,7 @@ void CMainFrame::OnUpdatePlayFramestep(CCmdUI* pCmdUI)
     bool fEnable = false;
 
     if (pCmdUI->m_nID == ID_PLAY_FRAMESTEP) {
-        if (!m_fAudioOnly && !m_fLiveWM && GetLoadState() == MLS::LOADED && (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_iDVDDomain == DVD_DOMAIN_Title))) {
+        if (!m_fAudioOnly && !m_fLiveWM && !IsCasting() && GetLoadState() == MLS::LOADED && (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_iDVDDomain == DVD_DOMAIN_Title))) {
             if (m_pFS || m_pMS && (S_OK == m_pMS->IsFormatSupported(&TIME_FORMAT_FRAME))) {
                 fEnable = true;
             }
@@ -10179,6 +10326,11 @@ void CMainFrame::OnPlayChangeRate(UINT nID)
         return;
     }
 
+    if (IsCasting()) {
+        // the rate belongs to the local graph, which is not what is playing
+        return;
+    }
+
     if (GetPlaybackMode() == PM_FILE) {
         const CAppSettings& s = AfxGetAppSettings();
         double dSpeedStep = s.nSpeedStep / 100.0;
@@ -10283,7 +10435,7 @@ void CMainFrame::OnUpdatePlayChangeRate(CCmdUI* pCmdUI)
 {
     bool fEnable = false;
 
-    if (GetLoadState() == MLS::LOADED) {
+    if (GetLoadState() == MLS::LOADED && !IsCasting()) {
         if (pCmdUI->m_nID > ID_PLAY_PLAYBACKRATE_START && pCmdUI->m_nID < ID_PLAY_PLAYBACKRATE_END && pCmdUI->m_pMenu) {
             fEnable = false;
             if (GetPlaybackMode() == PM_FILE) {
@@ -10349,7 +10501,7 @@ void CMainFrame::OnUpdatePlayChangeRate(CCmdUI* pCmdUI)
 
 void CMainFrame::OnPlayResetRate()
 {
-    if (GetLoadState() != MLS::LOADED) {
+    if (GetLoadState() != MLS::LOADED || IsCasting()) {
         return;
     }
 
@@ -10945,6 +11097,9 @@ void CMainFrame::OnPlayVolume(UINT nID)
         CString strVolume;
         if (changed) {
             m_pBA->put_Volume(m_wndToolBar.Volume);
+            if (IsCasting()) {
+                m_pCastTarget->SetVolume(m_wndToolBar.m_volctrl.GetPos() / 100.0, m_wndToolBar.Volume == -10000);
+            }
         }
 
         // Show the OSD even when the value did not change (e.g. Volume Up pressed
@@ -17314,6 +17469,7 @@ void CMainFrame::CreateDynamicMenus()
     VERIFY(m_favoritesMenu.CreatePopupMenu());
     VERIFY(m_shadersMenu.CreatePopupMenu());
     VERIFY(m_recentFilesMenu.CreatePopupMenu());
+    VERIFY(m_castMenu.CreatePopupMenu());
 }
 
 void CMainFrame::DestroyDynamicMenus()
@@ -17332,6 +17488,7 @@ void CMainFrame::DestroyDynamicMenus()
     VERIFY(m_favoritesMenu.DestroyMenu());
     VERIFY(m_shadersMenu.DestroyMenu());
     VERIFY(m_recentFilesMenu.DestroyMenu());
+    VERIFY(m_castMenu.DestroyMenu());
     m_nJumpToSubMenusCount = 0;
     recentFilesMenuFromMRUSequence = -1;
 }
@@ -18557,6 +18714,436 @@ void CMainFrame::SetupRecentFilesSubMenu()
     }
 }
 
+// What the running graph knows about the file, for a protocol that has to name
+// the content precisely. The codec is read off the subtype of each connected
+// output pin, so the decoders' uncompressed pins simply match nothing and what
+// is left is the splitter's. Anything unrecognized stays Unknown rather than
+// being guessed at.
+static CastMediaInfo GetCastMediaInfo(IFilterGraph* pGB)
+{
+    CastMediaInfo info;
+    if (!pGB) {
+        return info;
+    }
+
+    BeginEnumFilters(pGB, pEF, pBF) {
+        BeginEnumPins(pBF, pEP, pPin) {
+            PIN_DIRECTION dir;
+            CComPtr<IPin> pConnected;
+            if (FAILED(pPin->QueryDirection(&dir)) || dir != PINDIR_OUTPUT
+                    || FAILED(pPin->ConnectedTo(&pConnected))) {
+                continue;
+            }
+            AM_MEDIA_TYPE mt;
+            if (FAILED(pPin->ConnectionMediaType(&mt))) {
+                continue;
+            }
+            if (mt.majortype == MEDIATYPE_Video && info.video == CastMediaInfo::Video::Unknown) {
+                static const DWORD h264[] = {
+                    mmioFOURCC('H', '2', '6', '4'), mmioFOURCC('h', '2', '6', '4'),
+                    mmioFOURCC('X', '2', '6', '4'), mmioFOURCC('x', '2', '6', '4'),
+                    mmioFOURCC('A', 'V', 'C', '1'), mmioFOURCC('a', 'v', 'c', '1'),
+                };
+                if (mt.subtype == MEDIASUBTYPE_MPEG2_VIDEO) {
+                    info.video = CastMediaInfo::Video::MPEG2;
+                } else if (std::find(std::cbegin(h264), std::cend(h264), mt.subtype.Data1) != std::cend(h264)) {
+                    info.video = CastMediaInfo::Video::H264;
+                }
+                BITMAPINFOHEADER bih;
+                if (info.video != CastMediaInfo::Video::Unknown && ExtractBIH(&mt, &bih)) {
+                    info.width = bih.biWidth;
+                    info.height = abs(bih.biHeight);
+                }
+            } else if (mt.majortype == MEDIATYPE_Audio && info.audio == CastMediaInfo::Audio::Unknown
+                       && mt.formattype == FORMAT_WaveFormatEx && mt.pbFormat
+                       && mt.cbFormat >= sizeof(WAVEFORMATEX)) {
+                // The subtype names the codec and the wFormatTag beside it does
+                // not: a splitter that names its output by FourCC leaves only
+                // the bottom half of that FourCC in the tag. LAV hands AAC out
+                // of an MP4 as 'ADTS', whose tag reads 0x4441.
+                static const DWORD aac[] = {
+                    WAVE_FORMAT_RAW_AAC1, WAVE_FORMAT_MPEG_ADTS_AAC, WAVE_FORMAT_MPEG_LOAS,
+                    WAVE_FORMAT_MPEG_HEAAC, mmioFOURCC('A', 'D', 'T', 'S'),
+                    mmioFOURCC('m', 'p', '4', 'a'), mmioFOURCC('M', 'P', '4', 'A'),
+                };
+                const DWORD codec = mt.subtype.Data1;
+                if (codec == WAVE_FORMAT_MPEGLAYER3) {
+                    info.audio = CastMediaInfo::Audio::MP3;
+                } else if (std::find(std::cbegin(aac), std::cend(aac), codec) != std::cend(aac)) {
+                    info.audio = CastMediaInfo::Audio::AAC;
+                } else if (codec == WAVE_FORMAT_WMAUDIO2) {
+                    // only plain WMA; Pro (0x0162) and Lossless (0x0163) are a
+                    // different codec with no profile of ours
+                    info.audio = CastMediaInfo::Audio::WMA;
+                }
+                if (info.audio != CastMediaInfo::Audio::Unknown) {
+                    const WAVEFORMATEX* wfe = (const WAVEFORMATEX*)mt.pbFormat;
+                    info.sampleRate = (int)wfe->nSamplesPerSec;
+                    info.channels = wfe->nChannels;
+                }
+            }
+            FreeMediaType(mt);
+        }
+        EndEnumPins;
+    }
+    EndEnumFilters;
+
+    TRACE(_T("CastMediaInfo: video %d %dx%d, audio %d %d Hz %d ch\n"), (int)info.video,
+          info.width, info.height, (int)info.audio, info.sampleRate, info.channels);
+    return info;
+}
+
+void CMainFrame::SetupCastSubMenu()
+{
+    CMenu& subMenu = m_castMenu;
+    // Empty the menu
+    while (subMenu.RemoveMenu(0, MF_BYPOSITION));
+
+    // Switched off in the options: the cast target is never built, which is
+    // what keeps every socket the feature would open shut, and the empty
+    // submenu greys "Cast to Device" out.
+    if (!AfxGetAppSettings().bEnableCasting) {
+        return;
+    }
+
+    EnsureCastTarget();
+
+    // Devices that only do audio, a speaker or an AV receiver, are worth
+    // offering for an audio file and nothing else. With no file loaded there
+    // is nothing to judge them by, so they are all shown.
+    const bool bAudioDevicesUseful = GetLoadState() != MLS::LOADED || m_fAudioOnly;
+
+    m_castMenuDevices.clear();
+    for (auto& dev : m_pCastTarget->GetDevices()) {
+        if ((dev.supportsVideo || (bAudioDevicesUseful && dev.supportsAudio))
+                && m_castMenuDevices.size() < size_t(ID_CAST_SUBITEM_END - ID_CAST_SUBITEM_START + 1)) {
+            m_castMenuDevices.emplace_back(std::move(dev));
+        }
+    }
+
+    if (m_castMenuDevices.empty()) {
+        VERIFY(subMenu.AppendMenu(MF_STRING | MF_DISABLED | MF_GRAYED, ID_CAST_SUBITEM_START, ResStr(IDS_CAST_SEARCHING)));
+    } else {
+        const CString activeId = m_pCastTarget->GetDeviceId();
+        UINT id = ID_CAST_SUBITEM_START;
+        for (const auto& dev : m_castMenuDevices) {
+            UINT flags = MF_STRING | MF_ENABLED;
+            if (IsCasting() && dev.id == activeId) {
+                flags |= MF_CHECKED;
+            }
+            CString name(dev.name);
+            name.Replace(_T("&"), _T("&&"));
+            VERIFY(subMenu.AppendMenu(flags, id++, name));
+        }
+    }
+    VERIFY(subMenu.AppendMenu(MF_SEPARATOR | MF_ENABLED));
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_CAST_STOP, ResStr(IDS_CAST_STOP_CASTING)));
+}
+
+void CMainFrame::EnsureCastTarget()
+{
+    if (!m_pCastTarget) {
+        m_pCastTarget = std::make_unique<CCastTargetMulti>();
+        m_pCastTarget->SetNotifyWindow(m_hWnd, WM_CAST_STATE_CHANGED);
+    }
+    // Only a session ever starts the media server, so picking the port up here
+    // is early enough and follows a change made in the options.
+    CCastMediaServer::preferredPort = (UINT)AfxGetAppSettings().nCastServerPort;
+}
+
+void CMainFrame::StartCastDiscovery()
+{
+    // discovery starts lazily when the cast submenu is first opened and keeps
+    // running afterwards
+    if (AfxGetAppSettings().bEnableCasting && m_pCastTarget && !m_pCastTarget->IsDiscoveryRunning()) {
+        m_pCastTarget->StartDiscovery();
+    }
+}
+
+UINT CMainFrame::StartCastingTo(const CastTargetDevice& device)
+{
+    if (!m_pCastTarget) {
+        return IDS_CAST_FAILED;
+    }
+
+    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
+            || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)
+            || !m_pCastTarget->CanCastFile(device.id, lastOpenFile)) {
+        return IDS_CAST_UNSUPPORTED_FILE;
+    }
+
+    // resume position: when switching devices keep the device clock, otherwise
+    // take the local one
+    double startSec;
+    if (IsCasting()) {
+        startSec = m_pCastTarget->GetPosition();
+        StopCastingSession(false, false);
+    } else {
+        startSec = m_wndSeekBar.GetPos() / 10000000.0;
+    }
+
+    REFERENCE_TIME rtDur = 0;
+    if (m_pMS) {
+        m_pMS->GetDuration(&rtDur);
+    }
+
+    // A-B repeat loops the local graph, which stands still from here on
+    if (abRepeat) {
+        DisableABRepeat();
+    }
+
+    // The local graph stays paused while the device plays. This has to happen
+    // before the connect, or the pause would already be routed to the device.
+    const bool bWasPlaying = GetMediaState() == State_Running;
+    if (bWasPlaying) {
+        SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
+    }
+
+    if (!m_pCastTarget->Connect(device.id)) {
+        if (bWasPlaying) {
+            SendMessage(WM_COMMAND, ID_PLAY_PLAY); // leave playback as we found it
+        }
+        return IDS_CAST_FAILED;
+    }
+
+    m_pCastTarget->LoadMedia(lastOpenFile, GetFileName(), rtDur / 10000000.0, startSec,
+                             GetCastMediaInfo(m_pGB));
+
+    // keep the position poller running so the UI follows the device clock
+    SetTimersPlay();
+
+    CString strOSD;
+    strOSD.Format(IDS_CAST_CASTING_TO, m_pCastTarget->GetDeviceName().GetString());
+    m_OSD.DisplayMessage(OSD_TOPLEFT, strOSD, 3000);
+    return 0;
+}
+
+void CMainFrame::OnCastDevice(UINT nID)
+{
+    const size_t i = nID - ID_CAST_SUBITEM_START;
+    if (!m_pCastTarget || i >= m_castMenuDevices.size()) {
+        return;
+    }
+    EndCastTo(CString()); // the device has been chosen by hand, stop looking for one
+
+    const UINT nErr = StartCastingTo(m_castMenuDevices[i]);
+    if (nErr) {
+        AfxMessageBox(nErr, (nErr == IDS_CAST_UNSUPPORTED_FILE ? MB_ICONINFORMATION : MB_ICONWARNING) | MB_OK);
+    }
+}
+
+// Matches the /castto argument against a device: its prefixed id or its
+// address exactly, or any part of its name, so "Family Room" is enough to
+// name "Family Room Speaker".
+static bool CastDeviceMatches(const CastTargetDevice& device, const CString& query)
+{
+    if (device.id.CompareNoCase(query) == 0 || device.address == query) {
+        return true;
+    }
+    CString name(device.name), needle(query);
+    name.MakeLower();
+    needle.MakeLower();
+    return name.Find(needle) >= 0;
+}
+
+void CMainFrame::BeginCastTo(const CString& device)
+{
+    if (device.IsEmpty()) {
+        return;
+    }
+
+    if (!AfxGetAppSettings().bEnableCasting) {
+        EndCastTo(ResStr(IDS_CAST_DISABLED)); // say so rather than ignore the switch
+        return;
+    }
+
+    EnsureCastTarget();
+    // Nothing has opened the cast submenu, so the lazy start never happened.
+    StartCastDiscovery();
+
+    m_strCastToPending = device;
+    m_castToDeadline = GetTickCount64() + CASTTO_SEARCH_TIMEOUT;
+    VERIFY(SetTimer(TIMER_CASTTO, 500, nullptr));
+    CastToSearchStep(); // the device may be known already
+}
+
+void CMainFrame::CastToSearchStep()
+{
+    if (m_strCastToPending.IsEmpty()) {
+        return;
+    }
+    if (!m_pCastTarget || GetLoadState() != MLS::LOADED) {
+        TRACE(_T("/castto: the file was closed before a device answered\n"));
+        EndCastTo(CString());
+        return;
+    }
+
+    // The menu offers a device that only does audio for an audio file and for
+    // nothing else; the same rule decides here. A device that has not yet said
+    // what it accepts is passed over and looked at again on the next tick.
+    const CastTargetDevice* pMatch = nullptr;
+    bool bNameMatched = false;
+    const std::vector<CastTargetDevice> devices = m_pCastTarget->GetDevices();
+    for (const CastTargetDevice& device : devices) {
+        if (!CastDeviceMatches(device, m_strCastToPending)) {
+            continue;
+        }
+        bNameMatched = true;
+        if ((device.supportsVideo || (m_fAudioOnly && device.supportsAudio))
+                && m_pCastTarget->CanCastFile(device.id, lastOpenFile)) {
+            pMatch = &device;
+            break;
+        }
+    }
+
+    if (pMatch) {
+        const UINT nErr = StartCastingTo(*pMatch);
+        EndCastTo(nErr ? ResStr(nErr) : CString());
+    } else if (GetTickCount64() >= m_castToDeadline) {
+        CString strReason;
+        if (bNameMatched) {
+            strReason = ResStr(IDS_CAST_UNSUPPORTED_FILE);
+        } else {
+            strReason.Format(IDS_CAST_NO_DEVICE, m_strCastToPending.GetString());
+        }
+        EndCastTo(strReason);
+    }
+}
+
+void CMainFrame::EndCastTo(const CString& strReason)
+{
+    KillTimer(TIMER_CASTTO);
+    m_strCastToPending.Empty();
+    m_castToDeadline = 0;
+
+    if (!strReason.IsEmpty()) {
+        // only the casting is given up on; local playback carries on
+        TRACE(_T("/castto: %s\n"), strReason.GetString());
+        m_OSD.DisplayMessage(OSD_TOPLEFT, strReason, 5000);
+    }
+}
+
+void CMainFrame::OnCastStop()
+{
+    EndCastTo(CString()); // casting was declined, so is any /castto still looking
+    StopCastingSession(true);
+}
+
+void CMainFrame::OnUpdateCastStop(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(IsCasting());
+}
+
+void CMainFrame::StopCastingSession(bool resumeLocal, bool showOSD /*= true*/)
+{
+    if (!IsCasting()) {
+        return;
+    }
+
+    const double lastPos = m_pCastTarget->GetPosition();
+    m_pCastTarget->StopCasting();
+
+    if (GetLoadState() == MLS::LOADED && GetPlaybackMode() == PM_FILE) {
+        // Bring the local graph to the position reached on the device: it is
+        // what the seekbar shows, what resuming has to continue from and what
+        // the history save reads when the file is closed.
+        if (lastPos > 0.0) {
+            DoSeekTo(REFERENCE_TIME(lastPos * 10000000.0), false);
+        }
+        if (resumeLocal) {
+            SendMessage(WM_COMMAND, ID_PLAY_PLAY);
+        } else {
+            // no local playback follows, so let the display sleep again
+            SetPlayState(PS_PAUSE);
+        }
+    }
+
+    if (showOSD) {
+        m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_CAST_STOPPED), 3000);
+    }
+}
+
+void CMainFrame::ShutdownCasting()
+{
+    EndCastTo(CString()); // a /castto search may still be running
+    StopCastingSession(true); // hand playback back to the player
+    if (m_pCastTarget) {
+        m_pCastTarget->StopDiscovery();
+        m_pCastTarget = nullptr;
+    }
+}
+
+LRESULT CMainFrame::OnCastStateChanged(WPARAM /*wParam*/, LPARAM lParam)
+{
+    // The state in wParam is a snapshot from when the notification was queued;
+    // one left over from a session that has since been replaced must not tear
+    // down the session that replaced it, so the generation is checked and the
+    // state is taken live.
+    if (!IsCasting() || (UINT)lParam != m_pCastTarget->GetSessionGeneration()) {
+        return 0;
+    }
+
+    switch (m_pCastTarget->GetState()) {
+        case CastTargetState::Playing:
+            SetPlayState(PS_PLAY);
+            MediaTransportControlUpdateState(State_Running);
+            OnTimer(TIMER_STREAMPOSPOLLER);
+            break;
+        case CastTargetState::Paused:
+            SetPlayState(PS_PAUSE);
+            MediaTransportControlUpdateState(State_Paused);
+            break;
+        case CastTargetState::Ended: {
+            // the device reached the end of the media
+            CAppSettings& s = AfxGetAppSettings();
+            ++m_nLoops;
+            if (s.fLoopForever || m_nLoops < s.nLoops) {
+                // Repeat on the device: the receiver has unloaded the media, so
+                // it is handed the file again from the start. Falling back to
+                // the local graph would play the film out of the computer.
+                REFERENCE_TIME rtDur = 0;
+                if (m_pMS) {
+                    m_pMS->GetDuration(&rtDur);
+                }
+                m_pCastTarget->LoadMedia(lastOpenFile, GetFileName(), rtDur / 10000000.0, 0.0,
+                                         GetCastMediaInfo(m_pGB));
+                break;
+            }
+            // MVP: no playlist auto-advance while casting; the local file stays
+            // loaded and paused
+            StopCastingSession(false);
+            m_fEndOfStream = true;
+            if (m_bRememberFilePos) {
+                s.MRU.UpdateCurrentFilePosition(0, true);
+            }
+            DoAfterPlaybackEvent();
+            break;
+        }
+        case CastTargetState::TakenOver:
+            // Another sender loaded its own media into the device. Casting is
+            // over, but a remote event must never start playback here, so the
+            // local file only follows to the position it reached.
+            StopCastingSession(false, false);
+            m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_CAST_TAKEN_OVER), 5000);
+            break;
+        case CastTargetState::Failed: {
+            // resuming locally is the least surprising outcome here, but it
+            // may not happen silently
+            CString strOSD = ResStr(IDS_CAST_FAILED);
+            const CString reason = m_pCastTarget->GetFailureReason();
+            if (!reason.IsEmpty()) {
+                strOSD.AppendFormat(_T(" (%s)"), reason.GetString());
+            }
+            StopCastingSession(true, false);
+            m_OSD.DisplayMessage(OSD_TOPLEFT, strOSD, 5000);
+            break;
+        }
+        default:
+            break;
+    }
+    return 0;
+}
+
 void CMainFrame::SetupFavoritesSubMenu()
 {
     CMenu& subMenu = m_favoritesMenu;
@@ -19603,6 +20190,26 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
         rtPos = 0;
     }
 
+    if (IsCasting()) {
+        if (!m_pCastTarget->CanSeek()) {
+            return; // the device cannot, so the position is left where it is
+        }
+        // route the seek to the device; the seekbar snaps immediately and the
+        // device clock takes over with the next media status
+        __int64 start, stop;
+        m_wndSeekBar.GetRange(start, stop);
+        if (stop > 0 && rtPos > stop) {
+            rtPos = stop;
+        }
+        m_pCastTarget->Seek(rtPos / 10000000.0);
+        m_wndSeekBar.SetPos(rtPos);
+        m_wndStatusBar.SetStatusTimer(rtPos, stop, IsSubresyncBarVisible(), GetTimeFormat());
+        if (bShowOSD) {
+            m_OSD.DisplayMessage(OSD_TOPLEFT, m_wndStatusBar.GetStatusTimer(), 1500);
+        }
+        return;
+    }
+
     if (abRepeat.positionA && rtPos < abRepeat.positionA || abRepeat.positionB && rtPos > abRepeat.positionB) {
         DisableABRepeat();
     }
@@ -20610,6 +21217,10 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
         PLAYER_LOG(_T("CMainFrame::CloseMedia (thread %lu) - starting close"), GetCurrentThreadId());
     }
 
+    if (IsCasting()) {
+        StopCastingSession(false, false);
+    }
+
     CAutoLock ga(&lockGraphAccess);
 
     if (m_pME) {
@@ -21393,8 +22004,9 @@ void CMainFrame::SetPlayState(MPC_PLAYSTATE iState)
     }
 
     if (iState == PS_PLAY) {
-        // Prevent sleep when playing audio and/or video, but allow screensaver when only audio
-        if (!m_fAudioOnly && AfxGetAppSettings().bPreventDisplaySleep) {
+        // Prevent sleep when playing audio and/or video, but allow screensaver when only audio.
+        // While casting there is nothing to watch here, so only the system is kept awake.
+        if (!m_fAudioOnly && !IsCasting() && AfxGetAppSettings().bPreventDisplaySleep) {
             SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
         } else {
             SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);

@@ -52,6 +52,7 @@ public:
     BOOL m_fRememberFilePos;
     BOOL m_bRememberPlaylistItems;
     BOOL m_bEnableCoverArt;
+    BOOL m_bEnableCasting;
 
     ULONGLONG m_dwCheckIniLastTick;
 

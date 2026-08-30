@@ -148,6 +148,12 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="AuthDlg.cpp" />
     <ClCompile Include="BaseGraph.cpp" />
+    <ClCompile Include="CastDiscovery.cpp" />
+    <ClCompile Include="CastMediaServer.cpp" />
+    <ClCompile Include="CastSession.cpp" />
+    <ClCompile Include="CastTargetChromecast.cpp" />
+    <ClCompile Include="CastTargetDlna.cpp" />
+    <ClCompile Include="CastTargetMulti.cpp" />
     <ClCompile Include="CMPCThemeButton.cpp" />
     <ClCompile Include="CMPCThemeFrameUtil.cpp" />
     <ClCompile Include="CMPCThemeFrameWnd.cpp" />
@@ -207,6 +213,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="DebugShadersDlg.cpp" />
     <ClCompile Include="DeinterlacerFilter.cpp" />
     <ClCompile Include="DpiAwareResizableDialog.cpp" />
+    <ClCompile Include="DlnaDiscovery.cpp" />
+    <ClCompile Include="DlnaVendorHook.cpp" />
     <ClCompile Include="DpiHelper.cpp" />
     <ClCompile Include="DVBChannel.cpp" />
     <ClCompile Include="EditListEditor.cpp" />
@@ -348,6 +356,13 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="AppSettings.h" />
     <ClInclude Include="AuthDlg.h" />
     <ClInclude Include="BaseGraph.h" />
+    <ClInclude Include="CastDiscovery.h" />
+    <ClInclude Include="CastMediaServer.h" />
+    <ClInclude Include="CastSession.h" />
+    <ClInclude Include="CastTarget.h" />
+    <ClInclude Include="CastTargetChromecast.h" />
+    <ClInclude Include="CastTargetDlna.h" />
+    <ClInclude Include="CastTargetMulti.h" />
     <ClInclude Include="CMPCThemeButton.h" />
     <ClInclude Include="CMPCThemeFrameUtil.h" />
     <ClInclude Include="CMPCThemeFrameWnd.h" />
@@ -408,6 +423,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="DebugShadersDlg.h" />
     <ClInclude Include="DeinterlacerFilter.h" />
     <ClInclude Include="DpiAwareResizableDialog.h" />
+    <ClInclude Include="DlnaDiscovery.h" />
+    <ClInclude Include="DlnaVendorHook.h" />
     <ClInclude Include="DpiHelper.h" />
     <ClInclude Include="DVBChannel.h" />
     <ClInclude Include="EditListEditor.h" />

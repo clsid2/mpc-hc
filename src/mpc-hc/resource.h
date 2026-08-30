@@ -264,6 +264,7 @@
 #define ID_VIDEO_STREAMS                980
 #define ID_SUBTITLES_SECONDARY          981
 #define ID_SUBTITLES_SECONDARY_LOAD     982
+#define ID_CAST                         983
 #define ID_COLOR_BRIGHTNESS_INC         984
 #define ID_COLOR_BRIGHTNESS_DEC         985
 #define ID_COLOR_CONTRAST_INC           986
@@ -300,6 +301,8 @@
 #define ID_VIDEO_STREAMS_SUBITEM_END    2499
 #define ID_SUBTITLES_SECONDARY_SUBITEM_START 2500
 #define ID_SUBTITLES_SECONDARY_SUBITEM_END 2599
+#define ID_CAST_SUBITEM_START           2600
+#define ID_CAST_SUBITEM_END             2699
 #define ID_FAVORITES_FILE_START         2800
 #define ID_FAVORITES_FILE_END           3799
 #define ID_FAVORITES_DVD_START          3800
@@ -449,6 +452,7 @@
 #define IDC_CHECK12                     11091
 #define IDC_CHECK13                     11092
 #define IDC_CHECK14                     11093
+#define IDC_CHECK15                     11094
 #define IDC_SPIN1                       11100
 #define IDC_SPIN2                       11101
 #define IDC_SPIN3                       11102
@@ -1168,6 +1172,7 @@
 #define IDS_SEEKBAR_HOVER_TOOLTIP       33461
 #define IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES 33462
 #define ID_COLOR_CONTROLS               33464
+#define ID_CAST_STOP                    33465
 #define ID_RECENT_FILE_START            34000
 #define ID_RECENT_FILE_END              34999
 #define IDS_MFMT_AVI                    39001
@@ -1876,13 +1881,24 @@
 #define IDS_PPAGEADVANCED_GRP_HISTORY   58044
 #define IDS_PPAGEADVANCED_GRP_SCREENSHOTS 58045
 #define IDS_PPAGEADVANCED_GRP_MISC      58046
+#define IDS_CAST_SEARCHING              58047
+#define IDS_CAST_STOP_CASTING           58048
+#define IDS_CAST_CASTING_TO             58049
+#define IDS_CAST_STOPPED                58050
+#define IDS_CAST_UNSUPPORTED_FILE       58051
+#define IDS_CAST_FAILED                 58052
+#define IDS_CAST_TAKEN_OVER             58053
+#define IDS_CAST_LOCAL_FEATURE          58054
+#define IDS_CAST_NO_DEVICE              58055
+#define IDS_CMD_CASTTO                  58056
+#define IDS_CAST_DISABLED               58057
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20079
-#define _APS_NEXT_COMMAND_VALUE         33465
+#define _APS_NEXT_COMMAND_VALUE         33466
 #define _APS_NEXT_CONTROL_VALUE         22104
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif

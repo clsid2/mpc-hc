@@ -65,6 +65,9 @@
     <Filter Include="Integration\Web">
       <UniqueIdentifier>{d7f40587-25b5-46f1-90bb-6751caca4922}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Integration\Cast">
+      <UniqueIdentifier>{26156f19-64c9-4874-a547-5c9f02ebf315}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Modal Dialogs">
       <UniqueIdentifier>{c80b5d75-ba77-444e-98a0-c5af5d89a88c}</UniqueIdentifier>
     </Filter>
@@ -363,6 +366,30 @@
     </ClCompile>
     <ClCompile Include="VolumeCtrl.cpp">
       <Filter>Custom Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="CastDiscovery.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="CastMediaServer.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="CastSession.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="CastTargetChromecast.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="CastTargetDlna.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="CastTargetMulti.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="DlnaDiscovery.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="DlnaVendorHook.cpp">
+      <Filter>Integration\Cast</Filter>
     </ClCompile>
     <ClCompile Include="WebClientSocket.cpp">
       <Filter>Integration\Web</Filter>
@@ -933,6 +960,33 @@
     </ClInclude>
     <ClInclude Include="VolumeCtrl.h">
       <Filter>Custom Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="CastDiscovery.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastMediaServer.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastSession.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastTarget.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastTargetChromecast.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastTargetDlna.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastTargetMulti.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="DlnaDiscovery.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="DlnaVendorHook.h">
+      <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="WebClientSocket.h">
       <Filter>Integration\Web</Filter>
