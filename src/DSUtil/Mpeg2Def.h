@@ -67,6 +67,7 @@ enum PES_STREAM_TYPE {
     AUDIO_STREAM_AC3_PLUS               = 0x84,
     AUDIO_STREAM_DTS_HD                 = 0x85,
     AUDIO_STREAM_DTS_HD_MASTER_AUDIO    = 0x86,
+    AUDIO_STREAM_EAC3_ATSC              = 0x87, // ATSC A/53 E-AC-3. The values above are Blu-ray registrations; ATSC signals E-AC-3 with its own stream type, not with 0x84
     PRESENTATION_GRAPHICS_STREAM        = 0x90,
     INTERACTIVE_GRAPHICS_STREAM         = 0x91,
     SUBTITLE_STREAM                     = 0x92,
