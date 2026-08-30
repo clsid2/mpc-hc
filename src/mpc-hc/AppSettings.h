@@ -533,6 +533,11 @@ class CAppSettings
         void Add(RecentFileEntry r, bool current_open = false);
         bool GetCurrentIndex(size_t& idx);
         void UpdateCurrentFilePosition(REFERENCE_TIME time, bool forcePersist = false);
+        // The same for a file that is not the one being played, named by path.
+        // Casting is what needs this: what the device reached is the position
+        // that file has to resume from, and by then the player may well have a
+        // different file open, or none at all.
+        void UpdateFilePosition(CStringW fn, REFERENCE_TIME time);
         REFERENCE_TIME GetCurrentFilePosition();
         ABRepeat GetCurrentABRepeat();
         void UpdateCurrentDVDTimecode(DVD_HMSF_TIMECODE *time);

@@ -678,6 +678,7 @@
 #define IDD_HISTORY                     20077
 #define IDD_COLORCONTROLS_DLG           20078
 #define IDD_CASTDEVICES_DLG             20079
+#define IDD_CASTSESSION_DLG             20080
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052
@@ -792,6 +793,15 @@
 #define IDC_CASTDEV_PROTOLABEL          22117
 #define IDC_CASTDEV_PROTOCOL            22118
 #define IDC_CASTDEV_ADDMANUAL           22119
+#define IDC_CASTSESS_DEVICE             22120
+#define IDC_CASTSESS_TITLE              22121
+#define IDC_CASTSESS_SEEK               22122
+#define IDC_CASTSESS_TIME               22123
+#define IDC_CASTSESS_STATUS             22124
+#define IDC_CASTSESS_PLAYPAUSE          22125
+#define IDC_CASTSESS_STOP               22126
+#define IDC_CASTSESS_VOLLABEL           22127
+#define IDC_CASTSESS_VOLUME             22128
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1905,7 +1915,6 @@
 #define IDS_CAST_UNSUPPORTED_FILE       58051
 #define IDS_CAST_FAILED                 58052
 #define IDS_CAST_TAKEN_OVER             58053
-#define IDS_CAST_LOCAL_FEATURE          58054
 #define IDS_CAST_NO_DEVICE              58055
 #define IDS_CMD_CASTTO                  58056
 #define IDS_CAST_DISABLED               58057
@@ -1921,14 +1930,16 @@
 #define IDS_CAST_DLG_STATUS_SAVED_FOUND 58067
 #define IDS_CAST_DLG_STATUS_FOUND       58068
 #define IDS_CAST_DLG_NO_ANSWER          58069
+#define IDS_CAST_CONNECTING             58070
+#define IDS_CAST_BUFFERING              58071
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        20080
+#define _APS_NEXT_RESOURCE_VALUE        20081
 #define _APS_NEXT_COMMAND_VALUE         33467
-#define _APS_NEXT_CONTROL_VALUE         22120
+#define _APS_NEXT_CONTROL_VALUE         22129
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

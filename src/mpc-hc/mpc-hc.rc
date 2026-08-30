@@ -1169,6 +1169,23 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,358,236,56,14
 END
 
+IDD_CASTSESSION_DLG DIALOGEX 0, 0, 300, 106
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Casting"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_CASTSESS_DEVICE,7,7,286,10
+    LTEXT           "",IDC_CASTSESS_TITLE,7,20,286,10
+    CONTROL         "",IDC_CASTSESS_SEEK,"msctls_trackbar32",TBS_HORZ | TBS_NOTICKS | TBS_BOTH | WS_TABSTOP,5,34,290,16
+    LTEXT           "",IDC_CASTSESS_TIME,7,53,140,10
+    RTEXT           "",IDC_CASTSESS_STATUS,153,53,140,10
+    PUSHBUTTON      "Play",IDC_CASTSESS_PLAYPAUSE,7,69,60,14
+    PUSHBUTTON      "&Stop",IDC_CASTSESS_STOP,71,69,60,14
+    LTEXT           "&Volume:",IDC_CASTSESS_VOLLABEL,142,72,32,8
+    CONTROL         "",IDC_CASTSESS_VOLUME,"msctls_trackbar32",TBS_HORZ | TBS_NOTICKS | TBS_BOTH | WS_TABSTOP,176,68,117,16
+    DEFPUSHBUTTON   "Close",IDCANCEL,237,88,56,14
+END
+
 IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
 STYLE DS_SETFONT | DS_NOFAILCREATE | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
@@ -4353,7 +4370,6 @@ BEGIN
     IDS_CAST_UNSUPPORTED_FILE "Casting is not supported for this file. Only MP4 and WebM files can be played directly on the device."
     IDS_CAST_FAILED         "Casting failed"
     IDS_CAST_TAKEN_OVER     "Another device took over casting"
-    IDS_CAST_LOCAL_FEATURE  "This feature is not available while casting."
     IDS_CAST_NO_DEVICE      "No cast device named ""%s"" was found"
     IDS_CAST_DISABLED       "Casting is disabled in the options"
     IDS_CAST_MANAGE_DEVICES "&Manage Devices..."
@@ -4368,6 +4384,8 @@ BEGIN
     IDS_CAST_DLG_STATUS_SAVED_FOUND "Saved, found"
     IDS_CAST_DLG_STATUS_FOUND "Found"
     IDS_CAST_DLG_NO_ANSWER  "No cast device answered at that address."
+    IDS_CAST_CONNECTING     "Connecting..."
+    IDS_CAST_BUFFERING      "Buffering..."
 END
 
 #endif    // English (United States) resources

@@ -379,6 +379,9 @@
     <ClCompile Include="CastSession.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
+    <ClCompile Include="CastSessionDlg.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
     <ClCompile Include="CastTargetChromecast.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
@@ -974,6 +977,9 @@
       <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="CastSession.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="CastSessionDlg.h">
       <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="CastTarget.h">

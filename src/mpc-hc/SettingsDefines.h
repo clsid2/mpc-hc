@@ -387,6 +387,7 @@
 #define IDS_R_DLG_COLOR_CONTROLS            _T("Dialogs\\ColorControls")
 
 #define IDS_R_DLG_CAST_DEVICES              _T("Dialogs\\CastDevices")
+#define IDS_R_DLG_CAST_SESSION              _T("Dialogs\\CastSession")
 
 #define IDS_R_SHADERS                       _T("Shaders")
 #define IDS_RS_SHADERS_EXTRA                _T("Extra")

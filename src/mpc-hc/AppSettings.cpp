@@ -3347,6 +3347,24 @@ void CAppSettings::CRecentFileListWithMoreInfo::UpdateCurrentFilePosition(REFERE
     }
 }
 
+void CAppSettings::CRecentFileListWithMoreInfo::UpdateFilePosition(CStringW fn, REFERENCE_TIME time) {
+    const CStringW hash = getRFEHash(fn);
+    for (size_t i = 0; i < rfe_array.GetCount(); i++) {
+        if (rfe_array[i].hash != hash) {
+            continue;
+        }
+        rfe_array[i].filePosition = time;
+        // Writing another file's entry must not disturb what is remembered
+        // about the one being played, which is what the throttling above reads.
+        const REFERENCE_TIME persisted = persistedFilePosition;
+        WriteMediaHistoryEntry(rfe_array[i]);
+        if (hash != current_rfe_hash) {
+            persistedFilePosition = persisted;
+        }
+        return;
+    }
+}
+
 REFERENCE_TIME CAppSettings::CRecentFileListWithMoreInfo::GetCurrentFilePosition() {
     size_t idx;
     if (GetCurrentIndex(idx)) {
