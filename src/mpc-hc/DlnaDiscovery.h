@@ -66,6 +66,18 @@ public:
     // Thread-safe snapshot of the currently known devices
     std::vector<DlnaDevice> GetDevices();
 
+    // Describes one device directly, without the worker: an M-SEARCH sent
+    // unicast to a single host rather than to the SSDP group, then that host's
+    // description and format list fetched from it. Nothing is started and no
+    // state is shared, so a probe never disturbs a discovery that is running.
+    // The search waits at most timeoutMs; the HTTP exchanges behind it have
+    // their own, equally bounded timeouts.
+    static bool ProbeAddress(const CString& ip, UINT port, DWORD timeoutMs, DlnaDevice& device);
+
+    // The same for a device whose description URL is already known, which is
+    // how a saved device is found again at the place it was last seen.
+    static bool ProbeLocation(const CString& location, const CString& ip, DlnaDevice& device);
+
 private:
     // A device description that has been announced but not fetched yet, or a
     // device whose accepted formats are still to be asked for. Exactly one of
@@ -90,6 +102,7 @@ private:
     void ParseSsdp(const CStringA& packet, const IN_ADDR& srcAddr);
     void QueueProbe(ProbeTask&& task);
     void RunProbe(const ProbeTask& task);
+    void DrainProbes();
     void RefreshDevice(const CString& udn);
     void RemoveDevice(const CString& udn);
     void ExpireStaleDevices();

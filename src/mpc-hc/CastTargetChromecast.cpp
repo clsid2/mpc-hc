@@ -102,19 +102,67 @@ void CChromecastTarget::StopDiscovery()
     m_discovery.Stop();
 }
 
+CastTargetDevice CChromecastTarget::ToTargetDevice(const CastDevice& dev)
+{
+    CastTargetDevice d;
+    d.protocol = CastProtocol::Chromecast;
+    d.name = DeviceDisplayName(dev);
+    d.id = DeviceKey(dev);
+    d.address = dev.ipAddress;
+    d.port = dev.port;
+    d.supportsVideo = dev.SupportsVideo();
+    d.supportsAudio = dev.SupportsAudio();
+    return d;
+}
+
 std::vector<CastTargetDevice> CChromecastTarget::GetDevices()
 {
     std::vector<CastTargetDevice> devices;
     for (const CastDevice& dev : m_discovery.GetDevices()) {
-        CastTargetDevice d;
-        d.name = DeviceDisplayName(dev);
-        d.id = DeviceKey(dev);
-        d.address = dev.ipAddress;
-        d.supportsVideo = dev.SupportsVideo();
-        d.supportsAudio = dev.SupportsAudio();
-        devices.emplace_back(std::move(d));
+        devices.emplace_back(ToTargetDevice(dev));
     }
     return devices;
+}
+
+bool CChromecastTarget::ProbeAddress(CastProtocol protocol, const CString& address, UINT /*port*/,
+                                     DWORD timeoutMs, CastTargetDevice& device)
+{
+    CastDevice dev;
+    if (protocol != CastProtocol::Chromecast || address.IsEmpty()
+            || !CCastDiscovery::ProbeAddress(address, timeoutMs, dev)) {
+        return false;
+    }
+    device = ToTargetDevice(dev);
+    return true;
+}
+
+bool CChromecastTarget::SearchById(const CString& id, DWORD timeoutMs, CastDevice& device)
+{
+    const bool wasRunning = m_discovery.IsRunning();
+    if (!wasRunning && !m_discovery.Start()) {
+        return false;
+    }
+
+    bool found = false;
+    const ULONGLONG deadline = GetTickCount64() + timeoutMs;
+    for (;;) {
+        for (const CastDevice& dev : m_discovery.GetDevices()) {
+            if (!dev.id.IsEmpty() && dev.id == id) {
+                device = dev;
+                found = true;
+                break;
+            }
+        }
+        if (found || GetTickCount64() >= deadline) {
+            break;
+        }
+        Sleep(150);
+    }
+
+    if (!wasRunning) {
+        m_discovery.Stop(); // the copy above survives it
+    }
+    return found;
 }
 
 void CChromecastTarget::SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg)
@@ -139,26 +187,74 @@ bool CChromecastTarget::Connect(const CString& deviceId)
 
     for (const CastDevice& dev : m_discovery.GetDevices()) {
         if (DeviceKey(dev) == deviceId) {
-            m_session.SetNotifyWindow(m_hMsgWnd, WM_CAST_SESSION);
-            if (!m_session.Start(dev)) {
-                return false;
-            }
-            if (!m_server.IsRunning() && !m_server.Start()) {
-                m_session.Stop();
-                return false;
-            }
-            m_server.SetAllowedPeer(CStringA(dev.ipAddress));
-            m_deviceId = deviceId;
-            m_deviceName = DeviceDisplayName(dev);
-            m_casting = true;
-            m_failed = false;
-            // notifications of the previous session no longer apply
-            m_generation = CastNextSessionGeneration();
-            m_lastNotifiedState = CastTargetState::Connecting;
-            return true;
+            return StartSession(dev, deviceId, DeviceDisplayName(dev));
         }
     }
     return false; // the device is gone from the discovery snapshot
+}
+
+bool CChromecastTarget::StartSession(const CastDevice& dev, const CString& deviceId, const CString& deviceName)
+{
+    m_session.SetNotifyWindow(m_hMsgWnd, WM_CAST_SESSION);
+    if (!m_session.Start(dev)) {
+        return false;
+    }
+    if (!m_server.IsRunning() && !m_server.Start()) {
+        m_session.Stop();
+        return false;
+    }
+    m_server.SetAllowedPeer(CStringA(dev.ipAddress));
+    m_deviceId = deviceId;
+    m_deviceName = deviceName;
+    m_casting = true;
+    m_failed = false;
+    // notifications of the previous session no longer apply
+    m_generation = CastNextSessionGeneration();
+    m_lastNotifiedState = CastTargetState::Connecting;
+    return true;
+}
+
+bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs)
+{
+    if (m_casting || !EnsureMessageWindow()) {
+        return false;
+    }
+
+    // The address the device was last seen at is asked first; only when it
+    // does not answer, or answers as somebody else, is a full search worth
+    // the wait. Either way what the device says about itself is written back,
+    // so the saved entry follows the device instead of rotting.
+    CastDevice dev;
+    bool found = !saved.address.IsEmpty() && CCastDiscovery::ProbeAddress(saved.address, directMs, dev)
+                 && (saved.id.IsEmpty() || dev.id.IsEmpty() || dev.id == saved.id);
+    if (!found && !saved.id.IsEmpty()) {
+        found = SearchById(saved.id, searchMs, dev);
+    }
+    if (!found) {
+        return false;
+    }
+
+    saved.address = dev.ipAddress;
+    saved.port = dev.port;
+    if (!dev.friendlyName.IsEmpty()) {
+        saved.name = dev.friendlyName;
+    }
+    if (dev.capabilities) {
+        saved.supportsVideo = dev.SupportsVideo();
+        saved.supportsAudio = dev.SupportsAudio();
+    }
+    return StartSession(dev, saved.id, saved.DisplayName());
+}
+
+bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+{
+    if (!CCastMediaServer::IsCastableFile(path)) {
+        return false;
+    }
+    // A device without video, a speaker or a display-less Nest, only takes
+    // audio; every receiver plays the same formats otherwise.
+    const CStringA mime = CCastMediaServer::MimeForFile(path);
+    return mime.Left(6).CompareNoCase("video/") != 0 || saved.supportsVideo;
 }
 
 bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path)

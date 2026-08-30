@@ -336,11 +336,10 @@ SOCKET CCastDiscovery::OpenSocket()
     return sock;
 }
 
-bool CCastDiscovery::SendQuery(SOCKET sock)
+int CCastDiscovery::BuildQuery(BYTE* packet)
 {
     // Standard query with a single PTR question for _googlecast._tcp.local,
     // QU bit set to request unicast responses
-    BYTE packet[64];
     int pos = 0;
 
     static const BYTE header[12] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 };
@@ -360,6 +359,14 @@ bool CCastDiscovery::SendQuery(SOCKET sock)
     packet[pos++] = DNS_RECTYPE_PTR;
     packet[pos++] = 0x80; // QCLASS = IN with the QU (unicast response) bit
     packet[pos++] = 0x01;
+
+    return pos;
+}
+
+bool CCastDiscovery::SendQuery(SOCKET sock)
+{
+    BYTE packet[64];
+    const int pos = BuildQuery(packet);
 
     sockaddr_in to;
     ZeroMemory(&to, sizeof(to));
@@ -382,6 +389,74 @@ bool CCastDiscovery::SendQuery(SOCKET sock)
         sent |= sendto(sock, (const char*)packet, pos, 0, (sockaddr*)&to, sizeof(to)) == pos;
     }
     return sent;
+}
+
+bool CCastDiscovery::ProbeAddress(const CString& ip, DWORD timeoutMs, CastDevice& device)
+{
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        return false;
+    }
+
+    // its own list, so that a probe never disturbs a discovery that is running
+    CCastDiscovery probe;
+
+    SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock != INVALID_SOCKET) {
+        sockaddr_in local;
+        ZeroMemory(&local, sizeof(local));
+        local.sin_family = AF_INET;
+        local.sin_addr.s_addr = htonl(INADDR_ANY);
+        local.sin_port = 0; // ephemeral: the QU bit asks for the answer here
+
+        sockaddr_in to;
+        ZeroMemory(&to, sizeof(to));
+        to.sin_family = AF_INET;
+        to.sin_port = htons(MDNS_PORT);
+
+        if (bind(sock, (sockaddr*)&local, sizeof(local)) == 0
+                && inet_pton(AF_INET, CStringA(ip), &to.sin_addr) == 1) {
+            BYTE packet[64];
+            const int len = BuildQuery(packet);
+            // twice: this is one datagram to one host and nothing resends it
+            sendto(sock, (const char*)packet, len, 0, (sockaddr*)&to, sizeof(to));
+            sendto(sock, (const char*)packet, len, 0, (sockaddr*)&to, sizeof(to));
+
+            const ULONGLONG deadline = GetTickCount64() + timeoutMs;
+            for (ULONGLONG now = GetTickCount64(); now < deadline; now = GetTickCount64()) {
+                fd_set readSet;
+                FD_ZERO(&readSet);
+                FD_SET(sock, &readSet);
+                const DWORD left = (DWORD)(deadline - now);
+                timeval tv = { (long)(left / 1000), (long)((left % 1000) * 1000) };
+                if (select(0, &readSet, nullptr, nullptr, &tv) != 1) {
+                    break;
+                }
+                BYTE buf[4096];
+                sockaddr_in from;
+                int fromLen = sizeof(from);
+                const int got = recvfrom(sock, (char*)buf, sizeof(buf), 0, (sockaddr*)&from, &fromLen);
+                if (got <= 0) {
+                    break;
+                }
+                if (from.sin_addr.s_addr != to.sin_addr.s_addr) {
+                    continue; // an announcement from somebody else on the group
+                }
+                probe.ParseResponse(buf, got, from.sin_addr);
+                if (!probe.m_devices.empty()) {
+                    break; // the host answered, there is nothing else to wait for
+                }
+            }
+        }
+        closesocket(sock);
+    }
+    WSACleanup();
+
+    if (probe.m_devices.empty()) {
+        return false;
+    }
+    device = probe.m_devices.front();
+    return true;
 }
 
 void CCastDiscovery::ParseResponse(const BYTE* packet, int len, const IN_ADDR& srcAddr)

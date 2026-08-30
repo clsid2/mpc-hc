@@ -50,13 +50,19 @@ public:
 
     void SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg) override;
 
+    // port is the SSDP port to ask at, 0 for the standard 1900
+    bool ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                      DWORD timeoutMs, CastTargetDevice& device) override;
+
     bool Connect(const CString& deviceId) override;
+    bool ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs) override;
     bool IsCasting() const override { return m_casting; }
     CString GetDeviceId() const override { return m_deviceId; }
     CString GetDeviceName() const override { return m_deviceName; }
     UINT GetSessionGeneration() const override { return m_generation; }
 
     bool CanCastFile(const CString& deviceId, const CString& path) override;
+    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) override;
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;
@@ -109,6 +115,12 @@ private:
     void SetState(CastTargetState state);
     void Fail(const CString& reason);
     void UpdatePosition(double position, double duration, bool fromPoll = false);
+
+    static CastTargetDevice ToTargetDevice(const DlnaDevice& dev);
+    // Looks for one device by its UDN with a full discovery, for at most
+    // timeoutMs. A discovery that was already running is left running.
+    bool SearchById(const CString& udn, DWORD timeoutMs, DlnaDevice& device);
+    bool StartSession(const DlnaDevice& dev, const CString& deviceName);
 
     static bool SinkAccepts(const CStringA& sink, const CStringA& mime);
     static CStringA BuildMetadata(const Command& cmd);

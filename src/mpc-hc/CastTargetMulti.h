@@ -45,13 +45,18 @@ public:
 
     void SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg) override;
 
+    bool ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                      DWORD timeoutMs, CastTargetDevice& device) override;
+
     bool Connect(const CString& deviceId) override;
+    bool ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs) override;
     bool IsCasting() const override { return m_pActive && m_pActive->IsCasting(); }
     CString GetDeviceId() const override { return m_activeId; }
     CString GetDeviceName() const override { return m_pActive ? m_pActive->GetDeviceName() : CString(); }
     UINT GetSessionGeneration() const override { return m_pActive ? m_pActive->GetSessionGeneration() : 0; }
 
     bool CanCastFile(const CString& deviceId, const CString& path) override;
+    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) override;
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;
@@ -72,6 +77,10 @@ private:
     // Resolves the target a prefixed device id belongs to and hands back the
     // id as that target knows it. Returns null for an id from neither.
     CCastTarget* TargetFor(const CString& deviceId, CString& targetDeviceId);
+    // Routes on the protocol a saved entry names, and hands back its id with
+    // the prefix taken off when it carries one.
+    CCastTarget* TargetFor(CastProtocol protocol, const CString& deviceId, CString& targetDeviceId);
+    static LPCTSTR PrefixFor(CastProtocol protocol);
     void AppendDevices(CCastTarget& target, LPCTSTR prefix, std::vector<CastTargetDevice>& devices);
 
     CChromecastTarget m_chromecast;

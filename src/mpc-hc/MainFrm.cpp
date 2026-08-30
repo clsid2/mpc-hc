@@ -62,6 +62,7 @@
 #include "UpdateChecker.h"
 #include "WebServer.h"
 #include "CastTargetMulti.h"
+#include "CastDevicesDlg.h"
 #include <ISOLang.h>
 #include <PathUtils.h>
 #include <DSUtil.h>
@@ -133,6 +134,18 @@ DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0
 
 // how long /castto waits for its device to answer discovery
 #define CASTTO_SEARCH_TIMEOUT 15000
+
+// Starting a session with a saved device: first the address it was last seen
+// at is asked directly, and only if nothing is there is it searched for by its
+// stable id. Both are spent on the UI thread, so both are kept short.
+#define CAST_CONNECT_DIRECT_MS 1500
+#define CAST_CONNECT_SEARCH_MS 4000
+
+// How much of a device name a menu item shows, and the labels that tell two
+// devices apart when their names alone would not.
+#define CAST_MENU_NAME_MAX 40
+#define CHROMECAST_LABEL   _T(" (Chromecast)")
+#define DLNA_LABEL         _T(" (DLNA)")
 
 static UINT s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
 static UINT WM_NOTIFYICON = RegisterWindowMessage(_T("MYWM_NOTIFYICON"));
@@ -609,6 +622,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_UPDATE_COMMAND_UI(ID_PLAY_REPEAT_FOREVER, OnUpdatePlayRepeatForever)
 
     ON_COMMAND_RANGE(ID_CAST_SUBITEM_START, ID_CAST_SUBITEM_END, OnCastDevice)
+    ON_COMMAND(ID_CAST_MANAGE, OnCastManageDevices)
     ON_COMMAND(ID_CAST_STOP, OnCastStop)
     ON_UPDATE_COMMAND_UI(ID_CAST_STOP, OnUpdateCastStop)
     ON_MESSAGE(WM_CAST_STATE_CHANGED, OnCastStateChanged)
@@ -3796,10 +3810,9 @@ void CMainFrame::OnInitMenu(CMenu* pMenu)
 
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) {
     if (!bSysMenu && pPopupMenu->m_hMenu == m_castMenu.m_hMenu) {
-        // The cast submenu itself is opening: only now is it worth spending a
-        // socket and a thread on looking for devices. Rebuilt before the base
-        // class so that its update-UI pass sees the items.
-        StartCastDiscovery();
+        // The cast submenu itself is opening. It is built from the saved
+        // devices alone -- no socket, no thread, nothing to wait for -- and
+        // before the base class, so that its update-UI pass sees the items.
         SetupCastSubMenu();
         m_castMenu.fulfillThemeReqs();
     }
@@ -18793,49 +18806,87 @@ static CastMediaInfo GetCastMediaInfo(IFilterGraph* pGB)
     return info;
 }
 
+// The labels the cast submenu shows for a list of devices. A device names
+// itself over the network, so a name is made fit for a menu item before it
+// goes into one; only then are the ones the user could not tell apart told
+// apart by their protocol, because two long names can become the same label
+// once they have been truncated.
+static std::vector<CString> CastMenuLabels(const std::vector<CastSavedDevice>& devices)
+{
+    std::vector<CString> labels;
+    for (const CastSavedDevice& dev : devices) {
+        CString name = dev.DisplayName();
+        name.Trim();
+        if (name.IsEmpty()) {
+            name = dev.address; // a device with no name at all is still reachable
+        }
+        labels.emplace_back(SanitizeMenuLabel(name, CAST_MENU_NAME_MAX));
+    }
+
+    std::vector<bool> ambiguous(labels.size(), false);
+    for (size_t i = 0; i < labels.size(); i++) {
+        for (size_t j = i + 1; j < labels.size(); j++) {
+            if (labels[i] == labels[j]) {
+                ambiguous[i] = ambiguous[j] = true;
+            }
+        }
+    }
+    for (size_t i = 0; i < labels.size(); i++) {
+        if (ambiguous[i]) {
+            labels[i] += devices[i].protocol == CastProtocol::Chromecast
+                         ? CHROMECAST_LABEL : DLNA_LABEL;
+        }
+    }
+    return labels;
+}
+
 void CMainFrame::SetupCastSubMenu()
 {
     CMenu& subMenu = m_castMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
-    // Switched off in the options: the cast target is never built, which is
-    // what keeps every socket the feature would open shut, and the empty
-    // submenu greys "Cast to Device" out.
+    m_castMenuDevices.clear();
+
+    // Switched off in the options: the empty submenu greys "Cast to Device"
+    // out, and nothing that could open a socket is reachable from here.
     if (!AfxGetAppSettings().bEnableCasting) {
         return;
     }
 
-    EnsureCastTarget();
-
+    // Only what the user has kept is offered, which is what makes this menu
+    // instant: it is built from the settings and asks the network nothing.
     // Devices that only do audio, a speaker or an AV receiver, are worth
     // offering for an audio file and nothing else. With no file loaded there
     // is nothing to judge them by, so they are all shown.
     const bool bAudioDevicesUseful = GetLoadState() != MLS::LOADED || m_fAudioOnly;
 
-    m_castMenuDevices.clear();
-    for (auto& dev : m_pCastTarget->GetDevices()) {
+    std::vector<CastSavedDevice> saved;
+    AfxGetAppSettings().GetCastDevices(saved);
+    for (CastSavedDevice& dev : saved) {
         if ((dev.supportsVideo || (bAudioDevicesUseful && dev.supportsAudio))
                 && m_castMenuDevices.size() < size_t(ID_CAST_SUBITEM_END - ID_CAST_SUBITEM_START + 1)) {
             m_castMenuDevices.emplace_back(std::move(dev));
         }
     }
 
-    if (m_castMenuDevices.empty()) {
-        VERIFY(subMenu.AppendMenu(MF_STRING | MF_DISABLED | MF_GRAYED, ID_CAST_SUBITEM_START, ResStr(IDS_CAST_SEARCHING)));
-    } else {
-        const CString activeId = m_pCastTarget->GetDeviceId();
-        UINT id = ID_CAST_SUBITEM_START;
-        for (const auto& dev : m_castMenuDevices) {
-            UINT flags = MF_STRING | MF_ENABLED;
-            if (IsCasting() && dev.id == activeId) {
-                flags |= MF_CHECKED;
-            }
-            CString name(dev.name);
-            name.Replace(_T("&"), _T("&&"));
-            VERIFY(subMenu.AppendMenu(flags, id++, name));
+    const CString activeId = m_pCastTarget ? m_pCastTarget->GetDeviceId() : CString();
+    const std::vector<CString> labels = CastMenuLabels(m_castMenuDevices);
+    UINT id = ID_CAST_SUBITEM_START;
+    for (size_t i = 0; i < m_castMenuDevices.size(); i++) {
+        UINT flags = MF_STRING | MF_ENABLED;
+        if (IsCasting() && m_castMenuDevices[i].id == activeId) {
+            flags |= MF_CHECKED;
         }
+        VERIFY(subMenu.AppendMenu(flags, id++, labels[i]));
     }
+
+    // With nothing saved yet the submenu is only this one item, which is where
+    // devices are looked for; there is no dead "searching..." to stare at.
+    if (!m_castMenuDevices.empty()) {
+        VERIFY(subMenu.AppendMenu(MF_SEPARATOR | MF_ENABLED));
+    }
+    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_CAST_MANAGE, ResStr(IDS_CAST_MANAGE_DEVICES)));
     VERIFY(subMenu.AppendMenu(MF_SEPARATOR | MF_ENABLED));
     VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_CAST_STOP, ResStr(IDS_CAST_STOP_CASTING)));
 }
@@ -18851,16 +18902,36 @@ void CMainFrame::EnsureCastTarget()
     CCastMediaServer::preferredPort = (UINT)AfxGetAppSettings().nCastServerPort;
 }
 
-void CMainFrame::StartCastDiscovery()
+// A device that answered somewhere other than where it was remembered is
+// remembered where it now is, and quietly: a DHCP lease that moved is not
+// something to interrupt anybody about. The name the user gave it is the one
+// thing the network is never allowed to overwrite.
+void CMainFrame::UpdateSavedCastDevice(const CastSavedDevice& device)
 {
-    // discovery starts lazily when the cast submenu is first opened and keeps
-    // running afterwards
-    if (AfxGetAppSettings().bEnableCasting && m_pCastTarget && !m_pCastTarget->IsDiscoveryRunning()) {
-        m_pCastTarget->StartDiscovery();
+    CAppSettings& s = AfxGetAppSettings();
+    std::vector<CastSavedDevice> saved;
+    s.GetCastDevices(saved);
+
+    for (CastSavedDevice& entry : saved) {
+        if (entry.id != device.id) {
+            continue;
+        }
+        if (entry.address == device.address && entry.port == device.port
+                && entry.location == device.location && entry.name == device.name
+                && entry.formats == device.formats
+                && entry.supportsVideo == device.supportsVideo
+                && entry.supportsAudio == device.supportsAudio) {
+            return; // nothing about it moved
+        }
+        const CString userName = entry.userName;
+        entry = device;
+        entry.userName = userName;
+        s.SetCastDevices(saved);
+        return;
     }
 }
 
-UINT CMainFrame::StartCastingTo(const CastTargetDevice& device)
+UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
 {
     if (!m_pCastTarget) {
         return IDS_CAST_FAILED;
@@ -18868,7 +18939,7 @@ UINT CMainFrame::StartCastingTo(const CastTargetDevice& device)
 
     if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
             || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)
-            || !m_pCastTarget->CanCastFile(device.id, lastOpenFile)) {
+            || !m_pCastTarget->CanCastFileSaved(device, lastOpenFile)) {
         return IDS_CAST_UNSUPPORTED_FILE;
     }
 
@@ -18899,11 +18970,16 @@ UINT CMainFrame::StartCastingTo(const CastTargetDevice& device)
         SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
     }
 
-    if (!m_pCastTarget->Connect(device.id)) {
+    // The device is looked for where it was last seen, and only if it is not
+    // there any more is it searched for by its id. Both are bounded, and both
+    // happen here rather than on a thread because there is nothing for the
+    // player to do until the answer is in.
+    CWaitCursor wait;
+    if (!m_pCastTarget->ConnectSaved(device, CAST_CONNECT_DIRECT_MS, CAST_CONNECT_SEARCH_MS)) {
         if (bWasPlaying) {
             SendMessage(WM_COMMAND, ID_PLAY_PLAY); // leave playback as we found it
         }
-        return IDS_CAST_FAILED;
+        return IDS_CAST_NOT_REACHABLE;
     }
 
     m_pCastTarget->LoadMedia(lastOpenFile, GetFileName(), rtDur / 10000000.0, startSec,
@@ -18921,29 +18997,55 @@ UINT CMainFrame::StartCastingTo(const CastTargetDevice& device)
 void CMainFrame::OnCastDevice(UINT nID)
 {
     const size_t i = nID - ID_CAST_SUBITEM_START;
-    if (!m_pCastTarget || i >= m_castMenuDevices.size()) {
+    if (!AfxGetAppSettings().bEnableCasting || i >= m_castMenuDevices.size()) {
         return;
     }
+    EnsureCastTarget();
     EndCastTo(CString()); // the device has been chosen by hand, stop looking for one
 
-    const UINT nErr = StartCastingTo(m_castMenuDevices[i]);
+    CastSavedDevice device(m_castMenuDevices[i]);
+    const UINT nErr = StartCastingTo(device);
     if (nErr) {
         AfxMessageBox(nErr, (nErr == IDS_CAST_UNSUPPORTED_FILE ? MB_ICONINFORMATION : MB_ICONWARNING) | MB_OK);
+    } else {
+        UpdateSavedCastDevice(device);
+    }
+}
+
+void CMainFrame::OnCastManageDevices()
+{
+    CAppSettings& s = AfxGetAppSettings();
+    if (!s.bEnableCasting) {
+        return;
+    }
+    EnsureCastTarget();
+
+    // The only place a discovery ever runs: it is started when this dialog
+    // opens and stopped when it closes.
+    CCastDevicesDlg dlg(m_pCastTarget.get(), this);
+    s.GetCastDevices(dlg.m_devices);
+    if (dlg.DoModal() == IDOK) {
+        s.SetCastDevices(dlg.m_devices);
     }
 }
 
 // Matches the /castto argument against a device: its prefixed id or its
-// address exactly, or any part of its name, so "Family Room" is enough to
-// name "Family Room Speaker".
-static bool CastDeviceMatches(const CastTargetDevice& device, const CString& query)
+// address exactly, or any part of either of its names, so "Family Room" is
+// enough to name "Family Room Speaker".
+static bool CastDeviceMatches(const CastSavedDevice& device, const CString& query)
 {
     if (device.id.CompareNoCase(query) == 0 || device.address == query) {
         return true;
     }
-    CString name(device.name), needle(query);
-    name.MakeLower();
+    CString needle(query);
     needle.MakeLower();
-    return name.Find(needle) >= 0;
+
+    auto contains = [&needle](const CString & name) {
+        CString lower(name);
+        lower.MakeLower();
+        return !lower.IsEmpty() && lower.Find(needle) >= 0;
+    };
+    return contains(device.name) || contains(device.userName);
 }
 
 void CMainFrame::BeginCastTo(const CString& device)
@@ -18958,13 +19060,31 @@ void CMainFrame::BeginCastTo(const CString& device)
     }
 
     EnsureCastTarget();
-    // Nothing has opened the cast submenu, so the lazy start never happened.
-    StartCastDiscovery();
+
+    // A device the user has kept is cast to at once, with no discovery at all;
+    // ConnectSaved() looks for it by id itself when it has moved. Only a name
+    // that is in no saved entry is worth spending a search on.
+    std::vector<CastSavedDevice> saved;
+    AfxGetAppSettings().GetCastDevices(saved);
+    for (CastSavedDevice& entry : saved) {
+        if (!CastDeviceMatches(entry, device)) {
+            continue;
+        }
+        const UINT nErr = StartCastingTo(entry);
+        if (!nErr) {
+            UpdateSavedCastDevice(entry);
+        }
+        EndCastTo(nErr ? ResStr(nErr) : CString());
+        return;
+    }
+
+    m_bCastToDiscovery = !m_pCastTarget->IsDiscoveryRunning();
+    m_pCastTarget->StartDiscovery();
 
     m_strCastToPending = device;
     m_castToDeadline = GetTickCount64() + CASTTO_SEARCH_TIMEOUT;
     VERIFY(SetTimer(TIMER_CASTTO, 500, nullptr));
-    CastToSearchStep(); // the device may be known already
+    CastToSearchStep(); // the device may have answered already
 }
 
 void CMainFrame::CastToSearchStep()
@@ -18981,23 +19101,26 @@ void CMainFrame::CastToSearchStep()
     // The menu offers a device that only does audio for an audio file and for
     // nothing else; the same rule decides here. A device that has not yet said
     // what it accepts is passed over and looked at again on the next tick.
-    const CastTargetDevice* pMatch = nullptr;
+    CastSavedDevice match;
+    bool bMatched = false;
     bool bNameMatched = false;
-    const std::vector<CastTargetDevice> devices = m_pCastTarget->GetDevices();
-    for (const CastTargetDevice& device : devices) {
-        if (!CastDeviceMatches(device, m_strCastToPending)) {
+    for (const CastTargetDevice& device : m_pCastTarget->GetDevices()) {
+        CastSavedDevice candidate;
+        static_cast<CastTargetDevice&>(candidate) = device;
+        if (!CastDeviceMatches(candidate, m_strCastToPending)) {
             continue;
         }
         bNameMatched = true;
         if ((device.supportsVideo || (m_fAudioOnly && device.supportsAudio))
-                && m_pCastTarget->CanCastFile(device.id, lastOpenFile)) {
-            pMatch = &device;
+                && m_pCastTarget->CanCastFileSaved(candidate, lastOpenFile)) {
+            match = candidate;
+            bMatched = true;
             break;
         }
     }
 
-    if (pMatch) {
-        const UINT nErr = StartCastingTo(*pMatch);
+    if (bMatched) {
+        const UINT nErr = StartCastingTo(match);
         EndCastTo(nErr ? ResStr(nErr) : CString());
     } else if (GetTickCount64() >= m_castToDeadline) {
         CString strReason;
@@ -19015,6 +19138,15 @@ void CMainFrame::EndCastTo(const CString& strReason)
     KillTimer(TIMER_CASTTO);
     m_strCastToPending.Empty();
     m_castToDeadline = 0;
+
+    // The search is the only thing here that ever wanted a discovery, and it
+    // is over; a discovery somebody else started is left alone.
+    if (m_bCastToDiscovery) {
+        m_bCastToDiscovery = false;
+        if (m_pCastTarget) {
+            m_pCastTarget->StopDiscovery();
+        }
+    }
 
     if (!strReason.IsEmpty()) {
         // only the casting is given up on; local playback carries on

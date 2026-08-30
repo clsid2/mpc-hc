@@ -3014,6 +3014,97 @@ void CAppSettings::AddFav(favtype ft, CString s)
     SetFav(ft, sl);
 }
 
+// The fields of a saved cast device, in the order they are stored. New ones
+// are only ever appended, so an entry written by an older version simply runs
+// out early and what is missing keeps its default.
+enum {
+    CASTDEV_PROTOCOL, CASTDEV_ID, CASTDEV_NAME, CASTDEV_USERNAME, CASTDEV_ADDRESS,
+    CASTDEV_PORT, CASTDEV_LOCATION, CASTDEV_FLAGS, CASTDEV_FORMATS, CASTDEV_FIELDS
+};
+
+// The Sink list of a chatty renderer runs to kilobytes. What is kept is enough
+// to answer "can this device play this file"; a device whose list is longer
+// than this is simply treated as not having answered.
+#define CASTDEV_MAX_FORMATS 4096
+
+void CAppSettings::GetCastDevices(std::vector<CastSavedDevice>& devices) const
+{
+    devices.clear();
+
+    for (int i = 0; ; i++) {
+        CString entry;
+        entry.Format(_T("Device%d"), i);
+        const CString stored = AfxGetApp()->GetProfileString(IDS_R_CASTDEVICES, entry);
+        if (stored.IsEmpty()) {
+            break;
+        }
+
+        CAtlList<CString> list;
+        ExplodeEsc(stored, list, _T(';'), CASTDEV_FIELDS);
+        std::vector<CString> fields;
+        for (POSITION pos = list.GetHeadPosition(); pos;) {
+            fields.emplace_back(list.GetNext(pos));
+        }
+        fields.resize(CASTDEV_FIELDS);
+
+        CastSavedDevice dev;
+        dev.protocol = fields[CASTDEV_PROTOCOL] == _T("dlna") ? CastProtocol::Dlna : CastProtocol::Chromecast;
+        dev.id = fields[CASTDEV_ID];
+        dev.name = fields[CASTDEV_NAME];
+        dev.userName = fields[CASTDEV_USERNAME];
+        dev.address = fields[CASTDEV_ADDRESS];
+        dev.port = (UINT)_ttoi(fields[CASTDEV_PORT]);
+        dev.location = fields[CASTDEV_LOCATION];
+        const int flags = _ttoi(fields[CASTDEV_FLAGS]);
+        dev.supportsVideo = !!(flags & 1);
+        dev.supportsAudio = !!(flags & 2);
+        dev.formats = fields[CASTDEV_FORMATS];
+        if (!dev.id.IsEmpty()) {
+            devices.emplace_back(std::move(dev));
+        }
+    }
+}
+
+void CAppSettings::SetCastDevices(const std::vector<CastSavedDevice>& devices)
+{
+    AfxGetApp()->WriteProfileString(IDS_R_CASTDEVICES, nullptr, nullptr);
+
+    // A device names itself over the network and may name itself anything.
+    // Only the characters that would break the file the settings are written
+    // to in portable mode are taken out; the name is otherwise kept whole,
+    // and what a menu needs doing to it is done where the menu is built.
+    auto storable = [](const CString & text) {
+        CString s(text);
+        for (int i = 0; i < s.GetLength(); i++) {
+            if (s[i] < _T(' ')) {
+                s.SetAt(i, _T(' '));
+            }
+        }
+        return s;
+    };
+
+    int i = 0;
+    for (const CastSavedDevice& dev : devices) {
+        CAtlList<CString> fields;
+        fields.AddTail(dev.protocol == CastProtocol::Dlna ? CString(_T("dlna")) : CString(_T("cc")));
+        fields.AddTail(dev.id);
+        fields.AddTail(storable(dev.name));
+        fields.AddTail(storable(dev.userName));
+        fields.AddTail(dev.address);
+        CString number;
+        number.Format(_T("%u"), dev.port);
+        fields.AddTail(number);
+        fields.AddTail(dev.location);
+        number.Format(_T("%d"), (dev.supportsVideo ? 1 : 0) | (dev.supportsAudio ? 2 : 0));
+        fields.AddTail(number);
+        fields.AddTail(dev.formats.GetLength() <= CASTDEV_MAX_FORMATS ? dev.formats : CString());
+
+        CString entry;
+        entry.Format(_T("Device%d"), i++);
+        AfxGetApp()->WriteProfileString(IDS_R_CASTDEVICES, entry, ImplodeEsc(fields, _T(';')));
+    }
+}
+
 CBDAChannel* CAppSettings::FindChannelByPref(int nPrefNumber)
 {
     auto it = find_if(m_DVBChannels.begin(), m_DVBChannels.end(), [&](CBDAChannel const & channel) {

@@ -367,6 +367,9 @@
     <ClCompile Include="VolumeCtrl.cpp">
       <Filter>Custom Controls</Filter>
     </ClCompile>
+    <ClCompile Include="CastDevicesDlg.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
     <ClCompile Include="CastDiscovery.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
@@ -960,6 +963,9 @@
     </ClInclude>
     <ClInclude Include="VolumeCtrl.h">
       <Filter>Custom Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="CastDevicesDlg.h">
+      <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="CastDiscovery.h">
       <Filter>Integration\Cast</Filter>

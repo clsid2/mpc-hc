@@ -24,6 +24,7 @@
 #include "../Subtitles/STS.h"
 #include "../filters/switcher/AudioSwitcher/AudioSwitcher.h"
 #include "../thirdparty/sanear/src/Interfaces.h"
+#include "CastTarget.h"
 #include "DVBChannel.h"
 #include "FileAssoc.h"
 #include "FilterEnum.h"
@@ -1120,6 +1121,12 @@ public:
     void            GetFav(favtype ft, CAtlList<CString>& sl) const;
     void            SetFav(favtype ft, CAtlList<CString>& sl);
     void            AddFav(favtype ft, CString s);
+
+    // The cast devices the user has kept, stored the way favorites are: one
+    // profile string per device, read and written on demand rather than held
+    // in this object, so that a second instance sees an added device at once.
+    void            GetCastDevices(std::vector<CastSavedDevice>& devices) const;
+    void            SetCastDevices(const std::vector<CastSavedDevice>& devices);
 
     CBDAChannel*    FindChannelByPref(int nPrefNumber);
 

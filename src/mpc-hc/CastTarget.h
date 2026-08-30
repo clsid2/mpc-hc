@@ -57,12 +57,29 @@ struct CastMediaInfo {
     int channels = 0;
 };
 
+enum class CastProtocol { Chromecast, Dlna };
+
 struct CastTargetDevice {
-    CString name;    // display name for the menu
+    CastProtocol protocol = CastProtocol::Chromecast;
+    CString name;    // friendly name as the device advertises it
     CString id;      // stable identifier, passed back to Connect()
     CString address; // dotted IPv4 address, so a device can also be named by it
+    UINT port = 0;   // 0 when the protocol has a fixed one
+    CString location; // DLNA description URL, empty for Chromecast
+    CString formats;  // DLNA ConnectionManager Sink list, empty when unknown
     bool supportsVideo = false;
     bool supportsAudio = false;
+};
+
+// A device the user has kept. The cast submenu is built from these alone, so
+// an entry has to carry everything the menu needs to judge the device against
+// the loaded file, and everything a session needs to reach it again with no
+// discovery running. The advertised name is kept beside the one the user gave
+// it, so that a rescan never overwrites what was typed.
+struct CastSavedDevice : CastTargetDevice {
+    CString userName; // name the user gave it, empty when there is none
+
+    CString DisplayName() const { return userName.IsEmpty() ? name : userName; }
 };
 
 // Session generations are drawn from one counter shared by every target, so a
@@ -91,8 +108,25 @@ public:
     // simplified state changes.
     virtual void SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg) = 0;
 
+    // Looks for a device at one address only, with a unicast query rather than
+    // the multicast discovery, and without starting a thread. This is how a
+    // renderer that answers a multicast search unreliably, or one on a network
+    // the multicast never reaches, can still be named. protocol says which
+    // protocol to ask; a target that does not speak it says so at once.
+    // Blocks the calling thread for at most timeoutMs.
+    virtual bool ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                              DWORD timeoutMs, CastTargetDevice& device) = 0;
+
     // Session control; all calls are made from the UI thread.
     virtual bool Connect(const CString& deviceId) = 0;
+
+    // Connects to a device out of the saved list instead of out of a live
+    // discovery snapshot. The stored address is tried first; when it does not
+    // answer, one short search re-resolves the device by its stable id, so a
+    // device that DHCP moved is found again rather than declared broken.
+    // saved is updated in place with what the device turned out to be. Both
+    // budgets are in milliseconds and both are spent on the calling thread.
+    virtual bool ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs) = 0;
     virtual bool IsCasting() const = 0; // Connect() succeeded and StopCasting() not called yet
     virtual CString GetDeviceId() const = 0;   // active device, empty when not casting
     virtual CString GetDeviceName() const = 0; // active device display name
@@ -105,6 +139,10 @@ public:
     // named because capabilities differ per device on protocols that report
     // them (DLNA), while every Chromecast receiver is the same.
     virtual bool CanCastFile(const CString& deviceId, const CString& path) = 0;
+
+    // The same question for a device from the saved list, answered from what
+    // was recorded about it rather than from a discovery that is not running.
+    virtual bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) = 0;
 
     // Serves filePath to the device and loads it, seeking to startSec once
     // the device reports playback. info is what the local graph knows about

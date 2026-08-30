@@ -693,6 +693,115 @@ std::vector<DlnaDevice> CDlnaDiscovery::GetDevices()
     return m_devices;
 }
 
+// Works off everything a probe queued -- the description itself, and the
+// format list that follows it. Only ever called on a private instance.
+void CDlnaDiscovery::DrainProbes()
+{
+    for (int guard = 0; !m_probeQueue.empty() && guard < MAX_PROBE_QUEUE; guard++) {
+        const ProbeTask task = m_probeQueue.front();
+        m_probeQueue.pop_front();
+        RunProbe(task);
+    }
+}
+
+bool CDlnaDiscovery::ProbeLocation(const CString& location, const CString& ip, DlnaDevice& device)
+{
+    CDlnaDiscovery probe; // its own list; nothing is started
+
+    ProbeTask task;
+    task.type = ProbeTask::Type::Describe;
+    task.location = location;
+    task.ip = ip;
+    probe.RunProbe(task);
+    probe.DrainProbes();
+
+    if (probe.m_devices.empty()) {
+        return false;
+    }
+    device = probe.m_devices.front();
+    return true;
+}
+
+bool CDlnaDiscovery::ProbeAddress(const CString& ip, UINT port, DWORD timeoutMs, DlnaDevice& device)
+{
+    if (port == 0) {
+        port = SSDP_PORT;
+    }
+
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        return false;
+    }
+
+    CDlnaDiscovery probe;
+
+    SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock != INVALID_SOCKET) {
+        sockaddr_in local;
+        ZeroMemory(&local, sizeof(local));
+        local.sin_family = AF_INET;
+        local.sin_addr.s_addr = htonl(INADDR_ANY);
+        local.sin_port = 0;
+
+        sockaddr_in to;
+        ZeroMemory(&to, sizeof(to));
+        to.sin_family = AF_INET;
+        to.sin_port = htons((u_short)port);
+
+        if (bind(sock, (sockaddr*)&local, sizeof(local)) == 0
+                && inet_pton(AF_INET, CStringA(ip), &to.sin_addr) == 1) {
+            // A unicast M-SEARCH names the host it is sent to in HOST, and asks
+            // for the answer at once: there is no group of devices to spread
+            // their replies over.
+            CStringA packet;
+            packet.Format("M-SEARCH * HTTP/1.1\r\n"
+                          "HOST: %s:%u\r\n"
+                          "MAN: \"ssdp:discover\"\r\n"
+                          "MX: 1\r\n"
+                          "ST: %s\r\n"
+                          "USER-AGENT: Windows UPnP/1.0 MPC-HC\r\n"
+                          "\r\n", CStringA(ip).GetString(), port, SSDP_TARGET);
+            sendto(sock, packet, packet.GetLength(), 0, (sockaddr*)&to, sizeof(to));
+            sendto(sock, packet, packet.GetLength(), 0, (sockaddr*)&to, sizeof(to));
+
+            const ULONGLONG deadline = GetTickCount64() + timeoutMs;
+            for (ULONGLONG now = GetTickCount64(); now < deadline; now = GetTickCount64()) {
+                fd_set readSet;
+                FD_ZERO(&readSet);
+                FD_SET(sock, &readSet);
+                const DWORD left = (DWORD)(deadline - now);
+                timeval tv = { (long)(left / 1000), (long)((left % 1000) * 1000) };
+                if (select(0, &readSet, nullptr, nullptr, &tv) != 1) {
+                    break;
+                }
+                char buf[MAX_SSDP_PACKET];
+                sockaddr_in from;
+                int fromLen = sizeof(from);
+                const int len = recvfrom(sock, buf, sizeof(buf), 0, (sockaddr*)&from, &fromLen);
+                if (len <= 0) {
+                    break;
+                }
+                if (from.sin_addr.s_addr != to.sin_addr.s_addr) {
+                    continue;
+                }
+                probe.ParseSsdp(CStringA(buf, len), from.sin_addr);
+                if (!probe.m_probeQueue.empty()) {
+                    break; // the host answered; describing it is all that is left
+                }
+            }
+        }
+        closesocket(sock);
+    }
+    WSACleanup();
+
+    probe.DrainProbes();
+    if (probe.m_devices.empty()) {
+        return false;
+    }
+    device = probe.m_devices.front();
+    return true;
+}
+
 DWORD WINAPI CDlnaDiscovery::StaticThreadProc(LPVOID lpParam)
 {
     SetThreadName(DWORD(-1), "DlnaDiscovery Thread");

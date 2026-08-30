@@ -48,13 +48,19 @@ public:
 
     void SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg) override;
 
+    // port is unused: the mDNS query a Chromecast answers always goes to 5353
+    bool ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                      DWORD timeoutMs, CastTargetDevice& device) override;
+
     bool Connect(const CString& deviceId) override;
+    bool ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs) override;
     bool IsCasting() const override { return m_casting; }
     CString GetDeviceId() const override { return m_deviceId; }
     CString GetDeviceName() const override { return m_deviceName; }
     UINT GetSessionGeneration() const override { return m_generation; }
 
     bool CanCastFile(const CString& deviceId, const CString& path) override;
+    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) override;
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;
@@ -78,6 +84,11 @@ private:
     static CastTargetState SimplifyState(CastSessionState state);
     static CString DeviceKey(const CastDevice& dev);
     static CString DeviceDisplayName(const CastDevice& dev);
+    static CastTargetDevice ToTargetDevice(const CastDevice& dev);
+    // Looks for one device by its stable id with a full discovery, for at most
+    // timeoutMs. A discovery that was already running is left running.
+    bool SearchById(const CString& id, DWORD timeoutMs, CastDevice& device);
+    bool StartSession(const CastDevice& dev, const CString& deviceId, const CString& deviceName);
 
     CCastDiscovery m_discovery;
     CCastSession m_session;

@@ -181,19 +181,69 @@ void CDlnaTarget::StopDiscovery()
     m_discovery.Stop();
 }
 
+CastTargetDevice CDlnaTarget::ToTargetDevice(const DlnaDevice& dev)
+{
+    CastTargetDevice d;
+    d.protocol = CastProtocol::Dlna;
+    d.name = dev.friendlyName;
+    d.id = dev.udn;
+    d.address = dev.ipAddress;
+    d.location = dev.location;
+    d.formats = CString(dev.sinkProtocolInfo);
+    d.supportsVideo = dev.supportsVideo;
+    d.supportsAudio = dev.supportsAudio;
+    return d;
+}
+
 std::vector<CastTargetDevice> CDlnaTarget::GetDevices()
 {
     std::vector<CastTargetDevice> devices;
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
-        CastTargetDevice d;
-        d.name = dev.friendlyName;
-        d.id = dev.udn;
-        d.address = dev.ipAddress;
-        d.supportsVideo = dev.supportsVideo;
-        d.supportsAudio = dev.supportsAudio;
-        devices.emplace_back(std::move(d));
+        devices.emplace_back(ToTargetDevice(dev));
     }
     return devices;
+}
+
+bool CDlnaTarget::ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                               DWORD timeoutMs, CastTargetDevice& device)
+{
+    DlnaDevice dev;
+    if (protocol != CastProtocol::Dlna || address.IsEmpty()
+            || !CDlnaDiscovery::ProbeAddress(address, port, timeoutMs, dev)) {
+        return false;
+    }
+    device = ToTargetDevice(dev);
+    device.port = port;
+    return true;
+}
+
+bool CDlnaTarget::SearchById(const CString& udn, DWORD timeoutMs, DlnaDevice& device)
+{
+    const bool wasRunning = m_discovery.IsRunning();
+    if (!wasRunning && !m_discovery.Start()) {
+        return false;
+    }
+
+    bool found = false;
+    const ULONGLONG deadline = GetTickCount64() + timeoutMs;
+    for (;;) {
+        for (const DlnaDevice& dev : m_discovery.GetDevices()) {
+            if (dev.udn == udn && !dev.avTransportURL.IsEmpty()) {
+                device = dev;
+                found = true;
+                break;
+            }
+        }
+        if (found || GetTickCount64() >= deadline) {
+            break;
+        }
+        Sleep(150);
+    }
+
+    if (!wasRunning) {
+        m_discovery.Stop(); // the copy above survives it
+    }
+    return found;
 }
 
 void CDlnaTarget::SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg)
@@ -213,63 +263,119 @@ bool CDlnaTarget::Connect(const CString& deviceId)
         if (dev.udn != deviceId || dev.avTransportURL.IsEmpty()) {
             continue;
         }
-
-        m_deviceAddress = dev.ipAddress;
-        m_localAddress = Dlna::LocalAddressFor(dev.ipAddress);
-        if (m_localAddress.IsEmpty()) {
-            return false; // no route to the device, nothing could be served
-        }
-        if (!m_server.IsRunning() && !m_server.Start()) {
-            return false;
-        }
-        m_server.SetAllowedPeer(CStringA(dev.ipAddress));
-
-        m_controlURL = dev.avTransportURL;
-        m_scpdURL = dev.avTransportSCPDURL;
-        m_volumeURL = dev.renderingControlURL;
-        m_mediaURL.Empty();
-        m_localDuration = 0.0;
-        // Standard AVTransport cannot tell a sleeping device to wake up; when
-        // the manufacturer offers a way, the worker uses it before loading.
-        m_vendorHook = DlnaVendor::CreateHook(dev.vendor);
-        m_hasPlayed = false;
-        m_stopIssued = false;
-        m_pendingSeek = -1.0;
-        m_pollFailures = 0;
-        m_seekModes.clear();
-        m_seekModesKnown = false;
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_state = CastTargetState::Connecting;
-            m_failReason.Empty();
-            m_canSeek = true;
-            m_position = m_duration = 0.0;
-            m_positionTick = 0;
-            m_positionAdvancing = false;
-            m_commands.clear();
-        }
-
-        m_hStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-        m_hCommandEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        m_hStopSentEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-        if (m_hStopEvent && m_hCommandEvent && m_hStopSentEvent) {
-            m_hThread = ::CreateThread(nullptr, 0, StaticThreadProc, (LPVOID)this, 0, nullptr);
-        }
-        if (!m_hThread) {
-            StopWorker();
-            m_server.ClearAllowedPeer();
-            m_vendorHook.reset();
-            return false;
-        }
-
-        m_deviceId = deviceId;
-        m_deviceName = dev.friendlyName;
-        m_casting = true;
-        // notifications of the previous session no longer apply
-        m_generation = CastNextSessionGeneration();
-        return true;
+        return StartSession(dev, dev.friendlyName);
     }
     return false; // the device is gone from the discovery snapshot
+}
+
+bool CDlnaTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs)
+{
+    if (m_casting) {
+        return false;
+    }
+
+    // The description is asked for where the device was last seen; only when
+    // nothing answers there is a full search worth the wait. Either way what
+    // the device says about itself is written back, so the saved entry follows
+    // the device instead of rotting.
+    DlnaDevice dev;
+    bool found = false;
+    if (!saved.location.IsEmpty()) {
+        found = CDlnaDiscovery::ProbeLocation(saved.location, saved.address, dev);
+    } else if (!saved.address.IsEmpty()) {
+        found = CDlnaDiscovery::ProbeAddress(saved.address, saved.port, directMs, dev);
+    }
+    if (found && !saved.id.IsEmpty() && dev.udn != saved.id) {
+        found = false; // somebody else lives at that address now
+    }
+    if (!found && !saved.id.IsEmpty()) {
+        found = SearchById(saved.id, searchMs, dev);
+    }
+    if (!found || dev.avTransportURL.IsEmpty()) {
+        return false;
+    }
+
+    saved.address = dev.ipAddress;
+    saved.location = dev.location;
+    if (!dev.friendlyName.IsEmpty()) {
+        saved.name = dev.friendlyName;
+    }
+    if (!dev.sinkProtocolInfo.IsEmpty()) {
+        saved.formats = CString(dev.sinkProtocolInfo);
+        saved.supportsVideo = dev.supportsVideo;
+        saved.supportsAudio = dev.supportsAudio;
+    }
+    return StartSession(dev, saved.DisplayName());
+}
+
+bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
+{
+    m_deviceAddress = dev.ipAddress;
+    m_localAddress = Dlna::LocalAddressFor(dev.ipAddress);
+    if (m_localAddress.IsEmpty()) {
+        return false; // no route to the device, nothing could be served
+    }
+    if (!m_server.IsRunning() && !m_server.Start()) {
+        return false;
+    }
+    m_server.SetAllowedPeer(CStringA(dev.ipAddress));
+
+    m_controlURL = dev.avTransportURL;
+    m_scpdURL = dev.avTransportSCPDURL;
+    m_volumeURL = dev.renderingControlURL;
+    m_mediaURL.Empty();
+    m_localDuration = 0.0;
+    // Standard AVTransport cannot tell a sleeping device to wake up; when
+    // the manufacturer offers a way, the worker uses it before loading.
+    m_vendorHook = DlnaVendor::CreateHook(dev.vendor);
+    m_hasPlayed = false;
+    m_stopIssued = false;
+    m_pendingSeek = -1.0;
+    m_pollFailures = 0;
+    m_seekModes.clear();
+    m_seekModesKnown = false;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_state = CastTargetState::Connecting;
+        m_failReason.Empty();
+        m_canSeek = true;
+        m_position = m_duration = 0.0;
+        m_positionTick = 0;
+        m_positionAdvancing = false;
+        m_commands.clear();
+    }
+
+    m_hStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    m_hCommandEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    m_hStopSentEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    if (m_hStopEvent && m_hCommandEvent && m_hStopSentEvent) {
+        m_hThread = ::CreateThread(nullptr, 0, StaticThreadProc, (LPVOID)this, 0, nullptr);
+    }
+    if (!m_hThread) {
+        StopWorker();
+        m_server.ClearAllowedPeer();
+        m_vendorHook.reset();
+        return false;
+    }
+
+    m_deviceId = dev.udn;
+    m_deviceName = deviceName;
+    m_casting = true;
+    // notifications of the previous session no longer apply
+    m_generation = CastNextSessionGeneration();
+    return true;
+}
+
+bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+{
+    const CStringA mime = CCastMediaServer::MimeForFile(path);
+    if (mime.IsEmpty() || mime == "application/octet-stream") {
+        return false;
+    }
+    // What the device said it accepts beats any guess of ours; the container
+    // whitelist only stands in for a device that never answered.
+    return saved.formats.IsEmpty() ? IsCommonRendererFormat(mime)
+           : SinkAccepts(CStringA(saved.formats), mime);
 }
 
 bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path)

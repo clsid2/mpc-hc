@@ -38,6 +38,7 @@
 #define IDS_R_COMMANDS                      _T("Commands2")
 #define IDS_R_LOGINS                        _T("Logins")
 #define IDS_R_FAVORITES                     _T("Favorites")
+#define IDS_R_CASTDEVICES                   _T("Cast\\Devices")
 
 #define IDS_RS_FAV_REMEMBERPOS              _T("RememberPosition")
 #define IDS_RS_FAV_RELATIVEDRIVE            _T("RelativeDrive")
@@ -384,6 +385,8 @@
 #define IDS_RS_DLG_HISTORY_COLWIDTH         _T("ColWidth")
 
 #define IDS_R_DLG_COLOR_CONTROLS            _T("Dialogs\\ColorControls")
+
+#define IDS_R_DLG_CAST_DEVICES              _T("Dialogs\\CastDevices")
 
 #define IDS_R_SHADERS                       _T("Shaders")
 #define IDS_RS_SHADERS_EXTRA                _T("Extra")

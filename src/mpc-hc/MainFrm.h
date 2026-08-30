@@ -437,11 +437,14 @@ private:
 
     // casting (Chromecast and DLNA)
     std::unique_ptr<CCastTarget> m_pCastTarget;
-    std::vector<CastTargetDevice> m_castMenuDevices; // devices shown in the cast submenu, by position
+    // The saved devices the cast submenu shows, by position. Read from the
+    // settings whenever the menu is built: no discovery is involved, which is
+    // what makes opening the menu instant and silent.
+    std::vector<CastSavedDevice> m_castMenuDevices;
     bool IsCasting() const { return m_pCastTarget && m_pCastTarget->IsCasting(); }
     void EnsureCastTarget(); // builds the target on first use; touches no socket
-    void StartCastDiscovery();
-    UINT StartCastingTo(const CastTargetDevice& device); // 0, or the string id of what went wrong
+    UINT StartCastingTo(CastSavedDevice& device); // 0, or the string id of what went wrong
+    void UpdateSavedCastDevice(const CastSavedDevice& device);
     void StopCastingSession(bool resumeLocal, bool showOSD = true);
 public:
     // Ends casting and the discovery behind it, releasing every socket the
@@ -453,6 +456,7 @@ private:
     // open, so the search runs on a timer instead of blocking the UI thread.
     CString m_strCastToPending;        // device asked for, empty when not searching
     ULONGLONG m_castToDeadline = 0;    // GetTickCount64() when the search gives up
+    bool m_bCastToDiscovery = false;   // the search started the discovery and owes it a stop
     void BeginCastTo(const CString& device);
     void CastToSearchStep();
     void EndCastTo(const CString& strReason); // strReason empty when there is nothing to report
@@ -1252,6 +1256,7 @@ public:
     afx_msg void OnUpdatePlayRepeatForever(CCmdUI* pCmdUI);
 
     afx_msg void OnCastDevice(UINT nID);
+    afx_msg void OnCastManageDevices();
     afx_msg void OnCastStop();
     afx_msg void OnUpdateCastStop(CCmdUI* pCmdUI);
     afx_msg LRESULT OnCastStateChanged(WPARAM wParam, LPARAM lParam);

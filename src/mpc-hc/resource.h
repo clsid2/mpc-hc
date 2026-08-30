@@ -677,6 +677,7 @@
 #define IDD_PPAGEVIDEORENDERER          20076
 #define IDD_HISTORY                     20077
 #define IDD_COLORCONTROLS_DLG           20078
+#define IDD_CASTDEVICES_DLG             20079
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052
@@ -775,6 +776,22 @@
 #define IDC_MODERNSEEKBARHEIGHT         22092
 #define IDC_MODERNSEEKBARHEIGHT_SPIN    22093
 #define IDC_COLOR_CONTROLS              22103
+#define IDC_CASTDEV_LIST                22104
+#define IDC_CASTDEV_STATUS              22105
+#define IDC_CASTDEV_ADD                 22106
+#define IDC_CASTDEV_REMOVE              22107
+#define IDC_CASTDEV_RESCAN              22108
+#define IDC_CASTDEV_NAMELABEL           22109
+#define IDC_CASTDEV_NAME                22110
+#define IDC_CASTDEV_RENAME              22111
+#define IDC_CASTDEV_MANUAL_GRP          22112
+#define IDC_CASTDEV_HOSTLABEL           22113
+#define IDC_CASTDEV_HOST                22114
+#define IDC_CASTDEV_PORTLABEL           22115
+#define IDC_CASTDEV_PORT                22116
+#define IDC_CASTDEV_PROTOLABEL          22117
+#define IDC_CASTDEV_PROTOCOL            22118
+#define IDC_CASTDEV_ADDMANUAL           22119
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1173,6 +1190,7 @@
 #define IDS_AG_TOGGLE_OVERRIDE_SUBTITLE_STYLES 33462
 #define ID_COLOR_CONTROLS               33464
 #define ID_CAST_STOP                    33465
+#define ID_CAST_MANAGE                  33466
 #define ID_RECENT_FILE_START            34000
 #define ID_RECENT_FILE_END              34999
 #define IDS_MFMT_AVI                    39001
@@ -1881,7 +1899,6 @@
 #define IDS_PPAGEADVANCED_GRP_HISTORY   58044
 #define IDS_PPAGEADVANCED_GRP_SCREENSHOTS 58045
 #define IDS_PPAGEADVANCED_GRP_MISC      58046
-#define IDS_CAST_SEARCHING              58047
 #define IDS_CAST_STOP_CASTING           58048
 #define IDS_CAST_CASTING_TO             58049
 #define IDS_CAST_STOPPED                58050
@@ -1892,14 +1909,26 @@
 #define IDS_CAST_NO_DEVICE              58055
 #define IDS_CMD_CASTTO                  58056
 #define IDS_CAST_DISABLED               58057
+#define IDS_CAST_MANAGE_DEVICES         58058
+#define IDS_CAST_NOT_REACHABLE          58059
+#define IDS_CAST_DLG_COL_NAME           58060
+#define IDS_CAST_DLG_COL_ADVERTISED     58061
+#define IDS_CAST_DLG_COL_PROTOCOL       58062
+#define IDS_CAST_DLG_COL_ADDRESS        58063
+#define IDS_CAST_DLG_COL_STATUS         58064
+#define IDS_CAST_DLG_SEARCHING          58065
+#define IDS_CAST_DLG_STATUS_SAVED       58066
+#define IDS_CAST_DLG_STATUS_SAVED_FOUND 58067
+#define IDS_CAST_DLG_STATUS_FOUND       58068
+#define IDS_CAST_DLG_NO_ANSWER          58069
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        20079
-#define _APS_NEXT_COMMAND_VALUE         33466
-#define _APS_NEXT_CONTROL_VALUE         22104
+#define _APS_NEXT_RESOURCE_VALUE        20080
+#define _APS_NEXT_COMMAND_VALUE         33467
+#define _APS_NEXT_CONTROL_VALUE         22120
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

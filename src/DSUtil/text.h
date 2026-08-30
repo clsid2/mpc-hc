@@ -190,6 +190,20 @@ extern CStringA UrlDecode(const CStringA& strIn);
 extern CStringW UrlDecodeWithUTF8(const CStringW in, bool keepEncodedSpecialChar = false);
 extern CStringW URLGetHostName(const CStringW in);
 extern CStringW ShortenURL(const CStringW url, int targetLength = 100, bool returnHostnameIfTooLong = false);
+// Makes an arbitrary, possibly untrusted string safe to use as the label of a
+// menu item. What it guarantees:
+//   - every '&' is escaped to "&&", so the text cannot silently claim a
+//     mnemonic (or lose a character to one);
+//   - tabs, which would otherwise split the label into a right-aligned
+//     accelerator column, and every other control character are replaced by a
+//     space, and leading and trailing whitespace is dropped;
+//   - the result is at most maxChars characters, truncated with a trailing
+//     ellipsis and never in the middle of a surrogate pair;
+//   - the result is never empty, so a menu item always has something to
+//     measure.
+// The length is counted before the escaping, so the label is as long as it
+// looks. maxChars <= 0 means no truncation.
+extern CStringW SanitizeMenuLabel(const CStringW& text, int maxChars = 40);
 extern CStringA HtmlSpecialChars(CStringA str, bool bQuotes = false);
 extern CStringA HtmlSpecialCharsDecode(CStringA str);
 extern DWORD CharSetToCodePage(DWORD dwCharSet);

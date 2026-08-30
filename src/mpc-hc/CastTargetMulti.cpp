@@ -21,12 +21,10 @@
 #include "stdafx.h"
 #include "CastTargetMulti.h"
 
-// The prefix a device id carries, and the label a device gets when its name
-// alone would not tell it apart from one reached over the other protocol.
+// The prefix a device id carries, so that the protocol it belongs to travels
+// with it and two protocols can never hand out the same id.
 #define CHROMECAST_PREFIX _T("cc:")
-#define CHROMECAST_LABEL  _T(" (Chromecast)")
 #define DLNA_PREFIX       _T("dlna:")
-#define DLNA_LABEL        _T(" (DLNA)")
 
 bool CCastTargetMulti::StartDiscovery()
 {
@@ -58,34 +56,44 @@ void CCastTargetMulti::AppendDevices(CCastTarget& target, LPCTSTR prefix, std::v
 
 std::vector<CastTargetDevice> CCastTargetMulti::GetDevices()
 {
+    // The names stay exactly as the devices advertise them: a device that
+    // speaks both protocols is announced twice under one name, and telling
+    // those two apart is the job of whatever displays them.
     std::vector<CastTargetDevice> devices;
     AppendDevices(m_chromecast, CHROMECAST_PREFIX, devices);
     AppendDevices(m_dlna, DLNA_PREFIX, devices);
-
-    // A device that speaks both protocols is announced under the same name
-    // twice, and the menu would then offer two identical entries. Only those
-    // are told apart by their protocol; the rest keep a clean label.
-    std::vector<bool> ambiguous(devices.size(), false);
-    for (size_t i = 0; i < devices.size(); i++) {
-        for (size_t j = i + 1; j < devices.size(); j++) {
-            if (devices[i].name == devices[j].name) {
-                ambiguous[i] = ambiguous[j] = true;
-            }
-        }
-    }
-    const int prefixLen = (int)_tcslen(CHROMECAST_PREFIX);
-    for (size_t i = 0; i < devices.size(); i++) {
-        if (ambiguous[i]) {
-            devices[i].name += devices[i].id.Left(prefixLen) == CHROMECAST_PREFIX ? CHROMECAST_LABEL : DLNA_LABEL;
-        }
-    }
     return devices;
+}
+
+bool CCastTargetMulti::ProbeAddress(CastProtocol protocol, const CString& address, UINT port,
+                                    DWORD timeoutMs, CastTargetDevice& device)
+{
+    CCastTarget& target = protocol == CastProtocol::Chromecast
+                          ? static_cast<CCastTarget&>(m_chromecast) : m_dlna;
+    if (!target.ProbeAddress(protocol, address, port, timeoutMs, device)) {
+        return false;
+    }
+    device.id = PrefixFor(protocol) + device.id;
+    return true;
 }
 
 void CCastTargetMulti::SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg)
 {
     m_chromecast.SetNotifyWindow(hNotifyWnd, stateMsg);
     m_dlna.SetNotifyWindow(hNotifyWnd, stateMsg);
+}
+
+LPCTSTR CCastTargetMulti::PrefixFor(CastProtocol protocol)
+{
+    return protocol == CastProtocol::Chromecast ? CHROMECAST_PREFIX : DLNA_PREFIX;
+}
+
+CCastTarget* CCastTargetMulti::TargetFor(CastProtocol protocol, const CString& deviceId, CString& targetDeviceId)
+{
+    LPCTSTR prefix = PrefixFor(protocol);
+    const int prefixLen = (int)_tcslen(prefix);
+    targetDeviceId = deviceId.Left(prefixLen) == prefix ? deviceId.Mid(prefixLen) : deviceId;
+    return protocol == CastProtocol::Chromecast ? static_cast<CCastTarget*>(&m_chromecast) : &m_dlna;
 }
 
 CCastTarget* CCastTargetMulti::TargetFor(const CString& deviceId, CString& targetDeviceId)
@@ -120,11 +128,38 @@ bool CCastTargetMulti::Connect(const CString& deviceId)
     return true;
 }
 
+bool CCastTargetMulti::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD searchMs)
+{
+    if (IsCasting()) {
+        return false;
+    }
+
+    CastSavedDevice device(saved);
+    CCastTarget* pTarget = TargetFor(saved.protocol, saved.id, device.id);
+    if (!pTarget->ConnectSaved(device, directMs, searchMs)) {
+        return false;
+    }
+    device.id = saved.id; // the caller keeps the id it knows the device by
+    saved = device;       // ...and everything the device just said about itself
+
+    m_pActive = pTarget;
+    m_activeId = saved.id;
+    return true;
+}
+
 bool CCastTargetMulti::CanCastFile(const CString& deviceId, const CString& path)
 {
     CString targetDeviceId;
     CCastTarget* pTarget = TargetFor(deviceId, targetDeviceId);
     return pTarget && pTarget->CanCastFile(targetDeviceId, path);
+}
+
+bool CCastTargetMulti::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+{
+    // Neither target needs the id here: what a saved device can play is
+    // decided by what was recorded about the device, not by looking it up.
+    return saved.protocol == CastProtocol::Chromecast ? m_chromecast.CanCastFileSaved(saved, path)
+           : m_dlna.CanCastFileSaved(saved, path);
 }
 
 void CCastTargetMulti::LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,

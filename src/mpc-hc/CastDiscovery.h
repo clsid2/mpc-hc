@@ -64,11 +64,20 @@ public:
     // Thread-safe snapshot of the currently known devices
     std::vector<CastDevice> GetDevices();
 
+    // One targeted query, sent unicast to a single address instead of to the
+    // multicast group. Nothing is started and no state is shared: the socket
+    // and the device list both live only for the length of the call, which
+    // blocks the caller for at most timeoutMs. This is how a device is found
+    // again at a remembered address, and how one on a network that multicast
+    // does not reach can be named by hand.
+    static bool ProbeAddress(const CString& ip, DWORD timeoutMs, CastDevice& device);
+
 private:
     static DWORD WINAPI StaticThreadProc(LPVOID lpParam);
     DWORD ThreadProc();
 
     SOCKET OpenSocket();
+    static int BuildQuery(BYTE* packet); // the PTR question, returns its length
     bool SendQuery(SOCKET sock);
     void ParseResponse(const BYTE* packet, int len, const IN_ADDR& srcAddr);
     void UpdateDevice(const CastDevice& dev, const CString& fallbackName);
