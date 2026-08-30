@@ -40,11 +40,11 @@ enum class CastTargetState {
     Ended,      // media finished or was stopped on the device
 };
 
-// What the player's own graph knows about the file that is about to be cast.
-// A protocol that has to name the content precisely -- DLNA renderers from
-// Samsung and Sony refuse or mishandle a stream that carries no profile name --
-// derives that name from this. Every field may be left Unknown or zero, which
-// simply means nothing is claimed about it.
+// What MediaInfo says about the file that is about to be cast. A protocol
+// that has to name the content precisely -- DLNA renderers from Samsung and
+// Sony refuse or mishandle a stream that carries no profile name -- derives
+// that name from this. Every field may be left Unknown or zero, which simply
+// means nothing is claimed about it.
 struct CastMediaInfo {
     enum class Video { Unknown, H264, MPEG2 };
     enum class Audio { Unknown, AAC, MP3, WMA };
@@ -56,6 +56,16 @@ struct CastMediaInfo {
     int sampleRate = 0; // audio, 0 when unknown
     int channels = 0;
 };
+
+// Whether the MediaInfo library is there to be asked. It is external and
+// loaded at run time, and casting has no second way of finding out what a
+// file holds, so a cast is refused outright rather than started with the
+// content misnamed.
+bool CastMediaInfoAvailable();
+
+// Reads the file with MediaInfo. Comes back with everything Unknown when the
+// library is missing or the file cannot be parsed.
+CastMediaInfo GetCastMediaInfo(const CString& path);
 
 enum class CastProtocol { Chromecast, Dlna };
 
@@ -145,7 +155,7 @@ public:
     virtual bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) = 0;
 
     // Serves filePath to the device and loads it, seeking to startSec once
-    // the device reports playback. info is what the local graph knows about
+    // the device reports playback. info is what MediaInfo knows about
     // the file and may be left default.
     virtual void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                            const CastMediaInfo& info) = 0;

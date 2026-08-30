@@ -4386,6 +4386,7 @@ BEGIN
     IDS_CAST_DLG_NO_ANSWER  "No cast device answered at that address."
     IDS_CAST_CONNECTING     "Connecting..."
     IDS_CAST_BUFFERING      "Buffering..."
+    IDS_CAST_MEDIAINFO_REQUIRED "MediaInfo is required for casting, but it could not be loaded."
 END
 
 #endif    // English (United States) resources

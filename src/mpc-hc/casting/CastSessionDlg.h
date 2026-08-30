@@ -32,7 +32,7 @@
 struct CastSessionMedia {
     CString path;              // the file the media server serves
     CString title;             // what to call it in the window and on the device
-    CastMediaInfo info;        // what the graph knew about it, for DLNA profiles
+    CastMediaInfo info;        // what MediaInfo said about it, for DLNA profiles
     double durationSec = 0.0;
     double startSec = 0.0;     // where the device picks the file up
     bool rememberPosition = false; // history keeps a position for this file

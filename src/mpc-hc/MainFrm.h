@@ -53,7 +53,7 @@
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
-#include "CastTarget.h"
+#include "casting/CastTarget.h"
 #include <deque>
 
 class CDebugShadersDlg;

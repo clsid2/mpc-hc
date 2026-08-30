@@ -71,7 +71,7 @@ namespace
     // The DLNA profile the content matches, empty when none can be claimed.
     // A renderer handed a profile name the stream then fails to live up to is
     // worse off than one handed no name at all, so every rule below wants
-    // positive evidence from the local graph and everything else falls through
+    // positive evidence out of MediaInfo and everything else falls through
     // to no profile: containers DLNA never standardized (Matroska, WebM, AVI,
     // QuickTime), codecs outside the profile's definition, and resolutions
     // beyond the ones the profile covers.
@@ -148,7 +148,7 @@ namespace
         }
         if (mime.CompareNoCase("audio/x-ms-wma") == 0) {
             // WMAFULL covers plain WMA; Pro and Lossless are a different codec
-            // with no profile of ours, and the graph tells the three apart
+            // with no profile of ours, and MediaInfo tells the three apart
             if (info.audio == CastMediaInfo::Audio::WMA && info.channels >= 1 && info.channels <= 2
                     && info.sampleRate > 0 && info.sampleRate <= 48000) {
                 return "WMAFULL";

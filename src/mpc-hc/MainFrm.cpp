@@ -61,9 +61,9 @@
 #include "Translations.h"
 #include "UpdateChecker.h"
 #include "WebServer.h"
-#include "CastTargetMulti.h"
-#include "CastDevicesDlg.h"
-#include "CastSessionDlg.h"
+#include "casting/CastTargetMulti.h"
+#include "casting/CastDevicesDlg.h"
+#include "casting/CastSessionDlg.h"
 #include <ISOLang.h>
 #include <PathUtils.h>
 #include <DSUtil.h>
@@ -18616,85 +18616,6 @@ void CMainFrame::SetupRecentFilesSubMenu()
     }
 }
 
-// What the running graph knows about the file, for a protocol that has to name
-// the content precisely. The codec is read off the subtype of each connected
-// output pin, so the decoders' uncompressed pins simply match nothing and what
-// is left is the splitter's. Anything unrecognized stays Unknown rather than
-// being guessed at.
-static CastMediaInfo GetCastMediaInfo(IFilterGraph* pGB)
-{
-    CastMediaInfo info;
-    if (!pGB) {
-        return info;
-    }
-
-    BeginEnumFilters(pGB, pEF, pBF) {
-        BeginEnumPins(pBF, pEP, pPin) {
-            PIN_DIRECTION dir;
-            CComPtr<IPin> pConnected;
-            if (FAILED(pPin->QueryDirection(&dir)) || dir != PINDIR_OUTPUT
-                    || FAILED(pPin->ConnectedTo(&pConnected))) {
-                continue;
-            }
-            AM_MEDIA_TYPE mt;
-            if (FAILED(pPin->ConnectionMediaType(&mt))) {
-                continue;
-            }
-            if (mt.majortype == MEDIATYPE_Video && info.video == CastMediaInfo::Video::Unknown) {
-                static const DWORD h264[] = {
-                    mmioFOURCC('H', '2', '6', '4'), mmioFOURCC('h', '2', '6', '4'),
-                    mmioFOURCC('X', '2', '6', '4'), mmioFOURCC('x', '2', '6', '4'),
-                    mmioFOURCC('A', 'V', 'C', '1'), mmioFOURCC('a', 'v', 'c', '1'),
-                };
-                if (mt.subtype == MEDIASUBTYPE_MPEG2_VIDEO) {
-                    info.video = CastMediaInfo::Video::MPEG2;
-                } else if (std::find(std::cbegin(h264), std::cend(h264), mt.subtype.Data1) != std::cend(h264)) {
-                    info.video = CastMediaInfo::Video::H264;
-                }
-                BITMAPINFOHEADER bih;
-                if (info.video != CastMediaInfo::Video::Unknown && ExtractBIH(&mt, &bih)) {
-                    info.width = bih.biWidth;
-                    info.height = abs(bih.biHeight);
-                }
-            } else if (mt.majortype == MEDIATYPE_Audio && info.audio == CastMediaInfo::Audio::Unknown
-                       && mt.formattype == FORMAT_WaveFormatEx && mt.pbFormat
-                       && mt.cbFormat >= sizeof(WAVEFORMATEX)) {
-                // The subtype names the codec and the wFormatTag beside it does
-                // not: a splitter that names its output by FourCC leaves only
-                // the bottom half of that FourCC in the tag. LAV hands AAC out
-                // of an MP4 as 'ADTS', whose tag reads 0x4441.
-                static const DWORD aac[] = {
-                    WAVE_FORMAT_RAW_AAC1, WAVE_FORMAT_MPEG_ADTS_AAC, WAVE_FORMAT_MPEG_LOAS,
-                    WAVE_FORMAT_MPEG_HEAAC, mmioFOURCC('A', 'D', 'T', 'S'),
-                    mmioFOURCC('m', 'p', '4', 'a'), mmioFOURCC('M', 'P', '4', 'A'),
-                };
-                const DWORD codec = mt.subtype.Data1;
-                if (codec == WAVE_FORMAT_MPEGLAYER3) {
-                    info.audio = CastMediaInfo::Audio::MP3;
-                } else if (std::find(std::cbegin(aac), std::cend(aac), codec) != std::cend(aac)) {
-                    info.audio = CastMediaInfo::Audio::AAC;
-                } else if (codec == WAVE_FORMAT_WMAUDIO2) {
-                    // only plain WMA; Pro (0x0162) and Lossless (0x0163) are a
-                    // different codec with no profile of ours
-                    info.audio = CastMediaInfo::Audio::WMA;
-                }
-                if (info.audio != CastMediaInfo::Audio::Unknown) {
-                    const WAVEFORMATEX* wfe = (const WAVEFORMATEX*)mt.pbFormat;
-                    info.sampleRate = (int)wfe->nSamplesPerSec;
-                    info.channels = wfe->nChannels;
-                }
-            }
-            FreeMediaType(mt);
-        }
-        EndEnumPins;
-    }
-    EndEnumFilters;
-
-    TRACE(_T("CastMediaInfo: video %d %dx%d, audio %d %d Hz %d ch\n"), (int)info.video,
-          info.width, info.height, (int)info.audio, info.sampleRate, info.channels);
-    return info;
-}
-
 // The labels the cast submenu shows for a list of devices. A device names
 // itself over the network, so a name is made fit for a menu item before it
 // goes into one; only then are the ones the user could not tell apart told
@@ -18843,6 +18764,12 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
         return IDS_CAST_FAILED;
     }
 
+    // Nothing is cast that cannot be described first, and MediaInfo is the
+    // only thing that describes it.
+    if (!CastMediaInfoAvailable()) {
+        return IDS_CAST_MEDIAINFO_REQUIRED;
+    }
+
     if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
             || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)
             || !m_pCastTarget->CanCastFileSaved(device, lastOpenFile)) {
@@ -18854,12 +18781,12 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
         return IDS_CAST_FAILED;
     }
 
-    // Everything the session needs is read off the graph now, while there still
-    // is one: from here on the window has no use for the player at all.
+    // Everything the session needs is read now, while the player still has the
+    // file open: from here on the window has no use for the player at all.
     CastSessionMedia media;
     media.path = lastOpenFile;
     media.title = GetFileName();
-    media.info = GetCastMediaInfo(m_pGB);
+    media.info = GetCastMediaInfo(lastOpenFile);
     media.rememberPosition = m_bRememberFilePos;
 
     REFERENCE_TIME rtDur = 0;
@@ -18963,6 +18890,13 @@ void CMainFrame::BeginCastTo(const CString& device)
 
     if (!AfxGetAppSettings().bEnableCasting) {
         EndCastTo(ResStr(IDS_CAST_DISABLED)); // say so rather than ignore the switch
+        return;
+    }
+
+    // Said here as well as in StartCastingTo(), so that a device that has to be
+    // searched for is not searched for at all when nothing could be cast to it.
+    if (!CastMediaInfoAvailable()) {
+        EndCastTo(ResStr(IDS_CAST_MEDIAINFO_REQUIRED));
         return;
     }
 

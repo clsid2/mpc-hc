@@ -1932,6 +1932,7 @@
 #define IDS_CAST_DLG_NO_ANSWER          58069
 #define IDS_CAST_CONNECTING             58070
 #define IDS_CAST_BUFFERING              58071
+#define IDS_CAST_MEDIAINFO_REQUIRED 58072
 
 // Next default values for new objects
 // 

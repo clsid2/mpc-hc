@@ -80,7 +80,7 @@ public:
     double GetDuration() const override;
 
     // The "contentFeatures.dlna.org" value for a file: a DLNA.ORG_PN profile name whenever
-    // the container and the codecs the local graph reports name one beyond doubt, followed
+    // the container and the codecs MediaInfo reports name one beyond doubt, followed
     // by the operation, conversion and flags a seekable untranscoded stream advertises.
     // The same string goes into the DIDL <res> protocolInfo and into the HTTP response, and
     // the two have to agree. Public so that it can be exercised on its own.

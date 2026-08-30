@@ -24,7 +24,7 @@
 #include "../Subtitles/STS.h"
 #include "../filters/switcher/AudioSwitcher/AudioSwitcher.h"
 #include "../thirdparty/sanear/src/Interfaces.h"
-#include "CastTarget.h"
+#include "casting/CastTarget.h"
 #include "DVBChannel.h"
 #include "FileAssoc.h"
 #include "FilterEnum.h"
