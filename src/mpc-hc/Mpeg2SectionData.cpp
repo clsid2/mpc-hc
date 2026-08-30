@@ -434,8 +434,8 @@ HRESULT CMpeg2DataParser::ParseVCT(ULONG ulFrequency, ULONG ulBandwidth, ULONG u
         uint16_t channel_TSID=gb.BitRead(16); //channel_TSID
         uint16_t program_number=gb.BitRead(16); //program_number
         gb.BitRead(2); //ETM_location
-        gb.BitRead(1); //access_controlled
-        gb.BitRead(1); //hidden
+        uint8_t access_controlled = (uint8_t)gb.BitRead(1); //access_controlled
+        uint8_t hidden = (uint8_t)gb.BitRead(1); //hidden
         gb.BitRead(2); //TVCT: reserved(1), CVCT: path_select(1) / out_of_band(1)
         gb.BitRead(1); //hide_guide
         gb.BitRead(3); //reserved
@@ -457,15 +457,30 @@ HRESULT CMpeg2DataParser::ParseVCT(ULONG ulFrequency, ULONG ulBandwidth, ULONG u
         Channel.SetTSID(channel_TSID);
         Channel.SetONID(0); //ATSC doesn't apply
         Channel.SetSID(program_number);
+        // The virtual channel number is the identity a viewer knows a station
+        // by, and is what the scan list and channel ordering should key on.
+        // Without this every ATSC channel carries number 0 and the scan list is
+        // left in discovery order.
+        Channel.SetATSCNumber(major_channel_number, minor_channel_number);
+        // access_controlled is the ATSC equivalent of the DVB free_CA_mode
+        // flag; without it every ATSC service reports as unencrypted.
+        Channel.SetEncrypted(!!access_controlled);
 
         if (!Channels.Lookup(Channel.GetSID())) {
-            switch (serviceType) {
-            case ATSC_DIGITAL_TV:
-                Channels[Channel.GetSID()] = Channel;
-                break;
-            default:
-                BDA_LOG(_T("ATSC: Skipping not supported service: %-20s %lu"), Channel.GetName(), Channel.GetSID());
-                break;
+            if (hidden) {
+                // Not intended for viewers - typically test or data services.
+                // Receivers omit these, and so does the DVB path via the
+                // service descriptor.
+                BDA_LOG(_T("ATSC: Skipping hidden service: %-20s %lu"), Channel.GetName(), Channel.GetSID());
+            } else {
+                switch (serviceType) {
+                case ATSC_DIGITAL_TV:
+                    Channels[Channel.GetSID()] = Channel;
+                    break;
+                default:
+                    BDA_LOG(_T("ATSC: Skipping not supported service: %-20s %lu"), Channel.GetName(), Channel.GetSID());
+                    break;
+                }
             }
         }
     }

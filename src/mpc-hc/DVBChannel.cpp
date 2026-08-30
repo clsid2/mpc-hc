@@ -96,6 +96,10 @@ void CBDAChannel::FromString(CString strValue)
         m_nVideoHeight = _tstol(strValue.Tokenize(_T("|"), i));
         m_nVideoAR     = (BDA_AspectRatio_TYPE)_tstol(strValue.Tokenize(_T("|"), i));
     }
+    if (nVersion > FORMAT_VERSION_6) {
+        m_nATSCMajor = _tstol(strValue.Tokenize(_T("|"), i));
+        m_nATSCMinor = _tstol(strValue.Tokenize(_T("|"), i));
+    }
 }
 
 CString CBDAChannel::ToString() const
@@ -145,6 +149,10 @@ CString CBDAChannel::ToString() const
                           m_nVideoWidth,
                           m_nVideoHeight,
                           m_nVideoAR);
+
+    strValue.AppendFormat(_T("|%d|%d"),
+                          m_nATSCMajor,
+                          m_nATSCMinor);
 
     return strValue;
 }

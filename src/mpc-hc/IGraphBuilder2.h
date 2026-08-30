@@ -58,4 +58,7 @@ interface __declspec(uuid("546E72B3-66A1-4A58-A99B-56530B3E2FFF"))
     STDMETHOD(Scan)(ULONG ulFrequency, ULONG ulBandwidth, ULONG ulSymbolRate, HWND hWnd) PURE;
     STDMETHOD(GetStats)(BOOLEAN& bPresent, BOOLEAN& bLocked, LONG& lDbStrength, LONG& lPercentQuality) PURE;
     STDMETHOD(UpdatePSI)(const class CBDAChannel* pChannel, struct EventDescriptor& NowNext) PURE;
+    // ATSC and DVB differ in how their RF channels are laid out, so a scan has
+    // to know which it is dealing with rather than assuming a uniform raster.
+    STDMETHOD(IsATSC)(bool& bIsATSC) PURE;
 };

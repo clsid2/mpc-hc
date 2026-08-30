@@ -244,7 +244,13 @@ LRESULT CTunerScanDlg::OnNewChannel(WPARAM wParam, LPARAM lParam)
                 nItem = m_ChannelList.GetItemCount();
             }
 
-            strTemp.Format(_T("%d"), nChannelNumber);
+            if (channel.HasATSCNumber()) {
+                // ATSC numbers are two-part and are what a viewer recognises,
+                // so show 9.1 rather than the 9001 used internally to order them.
+                strTemp.Format(_T("%d.%d"), channel.GetATSCMajor(), channel.GetATSCMinor());
+            } else {
+                strTemp.Format(_T("%d"), nChannelNumber);
+            }
             nItem = m_ChannelList.InsertItem(nItem, strTemp);
 
             m_ChannelList.SetItemData(nItem, channel.GetOriginNumber());

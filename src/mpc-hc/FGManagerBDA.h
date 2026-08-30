@@ -124,6 +124,7 @@ public:
     STDMETHODIMP SetFrequency(ULONG ulFrequency, ULONG ulBandwidth, ULONG ulSymbolRate);
     STDMETHODIMP Scan(ULONG ulFrequency, ULONG ulBandwidth, ULONG ulSymbolRate, HWND hWnd);
     STDMETHODIMP GetStats(BOOLEAN& bPresent, BOOLEAN& bLocked, LONG& lDbStrength, LONG& lPercentQuality);
+    STDMETHODIMP IsATSC(bool& bIsATSC);
 
     // IAMStreamSelect
     STDMETHODIMP Count(DWORD* pcStreams);

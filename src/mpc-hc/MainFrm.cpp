@@ -17247,6 +17247,51 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
     return true;
 }
 
+static const int ATSC_FIRST_CHANNEL            = 2;
+static const int ATSC_FIRST_UHF_CHANNEL        = 14;
+static const int ATSC_LAST_UHF_CHANNEL         = 51;
+static const int ATSC_RADIO_ASTRONOMY_CHANNEL  = 37;
+
+// Centre frequency in kHz of a US ATSC terrestrial RF channel, or false if the
+// channel number is not one that carries a broadcast.
+//
+// The plan is deliberately a lookup rather than arithmetic, because it is not a
+// uniform raster. Stepping by bandwidth - which is what a DVB scan does, and
+// what this scan used to do for every standard - is correct only within a band:
+// there is a 10 MHz step between channels 4 and 5, the FM broadcast band sits
+// between 6 and 7, and 260 MHz separate 13 from 14. A 6 MHz sweep therefore
+// lands off-channel from channel 5 onwards and wastes some forty tuning
+// attempts crossing the gap below UHF.
+static bool GetATSCChannelFrequency(int nChannel, ULONG& ulFrequency)
+{
+    // VHF low (2-6) and VHF high (7-13) are irregular and are listed out.
+    static const struct { int nChannel; ULONG ulFrequency; } VHFChannels[] = {
+        {  2,  57000 }, {  3,  63000 }, {  4,  69000 },
+        {  5,  79000 }, {  6,  85000 },
+        {  7, 177000 }, {  8, 183000 }, {  9, 189000 }, { 10, 195000 },
+        { 11, 201000 }, { 12, 207000 }, { 13, 213000 },
+    };
+
+    for (const auto& channel : VHFChannels) {
+        if (channel.nChannel == nChannel) {
+            ulFrequency = channel.ulFrequency;
+            return true;
+        }
+    }
+
+    // UHF is a regular 6 MHz raster starting at channel 14 on 473 MHz.
+    // Channel 37 is reserved worldwide for radio astronomy and never carries a
+    // broadcast, so receivers skip it. Above channel 36 the band was reassigned
+    // to mobile use by the 2017 repack, but older recordings may still sit
+    // there, so the plan runs to channel 51.
+    if (nChannel >= ATSC_FIRST_UHF_CHANNEL && nChannel <= ATSC_LAST_UHF_CHANNEL && nChannel != ATSC_RADIO_ASTRONOMY_CHANNEL) {
+        ulFrequency = 473000 + (nChannel - ATSC_FIRST_UHF_CHANNEL) * 6000;
+        return true;
+    }
+
+    return false;
+}
+
 void CMainFrame::DoTunerScan(TunerScanData* pTSD)
 {
     if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
@@ -17268,7 +17313,32 @@ void CMainFrame::DoTunerScan(TunerScanData* pTSD)
             m_bStopTunerScan = false;
             pTun->Scan(0, 0, 0, NULL);  // Clear maps
 
-            for (ULONG ulFrequency = pTSD->FrequencyStart; ulFrequency <= pTSD->FrequencyStop; ulFrequency += pTSD->Bandwidth) {
+            // Work out which frequencies to visit before tuning any of them.
+            // For ATSC these come from the RF channel plan, because its
+            // channels are not evenly spaced; for DVB the historical fixed step
+            // by bandwidth is correct. The start and stop frequencies bound the
+            // scan either way, so the dialog keeps working unchanged.
+            bool bIsATSC = false;
+            pTun->IsATSC(bIsATSC);
+
+            std::vector<ULONG> frequencies;
+            if (bIsATSC) {
+                for (int nChannel = ATSC_FIRST_CHANNEL; nChannel <= ATSC_LAST_UHF_CHANNEL; nChannel++) {
+                    ULONG ulChannelFrequency;
+                    if (GetATSCChannelFrequency(nChannel, ulChannelFrequency)
+                            && ulChannelFrequency >= pTSD->FrequencyStart
+                            && ulChannelFrequency <= pTSD->FrequencyStop) {
+                        frequencies.push_back(ulChannelFrequency);
+                    }
+                }
+            } else {
+                for (ULONG ulFrequency = pTSD->FrequencyStart; ulFrequency <= pTSD->FrequencyStop; ulFrequency += pTSD->Bandwidth) {
+                    frequencies.push_back(ulFrequency);
+                }
+            }
+
+            for (size_t nIndex = 0; nIndex < frequencies.size(); nIndex++) {
+                const ULONG ulFrequency = frequencies[nIndex];
                 bool bSucceeded = false;
                 for (int nOffsetPos = 0; nOffsetPos < nOffset && !bSucceeded; nOffsetPos++) {
                     if (SUCCEEDED(pTun->SetFrequency(ulFrequency + lOffsets[nOffsetPos], pTSD->Bandwidth, pTSD->SymbolRate))) {
@@ -17281,7 +17351,9 @@ void CMainFrame::DoTunerScan(TunerScanData* pTSD)
                     }
                 }
 
-                int nProgress = MulDiv(ulFrequency - pTSD->FrequencyStart, 100, pTSD->FrequencyStop - pTSD->FrequencyStart);
+                // Steps are uneven under a channel plan, so progress counts
+                // frequencies visited rather than distance travelled up the band.
+                int nProgress = MulDiv((int)nIndex + 1, 100, (int)frequencies.size());
                 ::SendMessage(pTSD->Hwnd, WM_TUNER_SCAN_PROGRESS, nProgress, 0);
                 ::SendMessage(pTSD->Hwnd, WM_TUNER_STATS, lDbStrength, lPercentQuality);
 

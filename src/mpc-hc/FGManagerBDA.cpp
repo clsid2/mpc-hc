@@ -701,6 +701,12 @@ STDMETHODIMP CFGManagerBDA::SetAudio(int nAudioIndex)
     return E_NOTIMPL;
 }
 
+STDMETHODIMP CFGManagerBDA::IsATSC(bool& bIsATSC)
+{
+    bIsATSC = tunerIsATSC;
+    return S_OK;
+}
+
 STDMETHODIMP CFGManagerBDA::SetFrequency(ULONG ulFrequency, ULONG ulBandwidth, ULONG ulSymbolRate)
 {
     HRESULT hr;
