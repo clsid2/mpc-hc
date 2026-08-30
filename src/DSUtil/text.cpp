@@ -221,6 +221,37 @@ CStringW ShortenURL(const CStringW url, int targetLength, bool returnHostnameIfT
     return t;
 }
 
+CStringW SanitizeMenuLabel(const CStringW& text, int maxChars)
+{
+    CStringW label;
+    for (int i = 0; i < text.GetLength(); i++) {
+        const wchar_t c = text[i];
+        // A tab starts the right-aligned accelerator column of a menu item, so
+        // a label carrying one would render as two columns; nothing else below
+        // the space is printable there either.
+        label += (c < L' ' || c == 0x7F) ? L' ' : c;
+    }
+    label.Trim();
+
+    if (maxChars > 0 && label.GetLength() > maxChars) {
+        int cut = maxChars - 1; // the ellipsis takes the last character
+        if (cut > 0 && label[cut - 1] >= 0xD800 && label[cut - 1] <= 0xDBFF) {
+            cut--; // never leave half of a surrogate pair behind
+        }
+        label = label.Left(cut);
+        label.TrimRight();
+        label += L'\x2026';
+    }
+
+    if (label.IsEmpty()) {
+        label = L" "; // a zero-length label gives the item nothing to measure
+    }
+
+    // last, so that the escaping is not what the length was spent on
+    label.Replace(L"&", L"&&");
+    return label;
+}
+
 CString ExtractTag(CString tag, CMapStringToString& attribs, bool& fClosing)
 {
     tag.Trim();

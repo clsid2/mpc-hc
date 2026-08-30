@@ -24,6 +24,7 @@
 #include "../Subtitles/STS.h"
 #include "../filters/switcher/AudioSwitcher/AudioSwitcher.h"
 #include "../thirdparty/sanear/src/Interfaces.h"
+#include "casting/CastTarget.h"
 #include "DVBChannel.h"
 #include "FileAssoc.h"
 #include "FilterEnum.h"
@@ -97,7 +98,8 @@ enum : UINT64 {
     CLSW_MUTE = CLSW_CONFIGLAVVIDEO << 1,
     CLSW_VOLUME = CLSW_MUTE << 1,
     CLSW_THUMBNAILS = CLSW_VOLUME << 1,
-    CLSW_UNRECOGNIZEDSWITCH = CLSW_THUMBNAILS << 1, // 47
+    CLSW_CASTTO = CLSW_THUMBNAILS << 1,
+    CLSW_UNRECOGNIZEDSWITCH = CLSW_CASTTO << 1, // 48
 };
 
 enum MpcCaptionState {
@@ -531,6 +533,11 @@ class CAppSettings
         void Add(RecentFileEntry r, bool current_open = false);
         bool GetCurrentIndex(size_t& idx);
         void UpdateCurrentFilePosition(REFERENCE_TIME time, bool forcePersist = false);
+        // The same for a file that is not the one being played, named by path.
+        // Casting is what needs this: what the device reached is the position
+        // that file has to resume from, and by then the player may well have a
+        // different file open, or none at all.
+        void UpdateFilePosition(CStringW fn, REFERENCE_TIME time);
         REFERENCE_TIME GetCurrentFilePosition();
         ABRepeat GetCurrentABRepeat();
         void UpdateCurrentDVDTimecode(DVD_HMSF_TIMECODE *time);
@@ -957,6 +964,9 @@ public:
     bool            bEnableCoverArt;
     int             nCoverArtSizeLimit;
 
+    bool            bEnableCasting;
+    int             nCastServerPort;
+
     int             DebugLogMask;
 
     bool            IsD3DFullscreen() const;
@@ -971,6 +981,7 @@ public:
 
     DWORD           iLAVGPUDevice;
     unsigned        nCmdVolume;
+    CString         strCastTo; // the /castto device, empty when the switch was not given
 
     enum class SubtitleRenderer {
         INTERNAL,
@@ -1115,6 +1126,12 @@ public:
     void            GetFav(favtype ft, CAtlList<CString>& sl) const;
     void            SetFav(favtype ft, CAtlList<CString>& sl);
     void            AddFav(favtype ft, CString s);
+
+    // The cast devices the user has kept, stored the way favorites are: one
+    // profile string per device, read and written on demand rather than held
+    // in this object, so that a second instance sees an added device at once.
+    void            GetCastDevices(std::vector<CastSavedDevice>& devices) const;
+    void            SetCastDevices(const std::vector<CastSavedDevice>& devices);
 
     CBDAChannel*    FindChannelByPref(int nPrefNumber);
 

@@ -38,6 +38,7 @@
 #define IDS_R_COMMANDS                      _T("Commands2")
 #define IDS_R_LOGINS                        _T("Logins")
 #define IDS_R_FAVORITES                     _T("Favorites")
+#define IDS_R_CASTDEVICES                   _T("Cast\\Devices")
 
 #define IDS_RS_FAV_REMEMBERPOS              _T("RememberPosition")
 #define IDS_RS_FAV_RELATIVEDRIVE            _T("RelativeDrive")
@@ -385,6 +386,9 @@
 
 #define IDS_R_DLG_COLOR_CONTROLS            _T("Dialogs\\ColorControls")
 
+#define IDS_R_DLG_CAST_DEVICES              _T("Dialogs\\CastDevices")
+#define IDS_R_DLG_CAST_SESSION              _T("Dialogs\\CastSession")
+
 #define IDS_R_SHADERS                       _T("Shaders")
 #define IDS_RS_SHADERS_EXTRA                _T("Extra")
 #define IDS_RS_SHADERS_PRERESIZE            _T("PreResize")
@@ -400,6 +404,8 @@
 
 #define IDS_RS_COVER_ART                    _T("EnableCoverArt")
 #define IDS_RS_COVER_ART_SIZE_LIMIT         _T("CoverArtSizeLimit")
+#define IDS_RS_ENABLE_CASTING               _T("EnableCasting")
+#define IDS_RS_CAST_SERVER_PORT             _T("CastServerPort")
 #define IDS_RS_LOGGING                      _T("DebugLogMask")
 
 #define IDS_RS_SUBTITLE_RENDERER            _T("SubtitleRenderer")

@@ -214,6 +214,7 @@ void CPPageAdvanced::InitSettings()
     addBoolItem(USE_AUTOMATIC_CAPTIONS, IDS_RS_USE_AUTOMATIC_CAPTIONS, false, s.bUseAutomaticCaptions, StrRes(IDS_PPAGEADVANCED_USE_AUTOMATIC_CAPTIONS));
 
     addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_MISC));
+    addIntItem(CAST_SERVER_PORT, IDS_RS_CAST_SERVER_PORT, 13580, s.nCastServerPort, std::make_pair(1024, 65535), L"Port the local media server listens on while casting, so that the device can fetch the file being played. Another port is picked automatically when this one is taken. Only used while a cast session is running.");
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif

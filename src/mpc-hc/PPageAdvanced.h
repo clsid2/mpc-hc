@@ -253,6 +253,7 @@ private:
         HISTORY_IN_APPDATA,
         HISTORY_EXCLUDE_FILTER,
         HISTORY_MAX_AGE_DAYS,
+        CAST_SERVER_PORT,
     };
 
     static constexpr DWORD_PTR HEADER_ITEM_DATA = (DWORD_PTR)-1;

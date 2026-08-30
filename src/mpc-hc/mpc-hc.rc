@@ -232,12 +232,13 @@ BEGIN
     CONTROL         "File name only",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,12,184,126,8
     CONTROL         "Don't prefix anything",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,12,198,126,8
     CONTROL         "Replace file name with title",IDC_CHECK13,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP | WS_GROUP,12,212,126,18
-    GROUPBOX        "Other",IDC_STATIC,149,6,200,90,WS_GROUP
+    GROUPBOX        "Other",IDC_STATIC,149,6,200,105,WS_GROUP
     CONTROL         "Tray icon",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,20,192,8
     CONTROL         "Store settings in .ini file",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,35,192,8
     CONTROL         "Disable ""Open Disc"" menu",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,50,192,8
     CONTROL         "Process priority above normal",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,65,192,8
     CONTROL         "Enable cover-art support",IDC_CHECK14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,80,192,8
+    CONTROL         "Enable casting to network devices",IDC_CHECK15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,95,192,8
     GROUPBOX        "History",IDC_STATIC,149,155,200,124
     CONTROL         "Keep history of recently opened files",IDC_CHECK1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,169,192,8
@@ -1143,6 +1144,48 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,283,86,60,14
 END
 
+IDD_CASTDEVICES_DLG DIALOGEX 0, 0, 420, 258
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Cast Devices"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_CASTDEV_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,6,6,408,120,WS_EX_CLIENTEDGE
+    LTEXT           "",IDC_CASTDEV_STATUS,6,131,342,10
+    PUSHBUTTON      "&Add",IDC_CASTDEV_ADD,6,144,60,14
+    PUSHBUTTON      "&Remove",IDC_CASTDEV_REMOVE,70,144,60,14
+    PUSHBUTTON      "Re&scan",IDC_CASTDEV_RESCAN,354,144,60,14
+    LTEXT           "Dis&play name:",IDC_CASTDEV_NAMELABEL,6,167,60,8
+    EDITTEXT        IDC_CASTDEV_NAME,70,164,278,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Re&name",IDC_CASTDEV_RENAME,354,164,60,14
+    GROUPBOX        "Add a device by address",IDC_CASTDEV_MANUAL_GRP,6,184,408,44
+    LTEXT           "A&ddress:",IDC_CASTDEV_HOSTLABEL,14,203,40,8
+    EDITTEXT        IDC_CASTDEV_HOST,56,200,110,14,ES_AUTOHSCROLL
+    LTEXT           "Por&t:",IDC_CASTDEV_PORTLABEL,174,203,24,8
+    EDITTEXT        IDC_CASTDEV_PORT,200,200,36,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Pr&otocol:",IDC_CASTDEV_PROTOLABEL,244,203,38,8
+    COMBOBOX        IDC_CASTDEV_PROTOCOL,284,200,64,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Find",IDC_CASTDEV_ADDMANUAL,354,200,54,14
+    DEFPUSHBUTTON   "OK",IDOK,296,236,56,14
+    PUSHBUTTON      "Cancel",IDCANCEL,358,236,56,14
+END
+
+IDD_CASTSESSION_DLG DIALOGEX 0, 0, 300, 106
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Casting"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_CASTSESS_DEVICE,7,7,286,10
+    LTEXT           "",IDC_CASTSESS_TITLE,7,20,286,10
+    CONTROL         "",IDC_CASTSESS_SEEK,"msctls_trackbar32",TBS_HORZ | TBS_NOTICKS | TBS_BOTH | WS_TABSTOP,5,34,290,16
+    LTEXT           "",IDC_CASTSESS_TIME,7,53,140,10
+    RTEXT           "",IDC_CASTSESS_STATUS,153,53,140,10
+    PUSHBUTTON      "Play",IDC_CASTSESS_PLAYPAUSE,7,69,60,14
+    PUSHBUTTON      "&Stop",IDC_CASTSESS_STOP,71,69,60,14
+    LTEXT           "&Volume:",IDC_CASTSESS_VOLLABEL,142,72,32,8
+    CONTROL         "",IDC_CASTSESS_VOLUME,"msctls_trackbar32",TBS_HORZ | TBS_NOTICKS | TBS_BOTH | WS_TABSTOP,176,68,117,16
+    DEFPUSHBUTTON   "Close",IDCANCEL,237,88,56,14
+END
+
 IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
 STYLE DS_SETFONT | DS_NOFAILCREATE | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
@@ -1783,6 +1826,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -1977,6 +2021,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -2351,6 +2396,7 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -4257,6 +4303,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_CMD_THUMBNAILS      "/thumbnails\tCreate thumbnails"
+    IDS_CMD_CASTTO          "/castto ""device""\tCast the file to a device, by name, address or id"
     IDS_CUSTOM_ACTION1      "Custom Action 1"
     IDS_CUSTOM_ACTION2      "Custom Action 2"
     IDS_CUSTOM_ACTION3      "Custom Action 3"
@@ -4313,6 +4360,33 @@ STRINGTABLE
 BEGIN
     IDS_AG_COLOR_CONTROLS   "Color Controls"
     IDC_COLOR_CONTROLS      "You can also open Color controls from the Play menu"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CAST_STOP_CASTING   "Stop &casting"
+    IDS_CAST_CASTING_TO     "Casting to %s"
+    IDS_CAST_STOPPED        "Stopped casting"
+    IDS_CAST_UNSUPPORTED_FILE "Casting is not supported for this file. Only MP4 and WebM files can be played directly on the device."
+    IDS_CAST_FAILED         "Casting failed"
+    IDS_CAST_TAKEN_OVER     "Another device took over casting"
+    IDS_CAST_NO_DEVICE      "No cast device named ""%s"" was found"
+    IDS_CAST_DISABLED       "Casting is disabled in the options"
+    IDS_CAST_MANAGE_DEVICES "&Manage Devices..."
+    IDS_CAST_NOT_REACHABLE  "The cast device did not answer"
+    IDS_CAST_DLG_COL_NAME   "Name"
+    IDS_CAST_DLG_COL_ADVERTISED "Advertised name"
+    IDS_CAST_DLG_COL_PROTOCOL "Protocol"
+    IDS_CAST_DLG_COL_ADDRESS "Address"
+    IDS_CAST_DLG_COL_STATUS "Status"
+    IDS_CAST_DLG_SEARCHING  "Searching for devices... (%d found, %d s)"
+    IDS_CAST_DLG_STATUS_SAVED "Saved"
+    IDS_CAST_DLG_STATUS_SAVED_FOUND "Saved, found"
+    IDS_CAST_DLG_STATUS_FOUND "Found"
+    IDS_CAST_DLG_NO_ANSWER  "No cast device answered at that address."
+    IDS_CAST_CONNECTING     "Connecting..."
+    IDS_CAST_BUFFERING      "Buffering..."
+    IDS_CAST_MEDIAINFO_REQUIRED "MediaInfo is required for casting, but it could not be loaded."
 END
 
 #endif    // English (United States) resources
