@@ -157,12 +157,112 @@ CString CBDAChannel::ToString() const
     return strValue;
 }
 
+// Names rather than raw enum values, so that a consumer of the web interface
+// does not need its own copy of these enums to make sense of the output.
+static LPCSTR StreamTypeName(BDA_STREAM_TYPE type)
+{
+    switch (type) {
+        case BDA_MPV:      return "MPEG2";
+        case BDA_H264:     return "H264";
+        case BDA_HEVC:     return "HEVC";
+        case BDA_MPA:      return "MPEG-Audio";
+        case BDA_AC3:      return "AC3";
+        case BDA_EAC3:     return "EAC3";
+        case BDA_ADTS:     return "AAC-ADTS";
+        case BDA_LATM:     return "AAC-LATM";
+        case BDA_SUBTITLE: return "DVB-Subtitle";
+        default:           return "unknown";
+    }
+}
+
+static LPCSTR FpsName(BDA_FPS_TYPE fps)
+{
+    switch (fps) {
+        case BDA_FPS_23_976: return "23.976";
+        case BDA_FPS_24_0:   return "24";
+        case BDA_FPS_25_0:   return "25";
+        case BDA_FPS_29_97:  return "29.97";
+        case BDA_FPS_30_0:   return "30";
+        case BDA_FPS_50_0:   return "50";
+        case BDA_FPS_59_94:  return "59.94";
+        case BDA_FPS_60_0:   return "60";
+        default:             return "";
+    }
+}
+
+static LPCSTR AspectRatioName(BDA_AspectRatio_TYPE ar)
+{
+    switch (ar) {
+        case BDA_AR_1:      return "1:1";
+        case BDA_AR_3_4:    return "4:3";
+        case BDA_AR_9_16:   return "16:9";
+        case BDA_AR_1_2_21: return "2.21:1";
+        default:            return "";
+    }
+}
+
+static CStringA StreamToJSON(const BDAStreamInfo& stream, bool bDefault)
+{
+    CStringA json;
+    json.Format("{ \"pid\" : %lu, \"type\" : \"%s\", \"language\" : \"%s\", \"default\" : %s }",
+                stream.ulPID,
+                StreamTypeName(stream.nType),
+                EscapeJSONString(UTF16To8(stream.sLanguage)).GetString(),
+                bDefault ? "true" : "false");
+    return json;
+}
+
 CStringA CBDAChannel::ToJSON() const
 {
+    // index and name keep their names and stay first: /dvb/channels has
+    // shipped with them, so anything already reading it keeps working.
     CStringA jsonChannel;
-    jsonChannel.Format("{ \"index\" : %d, \"name\" : \"%s\" }",
+    jsonChannel.Format("{ \"index\" : %d, \"name\" : \"%s\"",
                        m_nPrefNumber,
                        EscapeJSONString(UTF16To8(m_strName)).GetString());
+
+    jsonChannel.AppendFormat(", \"originNumber\" : %d"
+                             ", \"frequency\" : %lu"
+                             ", \"bandwidth\" : %lu"
+                             ", \"symbolRate\" : %lu"
+                             ", \"encrypted\" : %s",
+                             m_nOriginNumber,
+                             m_ulFrequency,
+                             m_ulBandwidth,
+                             m_ulSymbolRate,
+                             m_bEncrypted ? "true" : "false");
+
+    // The identifiers needed to correlate a channel against the transport
+    // stream it was scanned from.
+    jsonChannel.AppendFormat(", \"onid\" : %lu, \"tsid\" : %lu, \"sid\" : %lu"
+                             ", \"pmtPid\" : %lu, \"pcrPid\" : %lu",
+                             m_ulONID, m_ulTSID, m_ulSID, m_ulPMT, m_ulPCR);
+
+    jsonChannel.AppendFormat(", \"video\" : { \"pid\" : %lu, \"type\" : \"%s\""
+                             ", \"width\" : %lu, \"height\" : %lu"
+                             ", \"fps\" : \"%s\", \"aspectRatio\" : \"%s\" }",
+                             m_ulVideoPID,
+                             StreamTypeName(m_nVideoType),
+                             m_nVideoWidth,
+                             m_nVideoHeight,
+                             FpsName(m_nVideoFps),
+                             AspectRatioName(m_nVideoAR));
+
+    jsonChannel += ", \"audio\" : [";
+    for (int i = 0; i < m_nAudioCount; i++) {
+        jsonChannel += i ? ", " : " ";
+        jsonChannel += StreamToJSON(m_Audios[i], i == m_nDefaultAudio);
+    }
+    jsonChannel += m_nAudioCount ? " ]" : "]";
+
+    jsonChannel += ", \"subtitles\" : [";
+    for (int i = 0; i < m_nSubtitleCount; i++) {
+        jsonChannel += i ? ", " : " ";
+        jsonChannel += StreamToJSON(m_Subtitles[i], i == m_nDefaultSubtitle);
+    }
+    jsonChannel += m_nSubtitleCount ? " ]" : "]";
+
+    jsonChannel += " }";
     return jsonChannel;
 }
 
