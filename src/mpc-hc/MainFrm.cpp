@@ -3877,6 +3877,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
     if (!AppIsThemeLoaded()) { //themed menus draw accelerators already, no need to append
         for (UINT i = 0; i < uiMenuCount; ++i) {
             UINT nID = pPopupMenu->GetMenuItemID(i);
+            //the dynamically named items not listed here (filters, shader presets, favorite discs, optical drives)
+            //have no accelerator, so the key.IsEmpty() && k < 0 test below already skips them
             if (nID == ID_SEPARATOR || nID == -1
                 || nID >= ID_FAVORITES_FILE_START && nID <= ID_FAVORITES_FILE_END
                 || nID >= ID_RECENT_FILE_START && nID <= ID_RECENT_FILE_END
@@ -3940,7 +3942,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         INT_PTR i = 0, j = s.m_pnspresets.GetCount();
         for (; i < j; i++) {
             int k = 0;
-            CString label = s.m_pnspresets[i].Tokenize(_T(","), k);
+            CString label = SanitizeMenuLabel(s.m_pnspresets[i].Tokenize(_T(","), k));
             VERIFY(pPopupMenu->InsertMenu(ID_VIEW_RESET, MF_BYCOMMAND, ID_PANNSCAN_PRESETS_START + i, label));
             CMPCThemeMenu::fulfillThemeReqsItem(pPopupMenu, (UINT)(ID_PANNSCAN_PRESETS_START + i), true);
         }
@@ -10462,6 +10464,7 @@ void CMainFrame::OnPlayFiltersCopyToClipboard()
     for (int i = 2, count = m_filtersMenu.GetMenuItemCount(); i < count; i++) {
         CString filterName;
         m_filtersMenu.GetMenuString(i, filterName, MF_BYPOSITION);
+        filterName.Replace(_T("&&"), _T("&")); //the label is escaped for the menu, this list is plain text
         filtersList.AppendFormat(_T("  - %s\r\n"), filterName.GetString());
     }
 
@@ -17384,7 +17387,7 @@ void CMainFrame::SetupOpenCDSubMenu()
             }
 
             CString str;
-            str.Format(_T("%s (%c:)"), label.GetString(), drive);
+            str.Format(_T("%s (%c:)"), SanitizeMenuLabel(label).GetString(), drive);
 
             VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, str));
         }
@@ -17406,10 +17409,7 @@ void CMainFrame::SetupFiltersSubMenu()
         UINT idl = ID_FILTERSTREAMS_SUBITEM_START;
 
         BeginEnumFilters(m_pGB, pEF, pBF) {
-            CString filterName(GetFilterName(pBF));
-            if (filterName.GetLength() >= 43) {
-                filterName = filterName.Left(40) + _T("...");
-            }
+            CString filterName(SanitizeMenuLabel(GetFilterName(pBF), 43));
 
             CLSID clsid = GetCLSID(pBF);
             if (clsid == CLSID_AVIDec) {
@@ -17466,8 +17466,7 @@ void CMainFrame::SetupFiltersSubMenu()
             nPPages++;
 
             BeginEnumPins(pBF, pEP, pPin) {
-                CString pinName = GetPinName(pPin);
-                pinName.Replace(_T("&"), _T("&&"));
+                CString pinName = SanitizeMenuLabel(GetPinName(pPin));
 
                 if (pSPP = pPin) {
                     CAUUID caGUID;
@@ -17534,8 +17533,7 @@ void CMainFrame::SetupFiltersSubMenu()
                         streamName.LoadString(IDS_AG_UNKNOWN_STREAM);
                         streamName.AppendFormat(_T(" %lu"), i + 1);
                     } else {
-                        streamName = wname;
-                        streamName.Replace(_T("&"), _T("&&"));
+                        streamName = SanitizeMenuLabel(wname);
                         CoTaskMemFree(wname);
                     }
 
@@ -17679,8 +17677,7 @@ void CMainFrame::SetupAudioSubMenu()
                 iSel = i;
             }
 
-            CString name(pName);
-            name.Replace(_T("&"), _T("&&"));
+            CString name(SanitizeMenuLabel(pName));
 
             VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, name));
 
@@ -17841,20 +17838,20 @@ void CMainFrame::SetupSubtitlesSubMenu()
                         iSelected = i;
                     }
 
-                    CString name(pszName);
+                    //a tab in a name coming from the splitter is part of the name, not a column
+                    CString name = SanitizeMenuLabel(CString(pszName));
                     /*
                     CString lcname = CString(name).MakeLower();
                     if (lcname.Find(_T(" off")) >= 0) {
                         name.LoadString(IDS_AG_DISABLED);
                     }
                     */
-                    if (lcid != 0 && name.Find(L'\t') < 0) {
+                    if (lcid != 0) {
                         CString lcidstr;
                         GetLocaleString(lcid, LOCALE_SENGLANGUAGE, lcidstr);
                         name.Append(_T("\t") + lcidstr);
                     }
 
-                    name.Replace(_T("&"), _T("&&"));
                     VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, name));
                     i++;
                 }
@@ -17879,7 +17876,7 @@ void CMainFrame::SetupSubtitlesSubMenu()
                             name.Append(_T("\t") + lcidstr);
                         }
 
-                        name.Replace(_T("&"), _T("&&"));
+                        name = SanitizeMenuLabel(name, MENU_NAME_MAX, true);
                         VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, name));
                     } else {
                         VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, id++, ResStr(IDS_AG_UNKNOWN_STREAM)));
@@ -18018,8 +18015,7 @@ void CMainFrame::SetupSecondarySubtitleSubMenu()
         CComHeapPtr<WCHAR> pName;
         CString name;
         if (SUCCEEDED(subInput.pSubStream->GetStreamInfo(0, &pName, nullptr)) && pName) {
-            name = pName;
-            name.Replace(_T("&"), _T("&&"));
+            name = SanitizeMenuLabel(CString(pName), MENU_NAME_MAX, true);
         } else {
             name.LoadString(IDS_AG_UNKNOWN_STREAM);
         }
@@ -18138,7 +18134,7 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
                     idSelected = id;
                 }
 
-                name.Replace(_T("&"), _T("&&"));
+                name = SanitizeMenuLabel(name);
                 VERIFY(m_BDPlaylistMenu.AppendMenu(flags, id++, name + '\t' + time));
             }
             menuEndRadioSection(m_BDPlaylistMenu);
@@ -18159,9 +18155,7 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
 
                 CString time = _T("[") + ReftimeToString2(rt) + _T("]");
 
-                CString name = CString(bstr);
-                name.Replace(_T("&"), _T("&&"));
-                name.Replace(_T("\t"), _T(" "));
+                CString name = SanitizeMenuLabel(CString(bstr));
 
                 UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
                 if (i == j) {
@@ -18183,8 +18177,7 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
                     idSelected = id;
                 }
                 CPlaylistItem& pli = m_wndPlaylistBar.m_pl.GetNext(pos);
-                CString name = pli.GetLabel();
-                name.Replace(_T("&"), _T("&&"));
+                CString name = SanitizeMenuLabel(pli.GetLabel());
                 VERIFY(m_playlistMenu.AppendMenu(flags, id++, name));
             }
             menuEndRadioSection(m_playlistMenu);
@@ -18243,7 +18236,7 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
             if (channel.GetPrefNumber() == s.nDVBLastChannel) {
                 idSelected = id;
             }
-            VERIFY(m_channelsMenu.AppendMenu(flags, ID_NAVIGATE_JUMPTO_SUBITEM_START + channel.GetPrefNumber(), channel.GetName()));
+            VERIFY(m_channelsMenu.AppendMenu(flags, ID_NAVIGATE_JUMPTO_SUBITEM_START + channel.GetPrefNumber(), SanitizeMenuLabel(channel.GetName())));
             id++;
         }
         menuEndRadioSection(m_channelsMenu);
@@ -18277,14 +18270,15 @@ DWORD CMainFrame::SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwS
                 continue;
             }
 
-            CString name(pszName);
+            //a tab in a name coming from the splitter is part of the name, not a column
+            CString name = SanitizeMenuLabel(CString(pszName));
             /*
             CString lcname = CString(name).MakeLower();
             if (dwGroup == 2 && lcname.Find(_T(" off")) >= 0) {
                 name.LoadString(IDS_AG_DISABLED);
             }
             */
-            if (dwGroup == 2 && lcid != 0 && name.Find(L'\t') < 0) {
+            if (dwGroup == 2 && lcid != 0) {
                 CString lcidstr;
                 GetLocaleString(lcid, LOCALE_SENGLANGUAGE, lcidstr);
                 name.Append(_T("\t") + lcidstr);
@@ -18304,7 +18298,6 @@ DWORD CMainFrame::SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwS
             }
             bAdded = true;
 
-            name.Replace(_T("&"), _T("&&"));
             VERIFY(subMenu.AppendMenu(flags, id++, name));
         }
 
@@ -18547,7 +18540,7 @@ void CMainFrame::SetupRecentFilesSubMenu()
                         p.Format(_T("%s~~~%s"), static_cast<LPCWSTR>(p.Left(60)), static_cast<LPCWSTR>(p.Right(87)));
                     }
                 }
-                p.Replace(_T("&"), _T("&&"));
+                p = SanitizeMenuLabel(p, 0); //already shortened above, in a way that keeps the extension visible
                 VERIFY(subMenu.AppendMenu(flags, id, p));
             } else {
                 ASSERT(false);
@@ -18578,13 +18571,14 @@ void CMainFrame::SetupFavoritesSubMenu()
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
         CString f_str = favs.GetNext(pos);
-        f_str.Replace(_T("&"), _T("&&"));
-        f_str.Replace(_T("\t"), _T(" "));
 
         FileFavorite ff;
-        VERIFY(FileFavorite::TryParse(f_str, ff));
+        VERIFY(FileFavorite::TryParse(f_str, ff)); //parse before sanitizing, the escaping is not part of the format
 
         f_str = ff.Name;
+        if (!f_str.IsEmpty()) {
+            f_str = SanitizeMenuLabel(f_str);
+        }
 
         CString str = ff.ToString();
         if (!str.IsEmpty()) {
@@ -18615,7 +18609,6 @@ void CMainFrame::SetupFavoritesSubMenu()
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
         CString str = favs.GetNext(pos);
-        str.Replace(_T("&"), _T("&&"));
 
         CAtlList<CString> sl;
         ExplodeEsc(str, sl, _T(';'), 2);
@@ -18627,7 +18620,7 @@ void CMainFrame::SetupFavoritesSubMenu()
         }
 
         if (!str.IsEmpty()) {
-            VERIFY(subMenu.AppendMenu(flags, id, str));
+            VERIFY(subMenu.AppendMenu(flags, id, SanitizeMenuLabel(str)));
         }
 
         id++;
@@ -18651,7 +18644,6 @@ void CMainFrame::SetupFavoritesSubMenu()
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
         CString str = favs.GetNext(pos);
-        str.Replace(_T("&"), _T("&&"));
 
         CAtlList<CString> sl;
         ExplodeEsc(str, sl, _T(';'), 2);
@@ -18659,7 +18651,7 @@ void CMainFrame::SetupFavoritesSubMenu()
         str = sl.RemoveHead();
 
         if (!str.IsEmpty()) {
-            VERIFY(subMenu.AppendMenu(flags, id, str));
+            VERIFY(subMenu.AppendMenu(flags, id, SanitizeMenuLabel(str)));
         }
 
         id++;
@@ -18699,7 +18691,7 @@ bool CMainFrame::SetupShadersSubMenu()
                 ASSERT(FALSE);
                 break;
             }
-            VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, nID, pair.first));
+            VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, nID, SanitizeMenuLabel(pair.first)));
             if (selected && pair.first == current) {
                 VERIFY(subMenu.CheckMenuRadioItem(nID, nID, nID, MF_BYCOMMAND));
                 selected = false;
@@ -24314,7 +24306,7 @@ CHdmvClipInfo::BDMVMeta CMainFrame::GetBDMVMeta()
 
 BOOL CMainFrame::AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text)
 {
-    text.Replace(_T("&"), _T("&&"));
+    text = SanitizeMenuLabel(text);
     auto bResult = menu.AppendMenu(nFlags, nIDNewItem, text.GetString());
     if (bResult && (nFlags & MF_DEFAULT)) {
         bResult = menu.SetDefaultItem(nIDNewItem);

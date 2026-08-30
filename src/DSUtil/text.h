@@ -190,6 +190,27 @@ extern CStringA UrlDecode(const CStringA& strIn);
 extern CStringW UrlDecodeWithUTF8(const CStringW in, bool keepEncodedSpecialChar = false);
 extern CStringW URLGetHostName(const CStringW in);
 extern CStringW ShortenURL(const CStringW url, int targetLength = 100, bool returnHostnameIfTooLong = false);
+// How much of an externally supplied name (a track title, a disc label, a
+// channel name, ...) a menu item shows. Long enough for any real name, short
+// enough to bound a pathological one.
+#define MENU_NAME_MAX 256
+// Makes an arbitrary, possibly untrusted string safe to use as the label of a
+// menu item. What it guarantees:
+//   - every '&' is escaped to "&&", so the text cannot silently claim a
+//     mnemonic (or lose a character to one);
+//   - tabs, which would otherwise split the label into a right-aligned
+//     accelerator column, and every other control character are replaced by a
+//     space, and leading and trailing whitespace is dropped;
+//   - the result is at most maxChars characters, truncated with a trailing
+//     ellipsis and never in the middle of a surrogate pair;
+//   - the result is never empty, so a menu item always has something to
+//     measure.
+// The length is counted before the escaping, so the label is as long as it
+// looks. maxChars <= 0 means no truncation, and it defaults to MENU_NAME_MAX.
+// With allowColumn the first tab is kept, so that a caller composing its own
+// right-aligned column keeps it: both halves are sanitized separately, any
+// further tab still becomes a space, and only the left half is truncated.
+extern CStringW SanitizeMenuLabel(const CStringW& text, int maxChars = MENU_NAME_MAX, bool allowColumn = false);
 extern CStringA HtmlSpecialChars(CStringA str, bool bQuotes = false);
 extern CStringA HtmlSpecialCharsDecode(CStringA str);
 extern DWORD CharSetToCodePage(DWORD dwCharSet);

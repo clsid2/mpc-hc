@@ -997,8 +997,8 @@ void CPlayerSubresyncBar::OnRclickList(NMHDR* pNMHDR, LRESULT* pResult)
                         CString key;
                         STSStyle* val;
                         m_sts.m_styles.GetNextAssoc(pos, key, val);
-                        stylesNames.Add(key);
-                        m.AppendMenu(MF_STRING | MF_ENABLED, id++, key);
+                        stylesNames.Add(key); //the array keeps the real key, only the label is sanitized
+                        m.AppendMenu(MF_STRING | MF_ENABLED, id++, SanitizeMenuLabel(key));
                     }
 
                     if (id > STYLEFIRST && m_list.GetSelectedCount() == 1) {
@@ -1042,9 +1042,9 @@ void CPlayerSubresyncBar::OnRclickList(NMHDR* pNMHDR, LRESULT* pResult)
                             void* val;
                             actormap.GetNextAssoc(pos, key, val);
 
-                            actors.Add(key);
+                            actors.Add(key); //the array keeps the real key, only the label is sanitized
 
-                            m.AppendMenu(MF_STRING | MF_ENABLED, id++, key);
+                            m.AppendMenu(MF_STRING | MF_ENABLED, id++, SanitizeMenuLabel(key));
                         }
                     }
                 }
@@ -1070,9 +1070,9 @@ void CPlayerSubresyncBar::OnRclickList(NMHDR* pNMHDR, LRESULT* pResult)
                             void* val;
                             effectmap.GetNextAssoc(pos, key, val);
 
-                            effects.Add(key);
+                            effects.Add(key); //the array keeps the real key, only the label is sanitized
 
-                            m.AppendMenu(MF_STRING | MF_ENABLED, id++, key);
+                            m.AppendMenu(MF_STRING | MF_ENABLED, id++, SanitizeMenuLabel(key));
                         }
                     }
                 }
