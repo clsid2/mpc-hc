@@ -153,7 +153,8 @@ void CMPCThemeRadioOrCheck::OnPaint()
 
                 CRect focusRect = rectItem;
                 focusRect.InflateRect(0, 0);
-                if (buttonStyle & BS_MULTILINE) { //needed to clear old select for multi-line
+                { //clears the previous focus rect: the text is drawn transparently, and focus changes
+                  //repaint us without an erase, so nothing else wipes it
                     HBRUSH hb = CMPCThemeUtil::getParentDialogBGClr(this, &dc);
                     CBrush cb;
                     cb.Attach(hb);
