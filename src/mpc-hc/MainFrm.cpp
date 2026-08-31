@@ -4519,6 +4519,14 @@ LRESULT CMainFrame::OnOpenMediaFailed(WPARAM wParam, LPARAM lParam)
         FLUSH_LOGGER();
     }
 
+    // The other way a headless scan can be left with nothing to wait for: the
+    // device was configured but would not open. Quit rather than sit idle.
+    if (AfxGetAppSettings().nCLSwitches & CLSW_DVBSCAN) {
+        TRACE(_T("/dvbscan: the capture device failed to open, abandoning the scan\n"));
+        AfxGetAppSettings().nCLSwitches &= ~CLSW_DVBSCAN;
+        PostMessage(WM_CLOSE);
+    }
+
     m_lastOMD.Free();
     m_lastOMD.Attach((OpenMediaData*)lParam);
     if (!m_lastOMD->title) {
@@ -5286,11 +5294,23 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
         s.nCLSwitches &= ~CLSW_CD;
         PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
     } else if (s.nCLSwitches & (CLSW_DEVICE | CLSW_DVBSCAN)) {
-        // /dvbscan implies opening the capture device, because DoTunerScan only
-        // runs in PM_DIGITAL_CAPTURE. CLSW_DVBSCAN is deliberately left set:
-        // OnFilePostOpenmedia consumes it once the device is actually up.
-        PostMessage(WM_COMMAND, ID_FILE_OPENDEVICE);
-        s.nCLSwitches &= ~CLSW_DEVICE;
+        // OnFileOpendevice shows the capture options page and returns when no
+        // device is configured. Interactively that is a prompt; for a headless
+        // run it is a modal nobody can answer, and the process would sit there
+        // with no device, no scan and nothing to time out. Check the same
+        // condition first and fail the run instead.
+        if ((s.nCLSwitches & CLSW_DVBSCAN) && s.iDefaultCaptureDevice == 0 &&
+                s.strAnalogVideo == L"dummy" && s.strAnalogAudio == L"dummy") {
+            TRACE(_T("/dvbscan: no capture device configured, nothing to scan\n"));
+            s.nCLSwitches &= ~CLSW_DVBSCAN;
+            PostMessage(WM_CLOSE);
+        } else {
+            // /dvbscan implies opening the capture device, because DoTunerScan
+            // only runs in PM_DIGITAL_CAPTURE. CLSW_DVBSCAN is deliberately
+            // left set: OnFilePostOpenmedia consumes it once the device is up.
+            PostMessage(WM_COMMAND, ID_FILE_OPENDEVICE);
+            s.nCLSwitches &= ~CLSW_DEVICE;
+        }
     } else if (!s.slFiles.IsEmpty()) {
         CAtlList<CString> sl;
         sl.AddTailList(&s.slFiles);
