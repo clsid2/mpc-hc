@@ -18822,6 +18822,12 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
                      ? pSession->GetPosition()
                      : m_wndSeekBar.GetPos() / 10000000.0;
 
+    // A session that is up has to end before the next device is connected: a
+    // target refuses to connect while it is casting. The position the new
+    // device starts at was taken above, so it survives the handover, and the
+    // player is left where the old device got to in case nothing answers.
+    pSession->EndSession();
+
     // The local graph is only paused for the connect, so that nothing is lost
     // if the device turns out not to answer.
     const bool bWasPlaying = GetMediaState() == State_Running;
@@ -18878,8 +18884,9 @@ void CMainFrame::OnCastManageDevices()
     }
     EnsureCastTarget();
 
-    // The only place a discovery ever runs: it is started when this dialog
-    // opens and stopped when it closes.
+    // A discovery runs while this dialog is open, and is let go of when it
+    // closes. It is only stopped then if a /castto search is not holding it
+    // as well.
     CCastDevicesDlg dlg(m_pCastTarget.get(), this);
     s.GetCastDevices(dlg.m_devices);
     if (dlg.DoModal() == IDOK) {
@@ -18943,8 +18950,7 @@ void CMainFrame::BeginCastTo(const CString& device)
         return;
     }
 
-    m_bCastToDiscovery = !m_pCastTarget->IsDiscoveryRunning();
-    m_pCastTarget->StartDiscovery();
+    m_bCastToDiscovery = m_pCastTarget->AcquireDiscovery();
 
     m_strCastToPending = device;
     m_castToDeadline = GetTickCount64() + CASTTO_SEARCH_TIMEOUT;
@@ -19014,12 +19020,13 @@ void CMainFrame::EndCastTo(const CString& strReason)
     m_strCastToPending.Empty();
     m_castToDeadline = 0;
 
-    // The search is the only thing here that ever wanted a discovery, and it
-    // is over; a discovery somebody else started is left alone.
+    // The search is over, so what it took of the discovery is given back. It
+    // only stops if nothing else is holding it: the device dialog may be open
+    // over this and is entitled to go on scanning.
     if (m_bCastToDiscovery) {
         m_bCastToDiscovery = false;
         if (m_pCastTarget) {
-            m_pCastTarget->StopDiscovery();
+            m_pCastTarget->ReleaseDiscovery();
         }
     }
 

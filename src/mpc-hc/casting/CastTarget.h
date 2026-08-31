@@ -237,6 +237,15 @@ public:
     virtual bool IsDiscoveryRunning() const = 0;
     virtual std::vector<CastTargetDevice> GetDevices() = 0;
 
+    // One discovery serves everything that wants one -- the device dialog and
+    // a /castto search can be after one at the same time -- and stopping it
+    // throws the device list away. So it is held rather than switched: it runs
+    // while anything holds it and is stopped by the last release, and no
+    // holder can end another's. Acquire() answers whether anything is running
+    // to hold; only a caller it answered yes to releases.
+    bool AcquireDiscovery();
+    void ReleaseDiscovery();
+
     // stateMsg is posted to hNotifyWnd with the new CastTargetState in wParam
     // and the session generation it belongs to in lParam whenever the
     // simplified state changes.
@@ -301,4 +310,7 @@ public:
     virtual CString GetFailureReason() const { return CString(); }
     virtual double GetPosition() const = 0; // seconds, device-derived
     virtual double GetDuration() const = 0; // seconds, 0 while unknown
+
+private:
+    int m_discoveryHolders = 0;
 };

@@ -108,7 +108,7 @@ CCastDevicesDlg::CCastDevicesDlg(CCastTarget* pTarget, CWnd* pParent /*= nullptr
 CCastDevicesDlg::~CCastDevicesDlg()
 {
     if (m_bDiscovering && m_pTarget) {
-        m_pTarget->StopDiscovery(); // OnDestroy normally got here first
+        m_pTarget->ReleaseDiscovery(); // OnDestroy normally got here first
         m_bDiscovering = false;
     }
 }
@@ -208,18 +208,19 @@ void CCastDevicesDlg::SetupAnchors()
 void CCastDevicesDlg::StartDiscovery()
 {
     m_scanStarted = GetTickCount64();
-    if (m_pTarget) {
-        m_bDiscovering = m_pTarget->StartDiscovery();
+    if (m_pTarget && !m_bDiscovering) {
+        m_bDiscovering = m_pTarget->AcquireDiscovery();
     }
 }
 
 void CCastDevicesDlg::OnDestroy()
 {
     KillTimer(CAST_REFRESH_TIMER);
-    // Nothing about casting keeps a socket or a thread once this window is
-    // gone: what was started here is stopped here.
-    if (m_pTarget) {
-        m_pTarget->StopDiscovery();
+    // Nothing this window started outlives it. Only what it took is given
+    // back: a discovery somebody else is holding -- a /castto search still
+    // looking for its device -- goes on running and keeps its device list.
+    if (m_bDiscovering && m_pTarget) {
+        m_pTarget->ReleaseDiscovery();
     }
     m_bDiscovering = false;
 
@@ -494,8 +495,13 @@ void CCastDevicesDlg::OnUpdateRename(CCmdUI* pCmdUI)
 void CCastDevicesDlg::OnRescan()
 {
     if (m_pTarget) {
-        m_pTarget->StopDiscovery();
-        m_bDiscovering = false;
+        // Letting go and taking it again starts the search over from an empty
+        // list, unless somebody else is holding the discovery too -- then it
+        // keeps running and this only refreshes what it has found so far.
+        if (m_bDiscovering) {
+            m_pTarget->ReleaseDiscovery();
+            m_bDiscovering = false;
+        }
         StartDiscovery();
     }
     RebuildRows();

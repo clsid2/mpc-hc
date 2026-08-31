@@ -135,3 +135,22 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
           info.width, info.height, (int)info.audio, info.sampleRate, info.channels);
     return info;
 }
+
+bool CCastTarget::AcquireDiscovery()
+{
+    // Started even when it is already running: one protocol may have failed to
+    // start where the other did, and starting again is what retries it.
+    if (!StartDiscovery()) {
+        return false; // nothing runs, so there is nothing to hold or release
+    }
+    m_discoveryHolders++;
+    return true;
+}
+
+void CCastTarget::ReleaseDiscovery()
+{
+    ASSERT(m_discoveryHolders > 0);
+    if (m_discoveryHolders > 0 && --m_discoveryHolders == 0) {
+        StopDiscovery();
+    }
+}
