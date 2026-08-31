@@ -37,6 +37,13 @@
 #define QUERY_INTERVAL_MS   15000ull // re-send the mDNS query every 15 s
 #define DEVICE_STALE_MS     50000ull // drop devices unseen for 3 intervals + 5 s
 
+// A multicast query is a datagram like any other and gets lost like one, and a
+// device that missed the first one stays invisible for a whole interval. mDNS
+// resolvers answer that with a short burst of repeats at the start, which is
+// what makes a device appear in a second or two instead of in fifteen; these
+// are the offsets from the first query, which goes out immediately.
+static const ULONGLONG QUERY_BURST_MS[] = { 250ull, 1000ull };
+
 // A LAN with more cast devices than this is not a use case. The cap matters
 // less for the memory than for what it bounds: announcements are unsolicited
 // datagrams from any source, and one packet can carry a hundred instances the
@@ -238,14 +245,17 @@ DWORD CCastDiscovery::ThreadProc()
     }
 
     SendQuery(sock);
-    ULONGLONG lastQuery = GetTickCount64();
+    const ULONGLONG firstQuery = GetTickCount64();
+    ULONGLONG lastQuery = firstQuery;
+    size_t burst = 0; // how many of the opening burst queries have gone out
 
     HANDLE handles[] = { m_hStopEvent, hSocketEvent };
     for (;;) {
         // sleep until the next query is due or the nearest device goes stale,
         // instead of ticking once a second for nothing
         const ULONGLONG tick = GetTickCount64();
-        ULONGLONG deadline = lastQuery + QUERY_INTERVAL_MS;
+        ULONGLONG deadline = burst < _countof(QUERY_BURST_MS) ? firstQuery + QUERY_BURST_MS[burst]
+                             : lastQuery + QUERY_INTERVAL_MS;
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             for (const CastDevice& d : m_devices) {
@@ -273,7 +283,15 @@ DWORD CCastDiscovery::ThreadProc()
         }
 
         ULONGLONG now = GetTickCount64();
-        if (now - lastQuery >= QUERY_INTERVAL_MS) {
+        if (burst < _countof(QUERY_BURST_MS)) {
+            if (now - firstQuery >= QUERY_BURST_MS[burst]) {
+                // lastQuery stays where the first query put it, so the steady
+                // interval still counts from that one and a burst nobody
+                // answered costs no more time than one query would have
+                SendQuery(sock);
+                burst++;
+            }
+        } else if (now - lastQuery >= QUERY_INTERVAL_MS) {
             SendQuery(sock);
             lastQuery = now;
         }
