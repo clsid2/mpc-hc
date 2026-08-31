@@ -97,7 +97,8 @@ enum : UINT64 {
     CLSW_MUTE = CLSW_CONFIGLAVVIDEO << 1,
     CLSW_VOLUME = CLSW_MUTE << 1,
     CLSW_THUMBNAILS = CLSW_VOLUME << 1,
-    CLSW_UNRECOGNIZEDSWITCH = CLSW_THUMBNAILS << 1, // 47
+    CLSW_DVBSCAN = CLSW_THUMBNAILS << 1,
+    CLSW_UNRECOGNIZEDSWITCH = CLSW_DVBSCAN << 1, // 48
 };
 
 enum MpcCaptionState {
@@ -794,6 +795,17 @@ public:
     std::vector<CBDAChannel> m_DVBChannels;
     DVB_RebuildFilterGraph nDVBRebuildFilterGraph;
     DVB_StopFilterGraph nDVBStopFilterGraph;
+
+    // Headless tuner scan, driven by /dvbscan. Command line only and never
+    // persisted: this describes one run rather than a preference, and writing
+    // it to the profile would leave the next launch trying to scan.
+    struct {
+        ULONG   ulFrequencyStart;   // kHz
+        ULONG   ulFrequencyStop;    // kHz
+        ULONG   ulBandwidth;        // kHz; 0 means use iBDABandwidth
+        ULONG   ulSymbolRate;       // 0 means use iBDASymbolRate
+        CString strOutputPath;      // where the JSON is written
+    } cmdlnDVBScan;
 
     // Internal Filters
     bool            SrcFilters[SRC_LAST + !SRC_LAST];

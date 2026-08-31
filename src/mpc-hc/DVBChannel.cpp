@@ -437,3 +437,22 @@ DWORD CBDAChannel::GetVideoARy()
     }
     return Value;
 }
+
+CStringA DVBChannelsToJSON(const std::vector<CBDAChannel>& channels)
+{
+    // begin the JSON object with the "channels" array inside
+    CStringA jsonChannels = "{ \"channels\" : [";
+
+    for (auto it = channels.begin(); it != channels.end();) {
+        // fill the array with individual channel objects
+        jsonChannels += it->ToJSON();
+        if (++it == channels.end()) {
+            break;
+        }
+        jsonChannels += ",";
+    }
+
+    // terminate the array and the object, and return.
+    jsonChannels += "] }";
+    return jsonChannels;
+}

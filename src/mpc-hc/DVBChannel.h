@@ -245,3 +245,13 @@ private:
 
     void FromString(CString strValue);
 };
+
+/**
+ * @brief Serialize a list of channels as the JSON object the web interface
+ *        serves from /dvb/channels.json.
+ * @note Shared so that the endpoint and any other consumer emit the same
+ * document. A second copy of this loop would be free to drift from the first.
+ * @returns @c { "channels" : [ ... ] } with one @c CBDAChannel::ToJSON() per
+ * entry.
+ */
+CStringA DVBChannelsToJSON(const std::vector<CBDAChannel>& channels);

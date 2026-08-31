@@ -705,6 +705,15 @@ public:
     void StopTunerScan();
     HRESULT SetChannel(int nChannel);
 
+    // Headless tuner scan, driven by /dvbscan rather than CTunerScanDlg.
+    // DoTunerScan reports through window messages, so this listens for them
+    // instead of the dialog and writes the result out. The scan engine itself
+    // is unchanged and unaware of which listener it is talking to.
+    bool m_bHeadlessDVBScan = false;
+    std::vector<CBDAChannel> m_headlessDVBScanChannels;
+    void StartHeadlessDVBScan();
+    void FinishHeadlessDVBScan();
+
     void AddCurDevToPlaylist();
 
     bool m_bTrayIcon;
@@ -964,6 +973,11 @@ public:
 
     afx_msg LRESULT OnFilePostOpenmedia(WPARAM wParam, LPARAM lparam);
     afx_msg LRESULT OnOpenMediaFailed(WPARAM wParam, LPARAM lParam);
+
+    // Only reached in headless scan mode: with the dialog running these go to
+    // it instead, because DoTunerScan sends to the HWND it was handed.
+    afx_msg LRESULT OnHeadlessScanNewChannel(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHeadlessScanEnd(WPARAM wParam, LPARAM lParam);
     void OnFilePostClosemedia(bool bNextIsQueued = false);
 
     afx_msg void OnBossKey();

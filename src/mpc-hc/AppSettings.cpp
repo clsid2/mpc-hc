@@ -2715,6 +2715,11 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
     fixedWindowPosition = NO_FIXED_POSITION;
     iMonitor = 0;
     strPnSPreset.Empty();
+    cmdlnDVBScan.ulFrequencyStart = 0;
+    cmdlnDVBScan.ulFrequencyStop = 0;
+    cmdlnDVBScan.ulBandwidth = 0;
+    cmdlnDVBScan.ulSymbolRate = 0;
+    cmdlnDVBScan.strOutputPath.Empty();
 
     POSITION pos = cmdln.GetHeadPosition();
     while (pos) {
@@ -2861,6 +2866,28 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 if (tmpport >= 0 && tmpport <= 65535) {
                     nCmdlnWebServerPort = tmpport;
                 }
+            } else if (sw == _T("dvbscan") && pos) {
+                // /dvbscan <start>-<stop>, in kHz. Run a tuner scan without the
+                // scan dialog, write the result and quit. The range is required
+                // because there is no sensible default: the persisted one
+                // belongs to whoever last used the dialog.
+                CString strRange = cmdln.GetNext(pos);
+                int nDash = strRange.Find(_T('-'));
+                if (nDash > 0) {
+                    ULONG ulStart = _tcstoul(strRange.Left(nDash), nullptr, 10);
+                    ULONG ulStop = _tcstoul(strRange.Mid(nDash + 1), nullptr, 10);
+                    if (ulStart > 0 && ulStop >= ulStart) {
+                        cmdlnDVBScan.ulFrequencyStart = ulStart;
+                        cmdlnDVBScan.ulFrequencyStop = ulStop;
+                        nCLSwitches |= CLSW_DVBSCAN;
+                    }
+                }
+            } else if (sw == _T("dvbscanout") && pos) {
+                cmdlnDVBScan.strOutputPath = cmdln.GetNext(pos);
+            } else if (sw == _T("dvbbandwidth") && pos) {
+                cmdlnDVBScan.ulBandwidth = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("dvbsymbolrate") && pos) {
+                cmdlnDVBScan.ulSymbolRate = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
             } else if (sw == _T("debug")) {
                 fShowDebugInfo = true;
             } else if (sw == _T("nocrashreporter")) {

@@ -1022,30 +1022,13 @@ bool CWebClientSocket::OnViewRes(CStringA& hdr, CStringA& body, CStringA& mime)
     return true;
 }
 
-static CStringA GetChannelsJSON(const std::vector<CBDAChannel>& channels)
-{
-    // begin the JSON object with the "channels" array inside
-    CStringA jsonChannels = "{ \"channels\" : [";
-
-    for (auto it = channels.begin(); it != channels.end();) {
-        // fill the array with individual channel objects
-        jsonChannels += it->ToJSON();
-        if (++it == channels.end()) {
-            break;
-        }
-        jsonChannels += ",";
-    }
-
-    // terminate the array and the object, and return.
-    jsonChannels += "] }";
-    return jsonChannels;
-}
-
 bool CWebClientSocket::OnDVBChannels(CStringA& hdr, CStringA& body, CStringA& mime)
 {
     if (m_pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
         mime = "application/json";
-        body = GetChannelsJSON(AfxGetAppSettings().m_DVBChannels);
+        // DVBChannelsToJSON (DVBChannel.cpp) rather than a copy of the loop
+        // here, so this and the headless scan's output cannot diverge.
+        body = DVBChannelsToJSON(AfxGetAppSettings().m_DVBChannels);
     } else {
         // if we're not currently running the capture, report the service as
         // unavailable and return.
