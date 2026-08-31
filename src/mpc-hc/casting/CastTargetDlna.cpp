@@ -282,7 +282,7 @@ bool CDlnaTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD sea
     DlnaDevice dev;
     bool found = false;
     if (!saved.location.IsEmpty()) {
-        found = CDlnaDiscovery::ProbeLocation(saved.location, saved.address, dev);
+        found = CDlnaDiscovery::ProbeLocation(saved.location, saved.address, directMs, dev);
     } else if (!saved.address.IsEmpty()) {
         found = CDlnaDiscovery::ProbeAddress(saved.address, saved.port, directMs, dev);
     }

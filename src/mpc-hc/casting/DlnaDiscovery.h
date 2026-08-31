@@ -70,13 +70,17 @@ public:
     // unicast to a single host rather than to the SSDP group, then that host's
     // description and format list fetched from it. Nothing is started and no
     // state is shared, so a probe never disturbs a discovery that is running.
-    // The search waits at most timeoutMs; the HTTP exchanges behind it have
-    // their own, equally bounded timeouts.
+    // The search waits at most timeoutMs, and the description fetched from
+    // whatever answers it gets no longer than that again, so the call always
+    // ends in about twice what it was asked to wait.
     static bool ProbeAddress(const CString& ip, UINT port, DWORD timeoutMs, DlnaDevice& device);
 
     // The same for a device whose description URL is already known, which is
-    // how a saved device is found again at the place it was last seen.
-    static bool ProbeLocation(const CString& location, const CString& ip, DlnaDevice& device);
+    // how a saved device is found again at the place it was last seen. There
+    // is no search to wait for here, so timeoutMs is what the description and
+    // the format list that follows it have between them.
+    static bool ProbeLocation(const CString& location, const CString& ip, DWORD timeoutMs,
+                              DlnaDevice& device);
 
 private:
     // A device description that has been announced but not fetched yet, or a
@@ -122,6 +126,12 @@ private:
     std::deque<ProbeTask> m_probeQueue;
     std::vector<FailedProbe> m_failedProbes;
 
+    // When a probe runs on the caller's thread it is only allowed so long, and
+    // the HTTP exchanges it makes have to fit inside that. Zero on the worker,
+    // which has its stop event to end it instead. Probe thread only.
+    ULONGLONG m_probeDeadline = 0;
+    DWORD ProbeBudget() const;
+
     HANDLE m_hThread = nullptr;
     HANDLE m_hStopEvent = nullptr;
 };
@@ -134,10 +144,13 @@ namespace Dlna
 {
     // Performs one HTTP/1.1 exchange with an http:// URL. hAbort may be null;
     // when it is signalled the exchange is given up at once. The response body
-    // is capped, so a hostile device cannot exhaust memory here.
+    // is capped, so a hostile device cannot exhaust memory here. budgetMs
+    // shortens the built-in timeouts for a caller that cannot wait that long,
+    // and 0 means the exchange gets them in full.
     bool HttpRequest(const CString& url, const CStringA& method, const CStringA& extraHeaders,
-                     const CStringA& body, CStringA& response, int& statusCode, HANDLE hAbort);
-    bool HttpGet(const CString& url, CStringA& response, HANDLE hAbort);
+                     const CStringA& body, CStringA& response, int& statusCode, HANDLE hAbort,
+                     DWORD budgetMs = 0);
+    bool HttpGet(const CString& url, CStringA& response, HANDLE hAbort, DWORD budgetMs = 0);
 
     // How a device answered an action it refused: the HTTP status the answer
     // came with -- zero when the device said nothing at all, which tells a
@@ -154,7 +167,7 @@ namespace Dlna
     // pStatus, when given, the machine-readable part of it.
     bool SoapCall(const CString& controlURL, const CStringA& serviceType, const CStringA& action,
                   const CStringA& argsXml, CStringA& response, CString& fault, HANDLE hAbort,
-                  SoapStatus* pStatus = nullptr);
+                  SoapStatus* pStatus = nullptr, DWORD budgetMs = 0);
 
     // Local IPv4 address that the given device would see us at, empty on error
     CString LocalAddressFor(const CString& deviceIp);

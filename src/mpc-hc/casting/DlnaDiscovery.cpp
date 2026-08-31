@@ -419,10 +419,23 @@ CString Dlna::LocalAddressFor(const CString& deviceIp)
 }
 
 bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CStringA& extraHeaders,
-                       const CStringA& body, CStringA& response, int& statusCode, HANDLE hAbort)
+                       const CStringA& body, CStringA& response, int& statusCode, HANDLE hAbort,
+                       DWORD budgetMs)
 {
     response.Empty();
     statusCode = 0;
+
+    // Every wait below is clamped to what the caller allowed. Without that, a
+    // device that accepts the connection and then goes quiet costs the whole
+    // connect timeout plus the whole exchange timeout however little time the
+    // caller had to spend on it.
+    const ULONGLONG deadline = GetTickCount64()
+                               + (budgetMs ? std::min<DWORD>(budgetMs, HTTP_TOTAL_TIMEOUT_MS)
+                                  : HTTP_TOTAL_TIMEOUT_MS);
+    auto remaining = [&deadline]() -> DWORD {
+        const ULONGLONG now = GetTickCount64();
+        return now >= deadline ? 0 : (DWORD)(deadline - now);
+    };
 
     HttpUrl target;
     if (!ParseHttpUrl(url, target)) {
@@ -467,7 +480,8 @@ bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CString
         FD_SET(sock, &writeSet);
         FD_ZERO(&exceptSet);
         FD_SET(sock, &exceptSet);
-        timeval tv = { HTTP_CONNECT_TIMEOUT_MS / 1000, (HTTP_CONNECT_TIMEOUT_MS % 1000) * 1000 };
+        const DWORD connectMs = std::min<DWORD>(HTTP_CONNECT_TIMEOUT_MS, remaining());
+        timeval tv = { (long)(connectMs / 1000), (long)((connectMs % 1000) * 1000) };
         if (select(0, nullptr, &writeSet, &exceptSet, &tv) <= 0 || !FD_ISSET(sock, &writeSet)) {
             closesocket(sock);
             return false;
@@ -475,7 +489,8 @@ bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CString
     }
     nonBlocking = 0;
     ioctlsocket(sock, FIONBIO, &nonBlocking);
-    DWORD ioTimeout = HTTP_IO_TIMEOUT_MS;
+    // never zero, which the socket would read as "wait forever"
+    DWORD ioTimeout = std::max<DWORD>(1, std::min<DWORD>(HTTP_IO_TIMEOUT_MS, remaining()));
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&ioTimeout, sizeof(ioTimeout));
     setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&ioTimeout, sizeof(ioTimeout));
 
@@ -493,9 +508,8 @@ bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CString
     request += "\r\n";
     request += body;
 
-    const ULONGLONG deadline = GetTickCount64() + HTTP_TOTAL_TIMEOUT_MS;
     auto expired = [&]() {
-        return GetTickCount64() >= deadline
+        return remaining() == 0
                || (hAbort && WaitForSingleObject(hAbort, 0) == WAIT_OBJECT_0);
     };
 
@@ -563,16 +577,16 @@ bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CString
     return statusCode != 0;
 }
 
-bool Dlna::HttpGet(const CString& url, CStringA& response, HANDLE hAbort)
+bool Dlna::HttpGet(const CString& url, CStringA& response, HANDLE hAbort, DWORD budgetMs)
 {
     int statusCode = 0;
-    return HttpRequest(url, "GET", CStringA(), CStringA(), response, statusCode, hAbort)
+    return HttpRequest(url, "GET", CStringA(), CStringA(), response, statusCode, hAbort, budgetMs)
            && statusCode == 200;
 }
 
 bool Dlna::SoapCall(const CString& controlURL, const CStringA& serviceType, const CStringA& action,
                     const CStringA& argsXml, CStringA& response, CString& fault, HANDLE hAbort,
-                    SoapStatus* pStatus)
+                    SoapStatus* pStatus, DWORD budgetMs)
 {
     fault.Empty();
     if (pStatus) {
@@ -594,7 +608,7 @@ bool Dlna::SoapCall(const CString& controlURL, const CStringA& serviceType, cons
                    "SOAPACTION: \"%s#%s\"\r\n", serviceType.GetString(), action.GetString());
 
     int statusCode = 0;
-    if (!HttpRequest(controlURL, "POST", headers, envelope, response, statusCode, hAbort)) {
+    if (!HttpRequest(controlURL, "POST", headers, envelope, response, statusCode, hAbort, budgetMs)) {
         fault = _T("no response");
         return false;
     }
@@ -710,9 +724,16 @@ void CDlnaDiscovery::DrainProbes()
     }
 }
 
-bool CDlnaDiscovery::ProbeLocation(const CString& location, const CString& ip, DlnaDevice& device)
+bool CDlnaDiscovery::ProbeLocation(const CString& location, const CString& ip, DWORD timeoutMs,
+                                   DlnaDevice& device)
 {
     CDlnaDiscovery probe; // its own list; nothing is started
+
+    // This runs on the caller's thread, so the whole probe -- the description
+    // and the format list behind it -- is held to what the caller allowed. A
+    // device that accepts the connection and then stops answering is what this
+    // is for: without it the caller waits out both HTTP timeouts instead.
+    probe.m_probeDeadline = GetTickCount64() + timeoutMs;
 
     ProbeTask task;
     task.type = ProbeTask::Type::Describe;
@@ -800,6 +821,11 @@ bool CDlnaDiscovery::ProbeAddress(const CString& ip, UINT port, DWORD timeoutMs,
     }
     WSACleanup();
 
+    // The search had its timeout; the description the answer points at gets
+    // the same again rather than the HTTP timeouts in full, so a host that
+    // answers a search and then goes quiet cannot hold the caller much longer
+    // than it asked to wait.
+    probe.m_probeDeadline = GetTickCount64() + timeoutMs;
     probe.DrainProbes();
     if (probe.m_devices.empty()) {
         return false;
@@ -1137,13 +1163,32 @@ void CDlnaDiscovery::QueueProbe(ProbeTask&& task)
     m_probeQueue.emplace_back(std::move(task));
 }
 
+// Milliseconds a bounded probe has left, and 0 when it is not bounded at all,
+// which is what a call gets when it may take its own timeouts in full.
+DWORD CDlnaDiscovery::ProbeBudget() const
+{
+    if (m_probeDeadline == 0) {
+        return 0;
+    }
+    const ULONGLONG now = GetTickCount64();
+    return now >= m_probeDeadline ? 1 : (DWORD)(m_probeDeadline - now);
+}
+
 void CDlnaDiscovery::RunProbe(const ProbeTask& task)
 {
+    if (m_probeDeadline != 0 && GetTickCount64() >= m_probeDeadline) {
+        // The caller's time is up. Whatever the probe has learned by now is
+        // kept: a device found without its format list is still a device, and
+        // what is missing is picked up the next time it is connected to.
+        return;
+    }
+
     if (task.type == ProbeTask::Type::ProtocolInfo) {
         CStringA response;
         CString fault;
         if (!Dlna::SoapCall(task.controlURL, "urn:schemas-upnp-org:service:ConnectionManager:1",
-                            "GetProtocolInfo", CStringA(), response, fault, m_hStopEvent)) {
+                            "GetProtocolInfo", CStringA(), response, fault, m_hStopEvent,
+                            nullptr, ProbeBudget())) {
             return; // the device keeps its permissive defaults
         }
         CStringA sink = Dlna::GetElementText(response, "Sink");
@@ -1179,7 +1224,7 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
     }
 
     CStringA xml;
-    if (!Dlna::HttpGet(task.location, xml, m_hStopEvent)) {
+    if (!Dlna::HttpGet(task.location, xml, m_hStopEvent, ProbeBudget())) {
         // A device that announces itself and then will not describe itself is
         // typically half asleep; a magic packet costs one datagram and the
         // next announcement it sends gets probed again.
