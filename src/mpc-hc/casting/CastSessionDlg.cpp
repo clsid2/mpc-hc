@@ -77,6 +77,7 @@ BOOL CCastSessionDlg::OnInitDialog()
 
     m_seek.SetRange(0, 0, TRUE);
     m_seek.SetPageSize(30);
+    m_seek.SetJumpToClick(); // a click seeks to where it landed, as the player's own seekbar does
     m_seek.EnableWindow(FALSE);
 
     // The device has no volume to report back, so the slider starts where the
@@ -263,7 +264,7 @@ void CCastSessionDlg::UpdateTransport()
     }
 }
 
-void CCastSessionDlg::UpdatePosition()
+void CCastSessionDlg::UpdatePosition(bool bPlayedOut /*= false*/)
 {
     double duration = m_pTarget ? m_pTarget->GetDuration() : 0.0;
     if (duration <= 0.0) {
@@ -275,7 +276,10 @@ void CCastSessionDlg::UpdatePosition()
     }
 
     const int nDuration = std::max(0, (int)(duration + 0.5));
-    const int nPosition = std::max(0, std::min(nDuration, (int)position));
+    // A device that reached the end of the media last said where it was a poll
+    // before it got there, and nothing follows that status; without this the
+    // window stops a second short of a file that finished.
+    const int nPosition = bPlayedOut ? nDuration : std::max(0, std::min(nDuration, (int)position));
 
     if (m_seek.GetRangeMax() != nDuration) {
         m_seek.SetRange(0, nDuration, TRUE);
@@ -434,7 +438,9 @@ LRESULT CCastSessionDlg::OnCastStateChanged(WPARAM /*wParam*/, LPARAM lParam)
             }
             // The file played out, so there is no position left to resume from;
             // the player is not involved and its after-playback actions, which
-            // are about its own playlist, are not either.
+            // are about its own playlist, are not either. The window is left
+            // showing the end of the file, which is where the device got to.
+            UpdatePosition(true);
             EndSession(IDS_CAST_STOPPED, false);
             RememberPosition(0.0);
             break;

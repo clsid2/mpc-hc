@@ -76,7 +76,10 @@ protected:
     virtual BOOL OnInitDialog();
 
     void UpdateTransport();  // buttons and status line, from the device state
-    void UpdatePosition();   // seekbar and time, from the device clock
+    // Seekbar and time, from the device clock. bPlayedOut is set only when the
+    // device reports the media finished, and shows the end of the file rather
+    // than the last position it managed to report before it got there.
+    void UpdatePosition(bool bPlayedOut = false);
     void SetStatusText(UINT nID, const CString& detail = CString());
     void RememberPosition(double seconds);
     void HoldSystemAwake(bool hold);

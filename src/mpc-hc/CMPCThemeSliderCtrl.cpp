@@ -5,7 +5,7 @@
 #undef SubclassWindow
 
 CMPCThemeSliderCtrl::CMPCThemeSliderCtrl()
-    : m_bDrag(false), m_bHover(false), lockToZero(false)
+    : m_bDrag(false), m_bHover(false), lockToZero(false), jumpToClick(false)
 {
 
 }
@@ -30,6 +30,7 @@ IMPLEMENT_DYNAMIC(CMPCThemeSliderCtrl, CSliderCtrl)
 BEGIN_MESSAGE_MAP(CMPCThemeSliderCtrl, CSliderCtrl)
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMPCThemeSliderCtrl::OnNMCustomdraw)
     ON_WM_MOUSEMOVE()
+    ON_WM_LBUTTONDOWN()
     ON_WM_LBUTTONUP()
     ON_WM_MOUSELEAVE()
     ON_WM_MOUSEWHEEL()
@@ -140,15 +141,77 @@ void CMPCThemeSliderCtrl::checkHover(CPoint point)
 void CMPCThemeSliderCtrl::OnMouseMove(UINT nFlags, CPoint point)
 {
     checkHover(point);
+    if (jumpToClick && m_bDrag) {
+        SetPosFromPoint(point); // the thumb follows the cursor, nothing pages
+        return;
+    }
     CSliderCtrl::OnMouseMove(nFlags, point);
+}
+
+
+// Where a point on the channel puts the thumb, and the track notification
+// that says so. The arithmetic is CVolumeCtrl's, which owns the one other
+// slider in the player that goes where it is clicked.
+void CMPCThemeSliderCtrl::SetPosFromPoint(CPoint point)
+{
+    CRect r;
+    GetChannelRect(r);
+    int start, stop;
+    GetRange(start, stop);
+    if (r.left >= r.right || start >= stop) {
+        return;
+    }
+
+    const int w = r.right - r.left;
+    int pos;
+    if (point.x <= r.left) {
+        pos = start;
+    } else if (point.x >= r.right) {
+        pos = stop;
+    } else {
+        pos = start + ((stop - start) * (point.x - r.left) + w / 2) / w;
+    }
+    if (pos != GetPos()) {
+        SetPos(pos);
+        SendScrollMsg(SB_THUMBTRACK, (WORD)pos);
+    }
+}
+
+
+// A trackbar answers a click on its channel by paging towards it, so a click on
+// a seekbar seeks by one page instead of to the place that was clicked. The
+// control is therefore not given the click at all: the thumb is put where the
+// cursor is and the drag is run from here, exactly as CVolumeCtrl runs its own.
+void CMPCThemeSliderCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+    if (jumpToClick && !(GetStyle() & TBS_VERT)) {
+        m_bDrag = true;
+        invalidateThumb();
+        SetPosFromPoint(point);
+        SetFocus(); // the control keeps taking the focus a click gave it
+        SetCapture();
+        return;
+    }
+
+    CSliderCtrl::OnLButtonDown(nFlags, point);
 }
 
 
 void CMPCThemeSliderCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
+    const bool bWasDrag = jumpToClick && m_bDrag;
     m_bDrag = false;
     invalidateThumb();
     checkHover(point);
+    if (bWasDrag) {
+        // Letting go is what settles the position, so this is the one
+        // notification a listener acts on however far the thumb was dragged.
+        ReleaseCapture();
+        SetPosFromPoint(point);
+        SendScrollMsg(SB_THUMBPOSITION, (WORD)GetPos());
+        SendScrollMsg(SB_ENDSCROLL);
+        return;
+    }
     CSliderCtrl::OnLButtonUp(nFlags, point);
 }
 
