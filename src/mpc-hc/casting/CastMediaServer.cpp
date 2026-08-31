@@ -457,6 +457,9 @@ DWORD CCastMediaServer::ThreadProc()
         DWORD timeout = INFINITE;
         const ULONGLONG tick = GetTickCount64();
         for (const Client& c : clients) {
+            if (c.sending) {
+                continue; // no deadline while a response is in flight, see below
+            }
             const ULONGLONG deadline = c.lastActivity + CLIENT_IDLE_TIMEOUT_MS;
             timeout = (DWORD)std::min<ULONGLONG>(timeout, deadline > tick ? deadline - tick : 0);
         }
@@ -474,10 +477,19 @@ DWORD CCastMediaServer::ThreadProc()
             OnClientEvent(*it);
         }
 
-        // drop timed-out connections and purge closed ones
+        // Drop timed-out connections and purge closed ones. A connection with a
+        // response still in flight is not idle, however long it has been since
+        // a byte last moved: a device that pauses stops draining its socket,
+        // and cutting the body off there is what a renderer sees as the end of
+        // the file. Telling that from a device that has gone away is left to
+        // TCP, which is the only thing that can tell them apart -- a paused
+        // device goes on acknowledging and only closes its window, while one
+        // that has vanished makes the stack give the pending data up, and the
+        // error that follows closes the connection here.
         const ULONGLONG now = GetTickCount64();
         for (auto it = clients.begin(); it != clients.end();) {
-            if (it->sock != INVALID_SOCKET && now - it->lastActivity > CLIENT_IDLE_TIMEOUT_MS) {
+            if (it->sock != INVALID_SOCKET && !it->sending
+                    && now - it->lastActivity > CLIENT_IDLE_TIMEOUT_MS) {
                 CloseClient(*it);
             }
             it = it->sock == INVALID_SOCKET ? clients.erase(it) : std::next(it);
