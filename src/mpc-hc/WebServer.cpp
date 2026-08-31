@@ -40,6 +40,11 @@ CWebServer::CWebServer(CMainFrame* pMainFrame, int nPort)
     : m_pMainFrame(pMainFrame)
     , m_nPort(nPort)
 {
+    // Populate the route tables before the server thread below starts accepting requests,
+    // otherwise every request is answered with 404. Init() used to run at the end of
+    // InitInstance, long after CMainFrame::OnCreate had already started the server.
+    Init();
+
     m_webroot = CPath(PathUtils::GetProgramPath());
     const CAppSettings& s = AfxGetAppSettings();
 

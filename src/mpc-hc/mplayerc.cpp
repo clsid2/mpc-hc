@@ -2321,8 +2321,6 @@ BOOL CMPlayerCApp::InitInstance()
 
     m_mutexOneInstance.Release();
 
-    CWebServer::Init();
-
     if (m_s->fAssociatedWithIcons) {
         m_s->fileAssoc.CheckIconsAssoc();
     }
