@@ -677,7 +677,6 @@ HRESULT CMpeg2DataParser::ParseEIT(ULONG ulSID, EventDescriptor& NowNext)
     HRESULT hr = S_OK;
     DWORD dwLength;
     PSECTION data;
-    ULONG ulGetSID;
     EventInformationSection InfoEvent;
     NowNext = EventDescriptor();
 
@@ -689,12 +688,14 @@ HRESULT CMpeg2DataParser::ParseEIT(ULONG ulSID, EventDescriptor& NowNext)
         CGolombBuffer gb((BYTE*)data, dwLength);
 
         InfoEvent.TableID = (UINT8)gb.BitRead(8);
-        InfoEvent.SectionSyntaxIndicator = (WORD)gb.BitRead(1);
-        gb.BitRead(3);
-        InfoEvent.SectionLength = (WORD)gb.BitRead(12);
-        ulGetSID  = (ULONG)gb.BitRead(8);
-        ulGetSID += 0x100 * (ULONG)gb.BitRead(8);
-        InfoEvent.ServiceId = ulGetSID; // This is really strange, ServiceID should be uimsbf ???
+        // Same host-order header as ParseSIHeader: the BDA demux has already
+        // byte-swapped Header.W and TableIdExtension, so read them as
+        // little-endian WORDs. The hand-rolled little-endian service id this
+        // replaces was correct, and was why it looked "strange" here.
+        WORD wEitHeader = (WORD)gb.ReadShortLE();
+        InfoEvent.SectionSyntaxIndicator = (WORD)(wEitHeader >> 15);
+        InfoEvent.SectionLength = (WORD)(wEitHeader & 0x0FFF);
+        InfoEvent.ServiceId = (ULONG)(WORD)gb.ReadShortLE();
         if (InfoEvent.ServiceId == ulSID) {
             gb.BitRead(2);
             InfoEvent.VersionNumber = (UINT8)gb.BitRead(5);
