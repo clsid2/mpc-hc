@@ -4,13 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Hack茶ん, 2025
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Hack茶ん, 2025\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Korean (https://app.transifex.com/mpchc/teams/106126/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -156,7 +157,7 @@ msgstr "기본(&N)"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr ""
+msgstr "사용자 지정(&U)"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
@@ -364,7 +365,7 @@ msgstr "렌더러 기본 설정으로 초기화(&D)"
 
 msgctxt "POPUP"
 msgid "Video &Frame"
-msgstr "비디오 프레임(&F)"
+msgstr "영상 프레임(&F)"
 
 msgctxt "ID_VIEW_VF_HALF"
 msgid "&Half Size"
@@ -520,7 +521,7 @@ msgstr "재생 중(&F)"
 
 msgctxt "ID_ONTOP_WHILEPLAYINGVIDEO"
 msgid "While Playing &Video"
-msgstr "비디오 재생 중(&V)"
+msgstr "영상 재생 중(&V)"
 
 msgctxt "ID_VIEW_OPTIONS"
 msgid "&Options..."
@@ -664,7 +665,7 @@ msgstr "필터(&F)"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "색상 제어(&C)..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -672,7 +673,7 @@ msgstr "셰이더(&H)"
 
 msgctxt "ID_AUDIOS"
 msgid "&Audio Track"
-msgstr "오디오 트랙(&A)"
+msgstr "음향 트랙(&A)"
 
 msgctxt "ID_SUBTITLES"
 msgid "Su&btitle Track"
@@ -680,7 +681,7 @@ msgstr "자막 트랙(&B)"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "보조 자막 트랙"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
@@ -772,7 +773,7 @@ msgstr "자막 메뉴(&S)"
 
 msgctxt "ID_NAVIGATE_AUDIOMENU"
 msgid "&Audio Menu"
-msgstr "오디오 메뉴(&A)"
+msgstr "음향 메뉴(&A)"
 
 msgctxt "ID_NAVIGATE_ANGLEMENU"
 msgid "An&gle Menu"

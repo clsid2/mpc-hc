@@ -11,13 +11,14 @@
 # Jan Klass <kissaki@posteo.de>, 2024
 # Nico, 2025
 # Maik Dießner, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Maik Dießner, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -532,7 +533,7 @@ msgstr "Untertitel-Textur (Neuladen des Videos erforderlich)"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC9"
 msgid "Sub pictures to buffer:"
-msgstr "Unterbilder zum Puffern:"
+msgstr "Zu puffernde Untertitelbilder:"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC21"
 msgid "Maximum texture resolution:"
@@ -671,8 +672,8 @@ msgid ""
 "Open previous/next file in folder on \"Skip back/forward\" when there is "
 "only one item in playlist"
 msgstr ""
-"Nächste Ordnerdatei bei nur einem Eintrag in der Wiedergabeliste durch "
-"\"Vorwärts/Rückwärts springen\" öffnen"
+"Vorherige/nächste Datei im Ordner bei nur einem Eintrag in der "
+"Wiedergabeliste durch \"Vorherige/nächste Datei öffnen\"-Befehl öffnen."
 
 msgctxt "IDD_PPAGETWEAKS_IDC_FASTSEEK_CHECK"
 msgid "Fast seek (on keyframe)"
@@ -1096,7 +1097,7 @@ msgstr "&Audio-Decoder"
 
 msgctxt "IDD_PPAGELOGO_IDC_CHECK1"
 msgid "Apply Monitor Color Profile"
-msgstr "Übernehme Bildschirm-Farbprofil"
+msgstr "Bildschirm-Farbprofil übernehmen"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
 msgid "Internal:"
@@ -1112,7 +1113,7 @@ msgstr "&Öffnen..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Video-Renderer"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1344,7 +1345,7 @@ msgstr "Stopp"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Allgemein"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1356,15 +1357,15 @@ msgstr "Oberfläche:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "EVR-Puffer:"
+msgstr "EVR-Puffer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
-msgstr "Bei Anzeigewechsel neu initialisieren"
+msgstr "Bei Bildschirmwechsel neu initialisieren"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Shader zwischenspeichern"
+msgstr "Kompilierte Shader zwischenspeichern"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
@@ -1376,27 +1377,27 @@ msgstr "VMR-9-Mixer-Modus"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Direct3D-Ausgabegerät auswählen"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Sync-Renderer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "Videowiedergabe an Anzeige anpassen"
+msgstr "Video an Bildschirm anpassen"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
 msgid "Frequency adjustment:"
-msgstr "Frequenzabstimmung:"
+msgstr "Frequenzeinstellung:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "Anzeige an Videowiedergabe anpassen"
+msgstr "Bildschirm an Video anpassen"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
-msgstr "Frequenzabstimmung:"
+msgstr "Frequenzeinstellung:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
@@ -1408,7 +1409,7 @@ msgstr "Spalten"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "Videobilder mit nächstgelegenem VSync darstellen"
+msgstr "Videobilder bei nächstgelegenem VSync anzeigen"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
@@ -1436,11 +1437,11 @@ msgstr "Änderungen werden erst nach Neustart der Wiedergabe wirksam."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Zusätzliche Renderer-Einstellungen sind im Wiedergabe-Menü verfügbar"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Zurücksetzen"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1666,11 +1667,11 @@ msgstr ""
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO1"
 msgid "True"
-msgstr "wahr"
+msgstr "Ein"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_RADIO2"
 msgid "False"
-msgstr "falsch"
+msgstr "Aus"
 
 msgctxt "IDD_PPAGEADVANCED_IDC_BUTTON1"
 msgid "Default"
@@ -1801,19 +1802,19 @@ msgstr "Abbrechen"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Verlauf"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menü"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Ausgewählte entfernen"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Farbeinstellungen"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1833,11 +1834,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Zurücksetzen"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Schließen"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
@@ -1897,11 +1898,11 @@ msgstr "Tonspursprache"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK4"
 msgid "Video Info"
-msgstr "Video-Infos"
+msgstr "Video-Informationen"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK12"
 msgid "Audio Info"
-msgstr "Audio-Info"
+msgstr "Audio-Informationen"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
 msgid "FPS"
@@ -1977,7 +1978,7 @@ msgstr "Menü"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
-msgstr "Status"
+msgstr "Statusleiste"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"

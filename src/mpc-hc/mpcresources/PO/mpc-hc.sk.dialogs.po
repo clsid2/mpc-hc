@@ -4,13 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Marián Hikaník, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Marián Hikaník, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Slovak (https://app.transifex.com/mpchc/teams/106126/sk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1104,7 +1105,7 @@ msgstr "Prehľadávať..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Vykresľovač videa"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1336,7 +1337,7 @@ msgstr "Zastaviť graf filtra"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Bežný"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1348,31 +1349,31 @@ msgstr "Povrch:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "Vyr. pamäte EVR:"
+msgstr "Vyrov. pamäte pre EVR:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
-msgstr "Po zmene displeja opäť inicializovať"
+msgstr "Znovu inicializovať pri zmene displeja"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Uložiť skompilované shadery do vyrov. pamäte"
+msgstr "Ukladanie skompilovaných shaderov"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "Direct3D - celá obrazovka"
+msgstr "D3D na celú obrazovku"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
-msgstr "Mixovací mód VMR-9"
+msgstr "Režim zmiešavača VMR-9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Výber vykresľovača D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Synchronizačný vykresľovač"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1392,15 +1393,15 @@ msgstr "Prispôsobenie frekvencie:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
-msgstr "riadkov"
+msgstr "riadky"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
 msgid "columns"
-msgstr "stĺpcov"
+msgstr "stĺpce"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "Prezentovať pri najbližšej vert. synch."
+msgstr "Zobraziť pri najbližšej vertikálnej synchronizácii"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
@@ -1412,7 +1413,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Obmedzenia:"
+msgstr "Kontrolné limity:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1424,16 +1425,15 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr ""
-"Zmeny sa prejavia až po zastavení aktuálneho prehrávania a po reštartovaní."
+msgstr "Zmeny sa prejavia po skončení prehrávania a reštartovaní."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Viac nastavení vykresľovača je dostupných v menu Prehrávanie"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Reset"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1794,19 +1794,19 @@ msgstr "Zrušiť"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "História"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Odstrániť vybrané"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Ovládače farby"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1826,11 +1826,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Reset"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Zavrieť"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"

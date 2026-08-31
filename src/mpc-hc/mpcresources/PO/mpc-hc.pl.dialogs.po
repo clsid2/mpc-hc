@@ -7,13 +7,14 @@
 # Krzysztof, 2024
 # Mirosław Żylewicz, 2025
 # Łukasz Janik, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Łukasz Janik, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1110,7 +1111,7 @@ msgstr "Przeglądaj..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Renderer wideo"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1342,7 +1343,7 @@ msgstr "Zatrzymuj graf filtrów"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Ogólne"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1374,11 +1375,11 @@ msgstr "Tryb VMR-9 Mixer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Wybierz urządzenie renderujące D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Sync Renderer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1398,11 +1399,11 @@ msgstr "Regulacja częstotliwości:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
-msgstr "wierszy"
+msgstr "Linie"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
 msgid "columns"
-msgstr "kolumn"
+msgstr "Kolumny"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
@@ -1418,7 +1419,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Granica kontrolna:"
+msgstr "Limity sterowania:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1431,15 +1432,16 @@ msgstr "ms"
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
 msgstr ""
-"Zmiany zaczną obowiązywać po zamknięciu i ponownym uruchomieniu odtwarzania."
+"Zmiany zostaną zastosowane po zamknięciu i ponownym uruchomieniu "
+"odtwarzania."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Więcej ustawień renderera jest dostępnych w menu Odtwarzanie"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Resetuj"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1804,19 +1806,19 @@ msgstr "Anuluj"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Historia"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Resetuj zaznaczone"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Regulacja kolorów"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1836,11 +1838,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Resetuj"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Zamknij"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"

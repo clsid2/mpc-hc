@@ -8,13 +8,14 @@
 # Michał Trzebiatowski <michtrz@gmail.com>, 2020
 # Krzysztof, 2024
 # Łukasz Janik, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Łukasz Janik, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Polish (https://app.transifex.com/mpchc/teams/106126/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -668,7 +669,7 @@ msgstr "&Filtry"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "&Regulacja kolorów..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -684,7 +685,7 @@ msgstr "Ścieżka &napisów"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Druga ścieżka napisów"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"

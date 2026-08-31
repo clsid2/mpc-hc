@@ -6,13 +6,14 @@
 # O SA, 2021
 # Sonozaki Shion <mskt01a@gmail.com>, 2021
 # ever_green, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: ever_green, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -160,7 +161,7 @@ msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
-msgstr "インターネット上またはお使いのコンピューター上にある映画やオーディオ ファイルのアドレスを入力すると、プレーヤーが開きます。"
+msgstr "再生したい動画やオーディオ ファイルのアドレス (URL またはコンピューター内の場所) を入力してください。プレーヤーで開きます。"
 
 msgctxt "IDD_OPEN_DLG_IDC_STATIC"
 msgid "Open:"
@@ -1093,7 +1094,7 @@ msgstr "参照..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "ビデオ レンダラー"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1325,7 +1326,7 @@ msgstr "フィルター グラフを停止"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "共通設定"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1345,7 +1346,7 @@ msgstr "ディスプレイ変更時に再初期化する"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "コンパイルされたシェーダーをキャッシュする"
+msgstr "コンパイル済みシェーダーをキャッシュする"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
@@ -1357,11 +1358,11 @@ msgstr "VMR-9 ミキサー モード"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "D3D9 レンダリング デバイスを選択する"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "同期レンダラー"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1393,7 +1394,7 @@ msgstr "最も近い垂直同期で表示する"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "同期オフセット目標値:"
+msgstr "目標同期オフセット:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1417,11 +1418,11 @@ msgstr "ファイルを開き直すと、変更が有効になります。"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "その他のレンダラーの設定は再生メニューから利用可能です"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "リセット"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1693,7 +1694,7 @@ msgctxt "IDD_PPAGEAUDIORENDERER_IDC_STATIC8"
 msgid ""
 "To minimize audio distortion, it is recommended to keep player volume at "
 "around 85% when playing loud lossy-encoded content."
-msgstr "大音量の非可逆圧縮コンテンツを再生する場合、音声の歪みを最小限に抑えるため、プレイヤーの音量は約 85% に保つことを推奨します。"
+msgstr "大音量の非可逆圧縮コンテンツを再生する場合、音声の歪みを最小限に抑えるため、プレーヤーの音量は約 85% に保つことを推奨します。"
 
 msgctxt "IDD_CMD_LINE_HELP_CAPTION"
 msgid "Command line help"
@@ -1767,19 +1768,19 @@ msgstr "キャンセル"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "履歴"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "メニュー"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "選択項目を除去"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "カラー コントロール"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1799,11 +1800,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "リセット"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "閉じる"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
@@ -1919,7 +1920,7 @@ msgstr "デスクトップの端にスナップさせる"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK10"
 msgid "Hide Windowed Controls"
-msgstr "ウィンドウ コントロールを隠す"
+msgstr "ウィンドウ表示でコントロールを隠す"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Windows Integration"

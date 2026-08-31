@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Ali Kömesöğütlü <byzlo685@gmail.com>, 2020
 # Mücahid Aksel <mucahidaksel@gmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -125,7 +126,7 @@ msgstr "Du&rum"
 
 msgctxt "ID_VIEW_SUBRESYNC"
 msgid "Su&bresync"
-msgstr "Altyazı eşzamanla"
+msgstr "Altyazı eşzamanlayıcı"
 
 msgctxt "ID_VIEW_PLAYLIST"
 msgid "Pla&ylist"
@@ -329,7 +330,7 @@ msgstr "&VSync"
 
 msgctxt "ID_VIEW_VSYNCACCURATE"
 msgid "&Accurate VSync"
-msgstr "&Kesin VSync"
+msgstr "&Hassas VSync"
 
 msgctxt "ID_VIEW_ALTERNATIVEVSYNC"
 msgid "A&lternative VSync"
@@ -349,7 +350,7 @@ msgstr "&GPU denetimi"
 
 msgctxt "ID_VIEW_FLUSHGPU_BEFOREVSYNC"
 msgid "Flush GPU &before VSync"
-msgstr "VSync'den önce GPU'yu sıfırla"
+msgstr "VSync öncesi GPU'yu temizle"
 
 msgctxt "ID_VIEW_FLUSHGPU_AFTERPRESENT"
 msgid "Flush GPU &after Present"
@@ -665,7 +666,7 @@ msgstr "&Filtreler"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "Renk a&yarları..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -681,7 +682,7 @@ msgstr "&Altyazı parçası"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "İkincil altyazı parçası"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"

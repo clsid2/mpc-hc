@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Zyz696 Paga, 2020
 # Felipefpl, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Felipefpl, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/mpchc/teams/106126/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1104,7 +1105,7 @@ msgstr "Procurar..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Renderizador de Vídeo"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1336,7 +1337,7 @@ msgstr "Parar gráfico dos filtros"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Comum"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1352,7 +1353,7 @@ msgstr "Buffers do EVR:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
-msgstr "Re-inicializar quando mudar a exibição"
+msgstr "Reinicializar quando mudar a tela"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
@@ -1360,23 +1361,23 @@ msgstr "Shaders compilados no cache"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "Direct3D em Tela Cheia"
+msgstr "Tela Cheia do D3D"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
-msgstr "VMR-9 no Modo Mixer"
+msgstr "Modo Mixer do VMR-9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Selecionar Dispositivo de Renderização do D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Renderizador da Sincronização"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "Sincronizar o vídeo com a exibição"
+msgstr "Sincronizar o vídeo com a tela"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
 msgid "Frequency adjustment:"
@@ -1384,7 +1385,7 @@ msgstr "Ajuste de frequência:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "Sincronizar a exibição com o vídeo"
+msgstr "Sincronizar a tela com o vídeo"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
@@ -1392,19 +1393,19 @@ msgstr "Ajuste de frequência:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
-msgstr "linhas"
+msgstr "Linhas"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC4"
 msgid "columns"
-msgstr "colunas"
+msgstr "Colunas"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "Apresentar no VSync mais próximo"
+msgstr "Presente no VSync mais próximo"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Deslocamento da sincronia do alvo:"
+msgstr "Deslocamento da sincronização do alvo:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1412,7 +1413,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Limites dos controles:"
+msgstr "Limites do controle:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1424,15 +1425,16 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr "As mudanças tem efeito após o playback ter sido fechado e reiniciado."
+msgstr ""
+"As mudanças tem efeito após a reprodução ter sido fechada e reiniciada."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Mais configurações do renderizador estão disponíveis no menu Play"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Resetar"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1798,19 +1800,19 @@ msgstr "Cancelar"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Histórico"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Remover selecionado"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Controles das cores"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1830,11 +1832,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Resetar"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Fechar"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"

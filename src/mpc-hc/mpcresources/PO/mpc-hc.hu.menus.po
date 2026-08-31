@@ -8,13 +8,14 @@
 # Speeder, 2022
 # Péter Patkós, 2024
 # Hevesi J. <hevesi2010@gmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Hevesi J. <hevesi2010@gmail.com>, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Hungarian (https://app.transifex.com/mpchc/teams/106126/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -668,7 +669,7 @@ msgstr "&Szűrők"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "Színbeállítások"
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -684,7 +685,7 @@ msgstr "Felirat sáv"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Másodlagos feliratsáv"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"

@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # Trần Anh Minh <anhminhvks@yahoo.com>, 2024
 # Huy Võ <hoanghuy309@gmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Huy Võ <hoanghuy309@gmail.com>, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Vietnamese (https://app.transifex.com/mpchc/teams/106126/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1105,7 +1106,7 @@ msgstr "Duyệt..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Trình Kết Xuất Video"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1337,11 +1338,11 @@ msgstr "Dừng đồ thị bộ lọc"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Chung"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
-msgstr "Chỉnh lại kích cỡ:"
+msgstr "Bộ thay đổi kích thước:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Surface:"
@@ -1353,11 +1354,11 @@ msgstr "Bộ đệm EVR:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
-msgstr "Khởi tạo lại khi thay đổi màn hình"
+msgstr "Khởi tạo lại khi thay đổi hiển thị"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Bộ nhớ đệm đã biên dịch Trình tạo bóng"
+msgstr "Shaders đã biên dịch bộ nhớ đệm"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
@@ -1365,19 +1366,19 @@ msgstr "D3D Toàn màn hình"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
-msgstr "Chế độ trộn VMR-9"
+msgstr "Chế Độ Trộn VMR-9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Chọn Thiết bị Kết xuất D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Bộ Kết xuất Đồng bộ"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "Đồng bộ video theo màn hình"
+msgstr "Đồng bộ video để hiển thị"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
 msgid "Frequency adjustment:"
@@ -1385,7 +1386,7 @@ msgstr "Điều chỉnh tần số:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "Đồng bộ màn hình theo video"
+msgstr "Đồng bộ hiển thị với video"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
@@ -1405,15 +1406,15 @@ msgstr "Hiện diện tại VSync gần nhất"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Bù đắp đồng bộ đích:"
+msgstr "Độ lệch đồng bộ mục tiêu:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
-msgstr "mili giây"
+msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Điều chỉnh hạn mức:"
+msgstr "Giới hạn kiểm soát:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1421,21 +1422,22 @@ msgstr "+/-"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC9"
 msgid "ms"
-msgstr "mili giây"
+msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
 msgstr ""
-"Các thay đổi có hiệu lực sau khi quá trình phát lại được đóng và bắt đầu "
-"lại."
+"Các thay đổi sẽ có hiệu lực sau khi quá trình phát lại đã được đóng và khởi "
+"động lại."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
 msgstr ""
+"Bạn có thể tìm thêm các tùy chọn cài đặt trình kết xuất trong menu Phát."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Đặt lại"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1791,19 +1793,19 @@ msgstr "Hủy bỏ"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Lịch sử"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Xóa mục đã chọn"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Kiểm soát màu sắc"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1823,11 +1825,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Đặt lại"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Đóng"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"

@@ -9,13 +9,14 @@
 # Gaugg_Markus, 2021
 # Nico, 2025
 # Maik Dießner, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Maik Dießner, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: German (https://app.transifex.com/mpchc/teams/106126/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -261,7 +262,7 @@ msgstr "&Bildzeitkorrektur"
 
 msgctxt "POPUP"
 msgid "&Color Management"
-msgstr "&Farbabstimmung"
+msgstr "&Farbmanagement"
 
 msgctxt "ID_VIEW_CM_ENABLE"
 msgid "&Enable"
@@ -325,7 +326,7 @@ msgstr "&Absolut farbmetrisch"
 
 msgctxt "POPUP"
 msgid "&VSync"
-msgstr "&VSync-Kontrolle"
+msgstr "&VSync"
 
 msgctxt "ID_VIEW_VSYNC"
 msgid "&VSync"
@@ -653,11 +654,11 @@ msgstr "59,94 FPS"
 
 msgctxt "ID_PLAY_DECRATE"
 msgid "&Decrease Rate"
-msgstr "Tempo v&erringern"
+msgstr "Geschwindigkeit v&erringern"
 
 msgctxt "ID_PLAY_INCRATE"
 msgid "&Increase Rate"
-msgstr "Tempo e&rhöhen"
+msgstr "Geschwindigkeit e&rhöhen"
 
 msgctxt "ID_PLAY_RESETRATE"
 msgid "R&eset Rate"
@@ -669,7 +670,7 @@ msgstr "Fi&lter"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "&Farbeinstellungen..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -685,7 +686,7 @@ msgstr "Unter&titelspur"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Zweite Untertitelspur"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
@@ -717,7 +718,7 @@ msgstr "&Keine Aktion"
 
 msgctxt "ID_AFTERPLAYBACK_PLAYNEXT"
 msgid "Play &next file in the folder"
-msgstr "&Nächste Ordnerdatei öffnen"
+msgstr "&Nächste Datei im Ordner öffnen"
 
 msgctxt "ID_AFTERPLAYBACK_MONITOROFF"
 msgid "Turn off the &monitor"

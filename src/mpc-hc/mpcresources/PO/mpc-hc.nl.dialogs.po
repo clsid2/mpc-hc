@@ -7,13 +7,14 @@
 # xknat <321knat@gmail.com>, 2022
 # mark van tilburg <markvantilburg@gmail.com>, 2025
 # Renz Straatman <renz@kabelkrant.net>, 2025
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-12-14 16:16:34+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Renz Straatman <renz@kabelkrant.net>, 2025\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Dutch (https://app.transifex.com/mpchc/teams/106126/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1825,7 +1826,7 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Reset"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"

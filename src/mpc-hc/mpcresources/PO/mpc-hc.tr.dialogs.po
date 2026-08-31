@@ -6,13 +6,14 @@
 # Ali Kömesöğütlü <byzlo685@gmail.com>, 2020
 # Sinan H., 2024
 # Mücahid Aksel <mucahidaksel@gmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Mücahid Aksel <mucahidaksel@gmail.com>, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -485,7 +486,7 @@ msgstr "Başlangıç ayarları"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK7"
 msgid "Use worker thread to construct the filter graph"
-msgstr "Filtre grafı oluşturmak için işçi iş parçacığı özelliğini kullan"
+msgstr "Filtre zincirini oluşturmak için arka plan iş parçacığı kullan"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK6"
 msgid "Report pins which fail to render"
@@ -891,8 +892,8 @@ msgid ""
 "MPC-HC could not render some of the pins in the graph, you may not have the "
 "needed codecs or filters installed on the system."
 msgstr ""
-"MPC-HC, graf içindeki bazı bağlantı noktalarını (pin'leri) işleyemedi; "
-"bilgisayarınızda gerekli codec veya filtreler kurulu olmayabilir."
+"MPC-HC zincirdeki bazı pinleri işleyemedi, sisteminizde gerekli kod "
+"çözücüler veya filtreler yüklü olmayabilir."
 
 msgctxt "IDD_MEDIATYPES_DLG_IDC_STATIC2"
 msgid "The following pin(s) failed to find a connectable filter:"
@@ -1080,7 +1081,7 @@ msgstr "Dönüşüm Filtreleri"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_STATIC"
 msgid "Internal LAV Filters settings"
-msgstr "İçsel \"LAV Filters\" ayarları"
+msgstr "Dahili LAV Filtresi ayarları"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_SPLITTER_CONF"
 msgid "Splitter"
@@ -1100,11 +1101,11 @@ msgstr "Monitör renk profilini uygula"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO1"
 msgid "Internal:"
-msgstr "İçsel:"
+msgstr "Dahili:"
 
 msgctxt "IDD_PPAGELOGO_IDC_RADIO2"
 msgid "External:"
-msgstr "Dışsal:"
+msgstr "Harici:"
 
 msgctxt "IDD_PPAGELOGO_IDC_BUTTON2"
 msgid "Browse..."
@@ -1112,7 +1113,7 @@ msgstr "Göz at..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Video İşleyici"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1336,15 +1337,15 @@ msgstr "Kanal değiştirme yöntemi:"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
 msgid "Rebuild filter graph"
-msgstr "Filtre grafını yeniden oluştur"
+msgstr "Filtre zincirini yeniden oluştur"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST12"
 msgid "Stop filter graph"
-msgstr "Filtre grafını durdur"
+msgstr "Filtre zincirini durdur"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Ortak Ayarlar"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1356,11 +1357,11 @@ msgstr "Yüzey:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "GVİ Tamponları:"
+msgstr "EVR Tamponları:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
-msgstr "Ekranı değiştirirken sıfırla"
+msgstr "Ekran değiştiğinde yeniden başlat"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
@@ -1368,35 +1369,35 @@ msgstr "Derlenmiş tonlayıcıları önbelleğe al"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "D3D Tam ekran"
+msgstr "D3D Tam Ekran"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
-msgstr "VKİ-9 karıştırıcı tipi"
+msgstr "VMR-9 Mikser modu"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "D3D9 İşleyici aygıtını seç:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Eşzamanlama İşleyicisi"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
-msgstr "Videoyu ekran ile eşzamanla"
+msgstr "Videoyu ekrana senkronize et"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC1"
 msgid "Frequency adjustment:"
-msgstr "Frekans düzeltmesi:"
+msgstr "Frekans ayarı:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr "Ekranı video ile eşzamanla"
+msgstr "Ekranı videoya senkronize et"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
-msgstr "Frekans düzeltmesi:"
+msgstr "Frekans ayarı:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC3"
 msgid "lines"
@@ -1408,11 +1409,11 @@ msgstr "sütun"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "En yakın VSync'de sunum yap"
+msgstr "En yakın VSync'te sun"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Hedef eşitleme kayması:"
+msgstr "Hedef senkronizasyon kaydırması:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1420,7 +1421,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC7"
 msgid "Control limits:"
-msgstr "Kontrol sınırı:"
+msgstr "Tolerans sınırları:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC8"
 msgid "+/-"
@@ -1433,16 +1434,15 @@ msgstr "ms"
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
 msgstr ""
-"Değişiklikler, oynatım kapatıldıktan ve uygulama yeniden başlatıldıktan "
-"sonra geçerli olacaktır."
+"Değişiklikler, oynatma kapatılıp yeniden başlatıldıktan sonra geçerli olur."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Daha fazla işleyici ayarına Oynatım menüsünden ulaşılabilir"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Sıfırla"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1522,7 +1522,7 @@ msgstr "Zorlanmış veya varsayılan altyazıları tercih et"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK2"
 msgid "Prefer external subtitles over embedded subtitles"
-msgstr "Dışsal altyazıları gömülü altyazılara yeğle"
+msgstr "Harici altyazıları gömülü altyazılara yeğle"
 
 msgctxt "IDD_PPAGESUBMISC_IDC_CHECK3"
 msgid "Ignore embedded subtitles"
@@ -1804,19 +1804,19 @@ msgstr "İptal"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Geçmiş"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menü"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Seçileni kaldır"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Renk Ayarları"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
@@ -1836,11 +1836,11 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Sıfırla"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Kapat"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
@@ -1868,7 +1868,7 @@ msgstr "Bölüm işaretlerini izlem çubuğunda göster"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr "İzlem çubuğunda zaman:"
+msgstr "Süreyi göster:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"

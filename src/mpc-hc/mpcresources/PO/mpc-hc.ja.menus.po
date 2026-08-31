@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # O SA, 2021
 # ever_green, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: ever_green, 2026\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Japanese (https://app.transifex.com/mpchc/teams/106126/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -221,7 +222,7 @@ msgstr "16 - 235(&1)"
 
 msgctxt "POPUP"
 msgid "&Presentation"
-msgstr "描画処理(&P)"
+msgstr "表示(&P)"
 
 msgctxt "ID_VIEW_D3DFULLSCREEN"
 msgid "D3D Fullscreen &Mode"
@@ -257,7 +258,7 @@ msgstr "フレーム時間補正を有効にする(&C)"
 
 msgctxt "POPUP"
 msgid "&Color Management"
-msgstr "カラー マネジメント(&C)"
+msgstr "色管理(&C)"
 
 msgctxt "ID_VIEW_CM_ENABLE"
 msgid "&Enable"
@@ -285,7 +286,7 @@ msgstr "SDTV PAL(&P)"
 
 msgctxt "POPUP"
 msgid "Ambient &Light"
-msgstr "アンビエント ライト(&L)"
+msgstr "環境光(&L)"
 
 msgctxt "ID_VIEW_CM_AMBIENTLIGHT_BRIGHT"
 msgid "&Bright (2.2 Gamma)"
@@ -309,7 +310,7 @@ msgstr "知覚的(&P)"
 
 msgctxt "ID_VIEW_CM_INTENT_RELATIVECOLORIMETRIC"
 msgid "&Relative Colorimetric"
-msgstr "相対的色域補正(&R)"
+msgstr "相対的な色域を維持(&R)"
 
 msgctxt "ID_VIEW_CM_INTENT_SATURATION"
 msgid "&Saturation"
@@ -317,7 +318,7 @@ msgstr "彩度(&S)"
 
 msgctxt "ID_VIEW_CM_INTENT_ABSOLUTECOLORIMETRIC"
 msgid "&Absolute Colorimetric"
-msgstr "絶対的色域補正(&A)"
+msgstr "絶対的な色域を維持(&A)"
 
 msgctxt "POPUP"
 msgid "&VSync"
@@ -665,7 +666,7 @@ msgstr "フィルター(&F)"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "カラー コントロール(&C)..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -681,7 +682,7 @@ msgstr "字幕トラック(&B)"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "副字幕トラック"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"

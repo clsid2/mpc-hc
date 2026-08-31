@@ -4,13 +4,14 @@
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
 # A S Alam <alam.yellow@gmail.com>, 2020
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2021-02-23 16:03:02+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: A S Alam <alam.yellow@gmail.com>, 2020\n"
+"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Panjabi (Punjabi) (https://www.transifex.com/mpchc/teams/106126/pa/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1793,7 +1794,7 @@ msgstr ""
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "ਮੁੜ-ਸੈੱਟ ਕਰੋ"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
