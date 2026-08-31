@@ -3031,6 +3031,47 @@ enum {
 // than this is simply treated as not having answered.
 #define CASTDEV_MAX_FORMATS 4096
 
+// One entry is its fields joined with ';'. The general ImplodeEsc() escapes
+// the separator but not the escape character itself, so a field ending in a
+// backslash -- a device names itself over the network and may name itself
+// anything -- would be read back as an escaped separator, losing the
+// backslash and merging with the field behind it, which shifts everything
+// after it into the wrong slot. These two escape both characters. They read
+// back everything the old pair wrote, because no field written by it could
+// have held a backslash without already having been broken by one.
+static CString CastImplodeFields(const CAtlList<CString>& fields)
+{
+    CString joined;
+    for (POSITION pos = fields.GetHeadPosition(); pos;) {
+        CString field = fields.GetNext(pos);
+        field.Replace(_T("\\"), _T("\\\\")); // first, or it would escape the escapes
+        field.Replace(_T(";"), _T("\\;"));
+        joined += field;
+        if (pos) {
+            joined += _T(';');
+        }
+    }
+    return joined;
+}
+
+static void CastExplodeFields(const CString& stored, std::vector<CString>& fields)
+{
+    fields.clear();
+    CString field;
+    for (int i = 0; i < stored.GetLength(); i++) {
+        const TCHAR c = stored[i];
+        if (c == _T('\\') && i + 1 < stored.GetLength()) {
+            field += stored[++i]; // whatever follows the escape is literal
+        } else if (c == _T(';')) {
+            fields.emplace_back(field.Trim());
+            field.Empty();
+        } else {
+            field += c;
+        }
+    }
+    fields.emplace_back(field.Trim());
+}
+
 void CAppSettings::GetCastDevices(std::vector<CastSavedDevice>& devices) const
 {
     devices.clear();
@@ -3043,12 +3084,8 @@ void CAppSettings::GetCastDevices(std::vector<CastSavedDevice>& devices) const
             break;
         }
 
-        CAtlList<CString> list;
-        ExplodeEsc(stored, list, _T(';'), CASTDEV_FIELDS);
         std::vector<CString> fields;
-        for (POSITION pos = list.GetHeadPosition(); pos;) {
-            fields.emplace_back(list.GetNext(pos));
-        }
+        CastExplodeFields(stored, fields);
         fields.resize(CASTDEV_FIELDS);
 
         CastSavedDevice dev;
@@ -3109,7 +3146,7 @@ void CAppSettings::SetCastDevices(const std::vector<CastSavedDevice>& devices)
 
         CString entry;
         entry.Format(_T("Device%d"), i++);
-        AfxGetApp()->WriteProfileString(IDS_R_CASTDEVICES, entry, ImplodeEsc(fields, _T(';')));
+        AfxGetApp()->WriteProfileString(IDS_R_CASTDEVICES, entry, CastImplodeFields(fields));
     }
 }
 
