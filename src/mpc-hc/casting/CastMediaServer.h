@@ -23,6 +23,7 @@
 #include <winsock2.h>
 #include <list>
 #include <mutex>
+#include <vector>
 
 // Phase 3 of Chromecast support: a minimal local HTTP/1.1 server that serves
 // a single registered media file to the cast device for direct playback.
@@ -75,6 +76,20 @@ public:
     // bring their own rule (CDlnaTarget::CanCastFile).
     static bool IsCastableFile(const CString& path);
     static CStringA MimeForFile(const CString& path);
+
+    // The table MimeForFile() answers from. Exposed so that what a device says
+    // it accepts can be logged against the file types casting knows instead of
+    // against a list written down a second time; nothing is decided by it.
+    struct FileType {
+        const char* ext;
+        const char* mime;
+    };
+    static const std::vector<FileType>& KnownFileTypes();
+
+    // A media URL with its random path token replaced by a placeholder, for a
+    // log that gets pasted in public: the token is the only thing keeping the
+    // served file out of reach of anything that was not handed the URL.
+    static CStringA MaskURLToken(const CStringA& url);
 
     // The "contentFeatures.dlna.org" value answered to a DLNA renderer that
     // asks for one and no profile could be named: byte-range seeking, no

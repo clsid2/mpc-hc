@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastMediaServer.h"
+#include "Logger.h"
 #include <PathUtils.h>
 #include <ws2tcpip.h>
 #include <bcrypt.h>
@@ -35,6 +36,10 @@
 #define SEND_CHUNK_SIZE        (256 * 1024) // file bytes buffered per send round
 #define CLIENT_IDLE_TIMEOUT_MS 30000ull
 #define FILE_READ_TIMEOUT_MS   5000         // a read that takes longer is abandoned
+
+// The fixed part of the randomized media path, so that a URL can be put in a
+// log with only its token taken out
+#define URL_PATH_PREFIX "/cast/"
 
 // DLNA renderers are fussier than a Chromecast about who they are talking to
 #define HTTP_SERVER_HEADER     "Server: Windows UPnP/1.0 DLNA/1.50 MPC-HC\r\n"
@@ -312,7 +317,7 @@ void CCastMediaServer::SetFile(const CString& filePath, const CStringA& mime, co
     m_filePath = filePath;
     m_mime = mime;
     m_contentFeatures = contentFeatures;
-    m_urlPath.Format("/cast/%s/media.%s", token.GetString(), ext.GetString());
+    m_urlPath.Format(URL_PATH_PREFIX "%s/media.%s", token.GetString(), ext.GetString());
 }
 
 void CCastMediaServer::ClearFile()
@@ -365,15 +370,12 @@ bool CCastMediaServer::IsCastableFile(const CString& path)
            || ext == "wav" || ext == "ogg" || ext == "opus";
 }
 
-CStringA CCastMediaServer::MimeForFile(const CString& path)
+const std::vector<CCastMediaServer::FileType>& CCastMediaServer::KnownFileTypes()
 {
     // Feeds the Content-Type header, and on DLNA also the matching against
     // what the renderer reports it accepts, so the table covers more than a
     // Chromecast can play.
-    static const struct {
-        const char* ext;
-        const char* mime;
-    } types[] = {
+    static const std::vector<FileType> types = {
         { "mp4",  "video/mp4" },
         { "m4v",  "video/mp4" },
         { "webm", "video/webm" },
@@ -395,14 +397,29 @@ CStringA CCastMediaServer::MimeForFile(const CString& path)
         { "opus", "audio/opus" },
         { "wma",  "audio/x-ms-wma" },
     };
+    return types;
+}
 
+CStringA CCastMediaServer::MimeForFile(const CString& path)
+{
     const CStringA ext = FileExtLower(path);
-    for (const auto& type : types) {
+    for (const auto& type : KnownFileTypes()) {
         if (ext == type.ext) {
             return type.mime;
         }
     }
     return "application/octet-stream";
+}
+
+CStringA CCastMediaServer::MaskURLToken(const CStringA& url)
+{
+    const int slash = url.Find(URL_PATH_PREFIX);
+    if (slash < 0) {
+        return url;
+    }
+    const int start = slash + (int)(sizeof(URL_PATH_PREFIX) - 1);
+    const int end = url.Find('/', start);
+    return end < 0 ? url : url.Left(start) + "<token>" + url.Mid(end);
 }
 
 // --- server thread ---
@@ -529,6 +546,8 @@ void CCastMediaServer::AcceptClients(std::list<Client>& clients)
         }
         if (!allowedPeer.IsEmpty() && allowedPeer != ipBuf) {
             TRACE(_T("CastMediaServer: rejected connection from %hs\n"), ipBuf);
+            CASTING_LOG(_T("server: refused a connection from %hs, only %hs may fetch the file"),
+                        ipBuf, allowedPeer.GetString());
             closesocket(sock);
             continue;
         }
@@ -678,6 +697,7 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
     int sp1 = requestLine.Find(' ');
     int sp2 = sp1 >= 0 ? requestLine.Find(' ', sp1 + 1) : -1;
     if (sp1 <= 0 || sp2 <= sp1 + 1) {
+        CASTING_LOG(_T("server: 400, the device sent a malformed request line"));
         SendSimpleResponse(client, 400, "Bad Request", CStringA(), true);
         return;
     }
@@ -697,6 +717,8 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
     client.closeAfterResponse = !keepAlive;
 
     if (method != "GET" && method != "HEAD") {
+        CASTING_LOG(_T("server: %hs %hs -> 405, only GET and HEAD are served"),
+                    method.GetString(), MaskURLToken(target).GetString());
         SendSimpleResponse(client, 405, "Method Not Allowed", "Allow: GET, HEAD\r\n", !keepAlive);
         return;
     }
@@ -717,16 +739,22 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
         }
     }
     if (filePath.IsEmpty()) {
+        CASTING_LOG(_T("server: %hs %hs -> 404, nothing is registered under that path"),
+                    method.GetString(), MaskURLToken(target).GetString());
         SendSimpleResponse(client, 404, "Not Found", CStringA(), !keepAlive);
         return;
     }
 
     if (!EnsureFileOpen(client, filePath)) {
+        CASTING_LOG(_T("server: %hs %hs -> 404, the file could not be opened (error %lu)"),
+                    method.GetString(), MaskURLToken(target).GetString(), GetLastError());
         SendSimpleResponse(client, 404, "Not Found", CStringA(), !keepAlive);
         return;
     }
     LARGE_INTEGER liSize;
     if (!GetFileSizeEx(client.hFile, &liSize) || liSize.QuadPart < 0) {
+        CASTING_LOG(_T("server: %hs %hs -> 500, the file size could not be read"),
+                    method.GetString(), MaskURLToken(target).GetString());
         SendSimpleResponse(client, 500, "Internal Server Error", CStringA(), !keepAlive);
         return;
     }
@@ -737,6 +765,9 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
     if (range == RangeResult::Unsatisfiable) {
         CStringA contentRange;
         contentRange.Format("Content-Range: bytes */%I64u\r\n", fileSize);
+        CASTING_LOG(_T("server: %hs %hs Range: %hs -> 416, the file is %I64u bytes"),
+                    method.GetString(), MaskURLToken(target).GetString(),
+                    GetHeaderValue(header, "Range").GetString(), fileSize);
         SendSimpleResponse(client, 416, "Range Not Satisfiable", contentRange, !keepAlive);
         return;
     }
@@ -777,6 +808,18 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
 
     TRACE(_T("CastMediaServer: %hs %hs -> %hs"), method.GetString(), target.GetString(),
           responseHeader.Left(responseHeader.Find('\r') + 2).GetString());
+
+    // A device that never fetches the file and one that fetches it and then
+    // gives up are two entirely different failures, so every exchange is
+    // logged with what was asked for and what went back.
+    if (CASTING_LOGGING()) {
+        const CStringA rangeHeader = GetHeaderValue(header, "Range");
+        CASTING_LOG(_T("server: %hs %hs%s%hs -> %hs, %I64u bytes of %I64u%s"),
+                    method.GetString(), MaskURLToken(target).GetString(),
+                    rangeHeader.IsEmpty() ? _T("") : _T(" Range: "), rangeHeader.GetString(),
+                    range == RangeResult::Valid ? "206" : "200", bodyLen, fileSize,
+                    dlnaHeaders.IsEmpty() ? _T("") : _T(", DLNA headers asked for"));
+    }
 
     if (method != "HEAD" && bodyLen != 0) {
         client.fileOffset = start;

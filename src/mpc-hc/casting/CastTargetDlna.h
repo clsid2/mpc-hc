@@ -87,6 +87,12 @@ public:
     // the two have to agree. Public so that it can be exercised on its own.
     static CStringA ContentFeatures(const CString& path, const CStringA& mime, const CastMediaInfo& info);
 
+    // Whether a file of this type would be offered to a renderer that reported
+    // this Sink list, empty when it reported none. This is the whole rule
+    // CanCastFile() applies, exposed so that the log can state it per format
+    // instead of stating it a second way.
+    static bool AcceptsMime(const CStringA& sink, const CStringA& mime);
+
 private:
     struct Command {
         enum class Type { Load, Play, Pause, Seek, SetVolume, Stop };
@@ -124,6 +130,7 @@ private:
     bool StartSession(const DlnaDevice& dev, const CString& deviceName);
 
     static bool SinkAccepts(const CStringA& sink, const CStringA& mime);
+    static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok);
     static CStringA BuildMetadata(const Command& cmd);
     static CStringA FormatDuration(double seconds, bool withMilliseconds);
     static double ParseDuration(const CStringA& text); // < 0 when not a time

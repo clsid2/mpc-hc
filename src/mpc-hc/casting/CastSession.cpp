@@ -20,6 +20,8 @@
 
 #include "stdafx.h"
 #include "CastSession.h"
+#include "CastMediaServer.h" // the media URL is masked before it is logged
+#include "Logger.h"
 #include <ws2tcpip.h>
 #define SECURITY_WIN32
 #include <security.h>
@@ -50,6 +52,7 @@
 #define BRINGUP_TIMEOUT_MS      30000ull // a receiver app that never comes up
 #define POLITE_CLOSE_DRAIN_MS   200ull   // flush the farewell before the socket goes
 #define MAX_OUTSTANDING_REQUESTS 16     // unanswered requests are eventually forgotten
+#define MAX_LOGGED_PAYLOAD      600     // a status blob is cut short in the log, not in the session
 
 // Schannel state, kept out of the header so that it does not pull the SSPI
 // headers into every consumer.
@@ -214,6 +217,25 @@ namespace
             return it->value.GetDouble();
         }
         return def;
+    }
+
+    // A payload as the log wants it: the token out of the media URL, because
+    // the log gets pasted in public, and a long status blob cut short, because
+    // one has to be readable to be worth pasting.
+    CStringA LogPayload(const CStringA& json)
+    {
+        const CStringA masked = CCastMediaServer::MaskURLToken(json);
+        return masked.GetLength() <= MAX_LOGGED_PAYLOAD ? masked
+               : masked.Left(MAX_LOGGED_PAYLOAD) + "...";
+    }
+
+    // The heartbeat and the status polling are the two things that happen
+    // several times a minute for as long as a cast lasts; logging either would
+    // bury everything that matters.
+    bool WorthLogging(const CStringA& ns, const CStringA& payload)
+    {
+        return ns != CAST_NS_HEARTBEAT && payload.Find("\"GET_STATUS\"") < 0
+               && payload.Find("\"MEDIA_STATUS\"") < 0;
     }
 
     // only referenced by TRACE, kept unconditional so release builds still parse
@@ -422,6 +444,7 @@ void CCastSession::SetState(CastSessionState state)
         uMsg = m_uNotifyMsg;
     }
     TRACE(_T("CastSession: state -> %s\n"), StateName(state));
+    CASTING_LOG(_T("session: state -> %s"), StateName(state));
     if (hWnd) {
         ::PostMessage(hWnd, uMsg, (WPARAM)state, 0);
     }
@@ -615,6 +638,7 @@ DWORD CCastSession::ThreadProc()
                 m_pingSentTick = now;
             } else if (now - m_pingSentTick >= HEARTBEAT_SILENCE_MS) {
                 TRACE(_T("CastSession: no heartbeat, connection is dead\n"));
+                CASTING_LOG(_T("session: the device stopped answering the heartbeat"));
                 m_dead = true;
             }
         }
@@ -627,6 +651,7 @@ DWORD CCastSession::ThreadProc()
                 m_bringUpTick = now;
             } else if (now - m_bringUpTick >= BRINGUP_TIMEOUT_MS) {
                 TRACE(_T("CastSession: the receiver app never came up\n"));
+                CASTING_LOG(_T("session: the receiver application never came up"));
                 m_dead = true;
             }
         } else {
@@ -796,6 +821,7 @@ bool CCastSession::TlsHandshake()
         }
         if (status != SEC_I_CONTINUE_NEEDED) {
             TRACE(_T("CastSession: TLS handshake failed (0x%08lx)\n"), status);
+            CASTING_LOG(_T("session: the TLS handshake with the device failed (0x%08lx)"), status);
             return false;
         }
     }
@@ -1071,6 +1097,9 @@ bool CCastSession::SendCastMessage(const CStringA& ns, const CStringA& destinati
 bool CCastSession::SendJson(const CStringA& ns, const CStringA& destination, const CStringA& json)
 {
     TRACE(_T("CastSession: -> [%hs] %hs\n"), destination.GetString(), json.GetString());
+    if (WorthLogging(ns, json)) {
+        CASTING_LOG(_T("session: -> %hs"), LogPayload(json).GetString());
+    }
     return SendCastMessage(ns, destination, 0, reinterpret_cast<const BYTE*>(json.GetString()),
                            (size_t)json.GetLength());
 }
@@ -1167,6 +1196,7 @@ void CCastSession::ProcessPlainBuffer()
         const UINT msgLen = ((UINT)p[0] << 24) | ((UINT)p[1] << 16) | ((UINT)p[2] << 8) | p[3];
         if (msgLen > CAST_MAX_MESSAGE_SIZE) {
             TRACE(_T("CastSession: oversized frame (%u bytes), killing the connection\n"), msgLen);
+            CASTING_LOG(_T("session: the device sent a %u byte frame, which cannot be one of ours"), msgLen);
             m_dead = true;
             break;
         }
@@ -1229,6 +1259,7 @@ void CCastSession::ProcessPlainBuffer()
 
         if (!valid) {
             TRACE(_T("CastSession: malformed protobuf, killing the connection\n"));
+            CASTING_LOG(_T("session: the device sent a frame we could not parse"));
             m_dead = true;
             break;
         }
@@ -1265,6 +1296,9 @@ void CCastSession::OnCastMessage(const CastMessage& msg)
 
     const CStringA type = GetJsonString(d, "type");
     TRACE(_T("CastSession: <- [%hs] %hs\n"), msg.sourceId.GetString(), msg.payloadUtf8.GetString());
+    if (WorthLogging(msg.ns, msg.payloadUtf8)) {
+        CASTING_LOG(_T("session: <- %hs"), LogPayload(msg.payloadUtf8).GetString());
+    }
 
     // while requests of ours are in flight, a reply carrying a requestId that
     // is none of them belongs to another sender and is dropped; unsolicited
@@ -1293,6 +1327,7 @@ void CCastSession::OnCastMessage(const CastMessage& msg)
             // somebody else: reporting that ends the session, where dropping
             // back to Connected would leave it connecting for good.
             TRACE(_T("CastSession: app connection closed\n"));
+            CASTING_LOG(_T("session: the receiver application closed our connection"));
             const bool hadMedia = IsMediaActiveState(GetState());
             ResetMediaSession();
             SetState(hadMedia ? CastSessionState::TakenOver : CastSessionState::Connected);
@@ -1344,6 +1379,7 @@ void CCastSession::OnDeviceAuthResponse(const CastMessage& msg)
 
     if (!valid || !hasResponse || hasError) {
         TRACE(_T("CastSession: device auth failed\n"));
+        CASTING_LOG(_T("session: the device refused our authentication"));
         m_dead = true;
         return;
     }
@@ -1398,11 +1434,13 @@ void CCastSession::OnReceiverMessage(const CStringA& type, const rapidjson::Valu
         } else if (!m_transportId.IsEmpty() && transportId.IsEmpty()) {
             // our app is gone from the receiver status
             TRACE(_T("CastSession: receiver app is gone\n"));
+            CASTING_LOG(_T("session: our application is no longer running on the device"));
             ResetMediaSession();
             SetState(CastSessionState::Connected);
         }
     } else if (type == "LAUNCH_ERROR") {
         TRACE(_T("CastSession: LAUNCH_ERROR\n"));
+        CASTING_LOG(_T("session: the device refused to launch the media receiver (LAUNCH_ERROR)"));
         m_dead = true;
     }
 }
@@ -1436,6 +1474,8 @@ void CCastSession::OnMediaMessage(const CStringA& type, const rapidjson::Value& 
 
             if (playerState == "IDLE") {
                 const CStringA idleReason = GetJsonString(status, "idleReason");
+                CASTING_LOG(_T("session: the device reports IDLE%s%hs"),
+                            idleReason.IsEmpty() ? _T("") : _T(", idleReason "), idleReason.GetString());
                 if (idleReason == "INTERRUPTED") {
                     if (state == CastSessionState::Ready || state == CastSessionState::Loading
                             || state == CastSessionState::LoadFailed) {
@@ -1460,6 +1500,8 @@ void CCastSession::OnMediaMessage(const CStringA& type, const rapidjson::Value& 
 
             // first non-IDLE status of a new load carries the mediaSessionId
             if (m_mediaSessionId == 0 && mediaSessionId != 0) {
+                CASTING_LOG(_T("session: the device took the media, playerState %hs, mediaSessionId %d"),
+                            playerState.GetString(), mediaSessionId);
                 m_mediaSessionId = mediaSessionId;
                 if (SendDeferredCommands()) {
                     continue; // a deferred STOP ended this media session
@@ -1492,6 +1534,8 @@ void CCastSession::OnMediaMessage(const CStringA& type, const rapidjson::Value& 
         }
     } else if (type == "INVALID_REQUEST" || type == "ERROR") {
         TRACE(_T("CastSession: media request failed (%hs)\n"), type.GetString());
+        CASTING_LOG(_T("session: the device refused a media request (%hs)%s"), type.GetString(),
+                    answersLoad ? _T(", which was the LOAD") : _T(""));
         // a refused LOAD would otherwise leave the session loading forever
         if (answersLoad) {
             SetState(CastSessionState::LoadFailed);
@@ -1512,6 +1556,7 @@ void CCastSession::ProcessCommands()
             case Command::Type::Load: {
                 if (m_transportId.IsEmpty()) {
                     TRACE(_T("CastSession: LOAD ignored, no receiver app\n"));
+                    CASTING_LOG(_T("session: the LOAD was dropped, no receiver application is running"));
                     break;
                 }
                 m_mediaSessionId = 0;

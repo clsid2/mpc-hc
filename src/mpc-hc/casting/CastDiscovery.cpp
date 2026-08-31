@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastDiscovery.h"
+#include "Logger.h"
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 #include <algorithm>
@@ -658,6 +659,15 @@ void CCastDiscovery::UpdateDevice(const CastDevice& dev, const CString& fallback
         }
         TRACE(_T("CastDiscovery: found \"%s\" at %s:%u (%s)\n"), added.friendlyName.GetString(),
               added.ipAddress.GetString(), added.port, added.model.GetString());
+        // Verbatim, capability bitmask included: a device that turns out not
+        // to play what we expected is judged by what it advertised here.
+        CASTING_LOG(_T("discovery: Chromecast \"%s\" at %s:%u, md=\"%s\" id=%s ca=0x%02x (%s%s%s)"),
+                    added.friendlyName.GetString(), added.ipAddress.GetString(), added.port,
+                    added.model.GetString(), added.id.GetString(), added.capabilities,
+                    added.SupportsVideo() ? _T("video out") : _T(""),
+                    added.SupportsVideo() && added.SupportsAudio() ? _T(", ") : _T(""),
+                    added.SupportsAudio() ? _T("audio out")
+                    : (added.SupportsVideo() ? _T("") : _T("no output advertised")));
         return;
     }
 

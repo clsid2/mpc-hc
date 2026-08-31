@@ -29,6 +29,7 @@ enum class LogTargets {
     YDL       =  4,
     SUBTITLES =  8,
     BDA       = 16,
+    CASTING   = 32,
 };
 
 namespace
@@ -66,6 +67,12 @@ namespace
         return _T("youtubedl.log");
     }
 
+    template<>
+    constexpr LPCTSTR GetFileName<LogTargets::CASTING>()
+    {
+        return _T("casting.log");
+    }
+
     void WriteToFile(FILE* f, LPCSTR function, _In_z_ _Printf_format_string_ LPCTSTR fmt, va_list& args)
     {
         SYSTEMTIME local_time;
@@ -85,6 +92,25 @@ namespace
             local_time.wSecond, local_time.wMilliseconds);
         _vftprintf_s(f, fmt, args);
         _ftprintf_s(f, _T("\n"));
+    }
+    // A whole line at once, for a log several threads write to at the same
+    // time: three calls can interleave halfway through a line, one cannot.
+    // Flushed as it goes, because the interesting logs are the ones read
+    // after a hang.
+    void WriteLineToFile(FILE* f, _In_z_ _Printf_format_string_ LPCTSTR fmt, va_list& args)
+    {
+        SYSTEMTIME local_time;
+        GetLocalTime(&local_time);
+
+        CString line;
+        line.Format(_T("%.2hu:%.2hu:%.2hu.%.3hu: "), local_time.wHour, local_time.wMinute,
+                    local_time.wSecond, local_time.wMilliseconds);
+        CString message;
+        message.FormatV(fmt, args);
+        line += message;
+        line += _T('\n');
+        _fputts(line, f);
+        fflush(f);
     }
 }
 
@@ -113,6 +139,25 @@ struct Logger final {
         va_start(args, fmt);
         WriteToFile2(logger.m_file, fmt, args);
         va_end(args);
+    }
+    static void LogLine(LPCTSTR fmt, ...) {
+        static Logger logger;
+
+        if (!logger.m_file) {
+            return;
+        }
+
+        va_list args;
+        va_start(args, fmt);
+        WriteLineToFile(logger.m_file, fmt, args);
+        va_end(args);
+    }
+
+    // Whether anything would be written at all, so that a caller with a
+    // summary to build can skip building it.
+    static bool IsEnabled() {
+        const auto& s = AfxGetAppSettings();
+        return s.IsInitialized() && (s.DebugLogMask & (int)TARGET) != 0;
     }
 
 private:
@@ -153,6 +198,8 @@ private:
 #define BDA_LOG(...) MPCHC_LOG(BDA, __VA_ARGS__)
 #define SUBTITLES_LOG(...) MPCHC_LOG(SUBTITLES, __VA_ARGS__)
 #define YDL_LOG(fmt, ...) MPCHC_LOG2(YDL, fmt, __VA_ARGS__)
+#define CASTING_LOG(...) Logger<LogTargets::CASTING>::LogLine(__VA_ARGS__)
+#define CASTING_LOGGING() Logger<LogTargets::CASTING>::IsEnabled()
 
 #define USE_LOGGER(s) (s.DebugLogMask & (int)LogTargets::PLAYER)
 #define USE_GRAPH_LOGGER(s) (s.DebugLogMask & (int)LogTargets::GRAPH)

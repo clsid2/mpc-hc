@@ -20,11 +20,118 @@
 
 #include "stdafx.h"
 #include "CastTargetMulti.h"
+#include "Logger.h"
+#include <algorithm>
+#include <vector>
 
 // The prefix a device id carries, so that the protocol it belongs to travels
 // with it and two protocols can never hand out the same id.
 #define CHROMECAST_PREFIX _T("cc:")
 #define DLNA_PREFIX       _T("dlna:")
+
+namespace
+{
+    // A Chromecast is never asked what it plays, so what goes in the log is
+    // our own table talking, and it says so. Every verdict comes out of the
+    // function that makes the real decision, so the log cannot describe a rule
+    // the player does not follow.
+    void LogChromecastCapabilities(const CastTargetDevice& device)
+    {
+        CString offered, withheld;
+        for (const CCastMediaServer::FileType& type : CCastMediaServer::KnownFileTypes()) {
+            CString probe;
+            probe.Format(_T("media.%hs"), type.ext); // nothing is opened; the name is only judged
+            const bool needsScreen = CStringA(type.mime).Left(6).CompareNoCase("video/") == 0;
+            const bool ok = CChromecastTarget::ReceiverCanPlay(probe, CastMediaInfo(), device.model)
+                            && (!needsScreen || device.supportsVideo);
+            (ok ? offered : withheld).AppendFormat(_T(" %hs"), type.ext);
+        }
+
+        // The codecs, each judged inside an MP4 so that only the codec itself
+        // decides, and the audio ones with no video so they do the same.
+        CString videos;
+        for (CastMediaInfo::Video codec : { CastMediaInfo::Video::H264, CastMediaInfo::Video::HEVC,
+                                            CastMediaInfo::Video::VP8, CastMediaInfo::Video::VP9,
+                                            CastMediaInfo::Video::AV1, CastMediaInfo::Video::MPEG2 }) {
+            CastMediaInfo info;
+            info.video = codec;
+            videos.AppendFormat(_T(" %s=%s"), CastVideoCodecName(codec),
+                                CChromecastTarget::ReceiverCanPlay(_T("media.mp4"), info, device.model)
+                                ? _T("yes") : _T("no"));
+        }
+
+        CString audios;
+        for (CastMediaInfo::Audio codec : { CastMediaInfo::Audio::AAC, CastMediaInfo::Audio::MP3,
+                                            CastMediaInfo::Audio::FLAC, CastMediaInfo::Audio::Opus,
+                                            CastMediaInfo::Audio::Vorbis, CastMediaInfo::Audio::LPCM,
+                                            CastMediaInfo::Audio::AC3, CastMediaInfo::Audio::EAC3,
+                                            CastMediaInfo::Audio::DTS, CastMediaInfo::Audio::TrueHD,
+                                            CastMediaInfo::Audio::WMA }) {
+            CastMediaInfo info;
+            info.audio = codec;
+            info.channels = 2;
+            audios.AppendFormat(_T(" %s=%s"), CastAudioCodecName(codec),
+                                CChromecastTarget::ReceiverCanPlay(_T("media.mp4"), info, device.model)
+                                ? _T("yes") : _T("no"));
+            if (codec == CastMediaInfo::Audio::AAC) {
+                info.channels = 6;
+                audios.AppendFormat(_T(" AAC-6ch=%s"),
+                                    CChromecastTarget::ReceiverCanPlay(_T("media.mp4"), info, device.model)
+                                    ? _T("yes") : _T("no"));
+            }
+        }
+
+        CASTING_LOG(_T("device: Chromecast \"%s\" (md=\"%s\"), video out %s, audio out %s"),
+                    device.name.GetString(), device.model.GetString(),
+                    device.supportsVideo ? _T("yes") : _T("no"),
+                    device.supportsAudio ? _T("yes") : _T("no"));
+        CASTING_LOG(_T("device:   containers offered:%s"),
+                    offered.IsEmpty() ? _T(" none") : offered.GetString());
+        CASTING_LOG(_T("device:   containers withheld:%s"),
+                    withheld.IsEmpty() ? _T(" none") : withheld.GetString());
+        CASTING_LOG(_T("device:   video:%s"), videos.GetString());
+        CASTING_LOG(_T("device:   audio:%s"), audios.GetString());
+        CASTING_LOG(_T("device:   the above is what our own model table concludes; a Chromecast is ")
+                    _T("never asked what it can play, so a wrong guess here shows up as LOAD_FAILED"));
+    }
+
+    // A renderer, unlike a Chromecast, answers for itself. Its answer is
+    // thousands of characters of protocol info, which nobody can read, so what
+    // goes in the log is that answer applied to the file types casting knows.
+    void LogDlnaCapabilities(const CastTargetDevice& device)
+    {
+        const CStringA sink(device.formats);
+        CString accepted, refused;
+        std::vector<CStringA> seen; // several extensions share one media type
+
+        for (const CCastMediaServer::FileType& type : CCastMediaServer::KnownFileTypes()) {
+            const CStringA mime(type.mime);
+            if (std::find(seen.cbegin(), seen.cend(), mime) != seen.cend()) {
+                continue;
+            }
+            seen.emplace_back(mime);
+            (CDlnaTarget::AcceptsMime(sink, mime) ? accepted : refused).AppendFormat(_T(" %hs"), type.mime);
+        }
+
+        CASTING_LOG(_T("device: DLNA \"%s\" at %s, %s"), device.name.GetString(), device.address.GetString(),
+                    sink.IsEmpty() ? _T("it answered no protocol info, so the common containers are assumed")
+                    : _T("from its own GetProtocolInfo answer"));
+        CASTING_LOG(_T("device:   accepts:%s"), accepted.IsEmpty() ? _T(" nothing") : accepted.GetString());
+        CASTING_LOG(_T("device:   refuses:%s"), refused.IsEmpty() ? _T(" nothing") : refused.GetString());
+    }
+}
+
+void CastLogDeviceCapabilities(const CastTargetDevice& device)
+{
+    if (!CASTING_LOGGING()) {
+        return; // nothing above gets built while the casting log is off
+    }
+    if (device.protocol == CastProtocol::Chromecast) {
+        LogChromecastCapabilities(device);
+    } else {
+        LogDlnaCapabilities(device);
+    }
+}
 
 bool CCastTargetMulti::StartDiscovery()
 {

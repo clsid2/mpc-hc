@@ -40,6 +40,33 @@ enum class CastTargetState {
     Ended,      // media finished or was stopped on the device
 };
 
+// Kept beside the states it names, for the log.
+inline LPCTSTR CastTargetStateName(CastTargetState state)
+{
+    switch (state) {
+        case CastTargetState::Idle:
+            return _T("Idle");
+        case CastTargetState::Connecting:
+            return _T("Connecting");
+        case CastTargetState::Loading:
+            return _T("Loading");
+        case CastTargetState::Playing:
+            return _T("Playing");
+        case CastTargetState::Paused:
+            return _T("Paused");
+        case CastTargetState::Buffering:
+            return _T("Buffering");
+        case CastTargetState::Failed:
+            return _T("Failed");
+        case CastTargetState::TakenOver:
+            return _T("TakenOver");
+        case CastTargetState::Ended:
+            return _T("Ended");
+        default:
+            return _T("?");
+    }
+}
+
 // What MediaInfo says about the file that is about to be cast. A protocol
 // that has to name the content precisely -- DLNA renderers from Samsung and
 // Sony refuse or mishandle a stream that carries no profile name -- derives
@@ -57,6 +84,89 @@ struct CastMediaInfo {
     int sampleRate = 0; // audio, 0 when unknown
     int channels = 0;
 };
+
+// The names of what MediaInfo found, kept beside the values they name so
+// that the two cannot drift apart. Only the log has any use for them.
+inline LPCTSTR CastVideoCodecName(CastMediaInfo::Video video)
+{
+    switch (video) {
+        case CastMediaInfo::Video::H264:
+            return _T("H.264");
+        case CastMediaInfo::Video::HEVC:
+            return _T("HEVC");
+        case CastMediaInfo::Video::MPEG2:
+            return _T("MPEG-2");
+        case CastMediaInfo::Video::VP8:
+            return _T("VP8");
+        case CastMediaInfo::Video::VP9:
+            return _T("VP9");
+        case CastMediaInfo::Video::AV1:
+            return _T("AV1");
+        default:
+            return _T("unrecognized");
+    }
+}
+
+inline LPCTSTR CastAudioCodecName(CastMediaInfo::Audio audio)
+{
+    switch (audio) {
+        case CastMediaInfo::Audio::AAC:
+            return _T("AAC");
+        case CastMediaInfo::Audio::MP3:
+            return _T("MP3");
+        case CastMediaInfo::Audio::WMA:
+            return _T("WMA");
+        case CastMediaInfo::Audio::FLAC:
+            return _T("FLAC");
+        case CastMediaInfo::Audio::Opus:
+            return _T("Opus");
+        case CastMediaInfo::Audio::Vorbis:
+            return _T("Vorbis");
+        case CastMediaInfo::Audio::LPCM:
+            return _T("LPCM");
+        case CastMediaInfo::Audio::AC3:
+            return _T("AC-3");
+        case CastMediaInfo::Audio::EAC3:
+            return _T("E-AC-3");
+        case CastMediaInfo::Audio::DTS:
+            return _T("DTS");
+        case CastMediaInfo::Audio::TrueHD:
+            return _T("TrueHD");
+        default:
+            return _T("unrecognized");
+    }
+}
+
+// What MediaInfo made of the file, in one line for the log. The file name is
+// the caller's to add: a log that gets pasted in public carries the name of
+// the file and never the path to it.
+inline CString CastDescribeMedia(const CastMediaInfo& info)
+{
+    // Nothing said about a stream at all reads as no stream, which for a file
+    // that has one is itself the thing to notice: a track MediaInfo could not
+    // describe is a track the device is not being told about either.
+    CString text;
+    if (info.video == CastMediaInfo::Video::Unknown && info.width == 0 && info.height == 0) {
+        text = _T("no video");
+    } else {
+        text.Format(_T("video %s"), CastVideoCodecName(info.video));
+        if (info.width > 0 && info.height > 0) {
+            text.AppendFormat(_T(" %dx%d"), info.width, info.height);
+        }
+    }
+    if (info.audio == CastMediaInfo::Audio::Unknown && info.sampleRate == 0 && info.channels == 0) {
+        text += _T(", no audio");
+    } else {
+        text.AppendFormat(_T(", audio %s"), CastAudioCodecName(info.audio));
+        if (info.sampleRate > 0) {
+            text.AppendFormat(_T(" %d Hz"), info.sampleRate);
+        }
+        if (info.channels > 0) {
+            text.AppendFormat(_T(" %d ch"), info.channels);
+        }
+    }
+    return text;
+}
 
 // Whether the MediaInfo library is there to be asked. It is external and
 // loaded at run time, and casting has no second way of finding out what a
@@ -93,6 +203,12 @@ struct CastSavedDevice : CastTargetDevice {
 
     CString DisplayName() const { return userName.IsEmpty() ? name : userName; }
 };
+
+// Writes to the casting log what the device says it can play (DLNA, which
+// answers for itself) or what our own table says it can (Chromecast, which is
+// never asked), as a verdict per file type casting knows about. Costs nothing
+// while that log is switched off.
+void CastLogDeviceCapabilities(const CastTargetDevice& device);
 
 // Session generations are drawn from one counter shared by every target, so a
 // notification queued by one protocol can never be mistaken for a live session

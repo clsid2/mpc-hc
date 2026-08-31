@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "CastDevicesDlg.h"
 #include "mplayerc.h"
+#include "Logger.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <algorithm>
@@ -433,6 +434,9 @@ void CCastDevicesDlg::OnAdd()
     const int row = SelectedRow();
     if (row >= 0) {
         m_rows[row].saved = true;
+        // What the device will and will not be offered, recorded the moment it
+        // is kept rather than only when something is cast to it.
+        CastLogDeviceCapabilities(m_rows[row].device);
         FillList();
     }
 }
@@ -517,9 +521,13 @@ void CCastDevicesDlg::OnFind()
     const CString address = ResolveHostToIPv4(host);
     if (address.IsEmpty()
             || !m_pTarget->ProbeAddress(protocol, address, (UINT)_ttoi(portText), CAST_PROBE_MS, device)) {
+        CASTING_LOG(_T("discovery: nothing answered a %s query at %s"),
+                    protocol == CastProtocol::Chromecast ? _T("Chromecast") : _T("DLNA"),
+                    address.IsEmpty() ? host.GetString() : address.GetString());
         AfxMessageBox(IDS_CAST_DLG_NO_ANSWER, MB_ICONINFORMATION | MB_OK);
         return;
     }
+    CastLogDeviceCapabilities(device);
 
     Row* pRow = FindRow(device.id);
     if (!pRow) {

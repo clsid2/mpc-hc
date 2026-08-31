@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "DlnaDiscovery.h"
+#include "Logger.h"
 #include "CastDiscovery.h" // CastEnumLocalIPv4Interfaces()
 #include <ws2tcpip.h>
 #include <algorithm>
@@ -622,6 +623,11 @@ bool Dlna::SoapCall(const CString& controlURL, const CStringA& serviceType, cons
             fault.AppendFormat(_T(" (%s)"), UTF8To16(code).GetString());
         }
         TRACE(_T("DlnaSoap: %hs failed: %s\n"), action.GetString(), fault.GetString());
+        // The UPnP errorCode is inside fault already; the HTTP status beside
+        // it is what says whether the device refused the action or never
+        // understood the request at all.
+        CASTING_LOG(_T("dlna: %hs was refused with HTTP %d: %s"), action.GetString(),
+                    statusCode, fault.GetString());
         return false;
     }
     return true;
@@ -1163,6 +1169,9 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
                 d.supportsAudio = audio;
                 TRACE(_T("DlnaDiscovery: \"%s\" accepts %s\n"), d.friendlyName.GetString(),
                       video ? (audio ? _T("audio and video") : _T("video")) : _T("audio only"));
+                CASTING_LOG(_T("discovery: DLNA \"%s\" answered GetProtocolInfo with %d characters ")
+                            _T("of sink list (%s)"), d.friendlyName.GetString(), sink.GetLength(),
+                            video ? (audio ? _T("audio and video") : _T("video only")) : _T("audio only"));
                 break;
             }
         }
@@ -1268,6 +1277,15 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
             m_devices.emplace_back(dev);
             TRACE(_T("DlnaDiscovery: found \"%s\" at %s (%s %s)\n"), dev.friendlyName.GetString(),
                   dev.ipAddress.GetString(), dev.manufacturer.GetString(), dev.modelName.GetString());
+            // Verbatim from the device description, because a renderer that
+            // misbehaves is identified by exactly these three fields.
+            CASTING_LOG(_T("discovery: DLNA \"%s\" at %s, manufacturer=\"%s\" model=\"%s\" ")
+                        _T("description=%s%s%s"),
+                        dev.friendlyName.GetString(), dev.ipAddress.GetString(),
+                        dev.manufacturer.GetString(), dev.modelName.GetString(),
+                        dev.location.GetString(),
+                        dev.renderingControlURL.IsEmpty() ? _T(", no RenderingControl") : _T(""),
+                        dev.avTransportSCPDURL.IsEmpty() ? _T(", no AVTransport description") : _T(""));
         } else {
             return;
         }

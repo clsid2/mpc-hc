@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastTargetChromecast.h"
+#include "Logger.h"
 
 #define CAST_MSGWND_CLASS   _T("MPCHCCastTarget")
 #define WM_CAST_SESSION     (WM_APP + 0)
@@ -196,15 +197,22 @@ bool CChromecastTarget::Connect(const CString& deviceId)
 
 bool CChromecastTarget::StartSession(const CastDevice& dev, const CString& deviceId, const CString& deviceName)
 {
+    CASTING_LOG(_T("cast: connecting to Chromecast \"%s\" at %s:%u (md=\"%s\")"),
+                deviceName.GetString(), dev.ipAddress.GetString(), dev.port, dev.model.GetString());
     m_session.SetNotifyWindow(m_hMsgWnd, WM_CAST_SESSION);
     if (!m_session.Start(dev)) {
+        CASTING_LOG(_T("cast: the connection to \"%s\" could not be opened"), deviceName.GetString());
         return false;
     }
     if (!m_server.IsRunning() && !m_server.Start()) {
+        CASTING_LOG(_T("cast: the local media server would not start on port %u"),
+                    CCastMediaServer::preferredPort);
         m_session.Stop();
         return false;
     }
     m_server.SetAllowedPeer(CStringA(dev.ipAddress));
+    CASTING_LOG(_T("server: listening on port %u, only %s may fetch from it"),
+                m_server.GetPort(), dev.ipAddress.GetString());
     m_deviceId = deviceId;
     m_deviceName = deviceName;
     m_casting = true;
@@ -265,9 +273,21 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
 // refuses content a device released after this table was written plays
 // perfectly well, and nobody would ever find out why. Resolution and frame
 // rate limits are not modelled for the same reason.
-bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model)
+bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
+                                        CString* pRefusal)
 {
+    // Written into whatever the caller offered, so that every refusal below
+    // says what it refused over rather than only that it did.
+    CString ignored;
+    CString& refusal = pRefusal ? *pRefusal : ignored;
+
     if (!CCastMediaServer::IsCastableFile(path)) {
+        const CStringA mime = CCastMediaServer::MimeForFile(path);
+        if (mime == "application/octet-stream") {
+            refusal = _T("casting knows no media type for a file of this kind");
+        } else {
+            refusal.Format(_T("the receiver does not play %hs containers"), mime.GetString());
+        }
         return false;
     }
 
@@ -280,11 +300,14 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
             // AC-3 and E-AC-3 reach a receiver only as passthrough, which a
             // receiver application has to ask for and ours is not one; DTS and
             // TrueHD not even that way.
+            refusal.Format(_T("the receiver does not decode %s audio"), CastAudioCodecName(info.audio));
             return false;
         case CastMediaInfo::Audio::AAC:
             // the receiver decodes stereo AAC; more channels than that is
             // where it stops
             if (info.channels > 2) {
+                refusal.Format(_T("the receiver decodes AAC in stereo only, this file has %d channels"),
+                               info.channels);
                 return false;
             }
             break;
@@ -294,7 +317,9 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
     }
 
     if (info.video == CastMediaInfo::Video::MPEG2) {
-        return false; // MP2T is a container the receiver takes, MPEG-2 video is not
+        // MP2T is a container the receiver takes, MPEG-2 video is not
+        refusal = _T("the receiver does not decode MPEG-2 video");
+        return false;
     }
     if (info.video != CastMediaInfo::Video::HEVC && info.video != CastMediaInfo::Video::AV1) {
         return true;
@@ -319,7 +344,12 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
 
     for (const auto& entry : models) {
         if (model.Find(entry.model) >= 0) {
-            return info.video == CastMediaInfo::Video::HEVC ? entry.hevc : entry.av1;
+            if (info.video == CastMediaInfo::Video::HEVC ? entry.hevc : entry.av1) {
+                return true;
+            }
+            refusal.Format(_T("our model table says a \"%s\" does not decode %s"),
+                           entry.model, CastVideoCodecName(info.video));
+            return false;
         }
     }
     return true; // an unknown model is given the benefit of the doubt
@@ -328,27 +358,51 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
 bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
                                          const CastMediaInfo& info)
 {
-    if (!ReceiverCanPlay(path, info, saved.model)) {
-        return false;
-    }
-    // A device without video, a speaker or a display-less Nest, only takes audio.
+    CString refusal;
     const CStringA mime = CCastMediaServer::MimeForFile(path);
-    return mime.Left(6).CompareNoCase("video/") != 0 || saved.supportsVideo;
+    bool ok = ReceiverCanPlay(path, info, saved.model, &refusal);
+    // A device without video, a speaker or a display-less Nest, only takes audio.
+    if (ok && mime.Left(6).CompareNoCase("video/") == 0 && !saved.supportsVideo) {
+        ok = false;
+        refusal = _T("the device advertises no video output");
+    }
+    LogVerdict(saved.DisplayName(), saved.model, mime, ok, refusal);
+    return ok;
+}
+
+// Both verdicts read the same way in the log, whether the device came out of a
+// live discovery or out of the saved list. The file is named by whoever asked,
+// so that only its name is ever written down and never the path to it.
+void CChromecastTarget::LogVerdict(const CString& name, const CString& model, const CStringA& mime,
+                                   bool ok, const CString& refusal)
+{
+    if (ok) {
+        CASTING_LOG(_T("cast: Chromecast \"%s\" (md=\"%s\") takes this file, sent as %hs"),
+                    name.GetString(), model.GetString(), mime.GetString());
+    } else {
+        CASTING_LOG(_T("cast: Chromecast \"%s\" (md=\"%s\") refuses this file: %s"),
+                    name.GetString(), model.GetString(), refusal.GetString());
+    }
 }
 
 bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info)
 {
     for (const CastDevice& dev : m_discovery.GetDevices()) {
         if (DeviceKey(dev) == deviceId) {
-            if (!ReceiverCanPlay(path, info, dev.model)) {
-                return false;
-            }
+            CString refusal;
+            const CStringA mime = CCastMediaServer::MimeForFile(path);
+            bool ok = ReceiverCanPlay(path, info, dev.model, &refusal);
             // A device without video, a speaker or a display-less Nest, only
             // takes audio.
-            const CStringA mime = CCastMediaServer::MimeForFile(path);
-            return mime.Left(6).CompareNoCase("video/") != 0 || dev.SupportsVideo();
+            if (ok && mime.Left(6).CompareNoCase("video/") == 0 && !dev.SupportsVideo()) {
+                ok = false;
+                refusal = _T("the device advertises no video output");
+            }
+            LogVerdict(DeviceDisplayName(dev), dev.model, mime, ok, refusal);
+            return ok;
         }
     }
+    CASTING_LOG(_T("cast: the Chromecast the file was meant for is no longer being announced"));
     return false; // the device is gone from the discovery snapshot
 }
 
@@ -392,10 +446,14 @@ void CChromecastTarget::SendLoad()
         // no file registered or no local address: the session would sit there
         // casting nothing, so report the failure and let the UI tear it down
         TRACE(_T("ChromecastTarget: no media URL to load\n"));
+        CASTING_LOG(_T("cast: nothing to hand the device -- no file is registered, or we have no ")
+                    _T("address the device could reach us at"));
         m_failed = true;
         NotifyState(CastTargetState::Failed);
         return;
     }
+    CASTING_LOG(_T("cast: handing the device %hs as %hs, %.1f s"),
+                CCastMediaServer::MaskURLToken(url).GetString(), m_mime.GetString(), m_pendingDuration);
     m_session.Load(CString(url), CString(m_mime), m_pendingDuration, m_pendingTitle);
 }
 
@@ -421,6 +479,9 @@ void CChromecastTarget::SetVolume(double level, bool muted)
 
 void CChromecastTarget::StopCasting()
 {
+    if (m_casting) {
+        CASTING_LOG(_T("cast: stopping the session on \"%s\""), m_deviceName.GetString());
+    }
     // Stop() only closes the virtual connections, which leaves our media on
     // the receiver, so the media STOP is sent first and given a short window
     // to go out - the queued command would never run if we joined right away.

@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastTargetDlna.h"
+#include "Logger.h"
 #include <PathUtils.h>
 #include <algorithm>
 
@@ -310,15 +311,23 @@ bool CDlnaTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD sea
 
 bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
 {
+    CASTING_LOG(_T("cast: connecting to DLNA \"%s\" at %s (%s %s), AVTransport at %s"),
+                deviceName.GetString(), dev.ipAddress.GetString(), dev.manufacturer.GetString(),
+                dev.modelName.GetString(), dev.avTransportURL.GetString());
     m_deviceAddress = dev.ipAddress;
     m_localAddress = Dlna::LocalAddressFor(dev.ipAddress);
     if (m_localAddress.IsEmpty()) {
+        CASTING_LOG(_T("cast: this machine has no address the device could reach us at"));
         return false; // no route to the device, nothing could be served
     }
     if (!m_server.IsRunning() && !m_server.Start()) {
+        CASTING_LOG(_T("cast: the local media server would not start on port %u"),
+                    CCastMediaServer::preferredPort);
         return false;
     }
     m_server.SetAllowedPeer(CStringA(dev.ipAddress));
+    CASTING_LOG(_T("server: listening on port %u, only %s may fetch from it"),
+                m_server.GetPort(), dev.ipAddress.GetString());
 
     m_controlURL = dev.avTransportURL;
     m_scpdURL = dev.avTransportSCPDURL;
@@ -366,35 +375,60 @@ bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
     return true;
 }
 
-bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
-                                   const CastMediaInfo& /*info*/)
+bool CDlnaTarget::AcceptsMime(const CStringA& sink, const CStringA& mime)
 {
-    const CStringA mime = CCastMediaServer::MimeForFile(path);
     if (mime.IsEmpty() || mime == "application/octet-stream") {
         return false;
     }
     // What the device said it accepts beats any guess of ours; the container
     // whitelist only stands in for a device that never answered.
-    return saved.formats.IsEmpty() ? IsCommonRendererFormat(mime)
-           : SinkAccepts(CStringA(saved.formats), mime);
+    return sink.IsEmpty() ? IsCommonRendererFormat(mime) : SinkAccepts(sink, mime);
+}
+
+// Both verdicts read the same way in the log, whether the device came out of a
+// live discovery or out of the saved list. The file is named by whoever asked,
+// so that only its name is ever written down and never the path to it.
+void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok)
+{
+    if (!CASTING_LOGGING()) {
+        return;
+    }
+    const LPCTSTR source = sink.IsEmpty() ? _T("it answered no protocol info, so common containers are assumed")
+                           : _T("its own protocol info says so");
+    if (ok) {
+        CASTING_LOG(_T("cast: DLNA \"%s\" takes this file, sent as %hs (%s)"),
+                    name.GetString(), mime.GetString(), source);
+    } else if (mime.IsEmpty() || mime == "application/octet-stream") {
+        CASTING_LOG(_T("cast: DLNA \"%s\" refuses this file: casting knows no media type for it"),
+                    name.GetString());
+    } else {
+        CASTING_LOG(_T("cast: DLNA \"%s\" refuses this file: %hs is not among the formats it takes (%s)"),
+                    name.GetString(), mime.GetString(), source);
+    }
+}
+
+bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
+                                   const CastMediaInfo& /*info*/)
+{
+    const CStringA mime = CCastMediaServer::MimeForFile(path);
+    const CStringA sink(saved.formats);
+    const bool ok = AcceptsMime(sink, mime);
+    LogVerdict(saved.DisplayName(), sink, mime, ok);
+    return ok;
 }
 
 bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& /*info*/)
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
-    if (mime.IsEmpty() || mime == "application/octet-stream") {
-        return false;
-    }
 
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
         if (dev.udn == deviceId) {
-            // What the device says it accepts beats any guess of ours; the
-            // container whitelist only stands in for a device that stayed
-            // silent when asked for its protocol info.
-            return dev.sinkProtocolInfo.IsEmpty() ? IsCommonRendererFormat(mime)
-                   : SinkAccepts(dev.sinkProtocolInfo, mime);
+            const bool ok = AcceptsMime(dev.sinkProtocolInfo, mime);
+            LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok);
+            return ok;
         }
     }
+    CASTING_LOG(_T("cast: the renderer the file was meant for is no longer being announced"));
     return false;
 }
 
@@ -451,6 +485,8 @@ void CDlnaTarget::LoadMedia(const CString& filePath, const CString& title, doubl
         Fail(_T("no media URL"));
         return;
     }
+    CASTING_LOG(_T("cast: handing the device %hs as %hs, contentFeatures %hs"),
+                CCastMediaServer::MaskURLToken(url).GetString(), mime.GetString(), features.GetString());
 
     // Some renderers size their buffers from it and a few refuse an item
     // without it; the file is open in our own graph, so this costs nothing.
@@ -509,6 +545,9 @@ void CDlnaTarget::SetVolume(double level, bool muted)
 
 void CDlnaTarget::StopCasting()
 {
+    if (m_casting) {
+        CASTING_LOG(_T("cast: stopping the session on \"%s\""), m_deviceName.GetString());
+    }
     if (m_casting && m_hThread) {
         // The device keeps playing our URL until it is told otherwise, so the
         // STOP is queued first and given a short window to go out; joining
@@ -633,6 +672,7 @@ void CDlnaTarget::SetState(CastTargetState state)
         hNotifyWnd = m_hNotifyWnd;
         stateMsg = m_stateMsg;
     }
+    CASTING_LOG(_T("dlna: state -> %s"), CastTargetStateName(state));
     if (hNotifyWnd && stateMsg) {
         PostMessage(hNotifyWnd, stateMsg, static_cast<WPARAM>(state), (LPARAM)m_generation);
     }
@@ -645,6 +685,7 @@ void CDlnaTarget::Fail(const CString& reason)
         m_failReason = reason;
     }
     TRACE(_T("DlnaTarget: failed: %s\n"), reason.GetString());
+    CASTING_LOG(_T("dlna: the session failed: %s"), reason.GetString());
     SetState(CastTargetState::Failed);
 }
 
@@ -757,6 +798,10 @@ void CDlnaTarget::RunCommand(const Command& cmd)
 
             const CStringA metadata = BuildMetadata(cmd);
             TRACE(_T("DlnaTarget: handing the device %hs\n"), metadata.GetString());
+            // Verbatim: a renderer that refuses an item usually refuses
+            // something in here, and only the whole thing shows which.
+            CASTING_LOG(_T("dlna: -> SetAVTransportURI with %hs"),
+                        CCastMediaServer::MaskURLToken(metadata).GetString());
             args.Format("<InstanceID>0</InstanceID>"
                         "<CurrentURI>%s</CurrentURI>"
                         "<CurrentURIMetaData>%s</CurrentURIMetaData>",
@@ -771,11 +816,13 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             break;
         }
         case Command::Type::Play:
+            CASTING_LOG(_T("dlna: -> Play"));
             if (AvTransport("Play", "<InstanceID>0</InstanceID><Speed>1</Speed>", response)) {
                 SetState(CastTargetState::Playing);
             }
             break;
         case Command::Type::Pause:
+            CASTING_LOG(_T("dlna: -> Pause"));
             if (AvTransport("Pause", "<InstanceID>0</InstanceID>", response)) {
                 SetState(CastTargetState::Paused);
             }
@@ -789,6 +836,7 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             }
             {
                 double target = cmd.param;
+                CASTING_LOG(_T("dlna: -> Seek to %.1f s"), target);
                 if (SeekDevice(target)) {
                     UpdatePosition(target, 0.0);
                 }
@@ -796,8 +844,11 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             break;
         case Command::Type::SetVolume: {
             if (m_volumeURL.IsEmpty()) {
+                CASTING_LOG(_T("dlna: the device offers no RenderingControl, so volume is left alone"));
                 break;
             }
+            CASTING_LOG(_T("dlna: -> SetVolume %d%s"), (int)(cmd.param * 100.0 + 0.5),
+                        cmd.muted ? _T(" and SetMute on") : _T(" and SetMute off"));
             CStringA volumeArgs, response2;
             CString fault;
             volumeArgs.Format("<InstanceID>0</InstanceID><Channel>Master</Channel>"
@@ -811,6 +862,7 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             break;
         }
         case Command::Type::Stop:
+            CASTING_LOG(_T("dlna: -> Stop"));
             m_stopIssued = true;
             AvTransport("Stop", "<InstanceID>0</InstanceID>", response);
             SetEvent(m_hStopSentEvent);
@@ -885,6 +937,10 @@ void CDlnaTarget::DetermineSeekModes()
     if (m_seekModes.empty()) {
         // the device published its units and neither of ours is among them
         TRACE(_T("DlnaTarget: the device offers no seek unit we can use\n"));
+        CASTING_LOG(_T("dlna: the device names no seek unit we can use, so seeking is off"));
+    } else {
+        CASTING_LOG(_T("dlna: seeking will be tried in %hs%s"), m_seekModes.front().GetString(),
+                    m_seekModes.size() > 1 ? _T(", then ABS_TIME") : _T(""));
     }
     SetCanSeek(!m_seekModes.empty());
 }
@@ -985,6 +1041,7 @@ void CDlnaTarget::Poll()
         const CString trackURI = UTF8To16(Dlna::GetElementText(response, "TrackURI"));
         if (!m_mediaURL.IsEmpty() && !trackURI.IsEmpty() && trackURI != m_mediaURL) {
             TRACE(_T("DlnaTarget: the device moved on to %s\n"), trackURI.GetString());
+            CASTING_LOG(_T("dlna: the device is playing something else now, so the session is over"));
             SetState(CastTargetState::TakenOver);
             return;
         }

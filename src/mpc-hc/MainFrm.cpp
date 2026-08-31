@@ -60,6 +60,7 @@
 #include "KeyProvider.h"
 #include "Translations.h"
 #include "UpdateChecker.h"
+#include "VersionInfo.h"
 #include "WebServer.h"
 #include "casting/CastTargetMulti.h"
 #include "casting/CastDevicesDlg.h"
@@ -18706,6 +18707,10 @@ void CMainFrame::EnsureCastTarget()
 {
     if (!m_pCastTarget) {
         m_pCastTarget = std::make_unique<CCastTargetMulti>();
+        // The first line of a log that gets pasted into a bug report should
+        // say which build wrote it.
+        CASTING_LOG(_T("---- casting, MPC-HC %s %s ----"), VersionInfo::GetFullVersionString().GetString(),
+                    VersionInfo::Is64Bit() ? _T("x64") : _T("x86"));
     }
     // Only a session ever starts the media server, so picking the port up here
     // is early enough and follows a change made in the options.
@@ -18767,17 +18772,26 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     // Nothing is cast that cannot be described first, and MediaInfo is the
     // only thing that describes it.
     if (!CastMediaInfoAvailable()) {
+        CASTING_LOG(_T("cast: refused, MediaInfo is not there to say what the file holds"));
         return IDS_CAST_MEDIAINFO_REQUIRED;
     }
 
     if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
             || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)) {
+        CASTING_LOG(_T("cast: refused, only a local file open in the player can be cast"));
         return IDS_CAST_UNSUPPORTED_FILE;
     }
 
     // The file is read once: what it holds is both what decides whether the
     // device can play it and what the device is told it is being handed.
     const CastMediaInfo info = GetCastMediaInfo(lastOpenFile);
+    if (CASTING_LOGGING()) {
+        // The name of the file and nothing more of it: this log is written to
+        // be pasted into a public bug report.
+        CASTING_LOG(_T("cast: \"%s\" asked for, container %s, %s"), GetFileName().GetString(),
+                    PathUtils::FileExt(lastOpenFile).GetString(), CastDescribeMedia(info).GetString());
+        CastLogDeviceCapabilities(device);
+    }
     if (!m_pCastTarget->CanCastFileSaved(device, lastOpenFile, info)) {
         return IDS_CAST_UNSUPPORTED_FILE;
     }
@@ -18820,6 +18834,8 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     // player to do until the answer is in.
     CWaitCursor wait;
     if (!m_pCastTarget->ConnectSaved(device, CAST_CONNECT_DIRECT_MS, CAST_CONNECT_SEARCH_MS)) {
+        CASTING_LOG(_T("cast: \"%s\" did not answer, at %s or anywhere else on the network"),
+                    device.DisplayName().GetString(), device.address.GetString());
         if (bWasPlaying) {
             SendMessage(WM_COMMAND, ID_PLAY_PLAY); // leave playback as we found it
         }
@@ -18830,6 +18846,7 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     // back to being an ordinary stopped player with everything it can do.
     SendMessage(WM_COMMAND, ID_PLAY_STOP);
 
+    CASTING_LOG(_T("cast: the session is up, playing from %.1f s"), media.startSec);
     pSession->StartSession(media);
     return 0;
 }
@@ -18983,6 +19000,8 @@ void CMainFrame::CastToSearchStep()
             strReason = ResStr(IDS_CAST_UNSUPPORTED_FILE);
         } else {
             strReason.Format(IDS_CAST_NO_DEVICE, m_strCastToPending.GetString());
+            CASTING_LOG(_T("cast: /castto gave up, no device named \"%s\" answered in time"),
+                        m_strCastToPending.GetString());
         }
         EndCastTo(strReason);
     }

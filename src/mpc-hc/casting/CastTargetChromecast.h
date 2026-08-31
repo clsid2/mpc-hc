@@ -64,8 +64,11 @@ public:
 
     // Whether the default media receiver of a device of this model plays the
     // file, container and codecs both. model is the mDNS "md" record and may
-    // be empty. Public so that the decision can be exercised on its own.
-    static bool ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model);
+    // be empty. pRefusal, when given, is filled in with why not, which is the
+    // one thing a report of "it did not work" has to carry. Public so that the
+    // decision can be exercised on its own.
+    static bool ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
+                                CString* pRefusal = nullptr);
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;
@@ -90,6 +93,8 @@ private:
     static CString DeviceKey(const CastDevice& dev);
     static CString DeviceDisplayName(const CastDevice& dev);
     static CastTargetDevice ToTargetDevice(const CastDevice& dev);
+    static void LogVerdict(const CString& name, const CString& model, const CStringA& mime,
+                           bool ok, const CString& refusal);
     // Looks for one device by its stable id with a full discovery, for at most
     // timeoutMs. A discovery that was already running is left running.
     bool SearchById(const CString& id, DWORD timeoutMs, CastDevice& device);
