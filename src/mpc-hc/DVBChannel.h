@@ -111,8 +111,15 @@ public:
     CString ToString() const;
     /**
      * @brief Output a JSON representation of a BDA channel.
-     * @note The object contains two elements : "index", which corresponds to
-     * @c m_nPrefNumber, and "name", which contains @c m_strName.
+     * @note "index" corresponds to @c m_nPrefNumber and "name" to
+     * @c m_strName. These come first and keep their names, because the web
+     * interface has shipped with them. The rest of the record follows: the
+     * tuning parameters, the identifiers needed to correlate a channel with
+     * the transport stream it was scanned from, a "video" object, and "audio"
+     * and "subtitles" arrays of @c BDAStreamInfo entries.
+     * @note Stream types, frame rates and aspect ratios are emitted as names
+     * rather than raw enum values, so a consumer does not need its own copy of
+     * the enums in this header to read the output.
      * @returns A string representing a JSON object containing the
      * aforementioned elements.
      */
