@@ -238,12 +238,19 @@ CStringA CBDAChannel::ToJSON() const
                        m_nPrefNumber,
                        EscapeJSONString(UTF16To8(m_strName)).GetString());
 
+    // atscMajor/atscMinor are the two halves of the ATSC virtual channel
+    // number from the VCT; both are zero for DVB, where originNumber carries
+    // the logical channel number instead (and, for ATSC, its
+    // major * 1000 + minor encoding - see SetATSCNumber).
     jsonChannel.AppendFormat(", \"originNumber\" : %d"
+                             ", \"atscMajor\" : %d, \"atscMinor\" : %d"
                              ", \"frequency\" : %lu"
                              ", \"bandwidth\" : %lu"
                              ", \"symbolRate\" : %lu"
                              ", \"encrypted\" : %s",
                              m_nOriginNumber,
+                             m_nATSCMajor,
+                             m_nATSCMinor,
                              m_ulFrequency,
                              m_ulBandwidth,
                              m_ulSymbolRate,
