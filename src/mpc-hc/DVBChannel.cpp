@@ -162,7 +162,10 @@ CString CBDAChannel::ToString() const
 static LPCSTR StreamTypeName(BDA_STREAM_TYPE type)
 {
     switch (type) {
-        case BDA_MPV:      return "MPEG2";
+        // Not "MPEG2": ConvertToDVBType folds both VIDEO_STREAM_MPEG1 and
+        // VIDEO_STREAM_MPEG2 into BDA_MPV, and AddStreamInfo does not keep the
+        // PES type for video, so the distinction is not available here.
+        case BDA_MPV:      return "MPEG-Video";
         case BDA_H264:     return "H264";
         case BDA_HEVC:     return "HEVC";
         case BDA_MPA:      return "MPEG-Audio";
@@ -201,12 +204,26 @@ static LPCSTR AspectRatioName(BDA_AspectRatio_TYPE ar)
     }
 }
 
+static LPCSTR ChromaName(BDA_CHROMA_TYPE chroma)
+{
+    switch (chroma) {
+        case BDA_Chroma_4_2_0: return "4:2:0";
+        case BDA_Chroma_4_2_2: return "4:2:2";
+        case BDA_Chroma_4_4_4: return "4:4:4";
+        default:               return "";
+    }
+}
+
 static CStringA StreamToJSON(const BDAStreamInfo& stream, bool bDefault)
 {
+    // "pes" is the PMT stream_type the stream was classified from, after any
+    // descriptor that overrides it. It distinguishes branches that share a
+    // BDA type, such as AAC with ADTS (0x0F) against LATM (0x11).
     CStringA json;
-    json.Format("{ \"pid\" : %lu, \"type\" : \"%s\", \"language\" : \"%s\", \"default\" : %s }",
+    json.Format("{ \"pid\" : %lu, \"type\" : \"%s\", \"pes\" : %d, \"language\" : \"%s\", \"default\" : %s }",
                 stream.ulPID,
                 StreamTypeName(stream.nType),
+                stream.nPesType,
                 EscapeJSONString(UTF16To8(stream.sLanguage)).GetString(),
                 bDefault ? "true" : "false");
     return json;
@@ -238,15 +255,19 @@ CStringA CBDAChannel::ToJSON() const
                              ", \"pmtPid\" : %lu, \"pcrPid\" : %lu",
                              m_ulONID, m_ulTSID, m_ulSID, m_ulPMT, m_ulPCR);
 
+    // No "pes" here: AddStreamInfo keeps the PES type for audio and subtitle
+    // streams but not for video, so it is not available to report.
     jsonChannel.AppendFormat(", \"video\" : { \"pid\" : %lu, \"type\" : \"%s\""
                              ", \"width\" : %lu, \"height\" : %lu"
-                             ", \"fps\" : \"%s\", \"aspectRatio\" : \"%s\" }",
+                             ", \"fps\" : \"%s\", \"aspectRatio\" : \"%s\""
+                             ", \"chroma\" : \"%s\" }",
                              m_ulVideoPID,
                              StreamTypeName(m_nVideoType),
                              m_nVideoWidth,
                              m_nVideoHeight,
                              FpsName(m_nVideoFps),
-                             AspectRatioName(m_nVideoAR));
+                             AspectRatioName(m_nVideoAR),
+                             ChromaName(m_nVideoChroma));
 
     jsonChannel += ", \"audio\" : [";
     for (int i = 0; i < m_nAudioCount; i++) {
