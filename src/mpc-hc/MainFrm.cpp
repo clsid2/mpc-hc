@@ -18745,7 +18745,7 @@ void CMainFrame::UpdateSavedCastDevice(const CastSavedDevice& device)
         }
         if (entry.address == device.address && entry.port == device.port
                 && entry.location == device.location && entry.name == device.name
-                && entry.formats == device.formats
+                && entry.model == device.model && entry.formats == device.formats
                 && entry.supportsVideo == device.supportsVideo
                 && entry.supportsAudio == device.supportsAudio) {
             return; // nothing about it moved
@@ -18771,8 +18771,14 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     }
 
     if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
-            || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)
-            || !m_pCastTarget->CanCastFileSaved(device, lastOpenFile)) {
+            || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)) {
+        return IDS_CAST_UNSUPPORTED_FILE;
+    }
+
+    // The file is read once: what it holds is both what decides whether the
+    // device can play it and what the device is told it is being handed.
+    const CastMediaInfo info = GetCastMediaInfo(lastOpenFile);
+    if (!m_pCastTarget->CanCastFileSaved(device, lastOpenFile, info)) {
         return IDS_CAST_UNSUPPORTED_FILE;
     }
 
@@ -18786,7 +18792,7 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     CastSessionMedia media;
     media.path = lastOpenFile;
     media.title = GetFileName();
-    media.info = GetCastMediaInfo(lastOpenFile);
+    media.info = info;
     media.rememberPosition = m_bRememberFilePos;
 
     REFERENCE_TIME rtDur = 0;
@@ -18943,8 +18949,10 @@ void CMainFrame::CastToSearchStep()
     // nothing else; the same rule decides here. A device that has not yet said
     // what it accepts is passed over and looked at again on the next tick.
     CastSavedDevice match;
+    CastMediaInfo info;
     bool bMatched = false;
     bool bNameMatched = false;
+    bool bInfoRead = false;
     for (const CastTargetDevice& device : m_pCastTarget->GetDevices()) {
         CastSavedDevice candidate;
         static_cast<CastTargetDevice&>(candidate) = device;
@@ -18952,8 +18960,14 @@ void CMainFrame::CastToSearchStep()
             continue;
         }
         bNameMatched = true;
+        if (!bInfoRead) {
+            // read at most once a tick, and only once something answered to
+            // the name: this runs on a timer while the search is open
+            info = GetCastMediaInfo(lastOpenFile);
+            bInfoRead = true;
+        }
         if ((device.supportsVideo || (m_fAudioOnly && device.supportsAudio))
-                && m_pCastTarget->CanCastFileSaved(candidate, lastOpenFile)) {
+                && m_pCastTarget->CanCastFileSaved(candidate, lastOpenFile, info)) {
             match = candidate;
             bMatched = true;
             break;

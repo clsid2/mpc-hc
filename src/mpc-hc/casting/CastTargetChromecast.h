@@ -59,8 +59,13 @@ public:
     CString GetDeviceName() const override { return m_deviceName; }
     UINT GetSessionGeneration() const override { return m_generation; }
 
-    bool CanCastFile(const CString& deviceId, const CString& path) override;
-    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) override;
+    bool CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info) override;
+    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path, const CastMediaInfo& info) override;
+
+    // Whether the default media receiver of a device of this model plays the
+    // file, container and codecs both. model is the mDNS "md" record and may
+    // be empty. Public so that the decision can be exercised on its own.
+    static bool ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model);
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;

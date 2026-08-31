@@ -292,6 +292,9 @@ void CCastDevicesDlg::RebuildRows()
             pRow->device.supportsVideo = previous.supportsVideo;
             pRow->device.supportsAudio = previous.supportsAudio;
         }
+        if (dev.model.IsEmpty() && !previous.model.IsEmpty()) {
+            pRow->device.model = previous.model;
+        }
     }
 
     // A device that is neither kept nor answering any more is nothing to show:

@@ -352,12 +352,15 @@ const char* const CCastMediaServer::dlnaContentFeatures =
 
 bool CCastMediaServer::IsCastableFile(const CString& path)
 {
-    // MVP direct-play heuristic: containers the default media receiver plays
-    // without remuxing, audio ones included so that a speaker with Chromecast
-    // built in can be cast to. MKV is excluded (the receiver does not accept
-    // it), and codec-level inspection can be added here later.
+    // The containers the default media receiver lists (MP2T, MP3, MP4, OGG,
+    // WAV, WebM), audio ones included so that a speaker with Chromecast built
+    // in can be cast to. MKV is excluded: the receiver does not accept it.
+    // .m2ts and .mts are left out on purpose -- they are the 192-byte
+    // timestamped variant of MPEG-2 TS, which is a different thing from the
+    // 188-byte transport stream MP2T means. What is inside the container is
+    // judged separately, by the target that knows the device.
     const CStringA ext = FileExtLower(path);
-    return ext == "mp4" || ext == "m4v" || ext == "webm"
+    return ext == "mp4" || ext == "m4v" || ext == "webm" || ext == "ts"
            || ext == "mp3" || ext == "m4a" || ext == "aac" || ext == "flac"
            || ext == "wav" || ext == "ogg" || ext == "opus";
 }

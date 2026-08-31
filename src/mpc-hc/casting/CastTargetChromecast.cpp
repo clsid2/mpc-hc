@@ -107,6 +107,7 @@ CastTargetDevice CChromecastTarget::ToTargetDevice(const CastDevice& dev)
     CastTargetDevice d;
     d.protocol = CastProtocol::Chromecast;
     d.name = DeviceDisplayName(dev);
+    d.model = dev.model;
     d.id = DeviceKey(dev);
     d.address = dev.ipAddress;
     d.port = dev.port;
@@ -239,6 +240,10 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
     if (!dev.friendlyName.IsEmpty()) {
         saved.name = dev.friendlyName;
     }
+    if (!dev.model.IsEmpty()) {
+        // an entry saved before the model was recorded learns it here
+        saved.model = dev.model;
+    }
     if (dev.capabilities) {
         saved.supportsVideo = dev.SupportsVideo();
         saved.supportsAudio = dev.SupportsAudio();
@@ -246,33 +251,105 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
     return StartSession(dev, saved.id, saved.DisplayName());
 }
 
-bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+// What the default media receiver plays, after
+// https://developers.google.com/cast/docs/media. Containers are the same
+// everywhere and are settled by CCastMediaServer::IsCastableFile(); the
+// audio codecs are too. Video is the one thing that differs by device
+// generation, and only over HEVC and AV1 -- H.264, VP8 and VP9 are on every
+// device that has a screen at all.
+//
+// The table is deliberately small and deliberately optimistic: a model it
+// does not recognize is allowed everything. A receiver that refuses the file
+// answers LOAD_FAILED, which the session reports, so guessing wrong that way
+// costs one visible failed attempt; guessing wrong the other way silently
+// refuses content a device released after this table was written plays
+// perfectly well, and nobody would ever find out why. Resolution and frame
+// rate limits are not modelled for the same reason.
+bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model)
 {
     if (!CCastMediaServer::IsCastableFile(path)) {
         return false;
     }
-    // A device without video, a speaker or a display-less Nest, only takes
-    // audio; every receiver plays the same formats otherwise.
+
+    switch (info.audio) {
+        case CastMediaInfo::Audio::AC3:
+        case CastMediaInfo::Audio::EAC3:
+        case CastMediaInfo::Audio::DTS:
+        case CastMediaInfo::Audio::TrueHD:
+        case CastMediaInfo::Audio::WMA:
+            // AC-3 and E-AC-3 reach a receiver only as passthrough, which a
+            // receiver application has to ask for and ours is not one; DTS and
+            // TrueHD not even that way.
+            return false;
+        case CastMediaInfo::Audio::AAC:
+            // the receiver decodes stereo AAC; more channels than that is
+            // where it stops
+            if (info.channels > 2) {
+                return false;
+            }
+            break;
+        default:
+            // FLAC, MP3, Opus, Vorbis, LPCM and anything unrecognized
+            break;
+    }
+
+    if (info.video == CastMediaInfo::Video::MPEG2) {
+        return false; // MP2T is a container the receiver takes, MPEG-2 video is not
+    }
+    if (info.video != CastMediaInfo::Video::HEVC && info.video != CastMediaInfo::Video::AV1) {
+        return true;
+    }
+
+    // Only the models that genuinely decide it, most specific name first: the
+    // plain "Chromecast" of the first three generations is a prefix of every
+    // later dongle's name.
+    static const struct {
+        LPCTSTR model;
+        bool hevc;
+        bool av1;
+    } models[] = {
+        { _T("Google TV Streamer"), true,  true  },
+        { _T("Chromecast Ultra"),   true,  false },
+        { _T("Google TV"),          true,  false }, // Chromecast with Google TV, 4K and HD
+        { _T("Chromecast HD"),      true,  false },
+        { _T("Nest Hub"),           false, false }, // and the Google Home Hub it was named after
+        { _T("Home Hub"),           false, false },
+        { _T("Chromecast"),         false, false }, // 1st to 3rd generation
+    };
+
+    for (const auto& entry : models) {
+        if (model.Find(entry.model) >= 0) {
+            return info.video == CastMediaInfo::Video::HEVC ? entry.hevc : entry.av1;
+        }
+    }
+    return true; // an unknown model is given the benefit of the doubt
+}
+
+bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
+                                         const CastMediaInfo& info)
+{
+    if (!ReceiverCanPlay(path, info, saved.model)) {
+        return false;
+    }
+    // A device without video, a speaker or a display-less Nest, only takes audio.
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     return mime.Left(6).CompareNoCase("video/") != 0 || saved.supportsVideo;
 }
 
-bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path)
+bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info)
 {
-    if (!CCastMediaServer::IsCastableFile(path)) {
-        return false;
-    }
-    // A device without video, a speaker or a display-less Nest, only takes
-    // audio; every receiver plays the same formats otherwise.
-    const CStringA mime = CCastMediaServer::MimeForFile(path);
-    if (mime.Left(6).CompareNoCase("video/") == 0) {
-        for (const CastDevice& dev : m_discovery.GetDevices()) {
-            if (DeviceKey(dev) == deviceId) {
-                return dev.SupportsVideo();
+    for (const CastDevice& dev : m_discovery.GetDevices()) {
+        if (DeviceKey(dev) == deviceId) {
+            if (!ReceiverCanPlay(path, info, dev.model)) {
+                return false;
             }
+            // A device without video, a speaker or a display-less Nest, only
+            // takes audio.
+            const CStringA mime = CCastMediaServer::MimeForFile(path);
+            return mime.Left(6).CompareNoCase("video/") != 0 || dev.SupportsVideo();
         }
     }
-    return true;
+    return false; // the device is gone from the discovery snapshot
 }
 
 void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,

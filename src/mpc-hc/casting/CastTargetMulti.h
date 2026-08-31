@@ -55,8 +55,8 @@ public:
     CString GetDeviceName() const override { return m_pActive ? m_pActive->GetDeviceName() : CString(); }
     UINT GetSessionGeneration() const override { return m_pActive ? m_pActive->GetSessionGeneration() : 0; }
 
-    bool CanCastFile(const CString& deviceId, const CString& path) override;
-    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) override;
+    bool CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info) override;
+    bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path, const CastMediaInfo& info) override;
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;

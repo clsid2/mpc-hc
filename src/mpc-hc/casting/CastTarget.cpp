@@ -63,12 +63,22 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
         return CString(mi.Get(stream, 0, name).c_str());
     };
 
-    // Only the codecs a DLNA profile is ever named for are recognized;
-    // everything else is left Unknown, which is what keeps a renderer from
-    // being handed a profile name the stream does not live up to.
+    // Only the codecs a DLNA profile is ever named for, or a Chromecast is
+    // judged on, are recognized; everything else is left Unknown, which is
+    // what keeps a renderer from being handed a profile name the stream does
+    // not live up to, and a Chromecast from being refused a file over a codec
+    // nothing is actually known about.
     const CString videoFormat = field(MediaInfoDLL::Stream_Video, __T("Format"));
     if (videoFormat.CompareNoCase(_T("AVC")) == 0) {
         info.video = CastMediaInfo::Video::H264;
+    } else if (videoFormat.CompareNoCase(_T("HEVC")) == 0) {
+        info.video = CastMediaInfo::Video::HEVC;
+    } else if (videoFormat.CompareNoCase(_T("VP8")) == 0) {
+        info.video = CastMediaInfo::Video::VP8;
+    } else if (videoFormat.CompareNoCase(_T("VP9")) == 0) {
+        info.video = CastMediaInfo::Video::VP9;
+    } else if (videoFormat.CompareNoCase(_T("AV1")) == 0) {
+        info.video = CastMediaInfo::Video::AV1;
     } else if (videoFormat.CompareNoCase(_T("MPEG Video")) == 0
                && field(MediaInfoDLL::Stream_Video, __T("Format_Version")).CompareNoCase(_T("Version 2")) == 0) {
         info.video = CastMediaInfo::Video::MPEG2;
@@ -92,6 +102,27 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
         if (profile.CompareNoCase(_T("Pro")) != 0 && profile.CompareNoCase(_T("Lossless")) != 0) {
             info.audio = CastMediaInfo::Audio::WMA;
         }
+    } else if (audioFormat.CompareNoCase(_T("FLAC")) == 0) {
+        info.audio = CastMediaInfo::Audio::FLAC;
+    } else if (audioFormat.CompareNoCase(_T("Opus")) == 0) {
+        info.audio = CastMediaInfo::Audio::Opus;
+    } else if (audioFormat.CompareNoCase(_T("Vorbis")) == 0) {
+        info.audio = CastMediaInfo::Audio::Vorbis;
+    } else if (audioFormat.CompareNoCase(_T("PCM")) == 0) {
+        info.audio = CastMediaInfo::Audio::LPCM;
+    } else if (audioFormat.Left(6).CompareNoCase(_T("E-AC-3")) == 0) {
+        // "E-AC-3 JOC" is Atmos, which the same decoder is asked for
+        info.audio = CastMediaInfo::Audio::EAC3;
+    } else if (audioFormat.Left(4).CompareNoCase(_T("AC-3")) == 0) {
+        info.audio = CastMediaInfo::Audio::AC3;
+    } else if (audioFormat.Left(3).CompareNoCase(_T("DTS")) == 0) {
+        // the core and every DTS-HD extension carry the one format name
+        info.audio = CastMediaInfo::Audio::DTS;
+    } else if (audioFormat.Left(3).CompareNoCase(_T("MLP")) == 0
+               || audioFormat.Find(_T("TrueHD")) >= 0) {
+        // "MLP FBA" is what a current library calls TrueHD; an older one
+        // spells the name out
+        info.audio = CastMediaInfo::Audio::TrueHD;
     }
     if (info.audio != CastMediaInfo::Audio::Unknown) {
         info.sampleRate = MediaInfoInt(field(MediaInfoDLL::Stream_Audio, __T("SamplingRate")));

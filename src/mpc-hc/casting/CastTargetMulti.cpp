@@ -147,19 +147,20 @@ bool CCastTargetMulti::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWOR
     return true;
 }
 
-bool CCastTargetMulti::CanCastFile(const CString& deviceId, const CString& path)
+bool CCastTargetMulti::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info)
 {
     CString targetDeviceId;
     CCastTarget* pTarget = TargetFor(deviceId, targetDeviceId);
-    return pTarget && pTarget->CanCastFile(targetDeviceId, path);
+    return pTarget && pTarget->CanCastFile(targetDeviceId, path, info);
 }
 
-bool CCastTargetMulti::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+bool CCastTargetMulti::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
+                                        const CastMediaInfo& info)
 {
     // Neither target needs the id here: what a saved device can play is
     // decided by what was recorded about the device, not by looking it up.
-    return saved.protocol == CastProtocol::Chromecast ? m_chromecast.CanCastFileSaved(saved, path)
-           : m_dlna.CanCastFileSaved(saved, path);
+    return saved.protocol == CastProtocol::Chromecast ? m_chromecast.CanCastFileSaved(saved, path, info)
+           : m_dlna.CanCastFileSaved(saved, path, info);
 }
 
 void CCastTargetMulti::LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,

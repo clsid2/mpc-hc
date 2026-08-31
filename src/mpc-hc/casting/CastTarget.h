@@ -43,11 +43,12 @@ enum class CastTargetState {
 // What MediaInfo says about the file that is about to be cast. A protocol
 // that has to name the content precisely -- DLNA renderers from Samsung and
 // Sony refuse or mishandle a stream that carries no profile name -- derives
-// that name from this. Every field may be left Unknown or zero, which simply
-// means nothing is claimed about it.
+// that name from this, and a Chromecast is judged against what its receiver
+// plays. Every field may be left Unknown or zero, which simply means nothing
+// is claimed about it.
 struct CastMediaInfo {
-    enum class Video { Unknown, H264, MPEG2 };
-    enum class Audio { Unknown, AAC, MP3, WMA };
+    enum class Video { Unknown, H264, HEVC, MPEG2, VP8, VP9, AV1 };
+    enum class Audio { Unknown, AAC, MP3, WMA, FLAC, Opus, Vorbis, LPCM, AC3, EAC3, DTS, TrueHD };
 
     Video video = Video::Unknown;
     Audio audio = Audio::Unknown;
@@ -72,6 +73,7 @@ enum class CastProtocol { Chromecast, Dlna };
 struct CastTargetDevice {
     CastProtocol protocol = CastProtocol::Chromecast;
     CString name;    // friendly name as the device advertises it
+    CString model;   // Chromecast TXT record "md", empty on DLNA
     CString id;      // stable identifier, passed back to Connect()
     CString address; // dotted IPv4 address, so a device can also be named by it
     UINT port = 0;   // 0 when the protocol has a fixed one
@@ -146,13 +148,16 @@ public:
     virtual UINT GetSessionGeneration() const = 0;
 
     // Whether the device can play the file without transcoding. The device is
-    // named because capabilities differ per device on protocols that report
-    // them (DLNA), while every Chromecast receiver is the same.
-    virtual bool CanCastFile(const CString& deviceId, const CString& path) = 0;
+    // named because capabilities differ per device: a DLNA renderer reports
+    // what it accepts, and a Chromecast plays a codec or not by generation.
+    // info is what MediaInfo knows about the file; a default one says nothing
+    // about it, and then only the container is judged.
+    virtual bool CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info) = 0;
 
     // The same question for a device from the saved list, answered from what
     // was recorded about it rather than from a discovery that is not running.
-    virtual bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path) = 0;
+    virtual bool CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
+                                  const CastMediaInfo& info) = 0;
 
     // Serves filePath to the device and loads it, seeking to startSec once
     // the device reports playback. info is what MediaInfo knows about

@@ -4367,7 +4367,7 @@ BEGIN
     IDS_CAST_STOP_CASTING   "Stop &casting"
     IDS_CAST_CASTING_TO     "Casting to %s"
     IDS_CAST_STOPPED        "Stopped casting"
-    IDS_CAST_UNSUPPORTED_FILE "Casting is not supported for this file. Only MP4 and WebM files can be played directly on the device."
+    IDS_CAST_UNSUPPORTED_FILE "Casting is not supported for this file. The device cannot play this format directly."
     IDS_CAST_FAILED         "Casting failed"
     IDS_CAST_TAKEN_OVER     "Another device took over casting"
     IDS_CAST_NO_DEVICE      "No cast device named ""%s"" was found"

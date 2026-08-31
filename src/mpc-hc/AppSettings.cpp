@@ -3019,7 +3019,8 @@ void CAppSettings::AddFav(favtype ft, CString s)
 // out early and what is missing keeps its default.
 enum {
     CASTDEV_PROTOCOL, CASTDEV_ID, CASTDEV_NAME, CASTDEV_USERNAME, CASTDEV_ADDRESS,
-    CASTDEV_PORT, CASTDEV_LOCATION, CASTDEV_FLAGS, CASTDEV_FORMATS, CASTDEV_FIELDS
+    CASTDEV_PORT, CASTDEV_LOCATION, CASTDEV_FLAGS, CASTDEV_FORMATS, CASTDEV_MODEL,
+    CASTDEV_FIELDS
 };
 
 // The Sink list of a chatty renderer runs to kilobytes. What is kept is enough
@@ -3059,6 +3060,9 @@ void CAppSettings::GetCastDevices(std::vector<CastSavedDevice>& devices) const
         dev.supportsVideo = !!(flags & 1);
         dev.supportsAudio = !!(flags & 2);
         dev.formats = fields[CASTDEV_FORMATS];
+        // written since the receiver capabilities became a per-model question;
+        // an older entry has none and picks one up when it is next connected to
+        dev.model = fields[CASTDEV_MODEL];
         if (!dev.id.IsEmpty()) {
             devices.emplace_back(std::move(dev));
         }
@@ -3098,6 +3102,7 @@ void CAppSettings::SetCastDevices(const std::vector<CastSavedDevice>& devices)
         number.Format(_T("%d"), (dev.supportsVideo ? 1 : 0) | (dev.supportsAudio ? 2 : 0));
         fields.AddTail(number);
         fields.AddTail(dev.formats.GetLength() <= CASTDEV_MAX_FORMATS ? dev.formats : CString());
+        fields.AddTail(storable(dev.model));
 
         CString entry;
         entry.Format(_T("Device%d"), i++);

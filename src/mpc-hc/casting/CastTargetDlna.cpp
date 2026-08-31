@@ -366,7 +366,8 @@ bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
     return true;
 }
 
-bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path)
+bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
+                                   const CastMediaInfo& /*info*/)
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     if (mime.IsEmpty() || mime == "application/octet-stream") {
@@ -378,7 +379,7 @@ bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& 
            : SinkAccepts(CStringA(saved.formats), mime);
 }
 
-bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path)
+bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& /*info*/)
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     if (mime.IsEmpty() || mime == "application/octet-stream") {
