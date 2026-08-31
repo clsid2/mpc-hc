@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CMPCThemeSliderCtrl, CSliderCtrl)
     ON_WM_MOUSEMOVE()
     ON_WM_LBUTTONDOWN()
     ON_WM_LBUTTONUP()
+    ON_WM_CAPTURECHANGED()
     ON_WM_MOUSELEAVE()
     ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
@@ -142,6 +143,12 @@ void CMPCThemeSliderCtrl::OnMouseMove(UINT nFlags, CPoint point)
 {
     checkHover(point);
     if (jumpToClick && m_bDrag) {
+        if (!(nFlags & MK_LBUTTON)) {
+            // the button was let go where we never saw it, so the drag is over
+            // and the cursor merely passing over the control means nothing
+            EndJumpToClickDrag();
+            return;
+        }
         SetPosFromPoint(point); // the thumb follows the cursor, nothing pages
         return;
     }
@@ -197,6 +204,26 @@ void CMPCThemeSliderCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 }
 
 
+// Ends a jump-to-click drag that no button up is going to end: the capture was
+// taken away, or the button turns out to have been let go somewhere we never
+// saw it. The position the thumb reached is what the drag settled on, so the
+// listener is told exactly what letting go over the control would have told
+// it and is never left believing the thumb is still being held.
+void CMPCThemeSliderCtrl::EndJumpToClickDrag()
+{
+    if (!m_bDrag) {
+        return;
+    }
+    m_bDrag = false; // first, so the release below comes back to nothing
+    invalidateThumb();
+    if (::GetCapture() == m_hWnd) {
+        ReleaseCapture();
+    }
+    SendScrollMsg(SB_THUMBPOSITION, (WORD)GetPos());
+    SendScrollMsg(SB_ENDSCROLL);
+}
+
+
 void CMPCThemeSliderCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
     const bool bWasDrag = jumpToClick && m_bDrag;
@@ -213,6 +240,18 @@ void CMPCThemeSliderCtrl::OnLButtonUp(UINT nFlags, CPoint point)
         return;
     }
     CSliderCtrl::OnLButtonUp(nFlags, point);
+}
+
+
+// A message box, the task switcher or a Win+D takes the capture away without
+// any button up ever arriving. Only a control that runs its own drag has
+// anything to undo here; nothing else is touched.
+void CMPCThemeSliderCtrl::OnCaptureChanged(CWnd* pWnd)
+{
+    if (jumpToClick) {
+        EndJumpToClickDrag();
+    }
+    CSliderCtrl::OnCaptureChanged(pWnd);
 }
 
 

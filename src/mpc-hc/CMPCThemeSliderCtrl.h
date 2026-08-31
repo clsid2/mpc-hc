@@ -26,7 +26,9 @@ public:
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     void SetPosFromPoint(CPoint point);
+    void EndJumpToClickDrag();
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnCaptureChanged(CWnd* pWnd);
     afx_msg void OnMouseLeave();
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
