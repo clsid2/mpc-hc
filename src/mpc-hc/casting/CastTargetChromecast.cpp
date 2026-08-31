@@ -360,7 +360,7 @@ bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CSt
 {
     CString refusal;
     const CStringA mime = CCastMediaServer::MimeForFile(path);
-    bool ok = ReceiverCanPlay(path, info, saved.model, &refusal);
+    bool ok = ignoreFormatSupport || ReceiverCanPlay(path, info, saved.model, &refusal);
     // A device without video, a speaker or a display-less Nest, only takes audio.
     if (ok && mime.Left(6).CompareNoCase("video/") == 0 && !saved.supportsVideo) {
         ok = false;
@@ -376,7 +376,11 @@ bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CSt
 void CChromecastTarget::LogVerdict(const CString& name, const CString& model, const CStringA& mime,
                                    bool ok, const CString& refusal)
 {
-    if (ok) {
+    if (ok && ignoreFormatSupport) {
+        CASTING_LOG(_T("cast: Chromecast \"%s\" (md=\"%s\") is handed this file unchecked, sent as %hs: ")
+                    _T("CastIgnoreFormatSupport is on, so nothing was judged and the receiver decides"),
+                    name.GetString(), model.GetString(), mime.GetString());
+    } else if (ok) {
         CASTING_LOG(_T("cast: Chromecast \"%s\" (md=\"%s\") takes this file, sent as %hs"),
                     name.GetString(), model.GetString(), mime.GetString());
     } else {
@@ -391,7 +395,7 @@ bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path
         if (DeviceKey(dev) == deviceId) {
             CString refusal;
             const CStringA mime = CCastMediaServer::MimeForFile(path);
-            bool ok = ReceiverCanPlay(path, info, dev.model, &refusal);
+            bool ok = ignoreFormatSupport || ReceiverCanPlay(path, info, dev.model, &refusal);
             // A device without video, a speaker or a display-less Nest, only
             // takes audio.
             if (ok && mime.Left(6).CompareNoCase("video/") == 0 && !dev.SupportsVideo()) {

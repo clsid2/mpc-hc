@@ -18715,6 +18715,7 @@ void CMainFrame::EnsureCastTarget()
     // Only a session ever starts the media server, so picking the port up here
     // is early enough and follows a change made in the options.
     CCastMediaServer::preferredPort = (UINT)AfxGetAppSettings().nCastServerPort;
+    CCastTarget::ignoreFormatSupport = AfxGetAppSettings().bCastIgnoreFormatSupport;
 }
 
 // The window a session runs in. It is made before the device is connected, so

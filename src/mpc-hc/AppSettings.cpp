@@ -257,6 +257,7 @@ CAppSettings::CAppSettings()
     , nCoverArtSizeLimit(600)
     , bEnableCasting(true)
     , nCastServerPort(13580)
+    , bCastIgnoreFormatSupport(false)
     , DebugLogMask(0)
     , iLAVGPUDevice(DWORD_MAX)
     , nCmdVolume(0)
@@ -1325,6 +1326,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLE_CASTING, bEnableCasting);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_SERVER_PORT, nCastServerPort);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, bCastIgnoreFormatSupport);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, DebugLogMask);
 
@@ -2312,6 +2314,7 @@ void CAppSettings::LoadSettings()
     if (nCastServerPort < 1024 || nCastServerPort > 65535) {
         nCastServerPort = 13580;
     }
+    bCastIgnoreFormatSupport = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, FALSE);
 
     DebugLogMask = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, 0);
 

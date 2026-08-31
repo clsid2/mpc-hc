@@ -215,6 +215,7 @@ void CPPageAdvanced::InitSettings()
 
     addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_MISC));
     addIntItem(CAST_SERVER_PORT, IDS_RS_CAST_SERVER_PORT, 13580, s.nCastServerPort, std::make_pair(1024, 65535), L"Port the local media server listens on while casting, so that the device can fetch the file being played. Another port is picked automatically when this one is taken. Only used while a cast session is running.");
+    addBoolItem(CAST_IGNORE_FORMAT_SUPPORT, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, false, s.bCastIgnoreFormatSupport, L"Offers every file to a cast device instead of only the ones it is known to play. The check that is skipped is what keeps a file the device cannot decode from being sent to it, so with this on a cast can simply fail: a Chromecast answers LOAD_FAILED and a DLNA renderer refuses the media. Worth turning on to find out whether a device plays more than casting credits it with.");
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif

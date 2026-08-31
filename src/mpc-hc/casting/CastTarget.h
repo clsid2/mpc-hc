@@ -224,6 +224,12 @@ class CCastTarget
 public:
     virtual ~CCastTarget() = default;
 
+    // Set from the options: with this on, CanCastFile() judges nothing about
+    // the format and every file is offered to every device. What answers then
+    // is the device itself, with a LOAD_FAILED or a refused SetAVTransportURI.
+    // Shared by every target, so it is set once beside the media server port.
+    static inline bool ignoreFormatSupport = false;
+
     // Device discovery; runs in the background once started. The device list
     // is polled with GetDevices() whenever it is about to be shown.
     virtual bool StartDiscovery() = 0;

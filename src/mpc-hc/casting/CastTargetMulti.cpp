@@ -131,6 +131,10 @@ void CastLogDeviceCapabilities(const CastTargetDevice& device)
     } else {
         LogDlnaCapabilities(device);
     }
+    if (CCastTarget::ignoreFormatSupport) {
+        CASTING_LOG(_T("device:   none of the above is enforced: CastIgnoreFormatSupport is on, so every ")
+                    _T("file is offered to this device and the device is what refuses it"));
+    }
 }
 
 bool CCastTargetMulti::StartDiscovery()

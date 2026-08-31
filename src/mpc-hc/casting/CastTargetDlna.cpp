@@ -395,7 +395,11 @@ void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CS
     }
     const LPCTSTR source = sink.IsEmpty() ? _T("it answered no protocol info, so common containers are assumed")
                            : _T("its own protocol info says so");
-    if (ok) {
+    if (ok && ignoreFormatSupport) {
+        CASTING_LOG(_T("cast: DLNA \"%s\" is handed this file unchecked, sent as %hs: ")
+                    _T("CastIgnoreFormatSupport is on, so nothing was judged and the renderer decides"),
+                    name.GetString(), mime.GetString());
+    } else if (ok) {
         CASTING_LOG(_T("cast: DLNA \"%s\" takes this file, sent as %hs (%s)"),
                     name.GetString(), mime.GetString(), source);
     } else if (mime.IsEmpty() || mime == "application/octet-stream") {
@@ -412,7 +416,7 @@ bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& 
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     const CStringA sink(saved.formats);
-    const bool ok = AcceptsMime(sink, mime);
+    const bool ok = ignoreFormatSupport || AcceptsMime(sink, mime);
     LogVerdict(saved.DisplayName(), sink, mime, ok);
     return ok;
 }
@@ -423,7 +427,7 @@ bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, cons
 
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
         if (dev.udn == deviceId) {
-            const bool ok = AcceptsMime(dev.sinkProtocolInfo, mime);
+            const bool ok = ignoreFormatSupport || AcceptsMime(dev.sinkProtocolInfo, mime);
             LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok);
             return ok;
         }

@@ -254,6 +254,7 @@ private:
         HISTORY_EXCLUDE_FILTER,
         HISTORY_MAX_AGE_DAYS,
         CAST_SERVER_PORT,
+        CAST_IGNORE_FORMAT_SUPPORT,
     };
 
     static constexpr DWORD_PTR HEADER_ITEM_DATA = (DWORD_PTR)-1;

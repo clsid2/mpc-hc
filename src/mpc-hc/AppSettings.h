@@ -966,6 +966,7 @@ public:
 
     bool            bEnableCasting;
     int             nCastServerPort;
+    bool            bCastIgnoreFormatSupport;
 
     int             DebugLogMask;
 
