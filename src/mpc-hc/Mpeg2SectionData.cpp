@@ -254,11 +254,14 @@ HRESULT CMpeg2DataParser::ParseSIHeader(CGolombBuffer& gb, DVB_SI SIType, WORD& 
     if (gb.BitRead(8) != SIType) {
         return ERROR_INVALID_DATA;              // table_id
     }
-    gb.BitRead(1);                              // section_syntax_indicator
-    gb.BitRead(1);                              // reserved_future_use
-    gb.BitRead(2);                              // reserved
-    wSectionLength = (WORD)gb.BitRead(12);      // section_length
-    wTSID = (WORD)gb.BitRead(16);               // transport_stream_id
+    // The BDA demux hands us a SECTION/LONG_SECTION struct (mpeg2structs.h), not
+    // raw wire bytes: Header.W and TableIdExtension have already been swapped to
+    // host order for us, which is what the SDK's SWAP_MPEG_SECTION_HEADER_BYTES
+    // macro does. Read those two as little-endian WORDs; everything from
+    // RemainingData onwards is untouched wire payload and stays big-endian.
+    WORD wHeader = (WORD)gb.ReadShortLE();      // section_syntax_indicator, reserved, section_length
+    wSectionLength = wHeader & 0x0FFF;          // section_length
+    wTSID = (WORD)gb.ReadShortLE();             // transport_stream_id
     gb.BitRead(2);                              // reserved
     gb.BitRead(5);                              // version_number
     gb.BitRead(1);                              // current_next_indicator
