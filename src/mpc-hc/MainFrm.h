@@ -445,6 +445,9 @@ private:
     // settings whenever the menu is built: no discovery is involved, which is
     // what makes opening the menu instant and silent.
     std::vector<CastSavedDevice> m_castMenuDevices;
+    // Set while StartCastingTo() is connecting, which pumps: it is what keeps a
+    // second attempt arriving on the pump out of the middle of the first.
+    bool m_bCastAttemptInFlight = false;
     void EnsureCastTarget(); // builds the target on first use; touches no socket
     CCastSessionDlg* EnsureCastWindow(); // the session window, created hidden
     UINT StartCastingTo(CastSavedDevice& device); // 0, or the string id of what went wrong

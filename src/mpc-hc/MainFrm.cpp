@@ -18766,6 +18766,17 @@ void CMainFrame::UpdateSavedCastDevice(const CastSavedDevice& device)
 
 UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
 {
+    // Connecting takes seconds and the play commands around it pump: both
+    // OnPlayStop() and OnPlayPlay() dispatch whatever WM_TIMER is waiting, so
+    // the /castto tick lands in the middle of an attempt -- and a second
+    // instance's /castto arrives the same way, as a sent WM_COPYDATA. One
+    // attempt is made at a time; a second is dropped rather than torn into the
+    // first, and reports nothing, because the attempt already running is what
+    // answers for it.
+    if (m_bCastAttemptInFlight) {
+        return 0;
+    }
+
     if (!m_pCastTarget) {
         return IDS_CAST_FAILED;
     }
@@ -18822,6 +18833,10 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
                      ? pSession->GetPosition()
                      : m_wndSeekBar.GetPos() / 10000000.0;
 
+    // Nothing above this pumps; from here on the player does, so the attempt
+    // is marked as in flight until it is over either way.
+    m_bCastAttemptInFlight = true;
+
     // A session that is up has to end before the next device is connected: a
     // target refuses to connect while it is casting. The position the new
     // device starts at was taken above, so it survives the handover, and the
@@ -18846,6 +18861,7 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
         if (bWasPlaying) {
             SendMessage(WM_COMMAND, ID_PLAY_PLAY); // leave playback as we found it
         }
+        m_bCastAttemptInFlight = false;
         return IDS_CAST_NOT_REACHABLE;
     }
 
@@ -18855,6 +18871,7 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
 
     CASTING_LOG(_T("cast: the session is up, playing from %.1f s"), media.startSec);
     pSession->StartSession(media);
+    m_bCastAttemptInFlight = false;
     return 0;
 }
 
