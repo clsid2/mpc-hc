@@ -234,7 +234,6 @@ public:
     // is polled with GetDevices() whenever it is about to be shown.
     virtual bool StartDiscovery() = 0;
     virtual void StopDiscovery() = 0;
-    virtual bool IsDiscoveryRunning() const = 0;
     virtual std::vector<CastTargetDevice> GetDevices() = 0;
 
     // One discovery serves everything that wants one -- the device dialog and

@@ -43,7 +43,6 @@ public:
     // CCastTarget
     bool StartDiscovery() override;
     void StopDiscovery() override;
-    bool IsDiscoveryRunning() const override { return m_discovery.IsRunning(); }
     std::vector<CastTargetDevice> GetDevices() override;
 
     void SetNotifyWindow(HWND hNotifyWnd, UINT stateMsg) override;

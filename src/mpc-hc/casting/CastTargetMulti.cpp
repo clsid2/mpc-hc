@@ -151,12 +151,6 @@ void CCastTargetMulti::StopDiscovery()
     m_dlna.StopDiscovery();
 }
 
-bool CCastTargetMulti::IsDiscoveryRunning() const
-{
-    // "not fully running" so that the lazy start retries the one that failed
-    return m_chromecast.IsDiscoveryRunning() && m_dlna.IsDiscoveryRunning();
-}
-
 void CCastTargetMulti::AppendDevices(CCastTarget& target, LPCTSTR prefix, std::vector<CastTargetDevice>& devices)
 {
     for (CastTargetDevice& dev : target.GetDevices()) {
