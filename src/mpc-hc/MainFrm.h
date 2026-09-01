@@ -452,10 +452,18 @@ private:
     CCastSessionDlg* EnsureCastWindow(); // the session window, created hidden
     UINT StartCastingTo(CastSavedDevice& device); // 0, or the string id of what went wrong
     void UpdateSavedCastDevice(const CastSavedDevice& device);
+    // A file just opened here, offered to a running session instead of being
+    // played on this screen. Does nothing when nothing is casting.
+    void RedirectOpenedFileToCast();
 public:
     // Ends casting and the discovery behind it, releasing every socket the
     // feature holds. Called when casting is switched off in the options.
     void ShutdownCasting();
+    // Puts a session's device back on the line after the session ended, so
+    // that the cast window can go on loading files into it rather than sending
+    // the user back to the menu. device is updated, and the saved list follows
+    // it if it moved, the same way starting a cast does.
+    bool ReconnectCastDevice(CastSavedDevice& device);
 private:
 
     // /castto: the device is only discovered a second or two after the file is
@@ -828,6 +836,11 @@ public:
 
     void DoAfterPlaybackEvent();
     bool SearchInDir(bool bDirForward, bool bLoop = false);
+    // The files of the folder `filename` is in, in the order SearchInDir steps
+    // through them -- the same mask and the same choice of name or date order.
+    // index comes back as the position of `filename` itself, which is always
+    // in the list. False when there is no folder to look in.
+    bool GetFilesInDir(const CString& filename, std::vector<CString>& files, size_t& index);
     bool WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs, std::map<CString, ULONGLONG>* creationTimes = nullptr);
     CString lastOpenFile;
     bool CanSkipFromClosedFile();

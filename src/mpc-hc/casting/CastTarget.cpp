@@ -129,6 +129,11 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
         info.channels = MediaInfoInt(field(MediaInfoDLL::Stream_Audio, __T("Channel(s)")));
     }
 
+    // How long the file is, which a session that never had the player's graph
+    // open on it has no other way of knowing. General "Duration" is in
+    // milliseconds.
+    info.durationSec = MediaInfoInt(field(MediaInfoDLL::Stream_General, __T("Duration"))) / 1000.0;
+
     mi.Close();
 
     TRACE(_T("CastMediaInfo: video %d %dx%d, audio %d %d Hz %d ch\n"), (int)info.video,

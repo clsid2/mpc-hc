@@ -56,12 +56,23 @@ public:
     TrackSizeConstraints GetTrackSizeConstraints() const override;
 
     // The device is already connected when this is called; the window loads the
-    // media into it and takes the session over from here.
-    void StartSession(const CastSessionMedia& media);
+    // media into it and takes the session over from here. The saved record of
+    // the device is kept with it, so that the window can reach it again by
+    // itself once the session has ended.
+    void StartSession(const CastSavedDevice& device, const CastSessionMedia& media);
+
+    // Hands the device another file without ending the session: the Load file
+    // button, a step through the folder and a file opened in the player while
+    // a session runs all arrive here. Returns 0, or the string id of why the
+    // device will not take it -- and then nothing that was running has changed.
+    UINT LoadFile(const CString& path);
 
     bool IsCasting() const;
     CString GetActiveDeviceId() const;
     const CString& GetPath() const { return m_media.path; }
+    // Everything about the file being cast, which is what another device is
+    // offered when the cast moves and the player has no file of its own left.
+    const CastSessionMedia& GetMedia() const { return m_media; }
     double GetPosition() const;
 
     // Stops the device and writes down where it got to. The window stays up
@@ -74,6 +85,22 @@ public:
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
+
+    // Hands the device a file and takes the session over it. This is both how
+    // a session starts and how it moves from one file to the next, so nothing
+    // here touches the connection the session is running on.
+    void PlayMedia(const CastSessionMedia& media);
+    // Everything a session needs about a file, read from the file itself:
+    // there is no graph open on it and no playlist entry for it. Returns 0, or
+    // the string id of why the device will not take it.
+    UINT PrepareMedia(const CString& path, CastSessionMedia& media);
+    // The device back on the line after a session that ended, so that a window
+    // left up can go on loading files into it.
+    bool EnsureConnected();
+    // The previous or next file in the folder of the one being cast, in the
+    // order the player's own "next in folder" uses. A file the device will not
+    // take is passed over rather than stopped at.
+    void StepInFolder(bool bForward);
 
     void UpdateTransport();  // buttons and status line, from the device state
     // Seekbar and time, from the device clock. bPlayedOut is set only when the
@@ -88,6 +115,7 @@ protected:
     CMPCThemeSliderCtrl m_volume;
 
     CCastTarget* m_pTarget;
+    CastSavedDevice m_device;  // what the session was started on, to reach it again
     CastSessionMedia m_media;
     bool m_bSessionLive = false;
     int m_nLoops = 0;              // times the device has played the media out
@@ -105,5 +133,8 @@ public:
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
     afx_msg void OnPlayPause();
     afx_msg void OnStop();
+    afx_msg void OnPrevious();
+    afx_msg void OnNext();
+    afx_msg void OnLoadFile();
     afx_msg LRESULT OnCastStateChanged(WPARAM wParam, LPARAM lParam);
 };

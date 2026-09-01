@@ -802,6 +802,9 @@
 #define IDC_CASTSESS_STOP               22126
 #define IDC_CASTSESS_VOLLABEL           22127
 #define IDC_CASTSESS_VOLUME             22128
+#define IDC_CASTSESS_PREV               22129
+#define IDC_CASTSESS_NEXT               22130
+#define IDC_CASTSESS_LOADFILE           22131
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1933,6 +1936,7 @@
 #define IDS_CAST_CONNECTING             58070
 #define IDS_CAST_BUFFERING              58071
 #define IDS_CAST_MEDIAINFO_REQUIRED 58072
+#define IDS_CAST_NO_MORE_FILES          58073
 
 // Next default values for new objects
 // 
@@ -1940,7 +1944,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20081
 #define _APS_NEXT_COMMAND_VALUE         33467
-#define _APS_NEXT_CONTROL_VALUE         22129
+#define _APS_NEXT_CONTROL_VALUE         22132
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

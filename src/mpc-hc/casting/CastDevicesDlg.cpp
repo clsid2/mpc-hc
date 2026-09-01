@@ -313,9 +313,9 @@ CString CCastDevicesDlg::RowsSignature() const
 {
     CString signature;
     for (const Row& row : m_rows) {
-        signature.AppendFormat(_T("%s\1%s\1%s\1%d\1%d\2"), row.device.id.GetString(),
-                               row.device.DisplayName().GetString(), row.device.address.GetString(),
-                               row.saved ? 1 : 0, row.online ? 1 : 0);
+        signature.AppendFormat(_T("%s\1%s\1%s\1%s\1%d\1%d\2"), row.device.id.GetString(),
+                               row.device.DisplayName().GetString(), row.device.name.GetString(),
+                               row.device.address.GetString(), row.saved ? 1 : 0, row.online ? 1 : 0);
     }
     return signature;
 }
@@ -327,13 +327,23 @@ void CCastDevicesDlg::FillList()
     const int selected = SelectedRow();
     const CString selectedId = selected >= 0 ? m_rows[selected].device.id : CString();
 
+    // A device is called what it calls itself until the user says otherwise,
+    // so for most of them the advertised name is the name and saying it twice
+    // tells nobody anything. It is shown only where it differs, and the column
+    // itself only when some row has something to put in it.
+    m_bShowAdvertised = false;
+    for (const Row& row : m_rows) {
+        m_bShowAdvertised |= row.device.name != row.device.DisplayName();
+    }
+
     m_bFilling = true;
     m_list.SetRedraw(FALSE);
     m_list.DeleteAllItems();
     for (size_t i = 0; i < m_rows.size(); i++) {
         const Row& row = m_rows[i];
         const int item = m_list.InsertItem((int)i, row.device.DisplayName());
-        m_list.SetItemText(item, 1, row.device.name);
+        m_list.SetItemText(item, 1, row.device.name != row.device.DisplayName()
+                           ? row.device.name : CString());
         m_list.SetItemText(item, 2, ProtocolName(row.device.protocol));
         m_list.SetItemText(item, 3, row.device.address);
         m_list.SetItemText(item, 4, ResStr(row.saved ? (row.online ? IDS_CAST_DLG_STATUS_SAVED_FOUND
@@ -343,6 +353,7 @@ void CCastDevicesDlg::FillList()
     m_list.SetRedraw(TRUE);
     m_list.Invalidate();
 
+    UpdateColumnWidths(); // the advertised column may have come or gone
     SelectById(selectedId);
     m_bFilling = false;
 }
@@ -379,10 +390,14 @@ void CCastDevicesDlg::UpdateColumnWidths()
     CRect r;
     m_list.GetClientRect(r);
     const int width = std::max(r.Width(), 200);
-    // name and advertised name take what is left over from the fixed columns
+    // name and advertised name take what is left over from the fixed columns,
+    // and the name takes all of it when no device has an advertised name that
+    // differs from it
     const int fixed = width * 40 / 100;
-    m_list.SetColumnWidth(0, (width - fixed) * 55 / 100);
-    m_list.SetColumnWidth(1, (width - fixed) - (width - fixed) * 55 / 100);
+    const int names = width - fixed;
+    const int advertised = m_bShowAdvertised ? names - names * 55 / 100 : 0;
+    m_list.SetColumnWidth(0, names - advertised);
+    m_list.SetColumnWidth(1, advertised);
     m_list.SetColumnWidth(2, fixed * 25 / 100);
     m_list.SetColumnWidth(3, fixed * 40 / 100);
     m_list.SetColumnWidth(4, fixed - fixed * 25 / 100 - fixed * 40 / 100);

@@ -538,6 +538,11 @@ class CAppSettings
         // that file has to resume from, and by then the player may well have a
         // different file open, or none at all.
         void UpdateFilePosition(CStringW fn, REFERENCE_TIME time);
+        // The position remembered for a file that is not the one being
+        // played, named by path; 0 when nothing is remembered about it. The
+        // counterpart of UpdateFilePosition(), and casting is what needs it:
+        // a file the cast window picks up has never been opened here.
+        REFERENCE_TIME GetFilePosition(CStringW fn);
         REFERENCE_TIME GetCurrentFilePosition();
         ABRepeat GetCurrentABRepeat();
         void UpdateCurrentDVDTimecode(DVD_HMSF_TIMECODE *time);
@@ -967,6 +972,7 @@ public:
     bool            bEnableCasting;
     int             nCastServerPort;
     bool            bCastIgnoreFormatSupport;
+    bool            bCastRedirectOpenedFiles;
 
     int             DebugLogMask;
 

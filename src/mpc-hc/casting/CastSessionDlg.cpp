@@ -24,6 +24,9 @@
 #include "MainFrm.h"
 #include "SettingsDefines.h"
 #include "AppSettings.h"
+#include "OpenFileDlg.h"
+#include <PathUtils.h>
+#include "Logger.h"
 #include <DSUtil.h>
 #include <algorithm>
 
@@ -64,6 +67,9 @@ BEGIN_MESSAGE_MAP(CCastSessionDlg, CModelessDialog)
     ON_WM_HSCROLL()
     ON_BN_CLICKED(IDC_CASTSESS_PLAYPAUSE, OnPlayPause)
     ON_BN_CLICKED(IDC_CASTSESS_STOP, OnStop)
+    ON_BN_CLICKED(IDC_CASTSESS_PREV, OnPrevious)
+    ON_BN_CLICKED(IDC_CASTSESS_NEXT, OnNext)
+    ON_BN_CLICKED(IDC_CASTSESS_LOADFILE, OnLoadFile)
     ON_MESSAGE(WM_CAST_STATE_CHANGED, OnCastStateChanged)
 END_MESSAGE_MAP()
 
@@ -104,8 +110,11 @@ void CCastSessionDlg::SetupAnchors()
     AddAnchor(IDC_CASTSESS_SEEK, TOP_LEFT, TOP_RIGHT);
     AddAnchor(IDC_CASTSESS_TIME, TOP_LEFT);
     AddAnchor(IDC_CASTSESS_STATUS, TOP_RIGHT);
+    AddAnchor(IDC_CASTSESS_PREV, TOP_LEFT);
     AddAnchor(IDC_CASTSESS_PLAYPAUSE, TOP_LEFT);
+    AddAnchor(IDC_CASTSESS_NEXT, TOP_LEFT);
     AddAnchor(IDC_CASTSESS_STOP, TOP_LEFT);
+    AddAnchor(IDC_CASTSESS_LOADFILE, TOP_LEFT);
     AddAnchor(IDC_CASTSESS_VOLLABEL, TOP_RIGHT);
     AddAnchor(IDC_CASTSESS_VOLUME, TOP_RIGHT);
     AddAnchor(IDCANCEL, TOP_RIGHT);
@@ -135,23 +144,45 @@ void CCastSessionDlg::OnDestroy()
     __super::OnDestroy();
 }
 
-void CCastSessionDlg::StartSession(const CastSessionMedia& media)
+void CCastSessionDlg::StartSession(const CastSavedDevice& device, const CastSessionMedia& media)
 {
     if (!m_pTarget) {
         return;
     }
     EndSession(0, false); // a session being replaced needs no epilogue
 
-    m_media = media;
-    m_nLoops = 0;
-    m_bSeekDrag = false;
-    m_seekSettleUntil = 0;
-    m_lastRemembered = media.startSec;
-    m_bSessionLive = true;
+    m_device = device;
 
     CString strDevice;
     strDevice.Format(IDS_CAST_CASTING_TO, m_pTarget->GetDeviceName().GetString());
     SetDlgItemText(IDC_CASTSESS_DEVICE, strDevice);
+
+    PlayMedia(media);
+
+    ShowWindow(SW_SHOW);
+    SetForegroundWindow();
+}
+
+void CCastSessionDlg::PlayMedia(const CastSessionMedia& media)
+{
+    // What was watched of the file being replaced is what that file resumes
+    // from, so it is written down before it is let go of.
+    if (m_bSessionLive) {
+        RememberPosition(m_pTarget->GetPosition());
+    }
+
+    m_media = media;
+    m_nLoops = 0;
+    m_bSeekDrag = false;
+    m_lastRemembered = media.startSec;
+    m_bSessionLive = true;
+
+    // Until the device answers about the file it has just been handed it is
+    // still reporting where it was in the one before; the settle the seekbar
+    // uses after a seek keeps that out of the window.
+    m_seekRequested = media.startSec;
+    m_seekSettleUntil = GetTickCount64() + CAST_SEEK_SETTLE_MS;
+
     SetDlgItemText(IDC_CASTSESS_TITLE, m_media.title);
 
     m_pTarget->LoadMedia(m_media.path, m_media.title, m_media.durationSec, m_media.startSec, m_media.info);
@@ -163,9 +194,114 @@ void CCastSessionDlg::StartSession(const CastSessionMedia& media)
     UpdateTransport();
     UpdatePosition();
     VERIFY(SetTimer(CAST_SESSION_TIMER, CAST_SESSION_MS, nullptr));
+}
 
-    ShowWindow(SW_SHOW);
-    SetForegroundWindow();
+UINT CCastSessionDlg::PrepareMedia(const CString& path, CastSessionMedia& media)
+{
+    if (!m_pTarget || m_device.id.IsEmpty()) {
+        return IDS_CAST_FAILED;
+    }
+    CString file(path);
+    if (file.IsEmpty() || PathUtils::IsURL(file) || !PathUtils::IsFile(file)) {
+        return IDS_CAST_UNSUPPORTED_FILE;
+    }
+    // Nothing is cast that cannot be described first, and MediaInfo is the
+    // only thing that describes it.
+    if (!CastMediaInfoAvailable()) {
+        CASTING_LOG(_T("cast: refused, MediaInfo is not there to say what the file holds"));
+        return IDS_CAST_MEDIAINFO_REQUIRED;
+    }
+
+    media.path = path;
+    media.title = PathUtils::StripPathOrUrl(path);
+    media.info = GetCastMediaInfo(path);
+    media.durationSec = media.info.durationSec;
+    if (!m_pTarget->CanCastFileSaved(m_device, path, media.info)) {
+        return IDS_CAST_UNSUPPORTED_FILE;
+    }
+
+    // Where the file is picked up, and whether what the device reaches in it is
+    // written down, decided the way the player decides it for its own: history
+    // has to be kept, the file has to be long enough, and an audio file only
+    // counts when the option says it does.
+    CAppSettings& s = AfxGetAppSettings();
+    const bool bAudioOnly = media.info.width == 0 && media.info.height == 0;
+    media.rememberPosition = s.fKeepHistory && s.fRememberFilePos
+                             && media.durationSec > s.iRememberPosForLongerThan * 60.0
+                             && (s.bRememberPosForAudioFiles || !bAudioOnly);
+    if (media.rememberPosition) {
+        media.startSec = s.MRU.GetFilePosition(path) / 10000000.0;
+    }
+    return 0;
+}
+
+bool CCastSessionDlg::EnsureConnected()
+{
+    if (IsCasting()) {
+        return true;
+    }
+    // Whatever is left of a session that ended is let go of first: a target
+    // refuses to connect while it still believes it is casting.
+    EndSession(0);
+    SetStatusText(IDS_CAST_CONNECTING);
+
+    CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
+    return pFrame && pFrame->ReconnectCastDevice(m_device);
+}
+
+UINT CCastSessionDlg::LoadFile(const CString& path)
+{
+    CastSessionMedia media;
+    const UINT nErr = PrepareMedia(path, media);
+    if (nErr) {
+        // The name of the file and nothing more of it: this log is written to
+        // be pasted into a public bug report.
+        CASTING_LOG(_T("cast: \"%s\" was not taken, %s"), PathUtils::StripPathOrUrl(path).GetString(),
+                    nErr == IDS_CAST_UNSUPPORTED_FILE ? _T("the device does not play it")
+                    : nErr == IDS_CAST_MEDIAINFO_REQUIRED ? _T("MediaInfo could not describe it")
+                    : _T("there is no device to offer it to"));
+        return nErr;
+    }
+    if (!EnsureConnected()) {
+        return IDS_CAST_NOT_REACHABLE;
+    }
+
+    CASTING_LOG(_T("cast: loading \"%s\" into the session, container %s, %s, from %.1f s"),
+                media.title.GetString(), PathUtils::FileExt(path).GetString(),
+                CastDescribeMedia(media.info).GetString(), media.startSec);
+    PlayMedia(media);
+    return 0;
+}
+
+void CCastSessionDlg::StepInFolder(bool bForward)
+{
+    CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
+    std::vector<CString> files;
+    size_t index = 0;
+    if (!pFrame || !pFrame->GetFilesInDir(m_media.path, files, index)) {
+        SetStatusText(IDS_CAST_NO_MORE_FILES);
+        return;
+    }
+
+    for (size_t i = index; bForward ? i + 1 < files.size() : i > 0;) {
+        i += bForward ? 1 : -1;
+        const UINT nErr = LoadFile(files[i]);
+        if (!nErr) {
+            CASTING_LOG(_T("cast: stepped %s to file %d of %d in the folder"),
+                        bForward ? _T("forward") : _T("back"), (int)i + 1, (int)files.size());
+            return;
+        }
+        if (nErr != IDS_CAST_UNSUPPORTED_FILE) {
+            SetStatusText(nErr); // not the format: there is no point going on
+            return;
+        }
+    }
+
+    // Everything that way is a file this device will not play, which is worth
+    // saying rather than leaving the button looking broken.
+    CASTING_LOG(_T("cast: nothing %s the current file in the folder can be cast"),
+                bForward ? _T("after") : _T("before"));
+    SetStatusText(IDS_CAST_NO_MORE_FILES);
 }
 
 void CCastSessionDlg::EndSession(UINT nStatus /*= IDS_CAST_STOPPED*/, bool bSyncLocalGraph /*= true*/)
@@ -240,6 +376,15 @@ void CCastSessionDlg::UpdateTransport()
     GetDlgItem(IDC_CASTSESS_PLAYPAUSE)->EnableWindow(m_bSessionLive);
     GetDlgItem(IDC_CASTSESS_STOP)->EnableWindow(m_bSessionLive);
     GetDlgItem(IDC_CASTSESS_VOLUME)->EnableWindow(m_bSessionLive);
+
+    // Stepping through a folder needs a file that is in one. A session that has
+    // ended is no reason to take those buttons away: loading another file is
+    // what puts the device back on the line.
+    CString file(m_media.path);
+    const bool bInFolder = !file.IsEmpty() && !PathUtils::IsURL(file)
+                           && file.ReverseFind(_T('\\')) > 0;
+    GetDlgItem(IDC_CASTSESS_PREV)->EnableWindow(bInFolder);
+    GetDlgItem(IDC_CASTSESS_NEXT)->EnableWindow(bInFolder);
 
     if (!m_bSessionLive) {
         return; // whatever ended the session has already said so
@@ -414,6 +559,53 @@ void CCastSessionDlg::OnStop()
 {
     EndSession();
     DestroyWindow(); // stopping is done with the session, and so is this window
+}
+
+void CCastSessionDlg::OnPrevious()
+{
+    StepInFolder(false);
+}
+
+void CCastSessionDlg::OnNext()
+{
+    StepInFolder(true);
+}
+
+void CCastSessionDlg::OnLoadFile()
+{
+    CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
+    if (!pFrame) {
+        return;
+    }
+
+    // The player's own Open dialog, so that the formats it offers, the folder
+    // it starts in and the way it looks are the ones the user already knows.
+    CAppSettings& s = AfxGetAppSettings();
+    CString filter;
+    CAtlArray<CString> mask;
+    s.m_Formats.GetFilter(filter, mask);
+
+    DWORD dwFlags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEINCLUDENOTIFY | OFN_NOCHANGEDIR
+                    | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    if (!s.fKeepHistory) {
+        dwFlags |= OFN_DONTADDTORECENT;
+    }
+
+    COpenFileDlg fd(mask, false, nullptr, nullptr, dwFlags, filter, this);
+    if (pFrame->DoFileDialogWithLastFolder(fd, s.lastQuickOpenPath) != IDOK) {
+        return;
+    }
+
+    const CString path = FileDialogUtils::GetSelectedPath(fd);
+    CASTING_LOG(_T("cast: \"%s\" was chosen with Load file"), PathUtils::StripPathOrUrl(path).GetString());
+
+    const UINT nErr = LoadFile(path);
+    if (nErr) {
+        // A file the device will not take changes nothing about the session
+        // that is running; it is only said so.
+        AfxMessageBox(nErr, (nErr == IDS_CAST_UNSUPPORTED_FILE ? MB_ICONINFORMATION : MB_ICONWARNING) | MB_OK);
+        SetStatusText(nErr);
+    }
 }
 
 LRESULT CCastSessionDlg::OnCastStateChanged(WPARAM /*wParam*/, LPARAM lParam)

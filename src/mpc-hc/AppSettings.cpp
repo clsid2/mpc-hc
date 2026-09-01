@@ -258,6 +258,7 @@ CAppSettings::CAppSettings()
     , bEnableCasting(true)
     , nCastServerPort(13580)
     , bCastIgnoreFormatSupport(false)
+    , bCastRedirectOpenedFiles(true)
     , DebugLogMask(0)
     , iLAVGPUDevice(DWORD_MAX)
     , nCmdVolume(0)
@@ -1327,6 +1328,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLE_CASTING, bEnableCasting);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_SERVER_PORT, nCastServerPort);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, bCastIgnoreFormatSupport);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_REDIRECT_OPENED_FILES, bCastRedirectOpenedFiles);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, DebugLogMask);
 
@@ -2315,6 +2317,7 @@ void CAppSettings::LoadSettings()
         nCastServerPort = 13580;
     }
     bCastIgnoreFormatSupport = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, FALSE);
+    bCastRedirectOpenedFiles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_REDIRECT_OPENED_FILES, TRUE);
 
     DebugLogMask = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, 0);
 
@@ -3408,6 +3411,16 @@ void CAppSettings::CRecentFileListWithMoreInfo::UpdateFilePosition(CStringW fn, 
         }
         return;
     }
+}
+
+REFERENCE_TIME CAppSettings::CRecentFileListWithMoreInfo::GetFilePosition(CStringW fn) {
+    const CStringW hash = getRFEHash(fn);
+    for (size_t i = 0; i < rfe_array.GetCount(); i++) {
+        if (rfe_array[i].hash == hash) {
+            return rfe_array[i].filePosition;
+        }
+    }
+    return 0;
 }
 
 REFERENCE_TIME CAppSettings::CRecentFileListWithMoreInfo::GetCurrentFilePosition() {

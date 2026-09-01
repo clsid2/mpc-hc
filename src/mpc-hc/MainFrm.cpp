@@ -4511,10 +4511,13 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
     }
     s.nCLSwitches &= ~CLSW_OPEN;  
 
-    // cast this file if /castto asked for it
+    // cast this file if /castto asked for it, or hand it to a session that is
+    // already running -- /castto names a device of its own and wins
     if (s.nCLSwitches & CLSW_CASTTO) {
         s.nCLSwitches &= ~CLSW_CASTTO;
         BeginCastTo(s.strCastTo);
+    } else {
+        RedirectOpenedFileToCast();
     }
 
     LoadDynamicMenus();
@@ -17195,17 +17198,60 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
         filename = pFileData->title;
     }
 
-    if (PathUtils::IsURL(filename)) {
+    std::vector<CString> filelist;
+    size_t idx = 0;
+    if (!GetFilesInDir(filename, filelist, idx)) {
         return false;
     }
 
-    int p = filename.ReverseFind(_T('\\'));
+    if (filelist.size() < 2 && CPath(filename).FileExists()) {
+        return false;
+    }
+
+    if (bDirForward) {
+        if (idx + 1 < filelist.size()) {
+            idx++;
+        } else if (bLoop) {
+            idx = 0;
+        } else {
+            return false;
+        }
+    } else {
+        if (idx > 0) {
+            idx--;
+        } else if (bLoop) {
+            idx = filelist.size() - 1;
+        } else {
+            return false;
+        }
+    }
+
+    CAtlList<CString> sl;
+    sl.AddHead(filelist[idx]);
+    m_wndPlaylistBar.Open(sl, false);
+
+    return true;
+}
+
+// Split out of SearchInDir() so that the cast window can step through a folder
+// in the very order the player does, rather than sorting one of its own.
+bool CMainFrame::GetFilesInDir(const CString& filename, std::vector<CString>& files, size_t& index)
+{
+    files.clear();
+    index = 0;
+
+    CString current(filename);
+    if (current.IsEmpty() || PathUtils::IsURL(current)) {
+        return false;
+    }
+
+    int p = current.ReverseFind(_T('\\'));
     if (p < 0) {
         return false;
     }
     const bool bSortByDate = AfxGetAppSettings().bNextFileInFolderSortByDate;
 
-    CString filemask = filename.Left(p + 1) + _T("*.*");
+    CString filemask = current.Left(p + 1) + _T("*.*");
     std::set<CString, CStringUtils::LogicalLess> filelist;
     std::map<CString, ULONGLONG> creationTimes;
     if (!WildcardFileSearch(filemask, filelist, false, bSortByDate ? &creationTimes : nullptr)) {
@@ -17214,13 +17260,7 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
 
     // We make sure that the currently opened file is added to the list
     // even if it's of an unknown format.
-    auto current = filelist.insert(filename).first;
-
-    if (filelist.size() < 2 && CPath(filename).FileExists()) {
-        return false;
-    }
-
-    CString nextfile;
+    filelist.insert(current);
 
     if (bSortByDate) {
         std::vector<std::pair<ULONGLONG, CString>> timelist;
@@ -17246,60 +17286,22 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
             return lhs.first < rhs.first;
         });
 
-        size_t idx = 0;
-        for (size_t i = 0; i < timelist.size(); i++) {
-            if (timelist[i].second == filename) {
-                idx = i;
-                break;
-            }
+        files.reserve(timelist.size());
+        for (const auto& entry : timelist) {
+            files.emplace_back(entry.second);
         }
-
-        if (bDirForward) {
-            if (idx + 1 < timelist.size()) {
-                idx++;
-            } else if (bLoop) {
-                idx = 0;
-            } else {
-                return false;
-            }
-        } else {
-            if (idx > 0) {
-                idx--;
-            } else if (bLoop) {
-                idx = timelist.size() - 1;
-            } else {
-                return false;
-            }
-        }
-        nextfile = timelist[idx].second;
     } else {
-        if (bDirForward) {
-            current++;
-            if (current == filelist.end()) {
-                if (bLoop) {
-                    current = filelist.begin();
-                } else {
-                    return false;
-                }
-            }
-        } else {
-            if (current == filelist.begin()) {
-                if (bLoop) {
-                    current = filelist.end();
-                } else {
-                    return false;
-                }
-            }
-            current--;
-        }
-        nextfile = *current;
+        files.assign(filelist.begin(), filelist.end());
     }
 
-    CAtlList<CString> sl;
-    sl.AddHead(nextfile);
-    m_wndPlaylistBar.Open(sl, false);
+    for (size_t i = 0; i < files.size(); i++) {
+        if (files[i] == current) {
+            index = i;
+            break;
+        }
+    }
 
-    return true;
+    return !files.empty();
 }
 
 void CMainFrame::DoTunerScan(TunerScanData* pTSD)
@@ -18764,6 +18766,64 @@ void CMainFrame::UpdateSavedCastDevice(const CastSavedDevice& device)
     }
 }
 
+bool CMainFrame::ReconnectCastDevice(CastSavedDevice& device)
+{
+    // The same guard StartCastingTo() takes: connecting pumps, and a second
+    // attempt must not be torn into the first.
+    if (!m_pCastTarget || m_bCastAttemptInFlight) {
+        return false;
+    }
+    m_bCastAttemptInFlight = true;
+
+    CWaitCursor wait;
+    const bool bConnected = m_pCastTarget->ConnectSaved(device, CAST_CONNECT_DIRECT_MS, CAST_CONNECT_SEARCH_MS);
+    m_bCastAttemptInFlight = false;
+
+    if (bConnected) {
+        UpdateSavedCastDevice(device);
+    } else {
+        CASTING_LOG(_T("cast: \"%s\" did not answer, at %s or anywhere else on the network"),
+                    device.DisplayName().GetString(), device.address.GetString());
+    }
+    return bConnected;
+}
+
+// While a cast session is running the player is a remote for the device, so a
+// file opened here is meant for the device rather than for this screen. This
+// is the one place every route into the player -- Explorer, the Open dialog, a
+// drop on the window, the playlist -- arrives at with the file open and its
+// length known, which is why the redirect is made here and not where a second
+// instance's command line is taken apart. A file the device will not take
+// stays local, and so does everything opened with the option switched off.
+void CMainFrame::RedirectOpenedFileToCast()
+{
+    if (!AfxGetAppSettings().bCastRedirectOpenedFiles || !m_pCastTarget || !m_pCastSessionDlg
+            || !m_pCastSessionDlg->m_hWnd || !m_pCastSessionDlg->IsCasting() || GetPlaybackMode() != PM_FILE) {
+        return;
+    }
+    CString file(lastOpenFile);
+    if (file.IsEmpty() || PathUtils::IsURL(file) || file == m_pCastSessionDlg->GetPath()) {
+        return;
+    }
+
+    const UINT nErr = m_pCastSessionDlg->LoadFile(file);
+    if (nErr) {
+        // Only the redirect is given up on; the file plays here as it would
+        // have with nothing casting.
+        m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(nErr), 5000);
+        return;
+    }
+
+    CString strDevice;
+    strDevice.Format(IDS_CAST_CASTING_TO, m_pCastTarget->GetDeviceName().GetString());
+    m_OSD.DisplayMessage(OSD_TOPLEFT, strDevice, 5000);
+    CASTING_LOG(_T("cast: \"%s\" was opened in the player and sent to the device instead"),
+                GetFileName().GetString());
+
+    // The device is what plays it now, so the player lets the file go.
+    PostMessage(WM_COMMAND, ID_FILE_CLOSEMEDIA);
+}
+
 UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
 {
     // Connecting takes seconds and the play commands around it pump: both
@@ -18788,23 +18848,54 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
         return IDS_CAST_MEDIAINFO_REQUIRED;
     }
 
-    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE
-            || lastOpenFile.IsEmpty() || PathUtils::IsURL(lastOpenFile)) {
+    // What is cast is the file the player has open. Once a session is running
+    // the player has none -- it lets its file go when the cast starts -- and
+    // then the session's own file is what a second device is offered, so that
+    // choosing one from the menu moves the cast rather than being refused for
+    // want of anything to cast.
+    CCastSessionDlg* pRunning = m_pCastSessionDlg && m_pCastSessionDlg->m_hWnd
+                                && m_pCastSessionDlg->IsCasting() ? m_pCastSessionDlg.get() : nullptr;
+    const bool bFromPlayer = GetLoadState() == MLS::LOADED && GetPlaybackMode() == PM_FILE
+                             && !lastOpenFile.IsEmpty() && !PathUtils::IsURL(lastOpenFile);
+
+    // Everything the session needs is read now, while the player still has the
+    // file open: from here on the window has no use for the player at all. The
+    // file is read once: what it holds is both what decides whether the device
+    // can play it and what the device is told it is being handed.
+    CastSessionMedia media;
+    if (bFromPlayer) {
+        media.path = lastOpenFile;
+        media.title = GetFileName();
+        media.info = GetCastMediaInfo(lastOpenFile);
+        media.rememberPosition = m_bRememberFilePos;
+
+        REFERENCE_TIME rtDur = 0;
+        if (m_pMS) {
+            m_pMS->GetDuration(&rtDur);
+        }
+        media.durationSec = rtDur / 10000000.0;
+
+        // Resume position: switching devices keeps the device clock, otherwise
+        // the file is picked up where the player is.
+        media.startSec = pRunning && pRunning->GetPath() == media.path
+                         ? pRunning->GetPosition()
+                         : m_wndSeekBar.GetPos() / 10000000.0;
+    } else if (pRunning) {
+        media = pRunning->GetMedia();
+        media.startSec = pRunning->GetPosition();
+    } else {
         CASTING_LOG(_T("cast: refused, only a local file open in the player can be cast"));
         return IDS_CAST_UNSUPPORTED_FILE;
     }
 
-    // The file is read once: what it holds is both what decides whether the
-    // device can play it and what the device is told it is being handed.
-    const CastMediaInfo info = GetCastMediaInfo(lastOpenFile);
     if (CASTING_LOGGING()) {
         // The name of the file and nothing more of it: this log is written to
         // be pasted into a public bug report.
-        CASTING_LOG(_T("cast: \"%s\" asked for, container %s, %s"), GetFileName().GetString(),
-                    PathUtils::FileExt(lastOpenFile).GetString(), CastDescribeMedia(info).GetString());
+        CASTING_LOG(_T("cast: \"%s\" asked for, container %s, %s"), media.title.GetString(),
+                    PathUtils::FileExt(media.path).GetString(), CastDescribeMedia(media.info).GetString());
         CastLogDeviceCapabilities(device);
     }
-    if (!m_pCastTarget->CanCastFileSaved(device, lastOpenFile, info)) {
+    if (!m_pCastTarget->CanCastFileSaved(device, media.path, media.info)) {
         return IDS_CAST_UNSUPPORTED_FILE;
     }
 
@@ -18812,26 +18903,6 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
     if (!pSession) {
         return IDS_CAST_FAILED;
     }
-
-    // Everything the session needs is read now, while the player still has the
-    // file open: from here on the window has no use for the player at all.
-    CastSessionMedia media;
-    media.path = lastOpenFile;
-    media.title = GetFileName();
-    media.info = info;
-    media.rememberPosition = m_bRememberFilePos;
-
-    REFERENCE_TIME rtDur = 0;
-    if (m_pMS) {
-        m_pMS->GetDuration(&rtDur);
-    }
-    media.durationSec = rtDur / 10000000.0;
-
-    // Resume position: switching devices keeps the device clock, otherwise the
-    // file is picked up where the player is.
-    media.startSec = pSession->IsCasting() && pSession->GetPath() == media.path
-                     ? pSession->GetPosition()
-                     : m_wndSeekBar.GetPos() / 10000000.0;
 
     // Nothing above this pumps; from here on the player does, so the attempt
     // is marked as in flight until it is over either way.
@@ -18865,12 +18936,17 @@ UINT CMainFrame::StartCastingTo(CastSavedDevice& device)
         return IDS_CAST_NOT_REACHABLE;
     }
 
-    // Local playback is over: the device is what plays now, and the player goes
-    // back to being an ordinary stopped player with everything it can do.
-    SendMessage(WM_COMMAND, ID_PLAY_STOP);
+    // Local playback is over, and the player lets the file go rather than
+    // sitting stopped on it: the device is what plays it now, this window is
+    // free to open something else, and closing is what writes the position the
+    // file had reached to the history. The close is posted because a /castto
+    // arrives here from inside the open it is about.
+    if (bFromPlayer) {
+        PostMessage(WM_COMMAND, ID_FILE_CLOSEMEDIA);
+    }
 
     CASTING_LOG(_T("cast: the session is up, playing from %.1f s"), media.startSec);
-    pSession->StartSession(media);
+    pSession->StartSession(device, media);
     m_bCastAttemptInFlight = false;
     return 0;
 }

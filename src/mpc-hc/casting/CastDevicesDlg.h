@@ -82,6 +82,9 @@ protected:
     CCastTarget* m_pTarget;
     std::vector<Row> m_rows;
     CString m_signature;  // what the list was last filled from
+    // Whether any row has an advertised name worth a column of its own; see
+    // FillList(). Most lists have none, and then that column is not shown.
+    bool m_bShowAdvertised = false;
     ULONGLONG m_scanStarted = 0;
     bool m_bDiscovering = false;
     bool m_bFilling = false; // the list is being rebuilt, its notifications mean nothing

@@ -83,6 +83,7 @@ struct CastMediaInfo {
     int height = 0;
     int sampleRate = 0; // audio, 0 when unknown
     int channels = 0;
+    double durationSec = 0.0; // how long the file is, 0 when unknown
 };
 
 // The names of what MediaInfo found, kept beside the values they name so
