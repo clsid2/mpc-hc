@@ -1,0 +1,28 @@
+[
+  {
+    "label": "before-dvbt",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0000#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d5-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 474000,
+    "freqEnd": 858000,
+    "bandwidth": 8000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 600,
+    "waitSec": 900
+  },
+  {
+    "label": "after-dvbt",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-atsc-fix.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0000#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d5-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 474000,
+    "freqEnd": 858000,
+    "bandwidth": 8000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 600,
+    "waitSec": 900
+  }
+]
