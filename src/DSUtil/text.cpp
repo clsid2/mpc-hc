@@ -221,18 +221,18 @@ CStringW ShortenURL(const CStringW url, int targetLength, bool returnHostnameIfT
     return t;
 }
 
-CStringW SanitizeMenuLabel(const CStringW& text, int maxChars)
+static CStringW SanitizeMenuLabelPart(const CStringW& text, int maxChars)
 {
     CStringW label;
     for (int i = 0; i < text.GetLength(); i++) {
         const wchar_t c = text[i];
         // A tab starts the right-aligned accelerator column of a menu item, so
         // a label carrying one would render as two columns; nothing else below
-        // the space is printable there either.
+        // the space is printable there either. A bidi override or isolate would
+        // reorder the label, and any column after it, in the reader's eye; the
+        // C1 controls and the Unicode line separators are line breaks and
+        // invisible commands by another name.
         const bool control = c < L' ' || (c >= 0x7F && c <= 0x9F);
-        // A bidi override or isolate would reorder the label, and the shortcut
-        // column after it, in the reader's eye; a line separator is a line
-        // break by another name.
         const bool reorders = (c >= 0x202A && c <= 0x202E) || (c >= 0x2066 && c <= 0x2069)
                               || c == 0x2028 || c == 0x2029;
         label += (control || reorders) ? L' ' : c;
@@ -249,12 +249,31 @@ CStringW SanitizeMenuLabel(const CStringW& text, int maxChars)
         label += L'\x2026';
     }
 
+    // last, so that the escaping is not what the length was spent on
+    label.Replace(L"&", L"&&");
+    return label;
+}
+
+CStringW SanitizeMenuLabel(const CStringW& text, int maxChars, bool allowColumn)
+{
+    CStringW label;
+
+    const int tab = allowColumn ? text.Find(L'\t') : -1;
+    if (tab >= 0) {
+        // The caller composed its own right-aligned column, so keep the first
+        // tab, but only that one: the text cannot manufacture a column of its
+        // own. The right half is our own short text, so it is not truncated.
+        label = SanitizeMenuLabelPart(text.Left(tab), maxChars);
+        label += L'\t';
+        label += SanitizeMenuLabelPart(text.Mid(tab + 1), 0);
+    } else {
+        label = SanitizeMenuLabelPart(text, maxChars);
+    }
+
     if (label.IsEmpty()) {
         label = L" "; // a zero-length label gives the item nothing to measure
     }
 
-    // last, so that the escaping is not what the length was spent on
-    label.Replace(L"&", L"&&");
     return label;
 }
 
