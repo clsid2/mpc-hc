@@ -1472,6 +1472,18 @@ CString CPlayerPlaylistBar::GetCurFileName(bool use_ydl_source)
     return fn;
 }
 
+void CPlayerPlaylistBar::GetAllFileNames(std::vector<CString>& names)
+{
+    names.clear();
+    POSITION pos = m_pl.GetHeadPosition();
+    while (pos) {
+        const CPlaylistItem& pli = m_pl.GetNext(pos);
+        if (!pli.m_fns.IsEmpty()) {
+            names.push_back(pli.m_fns.GetHead());
+        }
+    }
+}
+
 CString CPlayerPlaylistBar::GetCurFileNameTitle()
 {
     CString fn;

@@ -972,7 +972,7 @@ public:
     bool            bEnableCasting;
     int             nCastServerPort;
     bool            bCastIgnoreFormatSupport;
-    bool            bCastRedirectOpenedFiles;
+    bool            bCastAutoPlayNext;
 
     int             DebugLogMask;
 

@@ -407,7 +407,7 @@
 #define IDS_RS_ENABLE_CASTING               _T("EnableCasting")
 #define IDS_RS_CAST_SERVER_PORT             _T("CastServerPort")
 #define IDS_RS_CAST_IGNORE_FORMAT_SUPPORT   _T("CastIgnoreFormatSupport")
-#define IDS_RS_CAST_REDIRECT_OPENED_FILES   _T("CastRedirectOpenedFiles")
+#define IDS_RS_CAST_AUTOPLAYNEXT            _T("CastAutoPlayNext")
 #define IDS_RS_LOGGING                      _T("DebugLogMask")
 
 #define IDS_RS_SUBTITLE_RENDERER            _T("SubtitleRenderer")

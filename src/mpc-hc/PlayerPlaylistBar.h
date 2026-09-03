@@ -166,6 +166,9 @@ public:
     bool IsAtEnd();
     bool GetCur(CPlaylistItem& pli, bool check_fns = false) const;
     CString GetCurFileName(bool use_ydl_source = false);
+    // Every item's primary file name, in list order. Used by casting to step
+    // through the playlist without moving the bar's own current position.
+    void GetAllFileNames(std::vector<CString>& names);
     CString GetCurFileNameTitle();
     bool SetNext();
     bool SetPrev();

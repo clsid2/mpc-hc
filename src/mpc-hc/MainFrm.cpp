@@ -17235,6 +17235,33 @@ bool CMainFrame::SearchInDir(bool bDirForward, bool bLoop /*= false*/)
 
 // Split out of SearchInDir() so that the cast window can step through a folder
 // in the very order the player does, rather than sorting one of its own.
+bool CMainFrame::GetCastNavList(const CString& currentFile, std::vector<CString>& files, size_t& index,
+                               bool& isPlaylist)
+{
+    files.clear();
+    index = 0;
+    isPlaylist = false;
+
+    // A playlist of more than one file is what previous/next follow, in the
+    // playlist's own order. The folder is used only when there is no real list
+    // to follow, so a single dragged-in file still steps through its folder.
+    if (m_wndPlaylistBar.GetCount() > 1) {
+        m_wndPlaylistBar.GetAllFileNames(files);
+        if (files.size() > 1) {
+            isPlaylist = true;
+            for (size_t i = 0; i < files.size(); i++) {
+                if (files[i] == currentFile) {
+                    index = i;
+                    break;
+                }
+            }
+            return true;
+        }
+        files.clear();
+    }
+    return GetFilesInDir(currentFile, files, index);
+}
+
 bool CMainFrame::GetFilesInDir(const CString& filename, std::vector<CString>& files, size_t& index)
 {
     files.clear();
@@ -18797,8 +18824,8 @@ bool CMainFrame::ReconnectCastDevice(CastSavedDevice& device)
 // stays local, and so does everything opened with the option switched off.
 void CMainFrame::RedirectOpenedFileToCast()
 {
-    if (!AfxGetAppSettings().bCastRedirectOpenedFiles || !m_pCastTarget || !m_pCastSessionDlg
-            || !m_pCastSessionDlg->m_hWnd || !m_pCastSessionDlg->IsCasting() || GetPlaybackMode() != PM_FILE) {
+    if (!m_pCastTarget || !m_pCastSessionDlg || !m_pCastSessionDlg->m_hWnd
+            || !m_pCastSessionDlg->IsCasting() || GetPlaybackMode() != PM_FILE) {
         return;
     }
     CString file(lastOpenFile);

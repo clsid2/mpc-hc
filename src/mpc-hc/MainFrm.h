@@ -841,6 +841,11 @@ public:
     // index comes back as the position of `filename` itself, which is always
     // in the list. False when there is no folder to look in.
     bool GetFilesInDir(const CString& filename, std::vector<CString>& files, size_t& index);
+    // The files a cast session steps through with previous/next: the playlist,
+    // in its own order, when it holds more than one file, and otherwise the
+    // folder of the current file. isPlaylist says which, so the caller can loop
+    // at the ends the way normal playback does (playlist loop vs folder loop).
+    bool GetCastNavList(const CString& currentFile, std::vector<CString>& files, size_t& index, bool& isPlaylist);
     bool WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs, std::map<CString, ULONGLONG>* creationTimes = nullptr);
     CString lastOpenFile;
     bool CanSkipFromClosedFile();

@@ -100,7 +100,12 @@ protected:
     // The previous or next file in the folder of the one being cast, in the
     // order the player's own "next in folder" uses. A file the device will not
     // take is passed over rather than stopped at.
-    void StepInFolder(bool bForward);
+    // Steps to the previous or next file and casts it: the playlist when it
+    // holds more than one file, otherwise the folder of the current file, in
+    // the order the player's own "next in folder" uses, wrapping at the ends
+    // when the loop setting says to. A file the device will not take is passed
+    // over. Returns whether a file was loaded.
+    bool StepInFolder(bool bForward);
 
     void UpdateTransport();  // buttons and status line, from the device state
     // Seekbar and time, from the device clock. bPlayedOut is set only when the
@@ -119,6 +124,7 @@ protected:
     CastSessionMedia m_media;
     bool m_bSessionLive = false;
     int m_nLoops = 0;              // times the device has played the media out
+    bool m_bAutoNext = false;      // load the next file by itself when one plays out
     bool m_bSeekDrag = false;      // the user has hold of the seekbar thumb
     ULONGLONG m_seekSettleUntil = 0; // until then the seekbar shows what was asked for
     double m_seekRequested = 0.0;
@@ -136,5 +142,6 @@ public:
     afx_msg void OnPrevious();
     afx_msg void OnNext();
     afx_msg void OnLoadFile();
+    afx_msg void OnAutoNext();
     afx_msg LRESULT OnCastStateChanged(WPARAM wParam, LPARAM lParam);
 };

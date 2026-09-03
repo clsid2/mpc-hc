@@ -805,6 +805,7 @@
 #define IDC_CASTSESS_PREV               22129
 #define IDC_CASTSESS_NEXT               22130
 #define IDC_CASTSESS_LOADFILE           22131
+#define IDC_CASTSESS_AUTONEXT           22132
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002

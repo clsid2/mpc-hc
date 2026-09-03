@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CCastSessionDlg, CModelessDialog)
     ON_BN_CLICKED(IDC_CASTSESS_PREV, OnPrevious)
     ON_BN_CLICKED(IDC_CASTSESS_NEXT, OnNext)
     ON_BN_CLICKED(IDC_CASTSESS_LOADFILE, OnLoadFile)
+    ON_BN_CLICKED(IDC_CASTSESS_AUTONEXT, OnAutoNext)
     ON_MESSAGE(WM_CAST_STATE_CHANGED, OnCastStateChanged)
 END_MESSAGE_MAP()
 
@@ -91,6 +92,9 @@ BOOL CCastSessionDlg::OnInitDialog()
     m_volume.SetRange(0, 100, TRUE);
     m_volume.SetPageSize(5);
     m_volume.SetPos(AfxGetAppSettings().nVolume);
+
+    m_bAutoNext = AfxGetAppSettings().bCastAutoPlayNext;
+    CheckDlgButton(IDC_CASTSESS_AUTONEXT, m_bAutoNext ? BST_CHECKED : BST_UNCHECKED);
 
     // Every notification from the session belongs to this window from now on.
     if (m_pTarget) {
@@ -117,6 +121,7 @@ void CCastSessionDlg::SetupAnchors()
     AddAnchor(IDC_CASTSESS_LOADFILE, TOP_LEFT);
     AddAnchor(IDC_CASTSESS_VOLLABEL, TOP_RIGHT);
     AddAnchor(IDC_CASTSESS_VOLUME, TOP_RIGHT);
+    AddAnchor(IDC_CASTSESS_AUTONEXT, TOP_LEFT);
     AddAnchor(IDCANCEL, TOP_RIGHT);
 }
 
@@ -176,6 +181,15 @@ void CCastSessionDlg::PlayMedia(const CastSessionMedia& media)
     m_bSeekDrag = false;
     m_lastRemembered = media.startSec;
     m_bSessionLive = true;
+
+    // Casting a file counts as playing it: it goes into the recent files and,
+    // where the history settings allow, its position is remembered -- the same
+    // as normal playback. PrepareMedia has already set rememberPosition and, if
+    // set, read the saved position back into startSec.
+    CAppSettings& histSettings = AfxGetAppSettings();
+    if (histSettings.fKeepHistory && !m_media.path.IsEmpty() && !PathUtils::IsURL(m_media.path)) {
+        histSettings.MRU.Add(m_media.path);
+    }
 
     // Until the device answers about the file it has just been handed it is
     // still reporting where it was in the one before; the settle the seekbar
@@ -273,35 +287,62 @@ UINT CCastSessionDlg::LoadFile(const CString& path)
     return 0;
 }
 
-void CCastSessionDlg::StepInFolder(bool bForward)
+bool CCastSessionDlg::StepInFolder(bool bForward)
 {
     CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
     std::vector<CString> files;
     size_t index = 0;
-    if (!pFrame || !pFrame->GetFilesInDir(m_media.path, files, index)) {
+    bool isPlaylist = false;
+    if (!pFrame || !pFrame->GetCastNavList(m_media.path, files, index, isPlaylist) || files.empty()) {
         SetStatusText(IDS_CAST_NO_MORE_FILES);
-        return;
+        return false;
     }
 
-    for (size_t i = index; bForward ? i + 1 < files.size() : i > 0;) {
-        i += bForward ? 1 : -1;
-        const UINT nErr = LoadFile(files[i]);
+    // At the end of the list, wrap the way normal playback does: the playlist
+    // wraps when the loop mode is set to loop the playlist, the folder wraps
+    // when "loop folder on next file" is on. Otherwise the walk stops.
+    const CAppSettings& s = AfxGetAppSettings();
+    const bool bWrap = isPlaylist ? (s.eLoopMode == CAppSettings::LoopMode::PLAYLIST)
+                                   : s.bLoopFolderOnPlayNextFile;
+    const int n = (int)files.size();
+    int idx = (int)index;
+
+    // Each other file is tried once; a file the device will not play is passed
+    // over rather than stopped at, and the walk gives up once it has come the
+    // whole way round.
+    for (int tried = 0; tried < n; tried++) {
+        int ni = idx + (bForward ? 1 : -1);
+        if (ni < 0) {
+            if (!bWrap) {
+                break;
+            }
+            ni = n - 1;
+        } else if (ni >= n) {
+            if (!bWrap) {
+                break;
+            }
+            ni = 0;
+        }
+        idx = ni;
+        const UINT nErr = LoadFile(files[idx]);
         if (!nErr) {
-            CASTING_LOG(_T("cast: stepped %s to file %d of %d in the folder"),
-                        bForward ? _T("forward") : _T("back"), (int)i + 1, (int)files.size());
-            return;
+            CASTING_LOG(_T("cast: stepped %s to file %d of %d in the %s"),
+                        bForward ? _T("forward") : _T("back"), idx + 1, n,
+                        isPlaylist ? _T("playlist") : _T("folder"));
+            return true;
         }
         if (nErr != IDS_CAST_UNSUPPORTED_FILE) {
             SetStatusText(nErr); // not the format: there is no point going on
-            return;
+            return false;
         }
     }
 
     // Everything that way is a file this device will not play, which is worth
     // saying rather than leaving the button looking broken.
-    CASTING_LOG(_T("cast: nothing %s the current file in the folder can be cast"),
-                bForward ? _T("after") : _T("before"));
+    CASTING_LOG(_T("cast: nothing %s the current file in the %s can be cast"),
+                bForward ? _T("after") : _T("before"), isPlaylist ? _T("playlist") : _T("folder"));
     SetStatusText(IDS_CAST_NO_MORE_FILES);
+    return false;
 }
 
 void CCastSessionDlg::EndSession(UINT nStatus /*= IDS_CAST_STOPPED*/, bool bSyncLocalGraph /*= true*/)
@@ -571,6 +612,12 @@ void CCastSessionDlg::OnNext()
     StepInFolder(true);
 }
 
+void CCastSessionDlg::OnAutoNext()
+{
+    m_bAutoNext = IsDlgButtonChecked(IDC_CASTSESS_AUTONEXT) == BST_CHECKED;
+    AfxGetAppSettings().bCastAutoPlayNext = m_bAutoNext;
+}
+
 void CCastSessionDlg::OnLoadFile()
 {
     CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
@@ -622,10 +669,21 @@ LRESULT CCastSessionDlg::OnCastStateChanged(WPARAM /*wParam*/, LPARAM lParam)
         case CastTargetState::Ended: {
             const CAppSettings& s = AfxGetAppSettings();
             ++m_nLoops;
-            if (s.fLoopForever || m_nLoops < s.nLoops) {
+            // "Repeat file" loops this one file, the count permitting, before
+            // anything moves on -- the same as the player in that mode.
+            const bool bFileLoop = s.eLoopMode == CAppSettings::LoopMode::FILE
+                                   && (s.fLoopForever || m_nLoops < s.nLoops);
+            if (bFileLoop) {
                 // Repeat on the device: the receiver has unloaded the media, so
                 // it is handed the file again from the start.
                 m_pTarget->LoadMedia(m_media.path, m_media.title, m_media.durationSec, 0.0, m_media.info);
+                break;
+            }
+            // Otherwise, when auto-play-next is on, step to the next file the
+            // way the previous/next buttons do: it follows the playlist or the
+            // folder and wraps at the end when the loop setting says to. If
+            // there is nothing to move on to, the session ends here.
+            if (m_bAutoNext && StepInFolder(true)) {
                 break;
             }
             // The file played out, so there is no position left to resume from;

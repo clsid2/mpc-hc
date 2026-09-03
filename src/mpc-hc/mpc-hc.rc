@@ -1186,6 +1186,7 @@ BEGIN
     PUSHBUTTON      "&Load file...",IDC_CASTSESS_LOADFILE,7,88,60,14
     LTEXT           "&Volume:",IDC_CASTSESS_VOLLABEL,142,91,32,8
     CONTROL         "",IDC_CASTSESS_VOLUME,"msctls_trackbar32",TBS_HORZ | TBS_NOTICKS | TBS_BOTH | WS_TABSTOP,176,87,117,16
+    CONTROL         "Auto-play &next file",IDC_CASTSESS_AUTONEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,110,150,10
     DEFPUSHBUTTON   "Close",IDCANCEL,237,107,56,14
 END
 
@@ -1611,6 +1612,7 @@ BEGIN
         MENUITEM "Open Dir&ectory...",          ID_FILE_OPENDIRECTORY
         MENUITEM "O&pen Disc",                  ID_FILE_OPENDISC
         MENUITEM "Recent &Files",               ID_RECENT_FILES
+        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM "&Close",                      ID_FILE_CLOSE_AND_RESTORE
         MENUITEM SEPARATOR
         MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
@@ -1829,7 +1831,6 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
-        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -1890,6 +1891,7 @@ BEGIN
             MENUITEM "Open Dir&ectory...",          ID_FILE_OPENDIRECTORY
             MENUITEM "O&pen Disc",                  ID_FILE_OPENDISC
             MENUITEM "Recent &Files",               ID_RECENT_FILES
+            MENUITEM "Cast to Device",              ID_CAST
             MENUITEM "&Close",                      ID_FILE_CLOSE_AND_RESTORE
             MENUITEM SEPARATOR
             MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
@@ -2024,7 +2026,6 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
-        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
@@ -2158,6 +2159,7 @@ BEGIN
             MENUITEM "Open Dir&ectory...",          ID_FILE_OPENDIRECTORY
             MENUITEM "O&pen Disc",                  ID_FILE_OPENDISC
             MENUITEM "Recent &Files",               ID_RECENT_FILES
+            MENUITEM "Cast to Device",              ID_CAST
             MENUITEM "&Close",                      ID_FILE_CLOSE_AND_RESTORE
             MENUITEM SEPARATOR
             MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
@@ -2399,7 +2401,6 @@ BEGIN
         MENUITEM "Su&btitle Track",             ID_SUBTITLES
         MENUITEM "Secondary Subtitle Track",    ID_SUBTITLES_SECONDARY
         MENUITEM "Vide&o Track",                ID_VIDEO_STREAMS
-        MENUITEM "Cast to Device",              ID_CAST
         MENUITEM SEPARATOR
         POPUP "&Volume"
         BEGIN
