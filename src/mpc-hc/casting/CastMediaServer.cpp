@@ -735,14 +735,19 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
         return;
     }
 
-    // The request path is compared against the registered randomized path
-    // exactly; nothing is ever resolved against the filesystem from request
-    // input, so path traversal is structurally impossible.
+    // Some renderers append a query string to the URL they were handed, so
+    // only the part before the '?' is matched. That part is compared against
+    // the registered randomized path exactly; nothing is ever resolved against
+    // the filesystem from request input, so path traversal is structurally
+    // impossible.
+    const int query = target.Find('?');
+    const CStringA targetPath = query >= 0 ? target.Left(query) : target;
+
     CString filePath;
     CStringA mime, contentFeatures;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (m_urlPath.IsEmpty() || target != m_urlPath) {
+        if (m_urlPath.IsEmpty() || targetPath != m_urlPath) {
             filePath.Empty();
         } else {
             filePath = m_filePath;
