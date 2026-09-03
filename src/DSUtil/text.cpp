@@ -229,7 +229,13 @@ CStringW SanitizeMenuLabel(const CStringW& text, int maxChars)
         // A tab starts the right-aligned accelerator column of a menu item, so
         // a label carrying one would render as two columns; nothing else below
         // the space is printable there either.
-        label += (c < L' ' || c == 0x7F) ? L' ' : c;
+        const bool control = c < L' ' || (c >= 0x7F && c <= 0x9F);
+        // A bidi override or isolate would reorder the label, and the shortcut
+        // column after it, in the reader's eye; a line separator is a line
+        // break by another name.
+        const bool reorders = (c >= 0x202A && c <= 0x202E) || (c >= 0x2066 && c <= 0x2069)
+                              || c == 0x2028 || c == 0x2029;
+        label += (control || reorders) ? L' ' : c;
     }
     label.Trim();
 
