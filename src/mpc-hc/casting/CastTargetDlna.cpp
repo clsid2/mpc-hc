@@ -32,6 +32,7 @@
 // HTTP server tolerates comfortably.
 #define POLL_INTERVAL_MS      2000ull
 #define MAX_POLL_FAILURES     3    // consecutive, before the session is given up
+#define MAX_FOREIGN_URI_POLLS 3    // consecutive, before a device that never took our URI is given up
 #define STOP_MEDIA_TIMEOUT_MS 1000 // how long StopCasting() waits for the STOP to go out
 #define SEEK_END_MARGIN_SEC   1.0  // kept clear of the end, where a seek is refused
 // How far the position may be carried past the last reading the device gave
@@ -339,6 +340,8 @@ bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
     m_vendorHook = DlnaVendor::CreateHook(dev.vendor);
     m_hasPlayed = false;
     m_stopIssued = false;
+    m_uriConfirmed = false;
+    m_foreignURIPolls = 0;
     m_pendingSeek = -1.0;
     m_pollFailures = 0;
     m_seekModes.clear();
@@ -789,6 +792,8 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             m_localDuration = cmd.duration > 0.0 ? cmd.duration : 0.0;
             m_hasPlayed = false;
             m_stopIssued = false;
+            m_uriConfirmed = false;
+            m_foreignURIPolls = 0;
             m_pendingSeek = cmd.param > 0.0 ? cmd.param : -1.0;
             UpdatePosition(0.0, cmd.duration);
             SetState(CastTargetState::Loading);
@@ -1042,12 +1047,29 @@ void CDlnaTarget::Poll()
     // another controller pointing it elsewhere ends our session.
     if (Dlna::SoapCall(m_controlURL, AVTRANSPORT_SERVICE, "GetPositionInfo",
                        "<InstanceID>0</InstanceID>", response, fault, m_hStopEvent)) {
+        // A renderer does not adopt the new URI the moment SetAVTransportURI
+        // returns: one that had something loaded already keeps naming that
+        // until it actually transitions, and the first poll follows the load
+        // by milliseconds. So a different URI only ends the session once the
+        // device has named ours at least once -- or, for a device that never
+        // does, once it has kept naming another one for several polls.
         const CString trackURI = UTF8To16(Dlna::GetElementText(response, "TrackURI"));
-        if (!m_mediaURL.IsEmpty() && !trackURI.IsEmpty() && trackURI != m_mediaURL) {
-            TRACE(_T("DlnaTarget: the device moved on to %s\n"), trackURI.GetString());
-            CASTING_LOG(_T("dlna: the device is playing something else now, so the session is over"));
-            SetState(CastTargetState::TakenOver);
-            return;
+        if (!m_mediaURL.IsEmpty() && !trackURI.IsEmpty()) {
+            if (trackURI == m_mediaURL) {
+                m_uriConfirmed = true;
+                m_foreignURIPolls = 0;
+            } else if (m_uriConfirmed) {
+                TRACE(_T("DlnaTarget: the device moved on to %s\n"), trackURI.GetString());
+                CASTING_LOG(_T("dlna: the device is playing something else now, so the session is over"));
+                SetState(CastTargetState::TakenOver);
+                return;
+            } else if (++m_foreignURIPolls >= MAX_FOREIGN_URI_POLLS) {
+                TRACE(_T("DlnaTarget: the device never took our URI and is on %s\n"), trackURI.GetString());
+                CASTING_LOG(_T("dlna: the device never took our URI and is still playing what it had, ")
+                            _T("so the session is over"));
+                SetState(CastTargetState::TakenOver);
+                return;
+            }
         }
         // What our own graph measured beats what the device makes of the
         // stream: one receiver answers 5:35:06 for a twenty second file. The

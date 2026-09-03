@@ -169,6 +169,8 @@ private:
     double m_localDuration = 0.0; // the length our own graph knows, 0 when it does not
     bool m_hasPlayed = false;   // the device reported PLAYING at least once
     bool m_stopIssued = false;  // our own STOP, so the STOPPED it causes is not an end
+    bool m_uriConfirmed = false; // the device reported our URI back at least once
+    int m_foreignURIPolls = 0;  // consecutive polls naming another URI, before it ever named ours
     double m_pendingSeek = -1.0; // seconds, applied once playback has started
     int m_pollFailures = 0;
     // Seek units the device accepts, in the order they are tried. Taken from
