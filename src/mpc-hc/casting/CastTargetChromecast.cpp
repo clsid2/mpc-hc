@@ -236,6 +236,30 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
     CastDevice dev;
     bool found = !saved.address.IsEmpty() && CCastDiscovery::ProbeAddress(saved.address, directMs, dev)
                  && (saved.id.IsEmpty() || dev.id.IsEmpty() || dev.id == saved.id);
+    if (!found && !saved.address.IsEmpty() && saved.port != 0) {
+        // The probe went unanswered, but that does not mean the device is gone.
+        // A Chromecast answers a TCP connect far more reliably than an on-demand
+        // mDNS probe, and some -- an Android TV with Cast built in -- answer the
+        // probe only rarely even while casting works fine (issue #4133, where a
+        // TCL set connected about one attempt in twenty, every failure being the
+        // probe going unanswered rather than anything wrong with the cast). So
+        // connect straight to the endpoint it was last seen on before spending a
+        // full search on it. The saved details are used as they stand; if the
+        // device has really moved, the connection fails quickly and the search
+        // below still finds it by id.
+        CastDevice direct;
+        direct.ipAddress = saved.address;
+        direct.port = saved.port;
+        direct.id = saved.id;
+        direct.friendlyName = saved.name;
+        direct.model = saved.model;
+        direct.capabilities = (saved.supportsVideo ? 0x01u : 0u) | (saved.supportsAudio ? 0x04u : 0u);
+        CASTING_LOG(_T("cast: \"%s\" did not answer a probe; connecting directly to %s:%u"),
+                    saved.DisplayName().GetString(), saved.address.GetString(), saved.port);
+        if (StartSession(direct, saved.id, saved.DisplayName())) {
+            return true;
+        }
+    }
     if (!found && !saved.id.IsEmpty()) {
         found = SearchById(saved.id, searchMs, dev);
     }
