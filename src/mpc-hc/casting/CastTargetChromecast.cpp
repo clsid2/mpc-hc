@@ -259,12 +259,52 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
     return StartSession(dev, saved.id, saved.DisplayName());
 }
 
+// Google's own receivers, and what each decodes beyond the codecs all of them
+// do. Most specific name first: the plain "Chromecast" of the first three
+// generations is a prefix of every later dongle's name.
+static const struct {
+    LPCTSTR model;
+    bool hevc;
+    bool av1;
+} googleReceivers[] = {
+    { _T("Google TV Streamer"), true,  true  },
+    { _T("Chromecast Ultra"),   true,  false },
+    { _T("Google TV"),          true,  false }, // Chromecast with Google TV, 4K and HD
+    { _T("Chromecast HD"),      true,  false },
+    { _T("Nest Hub"),           false, false }, // and the Google Home Hub it was named after
+    { _T("Home Hub"),           false, false },
+    { _T("Chromecast"),         false, false }, // 1st to 3rd generation
+    // The speakers decode nothing with a picture in it, and are here only so
+    // that they are recognized as Google's and held to the receiver's rules.
+    { _T("Google Home"),        false, false },
+    { _T("Google Nest"),        false, false },
+};
+
+// Whether the device is one of those, and so runs the default media receiver
+// with the format list below. Anything else calling itself a cast device -- an
+// Android TV box, a television with Chromecast built in -- runs the platform's
+// own player, which plays a good deal more. A device that said nothing about
+// itself is treated as one of Google's, that being the stricter of the two.
+static bool IsGoogleReceiver(const CString& model)
+{
+    if (model.IsEmpty()) {
+        return true;
+    }
+    for (const auto& entry : googleReceivers) {
+        if (model.Find(entry.model) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // What the default media receiver plays, after
-// https://developers.google.com/cast/docs/media. Containers are the same
-// everywhere and are settled by CCastMediaServer::IsCastableFile(); the
-// audio codecs are too. Video is the one thing that differs by device
-// generation, and only over HEVC and AV1 -- H.264, VP8 and VP9 are on every
-// device that has a screen at all.
+// https://developers.google.com/cast/docs/media. Video is the one thing that
+// differs between Google's own devices, and only over HEVC and AV1 -- H.264,
+// VP8 and VP9 are on every device that has a screen at all. The container list
+// and the audio rules are the receiver's own, so a device that is not running
+// it is not held to either: a "4K Android TV Box" plays HEVC and 10-bit H.264
+// in Matroska and 5.1 AAC in MP4, all of which the receiver refuses.
 //
 // The table is deliberately small and deliberately optimistic: a model it
 // does not recognize is allowed everything. A receiver that refuses the file
@@ -281,8 +321,14 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
     CString ignored;
     CString& refusal = pRefusal ? *pRefusal : ignored;
 
-    if (!CCastMediaServer::IsCastableFile(path)) {
-        const CStringA mime = CCastMediaServer::MimeForFile(path);
+    const bool googleReceiver = IsGoogleReceiver(model);
+    const CStringA mime = CCastMediaServer::MimeForFile(path);
+    // Matroska is the one container that separates the two lists in practice:
+    // the receiver will not take it, every Android TV device plays it. AVI is
+    // not offered either way, having been tried and failed on such a device.
+    const bool takesContainer = CCastMediaServer::IsCastableFile(path)
+                                || (!googleReceiver && mime == "video/x-matroska");
+    if (!takesContainer) {
         if (mime == "application/octet-stream") {
             refusal = _T("casting knows no media type for a file of this kind");
         } else {
@@ -303,9 +349,10 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
             refusal.Format(_T("the receiver does not decode %s audio"), CastAudioCodecName(info.audio));
             return false;
         case CastMediaInfo::Audio::AAC:
-            // the receiver decodes stereo AAC; more channels than that is
-            // where it stops
-            if (info.channels > 2) {
+            // the receiver decodes stereo AAC and stops there; a device
+            // running its own player is not bound by that, and one such was
+            // seen playing 5.1 AAC in MP4
+            if (googleReceiver && info.channels > 2) {
                 refusal.Format(_T("the receiver decodes AAC in stereo only, this file has %d channels"),
                                info.channels);
                 return false;
@@ -325,24 +372,7 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
         return true;
     }
 
-    // Only the models that genuinely decide it, most specific name first: the
-    // plain "Chromecast" of the first three generations is a prefix of every
-    // later dongle's name.
-    static const struct {
-        LPCTSTR model;
-        bool hevc;
-        bool av1;
-    } models[] = {
-        { _T("Google TV Streamer"), true,  true  },
-        { _T("Chromecast Ultra"),   true,  false },
-        { _T("Google TV"),          true,  false }, // Chromecast with Google TV, 4K and HD
-        { _T("Chromecast HD"),      true,  false },
-        { _T("Nest Hub"),           false, false }, // and the Google Home Hub it was named after
-        { _T("Home Hub"),           false, false },
-        { _T("Chromecast"),         false, false }, // 1st to 3rd generation
-    };
-
-    for (const auto& entry : models) {
+    for (const auto& entry : googleReceivers) {
         if (model.Find(entry.model) >= 0) {
             if (info.video == CastMediaInfo::Video::HEVC ? entry.hevc : entry.av1) {
                 return true;
