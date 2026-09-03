@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <io.h>
 #include "PathUtils.h"
 #include "mplayerc.h"
 
@@ -107,9 +108,42 @@ namespace
                     local_time.wSecond, local_time.wMilliseconds);
         CString message;
         message.FormatV(fmt, args);
-        line += message;
+        // A device name or a URL arrives from the network and is logged as it
+        // came, and this log gets pasted in public. So anything in it that
+        // could end the line early or start a forged one is shown rather than
+        // obeyed: a break becomes the two characters \r or \n, and every other
+        // control character its \uXXXX. A tab is the one kept.
+        for (int i = 0; i < message.GetLength(); i++) {
+            const TCHAR c = message[i];
+            if (c == _T('\r')) {
+                line += _T("\\r");
+            } else if (c == _T('\n')) {
+                line += _T("\\n");
+            } else if ((c < _T(' ') && c != _T('\t')) || (c >= 0x7F && c <= 0x9F)
+                       || c == 0x2028 || c == 0x2029) {
+                line.AppendFormat(_T("\\u%04X"), (unsigned)c);
+            } else {
+                line += c;
+            }
+        }
         line += _T('\n');
-        _fputts(line, f);
+        // Written as UTF-8 bytes rather than through the wide stream functions:
+        // those convert through the C locale, which cannot represent anything
+        // outside ASCII and abandons the line at the first character it cannot
+        // encode, and a file name is very often not ASCII. A BOM goes in front
+        // of a log that is being started, so that an editor opening it knows.
+        const int bytes = WideCharToMultiByte(CP_UTF8, 0, line, line.GetLength(), nullptr, 0, nullptr, nullptr);
+        if (bytes <= 0) {
+            return;
+        }
+        CStringA utf8;
+        WideCharToMultiByte(CP_UTF8, 0, line, line.GetLength(),
+                            utf8.GetBufferSetLength(bytes), bytes, nullptr, nullptr);
+        utf8.ReleaseBuffer(bytes);
+        if (_filelengthi64(_fileno(f)) == 0) {
+            fputs("\xEF\xBB\xBF", f);
+        }
+        fputs(utf8, f);
         fflush(f);
     }
 }
