@@ -49,3 +49,11 @@
 [submodule "src/thirdparty/ResizableLib/ResizableLib"]
 	path = src/thirdparty/ResizableLib/ResizableLib
 	url = https://github.com/adipose/resizablelib
+[submodule "tests/emulator"]
+	path = tests/emulator
+	url = https://github.com/adipose/bda-vtuner.git
+	branch = master
+[submodule "tests/cast-mock"]
+	path = tests/cast-mock
+	url = https://github.com/adipose/castv2-mock-device.git
+	branch = main

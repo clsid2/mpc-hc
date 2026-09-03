@@ -42,3 +42,9 @@ ipch
 /distrib/MPCVR/
 /distrib/x64/MediaInfo.dll
 /distrib/x86/MediaInfo.dll
+
+# Test framework: per-machine config and run artefacts. Results are
+# regenerated, not archived.
+tests/testbed.config.psd1
+tests/results/
+tests/suites/*/results/
