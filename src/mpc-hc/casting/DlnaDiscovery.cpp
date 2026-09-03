@@ -46,6 +46,10 @@
 #define HTTP_IO_TIMEOUT_MS      2000 // per send/recv, so an abort is noticed quickly
 #define HTTP_TOTAL_TIMEOUT_MS   6000 // whole exchange
 #define HTTP_MAX_RESPONSE       (256 * 1024)
+// <device> elements looked at in one description. Each one found is scanned
+// to its own end tag, so a description nesting them thousands deep would cost
+// the whole document per level; a real one carries a handful.
+#define MAX_DEVICE_BLOCKS       16
 
 namespace
 {
@@ -1275,7 +1279,7 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
     // the renderer may be an embedded device, so the <device> carrying the
     // MediaRenderer type is looked for at any depth
     CStringA deviceBlock;
-    for (int pos = 0;;) {
+    for (int pos = 0, seen = 0; seen < MAX_DEVICE_BLOCKS; seen++) {
         int innerStart = 0, innerEnd = 0, next = 0;
         if (!Dlna::FindElement(xml, "device", pos, innerStart, innerEnd, next)) {
             break;
