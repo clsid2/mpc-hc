@@ -3134,17 +3134,17 @@ void CAppSettings::SetCastDevices(const std::vector<CastSavedDevice>& devices)
     for (const CastSavedDevice& dev : devices) {
         CAtlList<CString> fields;
         fields.AddTail(dev.protocol == CastProtocol::Dlna ? CString(_T("dlna")) : CString(_T("cc")));
-        fields.AddTail(dev.id);
+        fields.AddTail(storable(dev.id));
         fields.AddTail(storable(dev.name));
         fields.AddTail(storable(dev.userName));
-        fields.AddTail(dev.address);
+        fields.AddTail(storable(dev.address));
         CString number;
         number.Format(_T("%u"), dev.port);
         fields.AddTail(number);
-        fields.AddTail(dev.location);
+        fields.AddTail(storable(dev.location));
         number.Format(_T("%d"), (dev.supportsVideo ? 1 : 0) | (dev.supportsAudio ? 2 : 0));
         fields.AddTail(number);
-        fields.AddTail(dev.formats.GetLength() <= CASTDEV_MAX_FORMATS ? dev.formats : CString());
+        fields.AddTail(dev.formats.GetLength() <= CASTDEV_MAX_FORMATS ? storable(dev.formats) : CString());
         fields.AddTail(storable(dev.model));
 
         CString entry;
