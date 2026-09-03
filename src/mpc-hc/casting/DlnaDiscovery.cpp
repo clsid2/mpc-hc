@@ -418,6 +418,37 @@ CString Dlna::LocalAddressFor(const CString& deviceIp)
     return result;
 }
 
+bool Dlna::IsDeviceAddress(const CString& ip)
+{
+    IN_ADDR addr;
+    if (inet_pton(AF_INET, CStringA(ip), &addr) != 1) {
+        return false; // a name is not an address, and nothing here resolves names
+    }
+    const ULONG a = ntohl(addr.s_addr);
+    const BYTE first = (BYTE)(a >> 24);
+    if (a == 0 || a == 0xFFFFFFFF || first == 0 || first == 127) {
+        return false; // unspecified, broadcast, "this" network, loopback
+    }
+    if (first == 169 && ((a >> 16) & 0xFF) == 254) {
+        return false; // link-local
+    }
+    return first < 224; // multicast and what is reserved above it
+}
+
+bool Dlna::UrlIsOnDevice(const CString& url, const CString& deviceIp)
+{
+    HttpUrl target;
+    if (!ParseHttpUrl(url, target)) {
+        return false; // not plain http, or not a URL at all
+    }
+    IN_ADDR host = {}, device = {};
+    if (inet_pton(AF_INET, target.host, &host) != 1
+            || inet_pton(AF_INET, CStringA(deviceIp), &device) != 1) {
+        return false; // a host name is never taken, whatever it would resolve to
+    }
+    return host.s_addr == device.s_addr && IsDeviceAddress(deviceIp);
+}
+
 bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CStringA& extraHeaders,
                        const CStringA& body, CStringA& response, int& statusCode, HANDLE hAbort,
                        DWORD budgetMs)
@@ -447,18 +478,10 @@ bool Dlna::HttpRequest(const CString& url, const CStringA& method, const CString
     addr.sin_family = AF_INET;
     addr.sin_port = htons(target.port);
     if (inet_pton(AF_INET, target.host, &addr.sin_addr) != 1) {
-        // a LOCATION header normally carries a literal address; resolving a
-        // name is only a fallback
-        addrinfo hints;
-        ZeroMemory(&hints, sizeof(hints));
-        hints.ai_family = AF_INET;
-        hints.ai_socktype = SOCK_STREAM;
-        addrinfo* res = nullptr;
-        if (getaddrinfo(target.host, nullptr, &hints, &res) != 0 || !res) {
-            return false;
-        }
-        addr.sin_addr = ((sockaddr_in*)res->ai_addr)->sin_addr;
-        freeaddrinfo(res);
+        // Only literal addresses are spoken to. Every URL that gets here was
+        // checked against the address of the device that gave it, and a name
+        // would let that device send us wherever it can make the name resolve.
+        return false;
     }
 
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -753,6 +776,10 @@ bool CDlnaDiscovery::ProbeAddress(const CString& ip, UINT port, DWORD timeoutMs,
 {
     if (port == 0) {
         port = SSDP_PORT;
+    }
+
+    if (!Dlna::IsDeviceAddress(ip)) {
+        return false; // typed in, and not somewhere a renderer can be
     }
 
     WSADATA wsaData;
@@ -1223,6 +1250,18 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
         return;
     }
 
+    // A device describes itself: the description it announced has to be on
+    // the address the announcement came from. One pointing elsewhere is not
+    // a device but somebody using this player to reach a host of their
+    // choosing, and it is not fetched. The same goes for a saved location.
+    if (!Dlna::UrlIsOnDevice(task.location, task.ip)) {
+        CASTING_LOG(_T("discovery: an announcement from %s named a description at %s, ")
+                    _T("which is not on that device, so it was ignored"),
+                    task.ip.GetString(), task.location.GetString());
+        m_failedProbes.push_back({ task.location, GetTickCount64() });
+        return;
+    }
+
     CStringA xml;
     if (!Dlna::HttpGet(task.location, xml, m_hStopEvent, ProbeBudget())) {
         // A device that announces itself and then will not describe itself is
@@ -1265,10 +1304,11 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
     }
 
     // the vendor block, when there is one, is a sibling of <device>
-    DlnaVendor::ParseDescription(xml, dev.vendor);
+    DlnaVendor::ParseDescription(xml, task.ip, dev.vendor);
 
+    // a base elsewhere than the device is not honoured; its own address is
     CString base = UTF8To16(Dlna::GetElementText(xml, "URLBase"));
-    if (base.IsEmpty()) {
+    if (base.IsEmpty() || !Dlna::UrlIsOnDevice(base, task.ip)) {
         base = task.location;
     }
     for (int pos = 0;;) {
@@ -1278,13 +1318,22 @@ void CDlnaDiscovery::RunProbe(const ProbeTask& task)
         }
         const CStringA service = deviceBlock.Mid(innerStart, innerEnd - innerStart);
         const CStringA type = Dlna::GetElementText(service, "serviceType");
-        const CString controlURL = Dlna::ResolveURL(base, UTF8To16(Dlna::GetElementText(service, "controlURL")));
+        CString controlURL = Dlna::ResolveURL(base, UTF8To16(Dlna::GetElementText(service, "controlURL")));
+        if (!controlURL.IsEmpty() && !Dlna::UrlIsOnDevice(controlURL, task.ip)) {
+            CASTING_LOG(_T("discovery: DLNA \"%s\" at %s puts a control URL elsewhere, %s, ")
+                        _T("which is not used"), dev.friendlyName.GetString(),
+                        task.ip.GetString(), controlURL.GetString());
+            controlURL.Empty();
+        }
         if (!controlURL.IsEmpty()) {
             if (type.Find("AVTransport") >= 0) {
                 dev.avTransportURL = controlURL;
                 // the seek units a renderer accepts are only stated there
                 dev.avTransportSCPDURL =
                     Dlna::ResolveURL(base, UTF8To16(Dlna::GetElementText(service, "SCPDURL")));
+                if (!Dlna::UrlIsOnDevice(dev.avTransportSCPDURL, task.ip)) {
+                    dev.avTransportSCPDURL.Empty(); // the seek units are then negotiated blind
+                }
             } else if (type.Find("RenderingControl") >= 0) {
                 dev.renderingControlURL = controlURL;
             } else if (type.Find("ConnectionManager") >= 0) {

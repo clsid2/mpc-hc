@@ -171,6 +171,14 @@ namespace Dlna
 
     // Local IPv4 address that the given device would see us at, empty on error
     CString LocalAddressFor(const CString& deviceIp);
+    // Whether an address can be a device's at all. A renderer lives on the
+    // LAN: loopback, link-local, multicast and the unspecified address are
+    // refused wherever an address is taken from the network or typed in.
+    bool IsDeviceAddress(const CString& ip);
+    // Whether a URL a device handed us points back at that device: plain
+    // http, a literal address equal to the device's, any port. Everything a
+    // device says about where to reach it passes here before it is fetched.
+    bool UrlIsOnDevice(const CString& url, const CString& deviceIp);
 
     // Tolerant, bounds-safe extraction from untrusted device XML. Namespace
     // prefixes are ignored: only the local part of a tag name is compared.

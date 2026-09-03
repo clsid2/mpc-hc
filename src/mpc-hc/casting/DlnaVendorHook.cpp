@@ -161,14 +161,16 @@ namespace
     }
 }
 
-void DlnaVendor::ParseDescription(const CStringA& xml, DlnaVendorInfo& info)
+void DlnaVendor::ParseDescription(const CStringA& xml, const CString& deviceIp, DlnaVendorInfo& info)
 {
     info = DlnaVendorInfo();
 
     // <yamaha:X_device> sits beside <device>, not inside it, and carries its
     // own URL base. That base is deliberately not used for the standard
     // control URLs, which have to keep resolving against the description's own
-    // address and port.
+    // address and port. And like everything else a device says about where to
+    // reach it, what it resolves to has to be on the device: a description
+    // naming an API on some other host gets no hook at all.
     int innerStart = 0, innerEnd = 0, next = 0;
     if (!Dlna::FindElement(xml, "X_device", 0, innerStart, innerEnd, next)) {
         return;
@@ -187,15 +189,18 @@ void DlnaVendor::ParseDescription(const CStringA& xml, DlnaVendorInfo& info)
         const CStringA specType = Dlna::GetElementText(service, "X_specType");
         if (specType.Find("X_YamahaExtendedControl") >= 0) {
             CString url = Dlna::ResolveURL(base, UTF8To16(Dlna::GetElementText(service, "X_yxcControlURL")));
-            if (!url.IsEmpty()) {
+            if (!url.IsEmpty() && Dlna::UrlIsOnDevice(url, deviceIp)) {
                 if (url.Right(1) != _T("/")) {
                     url += _T('/');
                 }
                 info.yamahaExtendedControlURL = url;
             }
         } else if (specType.Find("X_YamahaRemoteControl") >= 0) {
-            info.yamahaRemoteControlURL =
+            const CString url =
                 Dlna::ResolveURL(base, UTF8To16(Dlna::GetElementText(service, "X_controlURL")));
+            if (Dlna::UrlIsOnDevice(url, deviceIp)) {
+                info.yamahaRemoteControlURL = url;
+            }
         }
         pos = next;
     }

@@ -57,7 +57,9 @@ namespace DlnaVendor
 {
     // Scans a device description for the vendor blocks we know. Absence is the
     // normal case and is silent.
-    void ParseDescription(const CStringA& xml, DlnaVendorInfo& info);
+    // deviceIp is the address the description was fetched from: a vendor
+    // API is only taken when it is on that device
+    void ParseDescription(const CStringA& xml, const CString& deviceIp, DlnaVendorInfo& info);
 
     // Null unless the device advertised something we know how to drive
     std::unique_ptr<CDlnaVendorHook> CreateHook(const DlnaVendorInfo& info);
