@@ -24,14 +24,6 @@ PUSHD "%FILE_DIR%"
 SET ROOT_DIR=..\..\..
 SET "COMMON=%FILE_DIR%%ROOT_DIR%\common.bat"
 
-CALL "%COMMON%" :SubSetPath
-IF %ERRORLEVEL% NEQ 0 EXIT /B 1
-CALL "%COMMON%" :SubDoesExist gcc.exe
-IF %ERRORLEVEL% NEQ 0 (
-  ECHO ERROR: gcc.exe not found in your MinGW installation
-  EXIT /B 1
-)
-
 SET ARG=/%*
 SET ARG=%ARG:/=%
 SET ARG=%ARG:-=%
@@ -39,6 +31,7 @@ SET ARGB=0
 SET ARGBC=0
 SET ARGCOMP=0
 SET ARGPL=0
+SET ARGTC=0
 SET INPUT=0
 SET VALID=0
 
@@ -57,12 +50,14 @@ FOR %%G IN (%ARG%) DO (
   IF /I "%%G" == "Release"  SET "RELEASETYPE=Release" & SET /A ARGBC+=1
   IF /I "%%G" == "VS2017"   SET "COMPILER=VS2017"     & SET /A ARGCOMP+=1
   IF /I "%%G" == "VS2019"   SET "COMPILER=VS2019"     & SET /A ARGCOMP+=1
+  IF /I "%%G" == "MSVC"     SET "TOOLCHAIN=MSVC"      & SET /A ARGTC+=1
+  IF /I "%%G" == "GCC"      SET "TOOLCHAIN=GCC"       & SET /A ARGTC+=1
   IF /I "%%G" == "Silent"   SET "SILENT=True"         & SET /A VALID+=1
   IF /I "%%G" == "Nocolors" SET "NOCOLORS=True"       & SET /A VALID+=1
 )
 
 FOR %%X IN (%*) DO SET /A INPUT+=1
-SET /A VALID+=%ARGB%+%ARGPL%+%ARGBC%+%ARGCOMP%
+SET /A VALID+=%ARGB%+%ARGPL%+%ARGBC%+%ARGCOMP%+%ARGTC%
 
 IF %VALID% NEQ %INPUT% GOTO UnsupportedSwitch
 
@@ -70,6 +65,41 @@ IF %ARGB%    GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGB% == 0    (SET "BUILDTY
 IF %ARGPL%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGPL% == 0   (SET "ARCH=Both")
 IF %ARGBC%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGBC% == 0   (SET "RELEASETYPE=Release")
 IF %ARGCOMP% GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGCOMP% == 0 (SET "COMPILER=VS2019")
+IF %ARGTC%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGTC% == 0   (IF NOT DEFINED MPCHC_LAV_TOOLCHAIN (SET "TOOLCHAIN=MSVC") ELSE (SET "TOOLCHAIN=%MPCHC_LAV_TOOLCHAIN%"))
+
+REM MSVC (default): ffmpeg and its external libraries are built by the MSBuild projects in
+REM msvc\ (see msvc\README.md). Needs nasm.exe on PATH and nothing else outside Visual Studio.
+REM GCC: the historical path, ffmpeg cross-compiled with MinGW-w64 through MSYS2 (build_ffmpeg.sh).
+IF /I "%TOOLCHAIN%" == "GCC" (
+  CALL "%COMMON%" :SubSetPath
+  IF !ERRORLEVEL! NEQ 0 EXIT /B 1
+  CALL "%COMMON%" :SubDoesExist gcc.exe
+  IF !ERRORLEVEL! NEQ 0 (
+    ECHO ERROR: gcc.exe not found in your MinGW installation
+    EXIT /B 1
+  )
+) ELSE (
+  IF EXIST "%ROOT_DIR%\build.user.bat" CALL "%ROOT_DIR%\build.user.bat"
+  CALL "%COMMON%" :SubDoesExist nasm.exe
+  IF !ERRORLEVEL! NEQ 0 (
+    ECHO ERROR: nasm.exe not found in PATH. See "%ROOT_DIR%\docs\Compilation.md".
+    EXIT /B 1
+  )
+  REM LAV's own DSUtilLite pre-build step (src\common\genversion.bat) still runs its version
+  REM script through "%%MPCHC_MSYS%%\usr\bin\bash.exe". Git for Windows has the same layout,
+  REM so point it there when no MSYS2 installation is configured.
+  IF NOT DEFINED MPCHC_MSYS IF DEFINED MSYS SET "MPCHC_MSYS=%MSYS%"
+  IF NOT DEFINED MPCHC_MSYS IF EXIST "C:\msys64\usr\bin\bash.exe" SET "MPCHC_MSYS=C:\msys64"
+  IF NOT DEFINED MPCHC_MSYS (
+    IF NOT DEFINED MPCHC_GIT IF DEFINED GIT SET "MPCHC_GIT=%GIT%"
+    IF NOT DEFINED MPCHC_GIT SET "MPCHC_GIT=C:\Program Files\Git"
+    SET "MPCHC_MSYS=!MPCHC_GIT!"
+  )
+  IF NOT EXIST "!MPCHC_MSYS!\usr\bin\bash.exe" (
+    ECHO ERROR: no bash.exe under "!MPCHC_MSYS!\usr\bin" for LAV's version script. Set MPCHC_MSYS or MPCHC_GIT in build.user.bat.
+    EXIT /B 1
+  )
+)
 
 IF NOT EXIST "%MPCHC_VS_PATH%" CALL "%COMMON%" :SubVSPath
 IF NOT EXIST "!MPCHC_VS_PATH!" (
@@ -121,7 +151,7 @@ EXIT /B
 
 :End
 IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-TITLE Compiling LAV Filters %COMPILER% [FINISHED]
+TITLE Compiling LAV Filters %TOOLCHAIN% [FINISHED]
 SET END_TIME=%TIME%
 CALL "%COMMON%" :SubGetDuration
 CALL "%COMMON%" :SubMsg "INFO" "LAV Filters compilation started on %START_DATE%-%START_TIME% and completed on %DATE%-%END_TIME% [%DURATION%]"
@@ -135,11 +165,19 @@ IF %ERRORLEVEL% NEQ 0 EXIT /B
 
 IF /I "%ARCH%" == "x86" (SET "ARCHVS=Win32") ELSE (SET "ARCHVS=x64")
 
-REM Build FFmpeg
-sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%
-IF %ERRORLEVEL% NEQ 0 (
-  CALL "%COMMON%" :SubMsg "ERROR" "'sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%' failed!"
-  EXIT /B
+REM Build FFmpeg (and, on the MSVC path, the external libraries it links against)
+IF /I "%TOOLCHAIN%" == "GCC" (
+  sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%
+  IF !ERRORLEVEL! NEQ 0 (
+    CALL "%COMMON%" :SubMsg "ERROR" "'sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%' failed!"
+    EXIT /B
+  )
+) ELSE (
+  MSBuild.exe msvc\ffmpeg\avfilter.vcxproj /nologo /consoleloggerparameters:Verbosity=minimal /nodeReuse:true /m /t:%BUILDTYPE% /property:Configuration=%RELEASETYPE%;Platform=%ARCHVS%
+  IF !ERRORLEVEL! NEQ 0 (
+    CALL "%COMMON%" :SubMsg "ERROR" "'MSBuild.exe msvc\ffmpeg\avfilter.vcxproj /t:%BUILDTYPE% /property:Configuration=%RELEASETYPE%;Platform=%ARCHVS%' failed!"
+    EXIT /B
+  )
 )
 
 PUSHD src
@@ -186,6 +224,7 @@ IF /I "%BUILDTYPE%" == "Build" (
     COPY /Y /V %SRCFOLDER%\LAVSplitter\LAVSplitter.pdb %DESTFOLDER%
     COPY /Y /V %SRCFOLDER%\LAVVideo\LAVVideo.pdb %DESTFOLDER%
     COPY /Y /V %SRCFOLDER%\libbluray\libbluray.pdb %DESTFOLDER%
+    IF EXIST %SRCFOLDER%\avcodec-lav-*.pdb COPY /Y /V %SRCFOLDER%\*-lav-*.pdb %DESTFOLDER%
   ) ELSE (
     COPY /Y /V %SRCFOLDER%\*.pdb %DESTFOLDER%
   )
@@ -218,13 +257,16 @@ CALL "%COMMON%" :SubMsg "ERROR" "LAV Filters compilation failed!" & EXIT /B 1
 TITLE %~nx0 Help
 ECHO.
 ECHO Usage:
-ECHO %~nx0 [Clean^|Build^|Rebuild] [x86^|x64^|Both] [Debug^|Release] [VS2017^|VS2019]
+ECHO %~nx0 [Clean^|Build^|Rebuild] [x86^|x64^|Both] [Debug^|Release] [MSVC^|GCC] [VS2017^|VS2019]
 ECHO.
 ECHO Notes: You can also prefix the commands with "-", "--" or "/".
 ECHO        The arguments are not case sensitive and can be ommitted.
+ECHO        MSVC (default) builds ffmpeg with the MSBuild projects in msvc\ and needs only
+ECHO        Visual Studio and nasm.exe; GCC uses MinGW-w64/MSYS2 through build_ffmpeg.sh.
+ECHO        The default can be changed with MPCHC_LAV_TOOLCHAIN=GCC in build.user.bat.
 ECHO. & ECHO.
 ECHO Executing %~nx0 without any arguments will use the default ones:
-ECHO "%~nx0 Build Both Release VS2019"
+ECHO "%~nx0 Build Both Release MSVC VS2019"
 ECHO.
 POPD
 ENDLOCAL

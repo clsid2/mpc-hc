@@ -42,3 +42,6 @@ ipch
 /distrib/MPCVR/
 /distrib/x64/MediaInfo.dll
 /distrib/x86/MediaInfo.dll
+
+# LAV Filters MSVC regeneration scratch build (msvc/regen/regen.cmd)
+/src/thirdparty/LAVFilters/msvc/regen/build/

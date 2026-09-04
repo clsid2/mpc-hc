@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Shared settings for the MSVC build of LAV Filters' ffmpeg and its external
+  libraries (see README.md in this directory). Import it between
+  Microsoft.Cpp.Default.props and Microsoft.Cpp.props.
+
+  Toolset and SDK come from LAV's own platform.props so that everything that
+  ends up in the same process is built with the same toolchain as LAV itself.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LavMsvcDir>$(MSBuildThisFileDirectory)</LavMsvcDir>
+    <LavSrc>$([MSBuild]::NormalizeDirectory('$(LavMsvcDir)..\src'))</LavSrc>
+    <MpcRoot>$([MSBuild]::NormalizeDirectory('$(LavMsvcDir)..\..\..\..'))</MpcRoot>
+    <LavBinSuffix Condition="'$(Configuration)'=='Debug'">d</LavBinSuffix>
+    <!-- LAV's own projects read headers from bin_<plat>\thirdparty\ffmpeg and libraries from bin_<plat>\lib -->
+    <LavBin>$(LavSrc)bin_$(Platform)$(LavBinSuffix)\</LavBin>
+    <LavArch Condition="'$(Platform)'=='x64'">64</LavArch>
+    <LavArch Condition="'$(Platform)'=='Win32'">32</LavArch>
+    <MpcLib>$(MpcRoot)bin\lib\$(Configuration)_$(Platform)\</MpcLib>
+    <FFmpegSrc>$(LavSrc)ffmpeg\</FFmpegSrc>
+    <FFmpegGen>$(LavMsvcDir)ffmpeg\generated\$(Platform)\</FFmpegGen>
+    <ExtLib>$(LavBin)lib\</ExtLib>
+    <ExtInclude>$(LavMsvcDir)libs\dav1d\dav1d\include;$(LavMsvcDir)libs\libxml2\include;$(LavMsvcDir)libs\libxml2\libxml2\include;$(LavMsvcDir)libs\speex\include;$(LavMsvcDir)libs\speex\speex\include;$(LavMsvcDir)libs\opencore-amr\include;$(LavMsvcDir)libs\bzip2\bzip2</ExtInclude>
+    <NasmFormat Condition="'$(Platform)'=='x64'">win64</NasmFormat>
+    <NasmFormat Condition="'$(Platform)'=='Win32'">win32</NasmFormat>
+  </PropertyGroup>
+  <Import Project="$(LavSrc)common\platform.props" />
+  <PropertyGroup Label="Configuration">
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IntDir>$(LavBin)thirdparty\msvc\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(ConfigurationType)'=='StaticLibrary'">$(LavBin)lib\</OutDir>
+    <OutDir Condition="'$(ConfigurationType)'!='StaticLibrary'">$(LavBin)</OutDir>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode>false</SupportJustMyCode>
+    </ClCompile>
+    <Lib>
+      <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
+      <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
+    </Lib>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
+      <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

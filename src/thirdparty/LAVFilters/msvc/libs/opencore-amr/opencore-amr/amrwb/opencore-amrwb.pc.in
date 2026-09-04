@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: OpenCORE AMR-WB
+Description: Adaptive Multi-Rate Wideband speech codec library
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lopencore-amrwb
+Cflags: -I${includedir}

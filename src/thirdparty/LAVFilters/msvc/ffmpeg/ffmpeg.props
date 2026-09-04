@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings shared by the six ffmpeg DLL projects (avutil, swresample, swscale,
+  avcodec, avformat, avfilter). The compiler flags mirror what ffmpeg's configure
+  chooses for "toolchain=msvc" (see msvc/README.md); the source lists live in the
+  generated items-<lib>-<platform>.props files next to this one.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)..\common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)nasm-$(Platform).props" />
+  <PropertyGroup>
+    <TargetName>$(FFmpegDllName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);$(FFmpegSrc)compat\atomics\win32;$(FFmpegSrc)compat\stdbit;$(ExtInclude);$(LavSrc)thirdparty\$(LavArch)\include;$(MpcRoot)src\thirdparty\zlib;$(LavMsvcDir)..\msvcInclude;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_AV_CONFIG_H;PIC;WIN32_LEAN_AND_MEAN;WINVER=0x0601;_WIN32_WINNT=0x0601;ZLIB_CONST;_FILE_OFFSET_BITS=64;_ISOC11_SOURCE;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;LIBXML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <ModuleDefinitionFile>$(FFmpegGen)lib$(ProjectName)\$(FFmpegDllName).def</ModuleDefinitionFile>
+      <ImportLibrary>$(LavBin)lib\$(ProjectName)-lav.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>$(LavBin)lib;$(MpcLib);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(FFmpegLinkDeps)%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <!-- nasm: assembled by the target below; the objects are handed to the linker -->
+  <ItemGroup>
+    <Link Include="@(Nasm->'%(ObjectFileName)')" />
+  </ItemGroup>
+  <Target Name="NasmAssemble" Inputs="@(Nasm);$(FFmpegGen)config.asm" Outputs="@(Nasm->'%(ObjectFileName)')" BeforeTargets="Link">
+    <MakeDir Directories="@(Nasm->'%(ObjectFileName)'->DirectoryName()->Distinct())" />
+    <Exec Command="nasm $(NasmFlags) -I&quot;$(FFmpegGen.TrimEnd('\'))/&quot; -I&quot;$(FFmpegSrc.TrimEnd('\'))/&quot; -I&quot;%(Nasm.ExtraInclude)/&quot; -Pconfig.asm -o &quot;%(Nasm.ObjectFileName)&quot; &quot;%(Nasm.FullPath)&quot;" />
+  </Target>
+  <!-- objects keep ffmpeg's directory layout under $(IntDir) so same-named files cannot collide -->
+  <Target Name="ClCompileObjDirs" BeforeTargets="ClCompile;ResourceCompile">
+    <MakeDir Directories="@(ClCompile->'%(ObjectFileName)'->DirectoryName()->Distinct());@(ResourceCompile->'%(ResourceOutputFileName)'->DirectoryName()->Distinct())" />
+  </Target>
+  <!-- LAV's own projects read config.h and friends from bin_<plat>\thirdparty\ffmpeg (the gcc build's out-of-tree directory) -->
+  <ItemGroup>
+    <FFmpegGeneratedHeader Include="$(FFmpegGen)config.h;$(FFmpegGen)config_components.h"><SubDir></SubDir></FFmpegGeneratedHeader>
+    <FFmpegGeneratedHeader Include="$(FFmpegGen)libavutil\avconfig.h;$(FFmpegGen)libavutil\ffversion.h"><SubDir>libavutil\</SubDir></FFmpegGeneratedHeader>
+  </ItemGroup>
+  <Target Name="CopyGeneratedHeaders" BeforeTargets="ClCompile">
+    <Copy SourceFiles="@(FFmpegGeneratedHeader)" DestinationFiles="@(FFmpegGeneratedHeader->'$(LavBin)thirdparty\ffmpeg\%(SubDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
