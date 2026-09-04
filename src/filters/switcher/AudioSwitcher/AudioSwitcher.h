@@ -43,6 +43,10 @@ interface __declspec(uuid("CEDB2890-53AE-4231-91A3-B0AAFCD1DBDE"))
     STDMETHOD(SetNormalizeBoost)(bool fNormalize, bool fNormalizeRecover, float boost_dB) PURE;
     STDMETHOD(GetNormalizeBoost2)(bool& fNormalize, UINT& nMaxNormFactor, bool& fNormalizeRecover, UINT& nBoost) PURE;
     STDMETHOD(SetNormalizeBoost2)(bool fNormalize, UINT nMaxNormFactor, bool fNormalizeRecover, UINT nBoost) PURE;
+    // ReplayGain: a fixed gain (in dB) read from the file's tags. When enabled it replaces
+    // normalization; the regular boost is still applied on top of it.
+    STDMETHOD(GetReplayGain)(bool& bEnabled, float& gain_dB) PURE;
+    STDMETHOD(SetReplayGain)(bool bEnable, float gain_dB) PURE;
 };
 
 class AudioStreamResampler;
@@ -61,6 +65,8 @@ class __declspec(uuid("18C16B08-6497-420e-AD14-22D21C2CEAB7"))
     bool m_fNormalize, m_fNormalizeRecover;
     double m_nMaxNormFactor, m_boostFactor;
     double m_normalizeFactor;
+    bool m_bReplayGain;
+    double m_replayGainFactor;
 
     REFERENCE_TIME m_rtNextStart, m_rtNextStop;
     REFERENCE_TIME m_rtSegmentStart;
@@ -92,6 +98,8 @@ public:
     STDMETHODIMP SetNormalizeBoost(bool fNormalize, bool fNormalizeRecover, float boost_dB);
     STDMETHODIMP GetNormalizeBoost2(bool& fNormalize, UINT& nMaxNormFactor, bool& fNormalizeRecover, UINT& nBoost);
     STDMETHODIMP SetNormalizeBoost2(bool fNormalize, UINT nMaxNormFactor, bool fNormalizeRecover, UINT nBoost);
+    STDMETHODIMP GetReplayGain(bool& bEnabled, float& gain_dB);
+    STDMETHODIMP SetReplayGain(bool bEnable, float gain_dB);
 
     // IAMStreamSelect
     STDMETHODIMP Enable(long lIndex, DWORD dwFlags);

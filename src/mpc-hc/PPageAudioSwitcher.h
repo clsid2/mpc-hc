@@ -29,6 +29,7 @@
 #include "CMPCThemeEdit.h"
 #include "CMPCThemeSpinButtonCtrl.h"
 #include "CMPCThemePlayerListCtrl.h"
+#include "CMPCThemeComboBox.h"
 
 
 
@@ -61,6 +62,12 @@ private:
     CMPCThemeIntEdit m_tAudioTimeShiftCtrl;
     CMPCThemeSpinButtonCtrl m_tAudioTimeShiftSpin;
     BOOL m_fAudioTimeShift;
+    int m_iReplayGainMode;
+    CMPCThemeComboBox m_replayGainModeCtrl;
+    int m_iReplayGainPreamp;
+    CMPCThemeIntEdit m_replayGainPreampCtrl;
+    CMPCThemeSpinButtonCtrl m_replayGainPreampSpin;
+    BOOL m_bReplayGainPreventClipping;
 
     // tooltip for slidercontrol
     CToolTipCtrl m_tooltip;
@@ -87,6 +94,7 @@ protected:
     afx_msg void OnUpdateAudioSwitcher(CCmdUI* pCmdUI);
     afx_msg void OnUpdateNormalize(CCmdUI* pCmdUI);
     afx_msg void OnUpdateTimeShift(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateReplayGain(CCmdUI* pCmdUI);
     afx_msg void OnUpdateChannelMapping(CCmdUI* pCmdUI);
 
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
