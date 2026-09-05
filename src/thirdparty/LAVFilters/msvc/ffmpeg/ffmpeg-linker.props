@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Imported after Microsoft.Cpp.props, which is where Visual Studio's ClangCL toolset
+  selects lld-link. MPC-HC's zlib.lib is compiled with whole-program optimisation
+  (/GL), whose objects only Microsoft's linker understands, so the clang build of
+  ffmpeg links with link.exe like the cl build does. The objects clang-cl produces
+  are ordinary COFF and link.exe is fine with them.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <LinkToolExe>link.exe</LinkToolExe>
+    <UseLldLink>false</UseLldLink>
+  </PropertyGroup>
+</Project>

@@ -117,6 +117,7 @@ for lib in $LIBS; do
   <Import Project="\$(MSBuildThisFileDirectory)\$(FFmpegCompiler)\items-$lib-\$(Platform).props" />
   <Import Project="\$(MSBuildThisFileDirectory)ffmpeg.props" />
   <Import Project="\$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="\$(MSBuildThisFileDirectory)ffmpeg-linker.props" />
   <ItemGroup>
 XML
     for r in $refs; do echo "    <ProjectReference Include=\"\$(MSBuildThisFileDirectory)$(echo "$r" | tr '/' '\\').vcxproj\"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>"; done

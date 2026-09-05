@@ -18,6 +18,7 @@
   <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\items-swresample-$(Platform).props" />
   <Import Project="$(MSBuildThisFileDirectory)ffmpeg.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(MSBuildThisFileDirectory)ffmpeg-linker.props" />
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)avutil.vcxproj"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>
   </ItemGroup>

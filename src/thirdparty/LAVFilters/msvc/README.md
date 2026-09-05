@@ -43,6 +43,20 @@ carry `#pragma GCC target("sse4.1")`, which clang ignores; `ffmpeg.props` gives
 those two files `-mssse3 -msse4.1` explicitly, the same scope the pragma has
 under gcc.
 
+Three more things the clang path needed, all in `ffmpeg.props` and
+`ffmpeg-linker.props`:
+
+* The ClangCL toolset links with lld-link by default, which cannot consume the
+  whole-program-optimised objects in MPC-HC's `zlib.lib`; the ffmpeg projects
+  link with link.exe under both compilers.
+* clang 22 (the version Visual Studio ships) makes incompatible pointer types
+  an error by default; ffmpeg's own configure treats them as warnings, so the
+  projects do too (`-Wno-error=incompatible-pointer-types` and friends).
+* `UNICODE` must not be defined for ffmpeg: it calls `LoadLibrary` with narrow
+  strings, which clang rejects outright and cl silently miscompiles into a
+  call that fails at run time. `common.props` therefore leaves the character
+  set unset for everything in this directory.
+
 The DLLs, their import libraries and the external static libraries land in
 `src\bin_<platform>[d]\` and `...\lib\`, and the generated headers are copied
 to `src\bin_<platform>[d]\thirdparty\ffmpeg\`, which is where LAV's own

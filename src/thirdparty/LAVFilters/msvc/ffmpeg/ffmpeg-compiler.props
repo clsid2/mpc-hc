@@ -16,7 +16,8 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ClangClToolsetAvailable Condition="Exists('$(VCTargetsPath)Platforms\$(Platform)\PlatformToolsets\ClangCL') And Exists('$(VCInstallDir)Tools\Llvm\x64\bin\clang-cl.exe')">true</ClangClToolsetAvailable>
+    <!-- evaluated before Microsoft.Cpp.props, so only VCTargetsPath (...\MSBuild\Microsoft\VC\v<n>\) is known here; the LLVM directory is located relative to it -->
+    <ClangClToolsetAvailable Condition="Exists('$(VCTargetsPath)Platforms\$(Platform)\PlatformToolsets\ClangCL') And Exists('$(VCTargetsPath)..\..\..\..\VC\Tools\Llvm\x64\bin\clang-cl.exe')">true</ClangClToolsetAvailable>
     <FFmpegCompiler Condition="'$(FFmpegCompiler)'=='' And '$(ClangClToolsetAvailable)'=='true'">clang</FFmpegCompiler>
     <FFmpegCompiler Condition="'$(FFmpegCompiler)'==''">cl</FFmpegCompiler>
   </PropertyGroup>
