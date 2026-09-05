@@ -141,8 +141,12 @@ END_MESSAGE_MAP()
 
 BOOL CCastDevicesDlg::OnInitDialog()
 {
-    EnableSaveRestoreKey(IDS_R_DLG_CAST_DEVICES);
-
+    // Unlike the casting window this dialog puts no cap on its size, so a
+    // window size persisted from an odd DPI state -- a system-scaled run, or a
+    // DPI-override toggled and reverted -- would be restored oversized on every
+    // open (issue #4133). Like CRegFilterChooserDlg, the dialog it was modelled
+    // on, it no longer remembers its size: it opens from the template, and a
+    // move to a monitor of another DPI re-lays it out from there.
     __super::OnInitDialog();
 
     m_list.InsertColumn(0, ResStr(IDS_CAST_DLG_COL_NAME));
