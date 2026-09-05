@@ -32,7 +32,10 @@ This is required for building the translation DLL files.
 LAV Filters, which MPC-HC uses as its internal codecs, are built with Visual Studio alone:
 their ffmpeg and the libraries it depends on have MSBuild projects under
 **`src\thirdparty\LAVFilters\msvc`** (see the README there). Besides Visual Studio you only
-need NASM (Part E). Nothing in this part is required for that.
+need NASM (Part E). Nothing in this part is required for that. Optionally, install the Visual
+Studio components "C++ Clang Compiler for Windows" and "MSBuild support for LLVM (clang-cl)
+toolset": when present, ffmpeg is compiled with clang, which is about 10% faster at software
+H.264 decoding than the cl build (it can compile ffmpeg's inline assembly, cl cannot).
 
 This part is only needed if you want to build ffmpeg with MinGW-w64 GCC instead, the way
 LAV Filters upstream does. That path is selected with `build_lavfilters.bat ... GCC` or with

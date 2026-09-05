@@ -19,7 +19,8 @@
     <LavArch Condition="'$(Platform)'=='Win32'">32</LavArch>
     <MpcLib>$(MpcRoot)bin\lib\$(Configuration)_$(Platform)\</MpcLib>
     <FFmpegSrc>$(LavSrc)ffmpeg\</FFmpegSrc>
-    <FFmpegGen>$(LavMsvcDir)ffmpeg\generated\$(Platform)\</FFmpegGen>
+    <FFmpegCompiler Condition="'$(FFmpegCompiler)'==''">cl</FFmpegCompiler>
+    <FFmpegGen>$(LavMsvcDir)ffmpeg\$(FFmpegCompiler)\generated\$(Platform)\</FFmpegGen>
     <ExtLib>$(LavBin)lib\</ExtLib>
     <ExtInclude>$(LavMsvcDir)libs\dav1d\dav1d\include;$(LavMsvcDir)libs\libxml2\include;$(LavMsvcDir)libs\libxml2\libxml2\include;$(LavMsvcDir)libs\speex\include;$(LavMsvcDir)libs\speex\speex\include;$(LavMsvcDir)libs\opencore-amr\include;$(LavMsvcDir)libs\bzip2\bzip2</ExtInclude>
     <NasmFormat Condition="'$(Platform)'=='x64'">win64</NasmFormat>

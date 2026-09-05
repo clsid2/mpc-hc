@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Which C compiler builds LAV's ffmpeg. Imported first by each ffmpeg project.
+
+  clang (Visual Studio's "C++ Clang Compiler for Windows" plus the "MSBuild support
+  for LLVM (clang-cl) toolset" components) is used whenever it is installed, cl
+  otherwise. The difference is real: with clang ffmpeg's configure enables its
+  GCC-style inline assembly, which cl cannot compile, and H.264 software decoding
+  is about 12% faster, on par with the GCC build; with cl those paths fall back
+  to C. Both compilers produce standard MSVC-ABI DLLs that link against the same
+  CRT as LAV's own filters.
+
+  Override on the command line with /p:FFmpegCompiler=cl or =clang. Each compiler
+  has its own configure output under <compiler>\ next to this file, produced by
+  msvc\regen\regen.cmd.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ClangClToolsetAvailable Condition="Exists('$(VCTargetsPath)Platforms\$(Platform)\PlatformToolsets\ClangCL') And Exists('$(VCInstallDir)Tools\Llvm\x64\bin\clang-cl.exe')">true</ClangClToolsetAvailable>
+    <FFmpegCompiler Condition="'$(FFmpegCompiler)'=='' And '$(ClangClToolsetAvailable)'=='true'">clang</FFmpegCompiler>
+    <FFmpegCompiler Condition="'$(FFmpegCompiler)'==''">cl</FFmpegCompiler>
+  </PropertyGroup>
+</Project>
