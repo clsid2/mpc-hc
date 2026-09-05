@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2026
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "clang version 21.1.6"
+#define CC_IDENT "clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)"
 #define OS_NAME win32
 #define EXTERN_PREFIX "_"
 #define EXTERN_ASM _

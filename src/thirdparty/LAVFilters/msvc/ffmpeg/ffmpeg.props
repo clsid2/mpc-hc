@@ -14,6 +14,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>$(FFmpegDllName)</TargetName>
+    <!-- separate object trees per compiler so that switching never reuses the other's objects -->
+    <IntDir>$(LavBin)thirdparty\msvc\$(FFmpegCompiler)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -43,7 +45,8 @@
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">
     <ClCompile>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalOptions>-utf-8 /clang:-O3 /clang:-fomit-frame-pointer -Wno-pointer-sign -Wno-unused-parameter -Wno-switch -Wno-parentheses -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-const-variable -Wno-microsoft-anon-tag -Wno-ignored-attributes -Wno-unknown-warning-option %(AdditionalOptions)</AdditionalOptions>
+      <!-- clang 22 makes incompatible pointer types an error by default; ffmpeg relies on them being warnings, as with every other compiler it supports -->
+      <AdditionalOptions>-utf-8 /clang:-O3 /clang:-fomit-frame-pointer /clang:-fno-math-errno /clang:-fno-signed-zeros -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-pointer-sign -Wno-switch -Wno-parentheses -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-format-zero-length -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-function -Wno-microsoft-anon-tag -Wno-ignored-attributes -Wno-unknown-warning-option %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <!-- LAV's two HEVC intrinsic files rely on "#pragma GCC target" under gcc; clang needs the target features spelled out -->

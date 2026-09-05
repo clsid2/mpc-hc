@@ -28,7 +28,8 @@
   </PropertyGroup>
   <Import Project="$(LavSrc)common\platform.props" />
   <PropertyGroup Label="Configuration">
-    <CharacterSet>Unicode</CharacterSet>
+    <!-- NotSet: neither ffmpeg nor the libraries expect UNICODE/_UNICODE (ffmpeg calls LoadLibrary with narrow strings; dav1d defines UNICODE itself) -->
+    <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
   </PropertyGroup>

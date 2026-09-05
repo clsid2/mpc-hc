@@ -80,7 +80,8 @@ FOR %%P IN (%PLATFORMS%) DO (
   IF NOT DEFINED CLANG_BIN IF EXIST "%MPCHC_VS_PATH%\VC\Tools\Llvm\x64\bin\clang.exe" SET "CLANG_BIN=%MPCHC_VS_PATH%\VC\Tools\Llvm\x64\bin"
   IF EXIST "!CLANG_BIN!\clang.exe" (
     ECHO ===== %%P: ffmpeg configure, make, project generation with clang
-    SET "PATH=!PATH!;!CLANG_BIN!"
+    REM in front, so that no other clang on the machine's PATH is picked up instead
+    SET "PATH=!CLANG_BIN!;!PATH!"
     "%POSIX_BIN%\bash.exe" "%REGEN_DIR%regen-ffmpeg.sh" %%P clang || GOTO Failed
   ) ELSE (
     ECHO ===== %%P: no clang found, skipping the clang configuration

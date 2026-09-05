@@ -18,6 +18,7 @@
   <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\items-avutil-$(Platform).props" />
   <Import Project="$(MSBuildThisFileDirectory)ffmpeg.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(MSBuildThisFileDirectory)ffmpeg-linker.props" />
   <ItemGroup>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
