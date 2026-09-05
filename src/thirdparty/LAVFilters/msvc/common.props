@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Shared settings for the MSVC build of LAV Filters' ffmpeg and its external
-  libraries (see README.md in this directory). Import it between
-  Microsoft.Cpp.Default.props and Microsoft.Cpp.props.
-
-  Toolset and SDK come from LAV's own platform.props so that everything that
-  ends up in the same process is built with the same toolchain as LAV itself.
--->
+<!-- Shared by the ffmpeg and library projects; import between Microsoft.Cpp.Default.props and Microsoft.Cpp.props. See README.md. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <LavMsvcDir>$(MSBuildThisFileDirectory)</LavMsvcDir>
