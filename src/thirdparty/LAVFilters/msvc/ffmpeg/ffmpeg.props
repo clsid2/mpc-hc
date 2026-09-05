@@ -2,12 +2,16 @@
 <!--
   Settings shared by the six ffmpeg DLL projects (avutil, swresample, swscale,
   avcodec, avformat, avfilter). The compiler flags mirror what ffmpeg's configure
-  chooses for "toolchain=msvc" (see msvc/README.md); the source lists live in the
-  generated items-<lib>-<platform>.props files next to this one.
+  chooses for the compiler in use (see msvc/README.md); the source lists live in
+  the generated <compiler>\items-<lib>-<platform>.props files.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)..\common.props" />
-  <Import Project="$(MSBuildThisFileDirectory)nasm-$(Platform).props" />
+  <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\nasm-$(Platform).props" />
+  <!-- LAV's platform.props (imported by common.props) picks the cl toolset; clang goes through Visual Studio's ClangCL toolset instead -->
+  <PropertyGroup Label="Configuration" Condition="'$(FFmpegCompiler)'=='clang'">
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup>
     <TargetName>$(FFmpegDllName)</TargetName>
   </PropertyGroup>
@@ -17,7 +21,6 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);$(FFmpegSrc)compat\atomics\win32;$(FFmpegSrc)compat\stdbit;$(ExtInclude);$(LavSrc)thirdparty\$(LavArch)\include;$(MpcRoot)src\thirdparty\zlib;$(LavMsvcDir)..\msvcInclude;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>HAVE_AV_CONFIG_H;PIC;WIN32_LEAN_AND_MEAN;WINVER=0x0601;_WIN32_WINNT=0x0601;ZLIB_CONST;_FILE_OFFSET_BITS=64;_ISOC11_SOURCE;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;LIBXML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -30,6 +33,25 @@
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
+  <!-- cl: exactly what configure's msvc toolchain passes -->
+  <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='cl'">
+    <ClCompile>
+      <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!-- clang: what configure passes for a clang targeting MSVC (-O3 -fomit-frame-pointer and gcc-style warnings), in clang-cl spelling -->
+  <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <ClCompile>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalOptions>-utf-8 /clang:-O3 /clang:-fomit-frame-pointer -Wno-pointer-sign -Wno-unused-parameter -Wno-switch -Wno-parentheses -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-const-variable -Wno-microsoft-anon-tag -Wno-ignored-attributes -Wno-unknown-warning-option %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!-- LAV's two HEVC intrinsic files rely on "#pragma GCC target" under gcc; clang needs the target features spelled out -->
+  <ItemGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <ClCompile Update="$(FFmpegSrc)libavcodec\x86\hevc\intra_intrinsic.c;$(FFmpegSrc)libavcodec\x86\hevc\idct_intrinsic.c">
+      <AdditionalOptions>-mssse3 -msse4.1 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
   <!-- nasm: assembled by the target below; the objects are handed to the linker -->
   <ItemGroup>
     <Link Include="@(Nasm->'%(ObjectFileName)')" />

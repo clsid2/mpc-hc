@@ -14,7 +14,8 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <Import Project="$(MSBuildThisFileDirectory)items-avutil-$(Platform).props" />
+  <Import Project="$(MSBuildThisFileDirectory)ffmpeg-compiler.props" />
+  <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\items-avutil-$(Platform).props" />
   <Import Project="$(MSBuildThisFileDirectory)ffmpeg.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>

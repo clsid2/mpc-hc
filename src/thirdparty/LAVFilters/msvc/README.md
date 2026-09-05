@@ -19,10 +19,29 @@ generated at build time.
 | `common.props` | shared settings: toolset (taken from LAV's own `platform.props`), output into LAV's `bin_<platform>[d]\` like the GCC build, CRT and optimisation flags |
 | `libs\<lib>\` | one MSBuild project per external library, next to its source (a git submodule, except opencore-amr which has no upstream repository and is vendored). Config headers those libraries' own build systems would generate are committed under `libs\<lib>\include`. |
 | `ffmpeg\<lib>.vcxproj` | one project per ffmpeg DLL (avutil, swresample, swscale, avcodec, avformat, avfilter) |
-| `ffmpeg\ffmpeg.props` | compiler flags, exactly what ffmpeg's configure chooses for `--toolchain=msvc`; nasm and resource handling |
-| `ffmpeg\items-<lib>-<platform>.props` | generated: the source list of each DLL, taken from the object list of a configured make tree |
-| `ffmpeg\generated\<platform>\` | generated: `config.h`, `config_components.h`, `config.asm`, `avconfig.h`, `ffversion.h`, the `*_list.c` component tables and the `.def` export lists |
+| `ffmpeg\ffmpeg-compiler.props` | picks the C compiler for ffmpeg: clang when Visual Studio's Clang components are installed, cl otherwise (`/p:FFmpegCompiler=cl` or `clang` overrides) |
+| `ffmpeg\ffmpeg.props` | compiler flags, exactly what ffmpeg's configure chooses for the compiler in use; nasm and resource handling |
+| `ffmpeg\<compiler>\items-<lib>-<platform>.props` | generated: the source list of each DLL, taken from the object list of a configured make tree |
+| `ffmpeg\<compiler>\generated\<platform>\` | generated: `config.h`, `config_components.h`, `config.asm`, `avconfig.h`, `ffversion.h`, the `*_list.c` component tables and the `.def` export lists |
 | `regen\` | maintainer tooling that produces the generated files (see below) |
+
+## cl or clang
+
+Both are Visual Studio compilers producing MSVC-ABI DLLs on the same CRT as
+LAV's own filters, and both sets of generated files are committed. cl works on
+any Visual Studio installation. clang needs two optional components,
+"C++ Clang Compiler for Windows" and "MSBuild support for LLVM (clang-cl)
+toolset", and is chosen automatically when they are present because it is
+measurably better for ffmpeg: it compiles ffmpeg's GCC-style inline assembly,
+which cl cannot, so `HAVE_INLINE_ASM` is on in its configuration. Measured on
+the same clip with the same harness, H.264 software decoding with cl is about
+10% slower than the GCC build; with clang it is on par with GCC. dav1d's AV1
+decoding is at parity for all three, its hot paths being nasm assembly.
+
+The two LAV-specific HEVC intrinsic files (`libavcodec\x86\hevc\*_intrinsic.c`)
+carry `#pragma GCC target("sse4.1")`, which clang ignores; `ffmpeg.props` gives
+those two files `-mssse3 -msse4.1` explicitly, the same scope the pragma has
+under gcc.
 
 The DLLs, their import libraries and the external static libraries land in
 `src\bin_<platform>[d]\` and `...\lib\`, and the generated headers are copied
@@ -59,9 +78,11 @@ its `config.h`. Run:
     msvc\regen\regen.cmd [x64] [Win32]
 
 It builds MPC-HC's zlib and the external libraries for each platform,
-configures and builds ffmpeg out of tree under `regen\build\<platform>`
-(ignored by git), and rewrites `ffmpeg\generated\`, `ffmpeg\items-*.props`,
-`ffmpeg\nasm-*.props` and `libs\*\*.vcxproj`. Review the diff and commit it.
+configures and builds ffmpeg out of tree under `regen\build\<platform>-<compiler>`
+(ignored by git), and rewrites `ffmpeg\<compiler>\` and `libs\*\*.vcxproj`.
+The cl set is always produced; the clang set is produced when Visual Studio's
+Clang component is installed, or when `CLANG_BIN` points at another LLVM's
+`bin` directory. Review the diff and commit it.
 
 It needs a POSIX shell with GNU make and pkg-config besides nasm. The shell
 is Git for Windows' bash (`MPCHC_GIT`), deliberately: MSYS2's runtime hides

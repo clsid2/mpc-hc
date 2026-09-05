@@ -73,8 +73,18 @@ FOR %%P IN (%PLATFORMS%) DO (
   FOR %%L IN (bzip2\bzip2 speex\speex opencore-amr\opencore-amrnb opencore-amr\opencore-amrwb libxml2\libxml2 dav1d\dav1d) DO (
     MSBuild.exe "%REGEN_DIR%..\libs\%%L.vcxproj" /nologo /v:m /m /p:Configuration=Release;Platform=%%P || GOTO Failed
   )
-  ECHO ===== %%P: ffmpeg configure, make, project generation
-  "%POSIX_BIN%\bash.exe" "%REGEN_DIR%regen-ffmpeg.sh" %%P || GOTO Failed
+  ECHO ===== %%P: ffmpeg configure, make, project generation with cl
+  "%POSIX_BIN%\bash.exe" "%REGEN_DIR%regen-ffmpeg.sh" %%P cl || GOTO Failed
+  REM clang: Visual Studio's own LLVM (the "C++ Clang Compiler for Windows" component) when
+  REM installed; CLANG_BIN can point at another LLVM's bin directory.
+  IF NOT DEFINED CLANG_BIN IF EXIST "%MPCHC_VS_PATH%\VC\Tools\Llvm\x64\bin\clang.exe" SET "CLANG_BIN=%MPCHC_VS_PATH%\VC\Tools\Llvm\x64\bin"
+  IF EXIST "!CLANG_BIN!\clang.exe" (
+    ECHO ===== %%P: ffmpeg configure, make, project generation with clang
+    SET "PATH=!PATH!;!CLANG_BIN!"
+    "%POSIX_BIN%\bash.exe" "%REGEN_DIR%regen-ffmpeg.sh" %%P clang || GOTO Failed
+  ) ELSE (
+    ECHO ===== %%P: no clang found, skipping the clang configuration
+  )
   ENDLOCAL
 )
 ECHO.
