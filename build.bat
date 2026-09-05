@@ -137,7 +137,7 @@ IF /I "%PPLATFORM%" == "x64" (
   SET "LAVFILTERSDIR=LAVFilters"
 )
 
-IF /I "%CLEAN%" == "LAVFilters" CALL "src\thirdparty\LAVFilters\build_lavfilters.bat" Clean %PPLATFORM% %BUILDCFG% %COMPILER%
+IF /I "%CLEAN%" == "LAVFilters" CALL "src\thirdparty\LAVFilters\build_lavfilters.bat" Clean %PPLATFORM% %BUILDCFG%
 IF %ERRORLEVEL% NEQ 0 ENDLOCAL & EXIT /B
 
 IF /I "%PPLATFORM%" == "Win32" (SET ARCH=x86) ELSE (SET ARCH=amd64)

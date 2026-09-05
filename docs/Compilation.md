@@ -38,10 +38,11 @@ toolset": when present, ffmpeg is compiled with clang, which is about 10% faster
 H.264 decoding than the cl build (it can compile ffmpeg's inline assembly, cl cannot).
 
 This part is only needed if you want to build ffmpeg with MinGW-w64 GCC instead, the way
-LAV Filters upstream does. That path is selected with `build_lavfilters.bat ... GCC` or with
-`SET "MPCHC_LAV_TOOLCHAIN=GCC"` in **build.user.bat**. Maintainers also need a POSIX shell
-with GNU make when regenerating the MSVC projects after a LAV Filters update; the msvc README
-explains that.
+LAV Filters upstream does. When a MinGW-w64 gcc is configured (Part F) the build uses it
+by default; without one it uses the MSVC projects. `SET "MPCHC_LAV_TOOLCHAIN=MSVC"` (or
+`GCC`) in **build.user.bat**, or the `MSVC`/`GCC` switch of `build_lavfilters.bat`,
+overrides that. Maintainers also need a POSIX shell with GNU make when regenerating the
+MSVC projects after a LAV Filters update; the msvc README explains that.
 
 You can skip compilation of LAV Filters altogether by selecting the "Release Lite"/"Debug Lite"
 build configuration in the MPC-HC project file. This can be useful for making quick builds during

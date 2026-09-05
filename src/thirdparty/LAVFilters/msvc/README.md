@@ -3,10 +3,11 @@
 This directory builds the ffmpeg that LAV Filters uses, and the external
 libraries ffmpeg links against, with Visual Studio's compiler and MSBuild.
 Together with `src\LAVFilters.sln` (already MSVC) that makes the whole of
-MPC-HC's internal filters buildable without MinGW-w64, GCC or MSYS2. It is
-the default path of `..\build_lavfilters.bat`; the historical GCC path is
-still there behind the `GCC` switch (or `MPCHC_LAV_TOOLCHAIN=GCC` in
-`build.user.bat`) and is untouched.
+MPC-HC's internal filters buildable without MinGW-w64, GCC or MSYS2.
+`..\build_lavfilters.bat` uses it whenever no MinGW-w64 gcc is configured; when
+one is, the historical GCC path (how upstream releases are built) stays the
+default and is untouched. `MPCHC_LAV_TOOLCHAIN=MSVC` or `=GCC` in
+`build.user.bat`, or the `MSVC`/`GCC` switch, picks explicitly.
 
 What a normal build needs: Visual Studio, and `nasm.exe` on `PATH` for
 ffmpeg's and dav1d's x86 assembly. That is all. No shell, no make, nothing
