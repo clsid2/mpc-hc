@@ -100,6 +100,45 @@ bool CFGFilterLAV::CheckVersion(CString filterPath)
     return fversion >= LAV_FILTERS_VERSION(0, 77, 0, 0);
 }
 
+CString CFGFilterLAV::GetFFmpegCompiler()
+{
+    // avutil-lav-<major>.dll sits next to the filters; the major number moves with ffmpeg, hence the wildcard
+    CString dir = PathUtils::DirName(GetFilterPath(VIDEO_DECODER));
+    WIN32_FIND_DATA fd;
+    HANDLE hFind = FindFirstFile(PathUtils::CombinePaths(dir, _T("avutil-lav-*.dll")), &fd);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return _T("");
+    }
+    FindClose(hFind);
+
+    bool loadedHere = false;
+    HMODULE hMod = GetModuleHandle(fd.cFileName);
+    if (!hMod) {
+        hMod = LoadLibraryEx(PathUtils::CombinePaths(dir, fd.cFileName), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        loadedHere = true;
+    }
+    if (!hMod) {
+        return _T("");
+    }
+
+    CString result;
+    typedef const char* (*avutil_configuration_t)(void);
+    if (auto configuration = (avutil_configuration_t)GetProcAddress(hMod, "avutil_configuration")) {
+        CStringA cfg(configuration());
+        if (cfg.Find("--cc='clang") >= 0 || cfg.Find("--cc=clang") >= 0) {
+            result = _T("Clang (Visual Studio)");
+        } else if (cfg.Find("--toolchain=msvc") >= 0) {
+            result = _T("Visual C++");
+        } else if (cfg.Find("mingw32") >= 0) {
+            result = _T("MinGW-w64 GCC");
+        }
+    }
+    if (loadedHere) {
+        FreeLibrary(hMod);
+    }
+    return result;
+}
+
 CString CFGFilterLAV::GetVersion(LAVFILTER_TYPE filterType /*= INVALID*/)
 {
     CStringList paths;
