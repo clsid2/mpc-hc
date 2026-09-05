@@ -102,20 +102,8 @@ IF /I "%TOOLCHAIN%" == "GCC" (
     ECHO ERROR: nasm.exe not found in PATH. See "%ROOT_DIR%\docs\Compilation.md".
     EXIT /B 1
   )
-  REM LAV's own DSUtilLite pre-build step (src\common\genversion.bat) still runs its version
-  REM script through "%%MPCHC_MSYS%%\usr\bin\bash.exe". Git for Windows has the same layout,
-  REM so point it there when no MSYS2 installation is configured.
-  IF NOT DEFINED MPCHC_MSYS IF DEFINED MSYS SET "MPCHC_MSYS=%MSYS%"
-  IF NOT DEFINED MPCHC_MSYS IF EXIST "C:\msys64\usr\bin\bash.exe" SET "MPCHC_MSYS=C:\msys64"
-  IF NOT DEFINED MPCHC_MSYS (
-    IF NOT DEFINED MPCHC_GIT IF DEFINED GIT SET "MPCHC_GIT=%GIT%"
-    IF NOT DEFINED MPCHC_GIT SET "MPCHC_GIT=C:\Program Files\Git"
-    SET "MPCHC_MSYS=!MPCHC_GIT!"
-  )
-  IF NOT EXIST "!MPCHC_MSYS!\usr\bin\bash.exe" (
-    ECHO ERROR: no bash.exe under "!MPCHC_MSYS!\usr\bin" for LAV's version script. Set MPCHC_MSYS or MPCHC_GIT in build.user.bat.
-    EXIT /B 1
-  )
+  REM No shell is needed: Directory.Build.targets replaces LAV's bash-based version stamp
+  REM (DSUtilLite's pre-build step) with msvc\genversion.cmd.
 )
 
 IF NOT EXIST "%MPCHC_VS_PATH%" CALL "%COMMON%" :SubVSPath
