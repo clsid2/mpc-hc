@@ -81,9 +81,16 @@ struct CastMediaInfo {
     Audio audio = Audio::Unknown;
     int width = 0;      // coded video size, 0 when unknown
     int height = 0;
+    int videoBitDepth = 0; // bits per component, 0 when unknown -- 12-bit HEVC and
+    // 10-bit AV1 are where a Chromecast's decoder tends to stop
     int sampleRate = 0; // audio, 0 when unknown
     int channels = 0;
     double durationSec = 0.0; // how long the file is, 0 when unknown
+    // Verbatim from MediaInfo, for the log and for building the per-device
+    // format table: the profile pins down what a codec name alone does not
+    // (HEVC Main vs Main 10 vs Main 12; DTS core vs DTS-HD MA vs DTS:X).
+    CString videoProfile;
+    CString audioProfile;
 };
 
 // The names of what MediaInfo found, kept beside the values they name so
@@ -154,6 +161,12 @@ inline CString CastDescribeMedia(const CastMediaInfo& info)
         if (info.width > 0 && info.height > 0) {
             text.AppendFormat(_T(" %dx%d"), info.width, info.height);
         }
+        if (info.videoBitDepth > 0) {
+            text.AppendFormat(_T(" %d-bit"), info.videoBitDepth);
+        }
+        if (!info.videoProfile.IsEmpty()) {
+            text.AppendFormat(_T(" [%s]"), info.videoProfile.GetString());
+        }
     }
     if (info.audio == CastMediaInfo::Audio::Unknown && info.sampleRate == 0 && info.channels == 0) {
         text += _T(", no audio");
@@ -164,6 +177,9 @@ inline CString CastDescribeMedia(const CastMediaInfo& info)
         }
         if (info.channels > 0) {
             text.AppendFormat(_T(" %d ch"), info.channels);
+        }
+        if (!info.audioProfile.IsEmpty()) {
+            text.AppendFormat(_T(" [%s]"), info.audioProfile.GetString());
         }
     }
     return text;

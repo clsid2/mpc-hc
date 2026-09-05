@@ -86,6 +86,8 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
     if (info.video != CastMediaInfo::Video::Unknown) {
         info.width = MediaInfoInt(field(MediaInfoDLL::Stream_Video, __T("Width")));
         info.height = MediaInfoInt(field(MediaInfoDLL::Stream_Video, __T("Height")));
+        info.videoBitDepth = MediaInfoInt(field(MediaInfoDLL::Stream_Video, __T("BitDepth")));
+        info.videoProfile = field(MediaInfoDLL::Stream_Video, __T("Format_Profile"));
     }
 
     const CString audioFormat = field(MediaInfoDLL::Stream_Audio, __T("Format"));
@@ -127,6 +129,13 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
     if (info.audio != CastMediaInfo::Audio::Unknown) {
         info.sampleRate = MediaInfoInt(field(MediaInfoDLL::Stream_Audio, __T("SamplingRate")));
         info.channels = MediaInfoInt(field(MediaInfoDLL::Stream_Audio, __T("Channel(s)")));
+        // The commercial name carries the DTS-HD MA / DTS:X / Atmos wording a
+        // renderer or a device support list is described in; the plain profile
+        // is the fallback when there is no commercial name.
+        const CString commercial = field(MediaInfoDLL::Stream_Audio, __T("Format_Commercial_IfAny"));
+        info.audioProfile = commercial.IsEmpty()
+                            ? field(MediaInfoDLL::Stream_Audio, __T("Format_Profile"))
+                            : commercial;
     }
 
     // How long the file is, which a session that never had the player's graph
@@ -136,8 +145,8 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
 
     mi.Close();
 
-    TRACE(_T("CastMediaInfo: video %d %dx%d, audio %d %d Hz %d ch\n"), (int)info.video,
-          info.width, info.height, (int)info.audio, info.sampleRate, info.channels);
+    TRACE(_T("CastMediaInfo: video %d %dx%d %d-bit, audio %d %d Hz %d ch\n"), (int)info.video,
+          info.width, info.height, info.videoBitDepth, (int)info.audio, info.sampleRate, info.channels);
     return info;
 }
 
