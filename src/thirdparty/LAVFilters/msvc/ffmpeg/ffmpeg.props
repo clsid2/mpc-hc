@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Settings shared by the six ffmpeg DLL projects (avutil, swresample, swscale,
-  avcodec, avformat, avfilter). The compiler flags mirror what ffmpeg's configure
-  chooses for the compiler in use (see msvc/README.md); the source lists live in
-  the generated <compiler>\items-<lib>-<platform>.props files.
--->
+<!-- Shared by the six ffmpeg DLL projects. Flags are what ffmpeg's configure chooses for the compiler in use; see README.md. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)..\common.props" />
   <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\nasm-$(Platform).props" />
-  <!-- LAV's platform.props (imported by common.props) picks the cl toolset; clang goes through Visual Studio's ClangCL toolset instead -->
   <PropertyGroup Label="Configuration" Condition="'$(FFmpegCompiler)'=='clang'">
     <PlatformToolset>ClangCL</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>$(FFmpegDllName)</TargetName>
-    <!-- separate object trees per compiler so that switching never reuses the other's objects -->
     <IntDir>$(LavBin)thirdparty\msvc\$(FFmpegCompiler)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -35,21 +28,18 @@
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <!-- cl: exactly what configure's msvc toolchain passes -->
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='cl'">
     <ClCompile>
       <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <!-- clang: what configure passes for a clang targeting MSVC (-O3 -fomit-frame-pointer and gcc-style warnings), in clang-cl spelling -->
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">
     <ClCompile>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <!-- clang 22 makes incompatible pointer types an error by default; ffmpeg relies on them being warnings, as with every other compiler it supports -->
       <AdditionalOptions>-utf-8 /clang:-O3 /clang:-fomit-frame-pointer /clang:-fno-math-errno /clang:-fno-signed-zeros -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-pointer-sign -Wno-switch -Wno-parentheses -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-format-zero-length -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-function -Wno-microsoft-anon-tag -Wno-ignored-attributes -Wno-unknown-warning-option %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <!-- LAV's two HEVC intrinsic files rely on "#pragma GCC target" under gcc; clang needs the target features spelled out -->
+  <!-- these two use "#pragma GCC target", which clang ignores -->
   <ItemGroup Condition="'$(FFmpegCompiler)'=='clang'">
     <ClCompile Update="$(FFmpegSrc)libavcodec\x86\hevc\intra_intrinsic.c;$(FFmpegSrc)libavcodec\x86\hevc\idct_intrinsic.c">
       <AdditionalOptions>-mssse3 -msse4.1 %(AdditionalOptions)</AdditionalOptions>

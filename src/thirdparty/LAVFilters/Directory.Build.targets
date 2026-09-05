@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Picked up by MSBuild for every project below this directory, including the ones
-  inside the LAV Filters submodule (see Directory.Build.props).
-
-  DSUtilLite's pre-build step runs LAV's common\genversion.bat, which needs a bash
-  under %MPCHC_MSYS% to run version.sh. msvc\genversion.cmd does the same job in
-  plain cmd, so a build needs no shell at all. This item definition comes after the
-  project's own, so it wins.
--->
+<!-- Applies to every project under this directory, the LAV submodule's included (see msvc\README.md).
+     DSUtilLite's pre-build step (LAV's genversion.bat, needs bash) is replaced by msvc\genversion.cmd. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemDefinitionGroup Condition="'$(MSBuildProjectName)'=='DSUtilLite'">
     <PreBuildEvent>
