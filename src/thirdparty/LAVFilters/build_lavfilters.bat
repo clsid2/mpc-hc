@@ -65,11 +65,28 @@ IF %ARGB%    GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGB% == 0    (SET "BUILDTY
 IF %ARGPL%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGPL% == 0   (SET "ARCH=Both")
 IF %ARGBC%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGBC% == 0   (SET "RELEASETYPE=Release")
 IF %ARGCOMP% GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGCOMP% == 0 (SET "COMPILER=VS2019")
-IF %ARGTC%   GTR 1 (GOTO UnsupportedSwitch) ELSE IF %ARGTC% == 0   (IF NOT DEFINED MPCHC_LAV_TOOLCHAIN (SET "TOOLCHAIN=MSVC") ELSE (SET "TOOLCHAIN=%MPCHC_LAV_TOOLCHAIN%"))
+IF %ARGTC%   GTR 1 GOTO UnsupportedSwitch
 
-REM MSVC (default): ffmpeg and its external libraries are built by the MSBuild projects in
-REM msvc\ (see msvc\README.md). Needs nasm.exe on PATH and nothing else outside Visual Studio.
-REM GCC: the historical path, ffmpeg cross-compiled with MinGW-w64 through MSYS2 (build_ffmpeg.sh).
+REM Which toolchain builds ffmpeg:
+REM   GCC  - the historical path, ffmpeg cross-compiled with MinGW-w64 through MSYS2 (build_ffmpeg.sh);
+REM          this is how upstream releases are built.
+REM   MSVC - ffmpeg and its external libraries built by the MSBuild projects in msvc\ (see
+REM          msvc\README.md); needs nasm.exe on PATH and nothing else outside Visual Studio.
+REM Chosen by the MSVC/GCC switch, else by MPCHC_LAV_TOOLCHAIN (build.user.bat), else GCC when a
+REM MinGW-w64 gcc is configured and MSVC when it is not.
+IF EXIST "%ROOT_DIR%\build.user.bat" CALL "%ROOT_DIR%\build.user.bat"
+IF NOT DEFINED TOOLCHAIN IF DEFINED MPCHC_LAV_TOOLCHAIN SET "TOOLCHAIN=%MPCHC_LAV_TOOLCHAIN%"
+IF NOT DEFINED TOOLCHAIN (
+  IF NOT DEFINED MPCHC_MINGW64 IF DEFINED MINGW64 SET "MPCHC_MINGW64=%MINGW64%"
+  IF NOT DEFINED MPCHC_MINGW64 SET "MPCHC_MINGW64=C:\msys64\mingw64"
+  IF EXIST "!MPCHC_MINGW64!\bin\gcc.exe" (SET "TOOLCHAIN=GCC") ELSE (SET "TOOLCHAIN=MSVC")
+)
+IF /I NOT "%TOOLCHAIN%" == "GCC" IF /I NOT "%TOOLCHAIN%" == "MSVC" (
+  ECHO ERROR: unknown toolchain "%TOOLCHAIN%" ^(use MSVC or GCC^)
+  EXIT /B 1
+)
+ECHO Building LAV Filters' ffmpeg with the %TOOLCHAIN% toolchain
+
 IF /I "%TOOLCHAIN%" == "GCC" (
   CALL "%COMMON%" :SubSetPath
   IF !ERRORLEVEL! NEQ 0 EXIT /B 1
@@ -167,6 +184,9 @@ IF /I "%ARCH%" == "x86" (SET "ARCHVS=Win32") ELSE (SET "ARCHVS=x64")
 
 REM Build FFmpeg (and, on the MSVC path, the external libraries it links against)
 IF /I "%TOOLCHAIN%" == "GCC" (
+  REM The MSVC path leaves its ffmpeg DLLs in src\bin_<plat>[d]; the copy step below must not pick them up
+  IF /I "%RELEASETYPE%" == "Debug" (SET "FFDLLDIR=src\bin_%ARCHVS%d") ELSE (SET "FFDLLDIR=src\bin_%ARCHVS%")
+  IF EXIST "!FFDLLDIR!\avutil-lav-*.dll" DEL /Q "!FFDLLDIR!\*-lav-*.dll" "!FFDLLDIR!\*-lav-*.pdb" >NUL 2>&1
   sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%
   IF !ERRORLEVEL! NEQ 0 (
     CALL "%COMMON%" :SubMsg "ERROR" "'sh build_ffmpeg.sh %ARCH% %RELEASETYPE% %BUILDTYPE% %COMPILER%' failed!"
@@ -261,12 +281,13 @@ ECHO %~nx0 [Clean^|Build^|Rebuild] [x86^|x64^|Both] [Debug^|Release] [MSVC^|GCC]
 ECHO.
 ECHO Notes: You can also prefix the commands with "-", "--" or "/".
 ECHO        The arguments are not case sensitive and can be ommitted.
-ECHO        MSVC (default) builds ffmpeg with the MSBuild projects in msvc\ and needs only
-ECHO        Visual Studio and nasm.exe; GCC uses MinGW-w64/MSYS2 through build_ffmpeg.sh.
-ECHO        The default can be changed with MPCHC_LAV_TOOLCHAIN=GCC in build.user.bat.
+ECHO        GCC builds ffmpeg with MinGW-w64/MSYS2 through build_ffmpeg.sh; MSVC builds it
+ECHO        with the MSBuild projects in msvc\ and needs only Visual Studio and nasm.exe.
+ECHO        Without the switch, MPCHC_LAV_TOOLCHAIN from build.user.bat decides, and without
+ECHO        that GCC is used when a MinGW-w64 gcc is configured and MSVC otherwise.
 ECHO. & ECHO.
 ECHO Executing %~nx0 without any arguments will use the default ones:
-ECHO "%~nx0 Build Both Release MSVC VS2019"
+ECHO "%~nx0 Build Both Release VS2019"
 ECHO.
 POPD
 ENDLOCAL
