@@ -91,7 +91,38 @@ struct CastMediaInfo {
     // (HEVC Main vs Main 10 vs Main 12; DTS core vs DTS-HD MA vs DTS:X).
     CString videoProfile;
     CString audioProfile;
+
+    // Whether the audio track carries real signal, decoded here rather than
+    // read off the container. This tells a file whose audio is dead or empty
+    // apart from one whose audio a device silently drops: if we found real
+    // signal and the device plays silent, the fault is downstream, not the
+    // file. "NotDecodable" is the honest answer for a codec the local decoder
+    // has no support for (a DTS or TrueHD track, say), which is neither a
+    // verdict nor a failure.
+    enum class AudioCheck { NotChecked, NoTrack, NotDecodable, Silent, RealSignal };
+    AudioCheck audioCheck = AudioCheck::NotChecked;
+    double audioPeakDb = -144.0;
 };
+
+// One log-ready phrase for the local audio check, empty when it was not run.
+inline CString CastDescribeAudioCheck(const CastMediaInfo& info)
+{
+    switch (info.audioCheck) {
+        case CastMediaInfo::AudioCheck::RealSignal: {
+            CString s;
+            s.Format(_T("local audio: real signal, peak %.1f dB"), info.audioPeakDb);
+            return s;
+        }
+        case CastMediaInfo::AudioCheck::Silent:
+            return _T("local audio: decoded to silence");
+        case CastMediaInfo::AudioCheck::NotDecodable:
+            return _T("local audio: no decoder here to check it");
+        case CastMediaInfo::AudioCheck::NoTrack:
+            return _T("local audio: no track");
+        default:
+            return CString();
+    }
+}
 
 // The names of what MediaInfo found, kept beside the values they name so
 // that the two cannot drift apart. Only the log has any use for them.
@@ -181,6 +212,10 @@ inline CString CastDescribeMedia(const CastMediaInfo& info)
         if (!info.audioProfile.IsEmpty()) {
             text.AppendFormat(_T(" [%s]"), info.audioProfile.GetString());
         }
+    }
+    const CString audioCheck = CastDescribeAudioCheck(info);
+    if (!audioCheck.IsEmpty()) {
+        text.AppendFormat(_T("; %s"), audioCheck.GetString());
     }
     return text;
 }

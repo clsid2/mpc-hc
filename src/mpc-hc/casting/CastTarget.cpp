@@ -21,6 +21,14 @@
 #include "stdafx.h"
 #include "CastTarget.h"
 #include "MediaInfo/MediaInfoDLL.h"
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <mferror.h>
+#include <cmath>
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
 
 // MediaInfo is what a file about to be cast is read with. It is an external
 // library, loaded at run time, that the installer and the archive both ship
@@ -47,6 +55,101 @@ bool CastMediaInfoAvailable()
 {
     MediaInfoDLL::MediaInfo mi;
     return mi.IsReady();
+}
+
+// Decodes the first audio stream to float PCM with the Media Foundation Source
+// Reader -- no DirectShow graph, no LAV, nothing to register -- and reports
+// whether the first few seconds carry real signal. A codec the system has no
+// decoder for comes back NotDecodable, which is the truthful "we cannot check
+// this here" rather than a claim either way. Validated against ffmpeg's
+// volumedetect: real audio peaks near 0 dB, silence sits at the sample floor.
+static void MeasureCastAudioLevel(const CString& path, CastMediaInfo& info)
+{
+    // Balanced with the MFShutdown below; harmless if MF is already started
+    // elsewhere in the process, since the count is what is tracked.
+    if (FAILED(MFStartup(MF_VERSION, MFSTARTUP_LITE))) {
+        return;
+    }
+    struct MFScope { ~MFScope() { MFShutdown(); } } mfScope;
+
+    const DWORD firstAudio = (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM;
+    const DWORD allStreams = (DWORD)MF_SOURCE_READER_ALL_STREAMS;
+
+    IMFSourceReader* reader = nullptr;
+    if (FAILED(MFCreateSourceReaderFromURL(path, nullptr, &reader)) || !reader) {
+        info.audioCheck = CastMediaInfo::AudioCheck::NotDecodable;
+        return;
+    }
+
+    reader->SetStreamSelection(allStreams, FALSE);
+    reader->SetStreamSelection(firstAudio, TRUE);
+
+    IMFMediaType* nativeType = nullptr;
+    if (FAILED(reader->GetNativeMediaType(firstAudio, 0, &nativeType))) {
+        info.audioCheck = CastMediaInfo::AudioCheck::NoTrack;
+        reader->Release();
+        return;
+    }
+    nativeType->Release();
+
+    IMFMediaType* pcm = nullptr;
+    MFCreateMediaType(&pcm);
+    pcm->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+    pcm->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
+    const HRESULT hrType = reader->SetCurrentMediaType(firstAudio, nullptr, pcm);
+    pcm->Release();
+    if (FAILED(hrType)) {
+        info.audioCheck = CastMediaInfo::AudioCheck::NotDecodable;
+        reader->Release();
+        return;
+    }
+
+    double peak = 0.0;
+    const LONGLONG limit = 30000000LL; // three seconds of the stream, in 100 ns
+    for (;;) {
+        DWORD flags = 0;
+        LONGLONG ts = 0;
+        IMFSample* sample = nullptr;
+        if (FAILED(reader->ReadSample(firstAudio, 0, nullptr, &flags, &ts, &sample))) {
+            break;
+        }
+        if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+            if (sample) {
+                sample->Release();
+            }
+            break;
+        }
+        if (sample) {
+            IMFMediaBuffer* buf = nullptr;
+            if (SUCCEEDED(sample->ConvertToContiguousBuffer(&buf)) && buf) {
+                BYTE* data = nullptr;
+                DWORD len = 0;
+                if (SUCCEEDED(buf->Lock(&data, nullptr, &len))) {
+                    const float* f = reinterpret_cast<const float*>(data);
+                    for (size_t i = 0, n = len / sizeof(float); i < n; i++) {
+                        const double a = std::fabs((double)f[i]);
+                        if (a > peak) {
+                            peak = a;
+                        }
+                    }
+                    buf->Unlock();
+                }
+                buf->Release();
+            }
+            sample->Release();
+        }
+        if (ts >= limit) {
+            break;
+        }
+    }
+    reader->Release();
+
+    info.audioPeakDb = peak <= 1e-7 ? -144.0 : 20.0 * std::log10(peak);
+    // A generous floor: real programme material peaks far above this, while a
+    // dead or empty track sits at or below it.
+    info.audioCheck = info.audioPeakDb > -60.0
+                      ? CastMediaInfo::AudioCheck::RealSignal
+                      : CastMediaInfo::AudioCheck::Silent;
 }
 
 CastMediaInfo GetCastMediaInfo(const CString& path)
@@ -144,6 +247,17 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
     info.durationSec = MediaInfoInt(field(MediaInfoDLL::Stream_General, __T("Duration"))) / 1000.0;
 
     mi.Close();
+
+    // Decode a few seconds of the audio here to see whether it is real or dead,
+    // but only when there is an audio track: a video-only file has nothing to
+    // check, and this is a decode we would rather not spend otherwise.
+    const bool hasAudioTrack = info.audio != CastMediaInfo::Audio::Unknown || info.channels > 0
+                               || !field(MediaInfoDLL::Stream_Audio, __T("Format")).IsEmpty();
+    if (hasAudioTrack) {
+        MeasureCastAudioLevel(path, info);
+    } else {
+        info.audioCheck = CastMediaInfo::AudioCheck::NoTrack;
+    }
 
     TRACE(_T("CastMediaInfo: video %d %dx%d %d-bit, audio %d %d Hz %d ch\n"), (int)info.video,
           info.width, info.height, info.videoBitDepth, (int)info.audio, info.sampleRate, info.channels);
