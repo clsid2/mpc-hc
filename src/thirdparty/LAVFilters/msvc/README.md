@@ -65,6 +65,21 @@ projects have always looked for them. `build_lavfilters.bat` then builds
 `LAVFilters.sln` and copies the results into MPC-HC's output directory as
 before.
 
+## Adjustments to the submodule without patching it
+
+`..\Directory.Build.props` and `..\Directory.Build.targets` (one directory up) are
+picked up by MSBuild for every project under `src\thirdparty\LAVFilters`, the
+submodule's included.  They already carry the two adjustments LAV's own projects
+need, so this build relies on them rather than patching the submodule:
+
+* `IntelQuickSyncDecoder.vcxproj` (LAV's nested qsdecoder submodule) maps Visual
+  Studio versions to toolsets itself and stops at 17.0; the props file supplies
+  the 18.0 mapping.
+* DSUtilLite's pre-build step runs LAV's `common\genversion.bat`, which needs a
+  bash under `%MPCHC_MSYS%`; the targets file swaps it for `..\genversion.cmd`.
+
+So a build touches no shell at all.
+
 ## Library configuration
 
 The option set is that of `build_ffmpeg.sh` (the GCC path). The one
