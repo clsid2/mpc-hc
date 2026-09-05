@@ -50,6 +50,11 @@ END_MESSAGE_MAP()
 // CInPlaceHotKey message handlers
 BOOL CInPlaceWinHotkey::PreTranslateMessage(MSG* pMsg)
 {
+    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_TAB) {
+        GetParent()->SetFocus();
+        return TRUE;
+    }
+
     if (pMsg->message == WM_KEYDOWN) {
         if (pMsg->wParam == VK_RETURN
                 || pMsg->wParam == VK_DELETE
@@ -922,6 +927,17 @@ void CPlayerListCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 }
 
 
+void CPlayerListCtrl::BeginInPlaceEdit(int nItem, int nSubItem)
+{
+    LV_DISPINFO dispinfo = {};
+    dispinfo.hdr.hwndFrom = m_hWnd;
+    dispinfo.hdr.idFrom = GetDlgCtrlID();
+    dispinfo.hdr.code = LVN_DOLABELEDIT;
+    dispinfo.item.iItem = nItem;
+    dispinfo.item.iSubItem = nSubItem;
+    GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM)&dispinfo);
+}
+
 void CPlayerListCtrl::OnTimer(UINT_PTR nIDEvent)
 {
     if (nIDEvent == m_nTimerID) {
@@ -930,13 +946,7 @@ void CPlayerListCtrl::OnTimer(UINT_PTR nIDEvent)
 
         UINT flag = LVIS_FOCUSED;
         if ((GetItemState(m_nItemClicked, flag) & flag) == flag && m_nSubItemClicked >= 0) {
-            LV_DISPINFO dispinfo = {};
-            dispinfo.hdr.hwndFrom = m_hWnd;
-            dispinfo.hdr.idFrom = GetDlgCtrlID();
-            dispinfo.hdr.code = LVN_DOLABELEDIT;
-            dispinfo.item.iItem = m_nItemClicked;
-            dispinfo.item.iSubItem = m_nSubItemClicked;
-            GetParent()->SendMessage(WM_NOTIFY, GetDlgCtrlID(), (LPARAM)&dispinfo);
+            BeginInPlaceEdit(m_nItemClicked, m_nSubItemClicked);
         }
     } else if (nIDEvent == 43) {
         // CListCtrl does really strange things on this timer.

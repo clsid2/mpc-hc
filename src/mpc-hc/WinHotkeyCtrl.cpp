@@ -32,6 +32,7 @@
 
 HHOOK CWinHotkeyCtrl::sm_hhookKb = nullptr;
 CWinHotkeyCtrl* CWinHotkeyCtrl::sm_pwhcFocus = nullptr;
+DWORD CWinHotkeyCtrl::sm_fModsDown = 0;
 
 
 IMPLEMENT_DYNAMIC(CWinHotkeyCtrl, CEdit)
@@ -73,9 +74,49 @@ LRESULT CALLBACK CWinHotkeyCtrl::LowLevelKeyboardProc(int nCode, WPARAM wParam, 
 {
     LRESULT lResult = 1;
 
+    if (nCode < 0) {
+        return ::CallNextHookEx(sm_hhookKb, nCode, wParam, lParam);
+    }
+
     if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN ||
                                wParam == WM_KEYUP || wParam == WM_SYSKEYUP) && sm_pwhcFocus) {
-        sm_pwhcFocus->PostMessage(WM_KEY, ((PKBDLLHOOKSTRUCT)lParam)->vkCode, (wParam & 1));
+        DWORD vkCode = ((PKBDLLHOOKSTRUCT)lParam)->vkCode;
+        BOOL fUp = (wParam & 1);
+        DWORD fMod = 0;
+
+        switch (vkCode) {
+            case VK_CONTROL:
+            case VK_LCONTROL:
+            case VK_RCONTROL:
+                fMod = MOD_CONTROL;
+                break;
+            case VK_MENU:
+            case VK_LMENU:
+            case VK_RMENU:
+                fMod = MOD_ALT;
+                break;
+            case VK_SHIFT:
+            case VK_LSHIFT:
+            case VK_RSHIFT:
+                fMod = MOD_SHIFT;
+                break;
+        }
+        if (fMod) {
+            if (fUp) {
+                sm_fModsDown &= ~fMod;
+            } else {
+                sm_fModsDown |= fMod;
+            }
+        }
+
+        // Tab and Enter without modifiers leave the field through the normal message flow,
+        // so keyboard-only users are not trapped in it. Ctrl+Enter, Shift+Tab etc. stay assignable
+        // (a modifier press has already replaced the recorded key by the time Tab arrives).
+        if ((vkCode == VK_RETURN || vkCode == VK_TAB) && sm_fModsDown == 0) {
+            return ::CallNextHookEx(sm_hhookKb, nCode, wParam, lParam);
+        }
+
+        sm_pwhcFocus->PostMessage(WM_KEY, vkCode, fUp);
     }
     return lResult;
 }
@@ -86,6 +127,17 @@ BOOL CWinHotkeyCtrl::InstallKbHook()
         sm_pwhcFocus->UninstallKbHook();
     }
     sm_pwhcFocus = this;
+    // seed with the modifiers already held, so a combo started before the field got focus is still recorded
+    sm_fModsDown = 0;
+    if (GetAsyncKeyState(VK_CONTROL) < 0) {
+        sm_fModsDown |= MOD_CONTROL;
+    }
+    if (GetAsyncKeyState(VK_MENU) < 0) {
+        sm_fModsDown |= MOD_ALT;
+    }
+    if (GetAsyncKeyState(VK_SHIFT) < 0) {
+        sm_fModsDown |= MOD_SHIFT;
+    }
 
     sm_hhookKb = ::SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)LowLevelKeyboardProc, GetModuleHandle(nullptr), 0);
 

@@ -43,6 +43,7 @@ public:
 private:
     static HHOOK sm_hhookKb;
     static CWinHotkeyCtrl* sm_pwhcFocus;
+    static DWORD sm_fModsDown;
     bool isMouseModifier;
 
     UINT m_vkCode, m_vkCode_def;

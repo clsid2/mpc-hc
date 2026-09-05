@@ -166,6 +166,7 @@ public:
 
     static LRESULT SendLabelEditNotify(CWnd* pList, UINT code, int nItem, int nSubItem, LPCTSTR pszText = nullptr);
 
+    void BeginInPlaceEdit(int nItem, int nSubItem);
     CWinHotkeyCtrl* ShowInPlaceWinHotkey(int nItem, int nCol);
     CInPlaceEdit* ShowInPlaceEdit(int nItem, int nCol);
     CEdit* ShowInPlaceFloatEdit(int nItem, int nCol);

@@ -115,6 +115,15 @@ BOOL CPPageAccelTbl::PreTranslateMessage(MSG* pMsg)
         return TRUE;
     }
 
+    if (pMsg->message == WM_KEYDOWN && (pMsg->wParam == VK_SPACE || pMsg->wParam == VK_RETURN) && pMsg->hwnd == m_list.m_hWnd
+            && GetKeyState(VK_CONTROL) >= 0 && GetKeyState(VK_MENU) >= 0 && GetKeyState(VK_SHIFT) >= 0) {
+        int nItem = m_list.GetNextItem(-1, LVNI_FOCUSED);
+        if (nItem >= 0) {
+            m_list.BeginInPlaceEdit(nItem, COL_KEY);
+            return TRUE;
+        }
+    }
+
     return __super::PreTranslateMessage(pMsg);
 }
 
