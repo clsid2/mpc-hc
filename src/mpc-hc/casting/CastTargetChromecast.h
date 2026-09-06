@@ -66,8 +66,10 @@ public:
     // be empty. pRefusal, when given, is filled in with why not, which is the
     // one thing a report of "it did not work" has to carry. Public so that the
     // decision can be exercised on its own.
+    // maxAudioChannels caps the audio the device is known to output (0 = no
+    // cap); it is last so existing callers need not pass it.
     static bool ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
-                                CString* pRefusal = nullptr);
+                                CString* pRefusal = nullptr, int maxAudioChannels = 0);
 
     void LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
                    const CastMediaInfo& info) override;

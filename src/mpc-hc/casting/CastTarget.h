@@ -208,6 +208,11 @@ struct CastTargetDevice {
     CString formats;  // DLNA ConnectionManager Sink list, empty when unknown
     bool supportsVideo = false;
     bool supportsAudio = false;
+    // The most audio channels the device is known to output, 0 when unknown
+    // (no limit applied). Set by the user, not discovered: a device that cannot
+    // handle a channel layout drops the audio silently while it plays the video
+    // and reports success, so nothing on the wire reveals the limit.
+    int maxAudioChannels = 0;
 };
 
 // A device the user has kept. The cast submenu is built from these alone, so

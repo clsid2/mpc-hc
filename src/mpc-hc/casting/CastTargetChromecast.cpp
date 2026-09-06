@@ -338,7 +338,7 @@ static bool IsGoogleReceiver(const CString& model)
 // perfectly well, and nobody would ever find out why. Resolution and frame
 // rate limits are not modelled for the same reason.
 bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
-                                        CString* pRefusal)
+                                        CString* pRefusal, int maxAudioChannels)
 {
     // Written into whatever the caller offered, so that every refusal below
     // says what it refused over rather than only that it did.
@@ -358,6 +358,16 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
         } else {
             refusal.Format(_T("the receiver does not play %hs containers"), mime.GetString());
         }
+        return false;
+    }
+
+    // A user-set channel cap for this device. It is checked before the codec,
+    // because the failure it guards against is the worst kind: the device takes
+    // the file, plays the picture and drops the sound with no error. Until the
+    // audio can be downmixed to fit, the honest answer is to refuse it here.
+    if (maxAudioChannels > 0 && info.channels > maxAudioChannels) {
+        refusal.Format(_T("the device is set to output at most %d audio channels; this file has %d"),
+                       maxAudioChannels, info.channels);
         return false;
     }
 
@@ -414,7 +424,7 @@ bool CChromecastTarget::CanCastFileSaved(const CastSavedDevice& saved, const CSt
 {
     CString refusal;
     const CStringA mime = CCastMediaServer::MimeForFile(path);
-    bool ok = ignoreFormatSupport || ReceiverCanPlay(path, info, saved.model, &refusal);
+    bool ok = ignoreFormatSupport || ReceiverCanPlay(path, info, saved.model, &refusal, saved.maxAudioChannels);
     // A device without video, a speaker or a display-less Nest, only takes audio.
     if (ok && mime.Left(6).CompareNoCase("video/") == 0 && !saved.supportsVideo) {
         ok = false;
