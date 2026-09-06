@@ -156,6 +156,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="casting\CastSessionDlg.cpp" />
     <ClCompile Include="casting\CastTarget.cpp" />
     <ClCompile Include="casting\CastTargetChromecast.cpp" />
+    <ClCompile Include="casting\CastLavDecoder.cpp" />
+    <ClCompile Include="casting\CastTranscoder.cpp" />
     <ClCompile Include="casting\CastTargetDlna.cpp" />
     <ClCompile Include="casting\CastTargetMulti.cpp" />
     <ClCompile Include="casting\DlnaDiscovery.cpp" />
@@ -368,6 +370,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="casting\CastSessionDlg.h" />
     <ClInclude Include="casting\CastTarget.h" />
     <ClInclude Include="casting\CastTargetChromecast.h" />
+    <ClInclude Include="casting\CastLavDecoder.h" />
+    <ClInclude Include="casting\CastTranscoder.h" />
     <ClInclude Include="casting\CastTargetDlna.h" />
     <ClInclude Include="casting\CastTargetMulti.h" />
     <ClInclude Include="casting\DlnaDiscovery.h" />

@@ -391,6 +391,12 @@
     <ClCompile Include="casting\CastTargetChromecast.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
+    <ClCompile Include="casting\CastLavDecoder.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
+    <ClCompile Include="casting\CastTranscoder.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
     <ClCompile Include="casting\CastTargetDlna.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
@@ -995,6 +1001,12 @@
       <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="casting\CastTargetChromecast.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="casting\CastLavDecoder.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="casting\CastTranscoder.h">
       <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="casting\CastTargetDlna.h">

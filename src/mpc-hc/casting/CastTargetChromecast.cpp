@@ -20,7 +20,9 @@
 
 #include "stdafx.h"
 #include "CastTargetChromecast.h"
+#include "CastTranscoder.h"
 #include "Logger.h"
+#include <algorithm>
 
 #define CAST_MSGWND_CLASS   _T("MPCHCCastTarget")
 #define WM_CAST_SESSION     (WM_APP + 0)
@@ -34,6 +36,7 @@ CChromecastTarget::~CChromecastTarget()
     m_session.Stop();
     m_server.Stop();
     m_discovery.Stop();
+    DeleteDownmixTemp();
     if (m_hMsgWnd) {
         DestroyWindow(m_hMsgWnd);
         m_hMsgWnd = nullptr;
@@ -187,6 +190,7 @@ bool CChromecastTarget::Connect(const CString& deviceId)
         return false;
     }
 
+    m_maxAudioChannels = 0; // a device picked out of a live scan carries no saved cap
     for (const CastDevice& dev : m_discovery.GetDevices()) {
         if (DeviceKey(dev) == deviceId) {
             return StartSession(dev, deviceId, DeviceDisplayName(dev));
@@ -215,6 +219,7 @@ bool CChromecastTarget::StartSession(const CastDevice& dev, const CString& devic
                 m_server.GetPort(), dev.ipAddress.GetString());
     m_deviceId = deviceId;
     m_deviceName = deviceName;
+    m_model = dev.model; // drives the receiver rules the load is judged against
     m_casting = true;
     m_failed = false;
     // notifications of the previous session no longer apply
@@ -228,6 +233,7 @@ bool CChromecastTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWO
     if (m_casting || !EnsureMessageWindow()) {
         return false;
     }
+    m_maxAudioChannels = saved.maxAudioChannels; // the user's cap for this device
 
     // The address the device was last seen at is asked first; only when it
     // does not answer, or answers as somebody else, is a full search worth
@@ -337,6 +343,29 @@ static bool IsGoogleReceiver(const CString& model)
 // refuses content a device released after this table was written plays
 // perfectly well, and nobody would ever find out why. Resolution and frame
 // rate limits are not modelled for the same reason.
+// The channels a downmix would deliver for this file on this device: the file's
+// own count, pulled down by whatever the device cannot exceed. The downmix
+// output is AAC, so a Google receiver takes only stereo of it, and Media
+// Foundation's AAC encoder stops at 5.1; the user's per-device cap applies on
+// top. A value below the file's own count means a downmix is called for.
+static int DownmixTargetChannels(const CastMediaInfo& info, const CString& model, int maxAudioChannels)
+{
+    int channels = info.channels;
+    if (maxAudioChannels > 0) {
+        channels = std::min(channels, maxAudioChannels);
+    }
+    if (IsGoogleReceiver(model)) {
+        channels = std::min(channels, 2); // the default media receiver decodes AAC in stereo
+    }
+    // The AAC encoder tops out at 5.1, so a reduction that stops higher than that
+    // still lands at 5.1. This clamp only bites once something else has already
+    // pulled the count below the file's own -- it never triggers a downmix by itself.
+    if (channels < info.channels) {
+        channels = std::min(channels, 6);
+    }
+    return channels;
+}
+
 bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
                                         CString* pRefusal, int maxAudioChannels)
 {
@@ -366,9 +395,14 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
     // the file, plays the picture and drops the sound with no error. Until the
     // audio can be downmixed to fit, the honest answer is to refuse it here.
     if (maxAudioChannels > 0 && info.channels > maxAudioChannels) {
-        refusal.Format(_T("the device is set to output at most %d audio channels; this file has %d"),
-                       maxAudioChannels, info.channels);
-        return false;
+        if (!CastCanDownmix(path, info)) {
+            refusal.Format(_T("the device is set to output at most %d audio channels; this file has %d"),
+                           maxAudioChannels, info.channels);
+            return false;
+        }
+        // else: playable by downmixing the audio at load time. Fall through to
+        // the codec and video checks, which still refuse for the reasons a
+        // downmix cannot fix (a codec the receiver will not take, MPEG-2 video).
     }
 
     switch (info.audio) {
@@ -376,17 +410,24 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
         case CastMediaInfo::Audio::EAC3:
         case CastMediaInfo::Audio::DTS:
         case CastMediaInfo::Audio::TrueHD:
+            // The receiver takes none of these directly -- AC-3/E-AC-3 only as
+            // passthrough, which our sender does not do, DTS and TrueHD not even
+            // that way. But they can be decoded here and re-encoded as AAC, so the
+            // file still plays when it can be downmixed; only when it cannot (a
+            // container we cannot remux, chiefly) is it refused.
+            if (!CastCanDownmix(path, info)) {
+                refusal.Format(_T("the receiver does not decode %s audio"), CastAudioCodecName(info.audio));
+                return false;
+            }
+            break;
         case CastMediaInfo::Audio::WMA:
-            // AC-3 and E-AC-3 reach a receiver only as passthrough, which a
-            // receiver application has to ask for and ours is not one; DTS and
-            // TrueHD not even that way.
             refusal.Format(_T("the receiver does not decode %s audio"), CastAudioCodecName(info.audio));
             return false;
         case CastMediaInfo::Audio::AAC:
             // the receiver decodes stereo AAC and stops there; a device
             // running its own player is not bound by that, and one such was
             // seen playing 5.1 AAC in MP4
-            if (googleReceiver && info.channels > 2) {
+            if (googleReceiver && info.channels > 2 && !CastCanDownmix(path, info)) {
                 refusal.Format(_T("the receiver decodes AAC in stereo only, this file has %d channels"),
                                info.channels);
                 return false;
@@ -475,16 +516,48 @@ bool CChromecastTarget::CanCastFile(const CString& deviceId, const CString& path
 }
 
 void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title, double durationSec, double startSec,
-                                  const CastMediaInfo& /*info*/)
+                                  const CastMediaInfo& info)
 {
     if (!m_casting) {
         return;
     }
 
+    // A device that cannot output the file's channel layout drops the sound
+    // silently while it plays the picture. When that is what we would otherwise
+    // hand it, and the audio can be reduced to fit, serve a downmixed copy so
+    // there is sound. The transcode runs here on the calling thread and finishes
+    // before the file is handed over, because the server serves a complete file.
+    DeleteDownmixTemp();
+    CString servePath = filePath;
+    const int target = DownmixTargetChannels(info, m_model, m_maxAudioChannels);
+    // The file needs transcoding when it has more channels than the device will
+    // output, or its audio is a codec the receiver does not decode at all
+    // (AC-3/E-AC-3/DTS/TrueHD) -- re-encoding to AAC fixes both.
+    const bool rejectedCodec = info.audio == CastMediaInfo::Audio::AC3
+                               || info.audio == CastMediaInfo::Audio::EAC3
+                               || info.audio == CastMediaInfo::Audio::DTS
+                               || info.audio == CastMediaInfo::Audio::TrueHD;
+    if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
+        TCHAR tempDir[MAX_PATH] = { 0 };
+        GetTempPath(MAX_PATH, tempDir);
+        CString temp;
+        temp.Format(_T("%smpc-castdownmix-%u-%u.mp4"), tempDir, GetCurrentProcessId(), m_generation);
+        CString err;
+        if (CastDownmixToMp4(filePath, info, target, temp, &err)) {
+            m_downmixTemp = temp;
+            servePath = temp;
+            CASTING_LOG(_T("cast: the file's %d-channel audio was downmixed to %d for this device"),
+                        info.channels, target);
+        } else {
+            CASTING_LOG(_T("cast: could not downmix (%s); handing the device the file as it is"),
+                        err.GetString());
+        }
+    }
+
     // A Chromecast is told what it is playing over the cast protocol and never
     // asks for DLNA content features, so the server is given none.
-    m_mime = CCastMediaServer::MimeForFile(filePath);
-    m_server.SetFile(filePath, m_mime);
+    m_mime = CCastMediaServer::MimeForFile(servePath);
+    m_server.SetFile(servePath, m_mime);
     m_pendingTitle = title;
     m_pendingDuration = durationSec;
     m_pendingSeek = startSec >= 1.0 ? startSec : -1.0;
@@ -545,6 +618,14 @@ void CChromecastTarget::SetVolume(double level, bool muted)
     m_session.SetVolume(level, muted);
 }
 
+void CChromecastTarget::DeleteDownmixTemp()
+{
+    if (!m_downmixTemp.IsEmpty()) {
+        DeleteFile(m_downmixTemp);
+        m_downmixTemp.Empty();
+    }
+}
+
 void CChromecastTarget::StopCasting()
 {
     if (m_casting) {
@@ -558,6 +639,7 @@ void CChromecastTarget::StopCasting()
     m_server.ClearFile();
     m_server.ClearAllowedPeer();
     m_server.Stop();
+    DeleteDownmixTemp();
     m_casting = false;
     m_failed = false;
     m_loadPending = false;

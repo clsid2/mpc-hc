@@ -122,4 +122,15 @@ private:
     double m_pendingDuration = 0.0;
     double m_pendingSeek = -1.0; // seconds, < 0 = none
     CStringA m_mime;
+
+    // Set when the session connects, so the load can judge the file against the
+    // device without the saved entry in hand: the model drives the receiver
+    // rules, the cap is the user's per-device channel limit (0 = none).
+    CString m_model;
+    int m_maxAudioChannels = 0;
+    // A downmixed copy of the file being served in place of the original, so a
+    // device that cannot output the original layout still gets sound. Deleted
+    // when the next file loads, the session stops, or the target goes away.
+    CString m_downmixTemp;
+    void DeleteDownmixTemp();
 };
