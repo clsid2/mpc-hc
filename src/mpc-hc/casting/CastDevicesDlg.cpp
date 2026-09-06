@@ -121,6 +121,7 @@ void CCastDevicesDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CASTDEV_HOST, m_host);
     DDX_Control(pDX, IDC_CASTDEV_PORT, m_port);
     DDX_Control(pDX, IDC_CASTDEV_PROTOCOL, m_protocol);
+    DDX_Control(pDX, IDC_CASTDEV_MAXCHANNELS, m_maxChannels);
 }
 
 BEGIN_MESSAGE_MAP(CCastDevicesDlg, CMPCThemeResizableDialog)
@@ -134,6 +135,7 @@ BEGIN_MESSAGE_MAP(CCastDevicesDlg, CMPCThemeResizableDialog)
     ON_UPDATE_COMMAND_UI(IDC_CASTDEV_REMOVE, OnUpdateRemove)
     ON_BN_CLICKED(IDC_CASTDEV_RENAME, OnRename)
     ON_UPDATE_COMMAND_UI(IDC_CASTDEV_RENAME, OnUpdateRename)
+    ON_CBN_SELCHANGE(IDC_CASTDEV_MAXCHANNELS, OnMaxChannelsChanged)
     ON_BN_CLICKED(IDC_CASTDEV_RESCAN, OnRescan)
     ON_BN_CLICKED(IDC_CASTDEV_ADDMANUAL, OnFind)
     ON_UPDATE_COMMAND_UI(IDC_CASTDEV_ADDMANUAL, OnUpdateFind)
@@ -161,6 +163,19 @@ BOOL CCastDevicesDlg::OnInitDialog()
     m_protocol.SetCurSel(1); // the protocol a device is named by hand for
     m_name.SetLimitText(CAST_NAME_MAX);
     m_port.SetLimitText(5);
+
+    // How many channels the device is known to output. A Chromecast that cannot
+    // handle a layout drops the audio without a word, so this is set by hand,
+    // not discovered; the item data is the channel count the play decision caps
+    // against, 0 meaning no cap.
+    m_maxChannels.AddString(ResStr(IDS_CAST_DLG_CHAN_UNKNOWN));
+    m_maxChannels.SetItemData(0, 0);
+    m_maxChannels.AddString(ResStr(IDS_CAST_DLG_CHAN_STEREO));
+    m_maxChannels.SetItemData(1, 2);
+    m_maxChannels.AddString(ResStr(IDS_CAST_DLG_CHAN_51));
+    m_maxChannels.SetItemData(2, 6);
+    m_maxChannels.AddString(ResStr(IDS_CAST_DLG_CHAN_71));
+    m_maxChannels.SetItemData(3, 8);
 
     m_rows.clear();
     for (const CastSavedDevice& dev : m_devices) {
@@ -197,6 +212,8 @@ void CCastDevicesDlg::SetupAnchors()
     AddAnchor(IDC_CASTDEV_NAMELABEL, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_NAME, BOTTOM_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_CASTDEV_RENAME, BOTTOM_RIGHT);
+    AddAnchor(IDC_CASTDEV_CHANLABEL, BOTTOM_LEFT);
+    AddAnchor(IDC_CASTDEV_MAXCHANNELS, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_MANUAL_GRP, BOTTOM_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_CASTDEV_HOSTLABEL, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_HOST, BOTTOM_LEFT);
@@ -359,6 +376,7 @@ void CCastDevicesDlg::FillList()
 
     UpdateColumnWidths(); // the advertised column may have come or gone
     SelectById(selectedId);
+    UpdateChannelControl();
     m_bFilling = false;
 }
 
@@ -445,8 +463,41 @@ void CCastDevicesDlg::OnLvnItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
     if (!m_bFilling && (pNMLV->uChanged & LVIF_STATE)) {
         const int row = SelectedRow();
         m_name.SetWindowText(row >= 0 ? m_rows[row].device.userName : CString());
+        UpdateChannelControl();
     }
     *pResult = 0;
+}
+
+void CCastDevicesDlg::UpdateChannelControl()
+{
+    if (!::IsWindow(m_maxChannels.GetSafeHwnd())) {
+        return;
+    }
+    const int row = SelectedRow();
+    const bool saved = row >= 0 && m_rows[row].saved;
+    // A channel cap is only kept for a saved device, so there is nothing to set
+    // on a device that is merely being looked at.
+    m_maxChannels.EnableWindow(saved);
+    const int channels = saved ? m_rows[row].device.maxAudioChannels : 0;
+    for (int i = 0; i < m_maxChannels.GetCount(); i++) {
+        if ((int)m_maxChannels.GetItemData(i) == channels) {
+            m_maxChannels.SetCurSel(i);
+            return;
+        }
+    }
+    m_maxChannels.SetCurSel(0); // an unrecognized value reads as no cap
+}
+
+void CCastDevicesDlg::OnMaxChannelsChanged()
+{
+    const int row = SelectedRow();
+    if (row < 0 || !m_rows[row].saved) {
+        return;
+    }
+    const int sel = m_maxChannels.GetCurSel();
+    if (sel >= 0) {
+        m_rows[row].device.maxAudioChannels = (int)m_maxChannels.GetItemData(sel);
+    }
 }
 
 void CCastDevicesDlg::OnAdd()

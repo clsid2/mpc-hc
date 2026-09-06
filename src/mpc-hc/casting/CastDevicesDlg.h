@@ -68,6 +68,9 @@ protected:
     void FillList();
     void UpdateColumnWidths();
     void UpdateStatusText();
+    // Shows the selected device's channel cap in the combo and enables it only
+    // for a saved device, since only a saved one keeps what is set here.
+    void UpdateChannelControl();
     int SelectedRow() const;
     void SelectById(const CString& id);
     Row* FindRow(const CString& id);
@@ -78,6 +81,7 @@ protected:
     CMPCThemeEdit m_host;
     CMPCThemeEdit m_port;
     CMPCThemeComboBox m_protocol;
+    CMPCThemeComboBox m_maxChannels;
 
     CCastTarget* m_pTarget;
     std::vector<Row> m_rows;
@@ -102,6 +106,7 @@ public:
     afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
     afx_msg void OnRename();
     afx_msg void OnUpdateRename(CCmdUI* pCmdUI);
+    afx_msg void OnMaxChannelsChanged();
     afx_msg void OnRescan();
     afx_msg void OnFind();
     afx_msg void OnUpdateFind(CCmdUI* pCmdUI);

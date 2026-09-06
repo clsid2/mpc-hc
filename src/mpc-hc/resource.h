@@ -806,6 +806,8 @@
 #define IDC_CASTSESS_NEXT               22130
 #define IDC_CASTSESS_LOADFILE           22131
 #define IDC_CASTSESS_AUTONEXT           22132
+#define IDC_CASTDEV_CHANLABEL           22133
+#define IDC_CASTDEV_MAXCHANNELS         22134
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1938,6 +1940,10 @@
 #define IDS_CAST_BUFFERING              58071
 #define IDS_CAST_MEDIAINFO_REQUIRED 58072
 #define IDS_CAST_NO_MORE_FILES          58073
+#define IDS_CAST_DLG_CHAN_UNKNOWN       58074
+#define IDS_CAST_DLG_CHAN_STEREO        58075
+#define IDS_CAST_DLG_CHAN_51            58076
+#define IDS_CAST_DLG_CHAN_71            58077
 
 // Next default values for new objects
 // 
