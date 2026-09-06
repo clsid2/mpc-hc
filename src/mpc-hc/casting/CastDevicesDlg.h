@@ -107,6 +107,8 @@ public:
     afx_msg void OnRename();
     afx_msg void OnUpdateRename(CCmdUI* pCmdUI);
     afx_msg void OnMaxChannelsChanged();
+    afx_msg void OnTest();
+    afx_msg void OnUpdateTest(CCmdUI* pCmdUI);
     afx_msg void OnRescan();
     afx_msg void OnFind();
     afx_msg void OnUpdateFind(CCmdUI* pCmdUI);

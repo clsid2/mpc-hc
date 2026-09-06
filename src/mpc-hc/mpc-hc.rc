@@ -1159,6 +1159,7 @@ BEGIN
     PUSHBUTTON      "Re&name",IDC_CASTDEV_RENAME,354,164,60,14
     LTEXT           "Audio &channels:",IDC_CASTDEV_CHANLABEL,6,183,58,8
     COMBOBOX        IDC_CASTDEV_MAXCHANNELS,70,180,96,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "T&est...",IDC_CASTDEV_TEST,172,180,50,14
     GROUPBOX        "Add a device by address",IDC_CASTDEV_MANUAL_GRP,6,200,408,44
     LTEXT           "A&ddress:",IDC_CASTDEV_HOSTLABEL,14,219,40,8
     EDITTEXT        IDC_CASTDEV_HOST,56,216,110,14,ES_AUTOHSCROLL
@@ -1169,6 +1170,19 @@ BEGIN
     PUSHBUTTON      "&Find",IDC_CASTDEV_ADDMANUAL,354,216,54,14
     DEFPUSHBUTTON   "OK",IDOK,296,252,56,14
     PUSHBUTTON      "Cancel",IDCANCEL,358,252,56,14
+END
+
+IDD_CASTTEST_DLG DIALOGEX 0, 0, 300, 152
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Test Audio Channels"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "Plays a short, known-good surround tone on the device, one speaker at a time. Tell MPC-HC what you hear and it records how many audio channels this device can output.",IDC_CASTTEST_INFO,7,7,286,32
+    LTEXT           "Audio &format:",IDC_CASTTEST_CODECLABEL,7,48,50,8
+    COMBOBOX        IDC_CASTTEST_CODEC,60,46,100,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_CASTTEST_STATUS,7,70,286,58
+    DEFPUSHBUTTON   "&Start test",IDC_CASTTEST_START,176,131,55,14
+    PUSHBUTTON      "Close",IDOK,237,131,56,14
 END
 
 IDD_CASTSESSION_DLG DIALOGEX 0, 0, 300, 128
@@ -4398,6 +4412,17 @@ BEGIN
     IDS_CAST_DLG_CHAN_STEREO "Stereo (2)"
     IDS_CAST_DLG_CHAN_51    "5.1 surround (6)"
     IDS_CAST_DLG_CHAN_71    "7.1 surround (8)"
+    IDS_CASTTEST_CONNECTING "Connecting to %s…"
+    IDS_CASTTEST_FETCHING   "Downloading the %s test tone…"
+    IDS_CASTTEST_PLAYING    "Playing the %s tone on the device — listen…"
+    IDS_CASTTEST_NOCONNECT  "Could not connect to the device. Make sure it is switched on and on the same network, then try again."
+    IDS_CASTTEST_NOTONE     "Could not download the test tone. Check the network connection and try again."
+    IDS_CASTTEST_RESULT     "Recorded: this device can output up to %s."
+    IDS_CASTTEST_RESULT_STEREO "Recorded: this device outputs stereo only."
+    IDS_CASTTEST_STOPPED    "The test was stopped."
+    IDS_CASTTEST_BUSY       "Stop casting before testing a device."
+    IDS_CASTTEST_ASK_HEAR   "A %s test tone is playing on the device, one speaker at a time.\n\nDo you hear any sound coming from the device?"
+    IDS_CASTTEST_ASK_SURROUND "Do you hear the surround and back speakers playing separately from the front pair?\n\nChoose No if the sound came only from the front speakers, or you heard nothing extra."
 END
 
 #endif    // English (United States) resources

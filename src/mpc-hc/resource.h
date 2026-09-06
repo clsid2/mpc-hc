@@ -679,6 +679,7 @@
 #define IDD_COLORCONTROLS_DLG           20078
 #define IDD_CASTDEVICES_DLG             20079
 #define IDD_CASTSESSION_DLG             20080
+#define IDD_CASTTEST_DLG                20081
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052
@@ -808,6 +809,12 @@
 #define IDC_CASTSESS_AUTONEXT           22132
 #define IDC_CASTDEV_CHANLABEL           22133
 #define IDC_CASTDEV_MAXCHANNELS         22134
+#define IDC_CASTDEV_TEST                22135
+#define IDC_CASTTEST_INFO               22136
+#define IDC_CASTTEST_CODECLABEL         22137
+#define IDC_CASTTEST_CODEC              22138
+#define IDC_CASTTEST_STATUS             22139
+#define IDC_CASTTEST_START              22140
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1944,6 +1951,17 @@
 #define IDS_CAST_DLG_CHAN_STEREO        58075
 #define IDS_CAST_DLG_CHAN_51            58076
 #define IDS_CAST_DLG_CHAN_71            58077
+#define IDS_CASTTEST_CONNECTING         58078
+#define IDS_CASTTEST_FETCHING           58079
+#define IDS_CASTTEST_PLAYING            58080
+#define IDS_CASTTEST_NOCONNECT          58081
+#define IDS_CASTTEST_NOTONE             58082
+#define IDS_CASTTEST_RESULT             58083
+#define IDS_CASTTEST_RESULT_STEREO      58084
+#define IDS_CASTTEST_STOPPED            58085
+#define IDS_CASTTEST_BUSY               58086
+#define IDS_CASTTEST_ASK_HEAR           58087
+#define IDS_CASTTEST_ASK_SURROUND       58088
 
 // Next default values for new objects
 // 

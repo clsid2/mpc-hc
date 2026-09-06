@@ -370,6 +370,9 @@
     <ClCompile Include="casting\CastDevicesDlg.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
+    <ClCompile Include="casting\CastTestDlg.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
     <ClCompile Include="casting\CastDiscovery.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
@@ -971,6 +974,9 @@
       <Filter>Custom Controls</Filter>
     </ClInclude>
     <ClInclude Include="casting\CastDevicesDlg.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
+    <ClInclude Include="casting\CastTestDlg.h">
       <Filter>Integration\Cast</Filter>
     </ClInclude>
     <ClInclude Include="casting\CastDiscovery.h">

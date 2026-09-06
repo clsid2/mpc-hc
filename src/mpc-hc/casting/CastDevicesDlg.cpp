@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastDevicesDlg.h"
+#include "CastTestDlg.h"
 #include "mplayerc.h"
 #include "Logger.h"
 #include <winsock2.h>
@@ -136,6 +137,8 @@ BEGIN_MESSAGE_MAP(CCastDevicesDlg, CMPCThemeResizableDialog)
     ON_BN_CLICKED(IDC_CASTDEV_RENAME, OnRename)
     ON_UPDATE_COMMAND_UI(IDC_CASTDEV_RENAME, OnUpdateRename)
     ON_CBN_SELCHANGE(IDC_CASTDEV_MAXCHANNELS, OnMaxChannelsChanged)
+    ON_BN_CLICKED(IDC_CASTDEV_TEST, OnTest)
+    ON_UPDATE_COMMAND_UI(IDC_CASTDEV_TEST, OnUpdateTest)
     ON_BN_CLICKED(IDC_CASTDEV_RESCAN, OnRescan)
     ON_BN_CLICKED(IDC_CASTDEV_ADDMANUAL, OnFind)
     ON_UPDATE_COMMAND_UI(IDC_CASTDEV_ADDMANUAL, OnUpdateFind)
@@ -214,6 +217,7 @@ void CCastDevicesDlg::SetupAnchors()
     AddAnchor(IDC_CASTDEV_RENAME, BOTTOM_RIGHT);
     AddAnchor(IDC_CASTDEV_CHANLABEL, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_MAXCHANNELS, BOTTOM_LEFT);
+    AddAnchor(IDC_CASTDEV_TEST, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_MANUAL_GRP, BOTTOM_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_CASTDEV_HOSTLABEL, BOTTOM_LEFT);
     AddAnchor(IDC_CASTDEV_HOST, BOTTOM_LEFT);
@@ -498,6 +502,29 @@ void CCastDevicesDlg::OnMaxChannelsChanged()
     if (sel >= 0) {
         m_rows[row].device.maxAudioChannels = (int)m_maxChannels.GetItemData(sel);
     }
+}
+
+void CCastDevicesDlg::OnTest()
+{
+    const int row = SelectedRow();
+    if (row < 0 || !m_rows[row].saved || !m_pTarget) {
+        return;
+    }
+    // The interactive test drives a real session on the shared target, so it
+    // runs the device it was given and writes back only what the user confirmed
+    // hearing; an untouched channel setting is left exactly as it was.
+    CCastTestDlg dlg(m_pTarget, m_rows[row].device, CastMediaInfo::Audio::AAC, this);
+    dlg.DoModal();
+    if (dlg.m_result >= 0) {
+        m_rows[row].device.maxAudioChannels = dlg.m_result;
+        UpdateChannelControl();
+    }
+}
+
+void CCastDevicesDlg::OnUpdateTest(CCmdUI* pCmdUI)
+{
+    const int row = SelectedRow();
+    pCmdUI->Enable(row >= 0 && m_rows[row].saved);
 }
 
 void CCastDevicesDlg::OnAdd()
