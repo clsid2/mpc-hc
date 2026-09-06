@@ -85,7 +85,8 @@ Create a file named **build.user.bat** in the source code folder of MPC-HC (see 
 
 ```bat
 @ECHO OFF
-REM [Optional, GCC toolchain for LAVFilters only] MSYS2/MinGW paths:
+REM [Optional, GCC toolchain for LAVFilters only] MSYS2/MinGW paths, and make jobs (default 4):
+SET "MPCHC_LAV_JOBS=4"
 SET "MPCHC_MSYS=C:\MSYS64"
 SET "MPCHC_MINGW32=C:\MSYS64\mingw64"
 SET "MPCHC_MINGW64=C:\MSYS64\mingw64"
