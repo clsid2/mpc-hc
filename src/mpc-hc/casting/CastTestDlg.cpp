@@ -25,11 +25,14 @@
 #include "SettingsDefines.h"
 #include <afxinet.h>
 
-// Where the test tones live, in the source tree rather than the binary. The
-// default is the upstream develop branch, which is where they sit once a
-// release is cut; a build made from a branch before the merge can point this at
-// its own branch with the CastTestToneBaseURL setting.
-#define CAST_TONE_BASE_URL _T("https://raw.githubusercontent.com/clsid2/mpc-hc/develop/src/mpc-hc/res/cast/")
+// Where the test tones live, in the source tree rather than the binary. Any
+// build can override this with the CastTestToneBaseURL setting.
+// TODO before publishing: point this at the upstream repo,
+// https://raw.githubusercontent.com/clsid2/mpc-hc/develop/src/mpc-hc/res/cast/
+// -- it is the development branch that holds these files once merged. Until then
+// it points at the fork branch the work is on, so a build made before the merge
+// can still reach them.
+#define CAST_TONE_BASE_URL _T("https://raw.githubusercontent.com/adipose/mpc-hc/patch666/src/mpc-hc/res/cast/")
 
 // The two layouts the ladder tries, high to low. Stereo is not tested: every
 // cast device outputs it, so it is the floor the ladder falls back to when
