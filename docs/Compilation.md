@@ -101,8 +101,10 @@ Notes:
 You need Git for downloading the source code.
 
 Install **Git for Windows** from <https://git-for-windows.github.io/> and also **Git Extensions** from <http://gitextensions.github.io/>.
-Choose `Use Git from the Windows command prompt`. This isn't mandatory, so if you choose
-`Use Git from Git Bash only` make sure you set the `MPCHC_GIT` variable in **build.user.bat**.
+The build uses Git only to stamp the version number. It looks for `git.exe` in `MPCHC_GIT`
+(see **build.user.bat** in Part F), on `%PATH%`, in the default Git for Windows install
+locations, and finally in the copy that Visual Studio installs with its C++ workload, so no
+particular install option is required and Git Bash is not used.
 
 Use Git to clone MPC-HC's repository to **C:\mpc-hc** (or anywhere else you like).
 
