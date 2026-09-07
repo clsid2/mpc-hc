@@ -569,23 +569,13 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
                                || info.audio == CastMediaInfo::Audio::EAC3
                                || info.audio == CastMediaInfo::Audio::DTS
                                || info.audio == CastMediaInfo::Audio::TrueHD;
-    // The streaming (HLS) transcode writes a fragmented MP4 through Media
-    // Foundation's sink, which needs MF to demux the source -- so it takes
-    // MP4-family containers only. Matroska and WebM are demuxed by the LAV
-    // splitter instead and go the complete-file route (CastLavRemuxToMp4).
-    CString ext;
-    const int dot = filePath.ReverseFind(_T('.'));
-    if (dot >= 0) {
-        ext = filePath.Mid(dot);
-        ext.MakeLower();
-    }
-    const bool matroskaSource = ext == _T(".mkv") || ext == _T(".webm");
     if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
-        if (info.video == CastMediaInfo::Video::H264 && !matroskaSource) {
-            // The streaming transcode. Only H.264: the fragmented-MP4 sink it
-            // writes through refuses HEVC, and a file with no picture has
-            // nothing to show progressively -- both fall through to the
-            // complete-file transcode below.
+        if (info.video == CastMediaInfo::Video::H264) {
+            // The streaming transcode, for any H.264 source -- an MP4 (Media
+            // Foundation demuxes it) or a Matroska/WebM (the LAV splitter does,
+            // feeding the same fragmented-MP4 sink). Only H.264: that sink
+            // refuses HEVC, and a file with no picture has nothing to show
+            // progressively -- both fall through to the complete-file transcode.
             m_hls = std::make_unique<CCastHlsStream>();
             if (m_hls->Start(filePath, info, target, durationSec, m_server, m_hMsgWnd, WM_CAST_HLS)) {
                 m_mime = "application/vnd.apple.mpegurl";
@@ -608,9 +598,6 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
             }
             m_hls.reset();
             CASTING_LOG(_T("cast: the streaming transcode did not start; transcoding the whole file first instead"));
-        } else if (matroskaSource) {
-            CASTING_LOG(_T("cast: the streaming transcode needs an MP4-family container, and this is ")
-                        _T("Matroska/WebM; the LAV splitter remuxes the whole file first instead"));
         } else if (info.video == CastMediaInfo::Video::HEVC) {
             CASTING_LOG(_T("cast: the streaming transcode takes H.264 only, and this file's video is ")
                         _T("HEVC; transcoding the whole file first instead"));
