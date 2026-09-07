@@ -1,4 +1,4 @@
-static const AVFilter * const filter_list[] = {
+static const FFFilter * const filter_list[] = {
     &ff_af_aresample,
     &ff_af_atempo,
     &ff_asrc_abuffer,

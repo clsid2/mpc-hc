@@ -1,4 +1,5 @@
 SOXR_DIR     = ../../../soxr/libsoxr/src
+ZLIB_DIR     = ../../../zlib
 MAK_DIR      = ../../../ffmpeg/
 BIN_DIR      = $(MAK_DIR)../../../bin
 
@@ -20,6 +21,7 @@ LIB_LIBAVCODEC    = $(OBJ_DIR)libavcodec.a
 LIB_LIBAVFILTER   = $(OBJ_DIR)libavfilter.a
 LIB_LIBAVUTIL     = $(OBJ_DIR)libavutil.a
 LIB_LIBSWRESAMPLE = $(OBJ_DIR)libswresample.a
+LIB_LIBAVFORMAT   = $(OBJ_DIR)libavformat.a
 TARGET_LIB        = $(TARGET_LIB_DIR)/ffmpeg.lib
 ARSCRIPT          = $(OBJ_DIR)script.ar
 
@@ -29,8 +31,9 @@ NASMFLAGS = -I. -I$(MAK_DIR)
 AVCODECFLAGS= -DBUILDING_avcodec
 AVFILTERFLAGS= -DBUILDING_avfilter
 AVUTILFLAGS= -DBUILDING_avutil
+AVFORMATFLAGS= -DBUILDING_avformat
 
-CFLAGS= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DZLIB_CONST -DHAVE_AV_CONFIG_H -nologo -D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -GS- -W3 -wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -O2 -utf-8 -I $(MAK_DIR) -I . -I compat/atomics/win32 -I $(SOXR_DIR) 
+CFLAGS= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DZLIB_CONST -DHAVE_AV_CONFIG_H -nologo -D_WIN32_WINNT=0x0600 -DWINVER=0x0600 -GS- -W3 -wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -O2 -utf-8 -I $(MAK_DIR) -I . -I compat/atomics/win32 -I $(SOXR_DIR) -I $(ZLIB_DIR) 
 CXXFLAGS=  -D__STDC_CONSTANT_MACROS 
 CC=cl.exe
 LIBFLAGS = -nologo -NODEFAULTLIB:libcmt 
@@ -60,16 +63,18 @@ OBJ_DIRS = $(OBJ_DIR) \
 	$(OBJ_DIR)compat \
 	$(OBJ_DIR)libavcodec \
 	$(OBJ_DIR)libavcodec/x86 \
+	$(OBJ_DIR)libavcodec/bsf \
 	$(OBJ_DIR)libavfilter \
 	$(OBJ_DIR)libavfilter/x86 \
 	$(OBJ_DIR)libavutil \
 	$(OBJ_DIR)libavutil/x86 \
 	$(OBJ_DIR)libswresample \
 	$(OBJ_DIR)libswresample/x86 \
+	$(OBJ_DIR)libavformat \
 	$(TARGET_LIB_DIR)
 
 # Targets
-all: make_objdirs $(LIB_LIBAVCODEC) $(LIB_LIBAVCODEC_B) $(LIB_LIBAVFILTER) $(LIB_LIBAVUTIL) $(LIB_LIBSWRESAMPLE) $(TARGET_LIB)
+all: make_objdirs $(LIB_LIBAVCODEC) $(LIB_LIBAVCODEC_B) $(LIB_LIBAVFILTER) $(LIB_LIBAVUTIL) $(LIB_LIBSWRESAMPLE) $(LIB_LIBAVFORMAT) $(TARGET_LIB)
 
 make_objdirs: $(OBJ_DIRS)
 $(OBJ_DIRS):
@@ -117,9 +122,44 @@ SRCS_LC = \
 	libavcodec/raw.c \
 	libavcodec/simple_idct.c \
 	libavcodec/utils.c \
+	libavcodec/ac3.c \
+	libavcodec/ac3_channel_layout_tab.c \
+	libavcodec/ac3dsp.c \
+	libavcodec/ac3enc.c \
+	libavcodec/ac3enc_float.c \
+	libavcodec/ac3tab.c \
+	libavcodec/adts_header.c \
+	libavcodec/audiodsp.c \
+	libavcodec/eac3_data.c \
+	libavcodec/eac3enc.c \
+	libavcodec/frame_thread_encoder.c \
+	libavcodec/golomb.c \
+	libavcodec/kbdwin.c \
+	libavcodec/me_cmp.c \
+	libavcodec/mpeg4audio.c \
+	libavcodec/mpeg4audio_sample_rates.c \
+	libavcodec/aac_ac3_parser.c \
+	libavcodec/audio_frame_queue.c \
+	libavcodec/bitstreamfilter.c \
+	libavcodec/bsfgraph.c \
+	libavcodec/tiff_common.c \
+	libavcodec/bsf/source.c \
+	libavcodec/bsf/sink.c \
+	libavcodec/bsf/aac_adtstoasc.c \
+	libavcodec/bsf/vp9_superframe.c \
+	libavcodec/bsf/null.c \
+	libavcodec/exif.c \
+	libavcodec/h2645_parse.c \
+	libavcodec/lcevctab.c \
+	libavcodec/mpegaudiotabs.c \
+	libavcodec/threadprogress.c \
+	libavcodec/to_upper4.c \
 	libavcodec/x86/constants.c \
 	libavcodec/x86/fdctdsp_init.c \
 	libavcodec/x86/idctdsp_init.c \
+	libavcodec/x86/ac3dsp_init.c \
+	libavcodec/x86/audiodsp_init.c \
+	libavcodec/x86/me_cmp_init.c \
 
 SRCS_LF = \
 	libavfilter/af_aresample.c \
@@ -168,6 +208,8 @@ SRCS_LU = \
 	libavutil/film_grain_params.c \
 	libavutil/fixed_dsp.c \
 	libavutil/float_dsp.c \
+	libavutil/float_scalarproduct.c \
+	libavutil/float_fmul_reverse.c \
 	libavutil/frame.c \
 	libavutil/hash.c \
 	libavutil/hdr_dynamic_metadata.c \
@@ -206,6 +248,10 @@ SRCS_LU = \
 	libavutil/threadmessage.c \
 	libavutil/time.c \
 	libavutil/timecode.c \
+	libavutil/container_fifo.c \
+	libavutil/csp.c \
+	libavutil/iamf.c \
+	libavutil/timecode_internal.c \
 	libavutil/timestamp.c \
 	libavutil/tree.c \
 	libavutil/twofish.c \
@@ -222,7 +268,8 @@ SRCS_LU = \
 	libavutil/x86/float_dsp_init.c \
 	libavutil/x86/imgutils_init.c \
 	libavutil/x86/lls_init.c \
-	libavutil/x86/tx_float_init.c
+	libavutil/x86/tx_float_init.c \
+	libavutil/x86/aes_init.c
 
 SRCS_LR = \
 	libswresample/audioconvert.c \
@@ -238,12 +285,74 @@ SRCS_LR = \
 	libswresample/x86/rematrix_init.c \
 	libswresample/x86/resample_init.c
 
+SRCS_LAVF = \
+	libavformat/allformats.c \
+	libavformat/apv.c \
+	libavformat/av1.c \
+	libavformat/avc.c \
+	libavformat/avformat.c \
+	libavformat/avio.c \
+	libavformat/aviobuf.c \
+	libavformat/avlanguage.c \
+	libavformat/cbs.c \
+	libavformat/cbs_apv.c \
+	libavformat/cbs_av1.c \
+	libavformat/codecstring.c \
+	libavformat/demux.c \
+	libavformat/demux_utils.c \
+	libavformat/dovi_isom.c \
+	libavformat/dump.c \
+	libavformat/dv.c \
+	libavformat/evc.c \
+	libavformat/file.c \
+	libavformat/file_open.c \
+	libavformat/format.c \
+	libavformat/hevc.c \
+	libavformat/iamf.c \
+	libavformat/iamf_writer.c \
+	libavformat/id3v1.c \
+	libavformat/id3v2.c \
+	libavformat/isom.c \
+	libavformat/isom_tags.c \
+	libavformat/lcevc.c \
+	libavformat/metadata.c \
+	libavformat/mov_chan.c \
+	libavformat/movenc.c \
+	libavformat/movenc_ttml.c \
+	libavformat/movenccenc.c \
+	libavformat/movenchint.c \
+	libavformat/mux.c \
+	libavformat/mux_utils.c \
+	libavformat/nal.c \
+	libavformat/network.c \
+	libavformat/options.c \
+	libavformat/os_support.c \
+	libavformat/packet_list.c \
+	libavformat/protocols.c \
+	libavformat/rawutils.c \
+	libavformat/riff.c \
+	libavformat/riffenc.c \
+	libavformat/rtp.c \
+	libavformat/rtpenc_chain.c \
+	libavformat/sdp.c \
+	libavformat/seek.c \
+	libavformat/url.c \
+	libavformat/urldecode.c \
+	libavformat/utils.c \
+	libavformat/version.c \
+	libavformat/vpcc.c \
+	libavformat/vvc.c
+
 # Nasm objects
 SRCS_NASM_LC = \
 	libavcodec/x86/idctdsp.asm \
 	libavcodec/x86/fdct.asm \
 	libavcodec/x86/simple_idct.asm \
-	libavcodec/x86/simple_idct10.asm
+	libavcodec/x86/simple_idct10.asm \
+	libavcodec/x86/ac3dsp.asm \
+	libavcodec/x86/ac3dsp_downmix.asm \
+	libavcodec/x86/audiodsp.asm \
+	libavcodec/x86/me_cmp.asm
 
 SRCS_NASM_LF = 
 
@@ -254,7 +363,9 @@ SRCS_NASM_LU = \
 	libavutil/x86/float_dsp.asm \
 	libavutil/x86/imgutils.asm \
 	libavutil/x86/lls.asm \
-	libavutil/x86/tx_float.asm
+	libavutil/x86/tx_float.asm \
+	libavutil/x86/aes.asm \
+	libavutil/x86/crc.asm
 
 SRCS_NASM_LR = \
 	libswresample/x86/audio_convert.asm \
@@ -276,6 +387,9 @@ OBJS_LU = \
 OBJS_LR = \
 	$(SRCS_LR:%.c=$(OBJ_DIR)%.o) \
 	$(SRCS_NASM_LR:%.asm=$(OBJ_DIR)%.o)
+
+OBJS_LAVF = \
+	$(SRCS_LAVF:%.c=$(OBJ_DIR)%.o)
 
 OBJS_LS = \
 	$(SRCS_LS:%.c=$(OBJ_DIR)%.o) \
@@ -303,6 +417,10 @@ $(OBJ_DIR)libavfilter/%.o: libavfilter/%.c
 	@echo $<
 	$(COMPILE) $(AVFILTERFLAGS)
 
+$(OBJ_DIR)libavformat/%.o: libavformat/%.c
+	@echo $<
+	$(COMPILE) $(AVFORMATFLAGS)
+
 $(OBJ_DIR)%.o: %.c
 	@echo $<
 	$(COMPILE)
@@ -327,7 +445,11 @@ $(LIB_LIBSWRESAMPLE): $(OBJS_LR)
 	@echo $@
 	$(LIBAR)
 
-$(TARGET_LIB): $(LIB_LIBAVCODEC) $(LIB_LIBAVFILTER) $(LIB_LIBAVUTIL) $(LIB_LIBSWRESAMPLE)
+$(LIB_LIBAVFORMAT): $(OBJS_LAVF)
+	@echo $@
+	$(LIBAR)
+
+$(TARGET_LIB): $(LIB_LIBAVCODEC) $(LIB_LIBAVFILTER) $(LIB_LIBAVUTIL) $(LIB_LIBSWRESAMPLE) $(LIB_LIBAVFORMAT)
 	@echo $@
 	$(LIBAR)
 
@@ -335,6 +457,7 @@ $(TARGET_LIB): $(LIB_LIBAVCODEC) $(LIB_LIBAVFILTER) $(LIB_LIBAVUTIL) $(LIB_LIBSW
 -include $(SRCS_LF:%.c=$(OBJ_DIR)%.d)
 -include $(SRCS_LU:%.c=$(OBJ_DIR)%.d)
 -include $(SRCS_LR:%.c=$(OBJ_DIR)%.d)
+-include $(SRCS_LAVF:%.c=$(OBJ_DIR)%.d)
 -include $(SRCS_LS:%.c=$(OBJ_DIR)%.d)
 
 .PHONY: clean make_objdirs $(OBJ_DIRS)
