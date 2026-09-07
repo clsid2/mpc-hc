@@ -102,6 +102,10 @@ private:
         double duration = 0.0;     // Load
         double param = 0.0;        // Load start / Seek position / SetVolume level
         bool muted = false;        // SetVolume
+        CString sourcePath;        // Load: the original file, when it must be
+                                   // transcoded on the worker before serving;
+                                   // empty when url/mime/features are already final
+        CastMediaInfo info;        // Load: drives that transcode
     };
 
     static DWORD WINAPI StaticThreadProc(LPVOID lpParam);
@@ -129,6 +133,11 @@ private:
     bool StartSession(const DlnaDevice& dev, const CString& deviceName);
 
     static bool SinkAccepts(const CStringA& sink, const CStringA& mime);
+    // Whether an audio file a renderer will not take can be re-encoded to one it
+    // will (stereo AAC in MP4). Audio-only: a renderer that plays video usually
+    // plays the source, and one that does not is not helped by touching the
+    // audio, so a file with a video track is never offered this.
+    static bool CanTranscodeForSink(const CStringA& sink, const CString& path, const CastMediaInfo& info);
     static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok);
     static CStringA BuildMetadata(const Command& cmd);
     static CStringA FormatDuration(double seconds, bool withMilliseconds);
@@ -144,6 +153,8 @@ private:
     CString m_deviceName;
     CString m_deviceAddress; // the device's own dotted IPv4 address
     CString m_localAddress; // the address of ours this device can reach
+    CStringA m_sink;        // the renderer's ConnectionManager sink protocolinfo
+    CString m_transcodeTemp; // an audio transcode's temp file, deleted on stop/next load
     // Made before the worker starts and destroyed after it is joined, so the
     // worker may use it without any further synchronization.
     std::unique_ptr<CDlnaVendorHook> m_vendorHook;

@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "CastTargetDlna.h"
+#include "CastTranscoder.h"
 #include "Logger.h"
 #include <PathUtils.h>
 #include <algorithm>
@@ -170,6 +171,9 @@ CDlnaTarget::~CDlnaTarget()
 {
     StopWorker();
     m_server.Stop();
+    if (!m_transcodeTemp.IsEmpty()) {
+        DeleteFile(m_transcodeTemp);
+    }
     m_discovery.Stop();
 }
 
@@ -316,6 +320,7 @@ bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
                 deviceName.GetString(), dev.ipAddress.GetString(), dev.manufacturer.GetString(),
                 dev.modelName.GetString(), dev.avTransportURL.GetString());
     m_deviceAddress = dev.ipAddress;
+    m_sink = dev.sinkProtocolInfo;
     m_localAddress = Dlna::LocalAddressFor(dev.ipAddress);
     if (m_localAddress.IsEmpty()) {
         CASTING_LOG(_T("cast: this machine has no address the device could reach us at"));
@@ -388,6 +393,21 @@ bool CDlnaTarget::AcceptsMime(const CStringA& sink, const CStringA& mime)
     return sink.IsEmpty() ? IsCommonRendererFormat(mime) : SinkAccepts(sink, mime);
 }
 
+bool CDlnaTarget::CanTranscodeForSink(const CStringA& sink, const CString& path, const CastMediaInfo& info)
+{
+    // Audio only: a file with a picture is left alone (a renderer that plays
+    // video plays the source; one that does not is an audio renderer, and it
+    // cannot show the picture whatever we do to the sound).
+    const bool hasVideo = info.video != CastMediaInfo::Video::Unknown || info.width > 0;
+    if (hasVideo) {
+        return false;
+    }
+    // The engines have to be able to decode it (an MP4/M4A/Matroska audio track
+    // in a codec they read), and the renderer has to take what we would make of
+    // it: stereo AAC in MP4.
+    return CastCanDownmix(path, info) && AcceptsMime(sink, "audio/mp4");
+}
+
 // Both verdicts read the same way in the log, whether the device came out of a
 // live discovery or out of the saved list. The file is named by whoever asked,
 // so that only its name is ever written down and never the path to it.
@@ -415,22 +435,24 @@ void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CS
 }
 
 bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& path,
-                                   const CastMediaInfo& /*info*/)
+                                   const CastMediaInfo& info)
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     const CStringA sink(saved.formats);
-    const bool ok = ignoreFormatSupport || AcceptsMime(sink, mime);
+    const bool ok = ignoreFormatSupport || AcceptsMime(sink, mime)
+                    || CanTranscodeForSink(sink, path, info);
     LogVerdict(saved.DisplayName(), sink, mime, ok);
     return ok;
 }
 
-bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& /*info*/)
+bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, const CastMediaInfo& info)
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
 
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
         if (dev.udn == deviceId) {
-            const bool ok = ignoreFormatSupport || AcceptsMime(dev.sinkProtocolInfo, mime);
+            const bool ok = ignoreFormatSupport || AcceptsMime(dev.sinkProtocolInfo, mime)
+                            || CanTranscodeForSink(dev.sinkProtocolInfo, path, info);
             LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok);
             return ok;
         }
@@ -479,10 +501,30 @@ void CDlnaTarget::LoadMedia(const CString& filePath, const CString& title, doubl
         return;
     }
 
+    const CStringA mime = CCastMediaServer::MimeForFile(filePath);
+
+    // A file the renderer will not take as-is but whose audio we can re-encode
+    // to one it will (an audio-only file; stereo AAC in MP4) is transcoded on
+    // the worker before it is served -- the transcode blocks, and only the
+    // worker thread may block. Nothing is registered here; the worker fills in
+    // the url once the copy exists.
+    if (!AcceptsMime(m_sink, mime) && CanTranscodeForSink(m_sink, filePath, info)) {
+        Command cmd;
+        cmd.type = Command::Type::Load;
+        cmd.sourcePath = filePath;
+        cmd.info = info;
+        cmd.title = title;
+        cmd.duration = durationSec;
+        cmd.param = startSec >= 1.0 ? startSec : 0.0;
+        CASTING_LOG(_T("cast: the renderer does not take %hs; the audio is transcoded to AAC first"),
+                    mime.GetString());
+        QueueCommand(std::move(cmd));
+        return;
+    }
+
     // One string describes the resource, and the renderer is told it twice:
     // here in the DIDL it is handed, and again in the HTTP response when it
     // asks. A strict renderer compares the two, so they come from one place.
-    const CStringA mime = CCastMediaServer::MimeForFile(filePath);
     const CStringA features = ContentFeatures(filePath, mime, info);
     m_server.SetFile(filePath, mime, features);
     const CStringA url = m_server.GetURLForHost(CStringA(m_localAddress));
@@ -569,6 +611,12 @@ void CDlnaTarget::StopCasting()
     m_server.ClearFile();
     m_server.ClearAllowedPeer();
     m_server.Stop();
+    // Only now the server has released its handle can an audio transcode's temp
+    // be deleted.
+    if (!m_transcodeTemp.IsEmpty()) {
+        DeleteFile(m_transcodeTemp);
+        m_transcodeTemp.Empty();
+    }
 
     // The device is left switched on and on the input it was put on: casting
     // is something the user asked for, and undoing it afterwards would be as
@@ -788,15 +836,55 @@ void CDlnaTarget::RunCommand(const Command& cmd)
 
     switch (cmd.type) {
         case Command::Type::Load: {
-            m_mediaURL = cmd.url;
-            m_localDuration = cmd.duration > 0.0 ? cmd.duration : 0.0;
+            // A transcode fills in url/mime/features/size below; everything else
+            // reads from this local copy so the const command is left untouched.
+            Command load = cmd;
+            SetState(CastTargetState::Loading); // covers the transcode wait too
+
+            if (!load.sourcePath.IsEmpty()) {
+                // The renderer would not take the file as it is; re-encode its
+                // audio to stereo AAC in an MP4 and serve that instead. This
+                // blocks, which is why it runs here on the worker and not in
+                // LoadMedia. m_hStopEvent cancels it if the session is torn down.
+                if (!m_transcodeTemp.IsEmpty()) {
+                    DeleteFile(m_transcodeTemp);
+                    m_transcodeTemp.Empty();
+                }
+                TCHAR tempDir[MAX_PATH] = { 0 };
+                GetTempPath(MAX_PATH, tempDir);
+                CString temp;
+                temp.Format(_T("%smpc-dlnadownmix-%u.mp4"), tempDir, GetCurrentProcessId());
+                CString err;
+                if (!CastDownmixToMp4(load.sourcePath, load.info, 2, temp, &err, m_hStopEvent)) {
+                    Fail(err.IsEmpty() ? CString(_T("the audio could not be transcoded")) : err);
+                    return;
+                }
+                m_transcodeTemp = temp;
+                const CStringA outMime = "audio/mp4";
+                load.features = ContentFeatures(temp, outMime, load.info);
+                m_server.SetFile(temp, outMime, load.features);
+                const CStringA url = m_server.GetURLForHost(CStringA(m_localAddress));
+                if (url.IsEmpty()) {
+                    Fail(_T("no media URL after transcode"));
+                    return;
+                }
+                WIN32_FILE_ATTRIBUTE_DATA attr;
+                load.size = GetFileAttributesEx(temp, GetFileExInfoStandard, &attr)
+                            ? (((ULONGLONG)attr.nFileSizeHigh << 32) | attr.nFileSizeLow) : 0;
+                load.url = CString(url);
+                load.mime = CString(outMime);
+                CASTING_LOG(_T("dlna: transcoded the audio to AAC; handing the device %hs as %hs"),
+                            CCastMediaServer::MaskURLToken(url).GetString(), outMime.GetString());
+            }
+
+            m_mediaURL = load.url;
+            m_localDuration = load.duration > 0.0 ? load.duration : 0.0;
             m_hasPlayed = false;
             m_stopIssued = false;
             m_uriConfirmed = false;
             m_foreignURIPolls = 0;
-            m_pendingSeek = cmd.param > 0.0 ? cmd.param : -1.0;
-            UpdatePosition(0.0, cmd.duration);
-            SetState(CastTargetState::Loading);
+            m_pendingSeek = load.param > 0.0 ? load.param : -1.0;
+            UpdatePosition(0.0, load.duration);
 
             // A renderer still playing something else refuses the new URI, so
             // it is stopped first. That stop failing is normal on an idle
@@ -805,7 +893,7 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             Dlna::SoapCall(m_controlURL, AVTRANSPORT_SERVICE, "Stop", "<InstanceID>0</InstanceID>",
                            response, preStopFault, m_hStopEvent);
 
-            const CStringA metadata = BuildMetadata(cmd);
+            const CStringA metadata = BuildMetadata(load);
             TRACE(_T("DlnaTarget: handing the device %hs\n"), metadata.GetString());
             // Verbatim: a renderer that refuses an item usually refuses
             // something in here, and only the whole thing shows which.
@@ -814,7 +902,7 @@ void CDlnaTarget::RunCommand(const Command& cmd)
             args.Format("<InstanceID>0</InstanceID>"
                         "<CurrentURI>%s</CurrentURI>"
                         "<CurrentURIMetaData>%s</CurrentURIMetaData>",
-                        Dlna::XmlEscape(CStringA(cmd.url)).GetString(),
+                        Dlna::XmlEscape(CStringA(load.url)).GetString(),
                         Dlna::XmlEscape(metadata).GetString());
             if (!AvTransport("SetAVTransportURI", args, response)) {
                 return; // AvTransport() has already reported the fault
