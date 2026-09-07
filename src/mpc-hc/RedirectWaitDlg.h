@@ -26,6 +26,12 @@
 // Shown while this process retries handing its command line to a first instance that has
 // stopped responding. The retry runs on the dialog's own timer, so the dialog closes itself
 // as soon as the other instance answers instead of waiting for the user to dismiss it.
+//
+// It renders unthemed, and deliberately so: this runs from InitInstance before LoadSettings(),
+// so m_bThemeLoaded is still false and CMPCThemeDialog draws as a plain dialog. Loading the
+// settings earlier just to theme this one dialog would slow down every redirect, which is the
+// path this whole change exists to keep quick. Deriving from CMPCThemeDialog anyway costs
+// nothing and means it picks up the theme if the startup order ever changes.
 class CRedirectWaitDlg : public CMPCThemeDialog
 {
     DECLARE_DYNAMIC(CRedirectWaitDlg)
