@@ -29,6 +29,9 @@
 // what the streaming transcode (CCastHlsStream) reports its progress on:
 // wParam is one of CCastHlsStream::Notify
 #define WM_CAST_HLS         (WM_APP + 1)
+// the whole-file transcode worker's completion: wParam is 1 on success, 0 on
+// failure (the file is then served as it is)
+#define WM_CAST_DOWNMIX     (WM_APP + 2)
 
 // how long StopCasting() lets the polite media STOP reach the device before
 // the connection is torn down regardless
@@ -62,6 +65,10 @@ LRESULT CALLBACK CChromecastTarget::MsgWndProc(HWND hWnd, UINT uMsg, WPARAM wPar
     }
     if (pThis && uMsg == WM_CAST_HLS) {
         pThis->OnHlsEvent(static_cast<int>(wParam));
+        return 0;
+    }
+    if (pThis && uMsg == WM_CAST_DOWNMIX) {
+        pThis->OnDownmixDone(wParam != 0);
         return 0;
     }
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -590,29 +597,63 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
             CASTING_LOG(_T("cast: the streaming transcode takes H.264 video, which this file does not ")
                         _T("have; transcoding the whole file first instead"));
         }
+        // The whole-file transcode is minutes of work on a large HEVC file, so
+        // it runs on a worker rather than freezing the UI thread this is called
+        // on. The device is handed nothing until it finishes: the file is not
+        // fragmented, so there is nothing to serve progressively. The load waits
+        // (m_downmixPending, reported as Loading) for WM_CAST_DOWNMIX.
         TCHAR tempDir[MAX_PATH] = { 0 };
         GetTempPath(MAX_PATH, tempDir);
         CString temp;
         temp.Format(_T("%smpc-castdownmix-%u-%u.mp4"), tempDir, GetCurrentProcessId(), m_generation);
-        CString err;
-        if (CastDownmixToMp4(filePath, info, target, temp, &err)) {
-            m_downmixTemp = temp;
-            servePath = temp;
-            CASTING_LOG(_T("cast: the file's %d-channel audio was downmixed to %d for this device"),
-                        info.channels, target);
-        } else {
-            CASTING_LOG(_T("cast: could not downmix (%s); handing the device the file as it is"),
-                        err.GetString());
-        }
+        m_downmixCancel = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+        m_downmixSrc = filePath;
+        m_downmixTemp = temp;
+        m_downmixPending = true;
+        m_loadPending = true;
+        m_pendingTitle = title;
+        m_pendingDuration = durationSec;
+        m_pendingSeek = startSec >= 1.0 ? startSec : -1.0;
+        const HWND hWnd = m_hMsgWnd;
+        const HANDLE hCancel = m_downmixCancel;
+        const int chans = info.channels;
+        m_downmixThread = std::thread([this, filePath, info, target, temp, hCancel, hWnd, chans] {
+            // The transcode's engines (Media Foundation, and LAV's DirectShow
+            // graph) are COM; this thread is their apartment.
+            HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+            CString err;
+            const bool ok = CastDownmixToMp4(filePath, info, target, temp, &err, hCancel);
+            if (ok) {
+                CASTING_LOG(_T("cast: the file's %d-channel audio was downmixed to %d for this device"),
+                            chans, target);
+            } else {
+                m_downmixError = err;
+            }
+            if (SUCCEEDED(hrCo)) {
+                CoUninitialize();
+            }
+            // Posted last: the handler on the UI thread reads m_downmixError,
+            // written above, only after this post is observed.
+            PostMessage(hWnd, WM_CAST_DOWNMIX, ok ? 1 : 0, 0);
+        });
+        CASTING_LOG(_T("cast: transcoding the whole file's %d-channel audio to %d before handing it over"),
+                    info.channels, target);
+        NotifyState(CastTargetState::Loading);
+        return;
     }
 
-    // A Chromecast is told what it is playing over the cast protocol and never
-    // asks for DLNA content features, so the server is given none.
-    m_mime = CCastMediaServer::MimeForFile(servePath);
-    m_server.SetFile(servePath, m_mime);
     m_pendingTitle = title;
     m_pendingDuration = durationSec;
     m_pendingSeek = startSec >= 1.0 ? startSec : -1.0;
+    ServeFileAndLoad(servePath);
+}
+
+// A Chromecast is told what it is playing over the cast protocol and never asks
+// for DLNA content features, so the server is given none.
+void CChromecastTarget::ServeFileAndLoad(const CString& servePath)
+{
+    m_mime = CCastMediaServer::MimeForFile(servePath);
+    m_server.SetFile(servePath, m_mime);
 
     switch (m_session.GetState()) {
         case CastSessionState::Ready:
@@ -712,6 +753,28 @@ void CChromecastTarget::AbandonTranscode()
     }
     m_hlsPending = false;
     m_hlsReady = false;
+    // The whole-file transcode worker: signal it, wait for it to notice and
+    // return, then close the event and discard any completion it posted before
+    // it saw the cancel (it would otherwise be handled as the next load's).
+    if (m_downmixCancel) {
+        SetEvent(m_downmixCancel);
+    }
+    if (m_downmixThread.joinable()) {
+        m_downmixThread.join();
+    }
+    if (m_downmixCancel) {
+        CloseHandle(m_downmixCancel);
+        m_downmixCancel = nullptr;
+    }
+    if (m_hMsgWnd) {
+        MSG msg;
+        while (PeekMessage(&msg, m_hMsgWnd, WM_CAST_DOWNMIX, WM_CAST_DOWNMIX, PM_REMOVE)) {
+            // nothing to do with it
+        }
+    }
+    m_downmixPending = false;
+    m_downmixSrc.Empty();
+    m_downmixError.Empty();
     if (!m_downmixTemp.IsEmpty()) {
         DeleteFile(m_downmixTemp);
         m_downmixTemp.Empty();
@@ -786,10 +849,11 @@ CastTargetState CChromecastTarget::GetState() const
     if (m_failed) {
         return CastTargetState::Failed;
     }
-    // While the load waits on the transcode's first segments the session
-    // itself still sits in Ready, which would read as Connecting; the honest
-    // state is that media is being made ready for it.
-    if (m_hlsPending) {
+    // While the load waits on a transcode -- the streaming one's first
+    // segments, or the whole-file one finishing -- the session itself still
+    // sits in Ready, which would read as Connecting; the honest state is that
+    // media is being made ready for it.
+    if (m_hlsPending || m_downmixPending) {
         return CastTargetState::Loading;
     }
     return SimplifyState(m_session.GetState());
@@ -867,4 +931,36 @@ void CChromecastTarget::OnHlsEvent(int notify)
         default:
             break;
     }
+}
+
+// The whole-file transcode worker has finished. On success the device is handed
+// the downmixed copy; on failure it is handed the original (it plays the
+// picture and drops the surround, which still beats casting nothing). Either
+// way the LOAD, held back while the transcode ran, now goes out.
+void CChromecastTarget::OnDownmixDone(bool ok)
+{
+    if (!m_downmixPending) {
+        return; // the worker was abandoned; its output is cleaned up elsewhere
+    }
+    m_downmixPending = false;
+    if (m_downmixThread.joinable()) {
+        m_downmixThread.join();
+    }
+    if (!m_casting) {
+        return;
+    }
+
+    CString servePath;
+    if (ok) {
+        servePath = m_downmixTemp;
+    } else {
+        CASTING_LOG(_T("cast: could not downmix (%s); handing the device the file as it is"),
+                    m_downmixError.GetString());
+        if (!m_downmixTemp.IsEmpty()) {
+            DeleteFile(m_downmixTemp);
+            m_downmixTemp.Empty();
+        }
+        servePath = m_downmixSrc;
+    }
+    ServeFileAndLoad(servePath);
 }

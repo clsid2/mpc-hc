@@ -21,6 +21,7 @@
 #pragma once
 
 #include <memory>
+#include <thread>
 
 #include "CastTarget.h"
 #include "CastDiscovery.h"
@@ -94,6 +95,10 @@ private:
     bool EnsureMessageWindow();
     void OnSessionStateChanged();
     void OnHlsEvent(int notify); // WM_CAST_HLS, from the streaming transcode
+    void OnDownmixDone(bool ok); // WM_CAST_DOWNMIX, from the whole-file transcode worker
+    // Registers servePath with the media server and sends (or defers) the LOAD.
+    // Shared by the direct no-transcode path and the transcode completions.
+    void ServeFileAndLoad(const CString& servePath);
     void NotifyState(CastTargetState state);
     void SendLoad();
     // A seek ahead of what the streaming transcode has produced so far, held
@@ -149,5 +154,16 @@ private:
     bool m_hlsReady = false;   // those segments are up; the LOAD may be sent
     CString m_downmixTemp;     // the complete-file transcode's copy, if any
     CString m_failReason;      // detail for the Failed state
+    // The complete-file transcode runs on this worker so it does not freeze the
+    // UI thread that LoadMedia is called on; it posts WM_CAST_DOWNMIX when done.
+    // m_downmixCancel is signalled to abandon it (a new load, a stop, teardown),
+    // which AbandonTranscode then joins on. m_downmixSrc is the original file,
+    // served as-is if the transcode fails; m_downmixError carries the reason
+    // from the worker to the completion handler (safe across the PostMessage).
+    std::thread m_downmixThread;
+    HANDLE m_downmixCancel = nullptr;
+    bool m_downmixPending = false;
+    CString m_downmixSrc;
+    CString m_downmixError;
     void AbandonTranscode();
 };

@@ -46,9 +46,12 @@ bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info);
 // to targetChannels and re-encoded as AAC. info picks the engine. Blocks until
 // finished; the result is a complete, seekable file the media server can serve
 // with Range. Returns false (and a reason in pError) on any failure, leaving no
-// output behind.
+// output behind. hCancel, when given, is polled while the transcode pumps so a
+// caller running this on a worker thread can abandon it (the call then fails
+// with "cancelled", leaving no output) -- the whole-file transcode is otherwise
+// long enough to freeze a UI thread it were called on directly.
 bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
-                      const CString& outPath, CString* pError = nullptr);
+                      const CString& outPath, CString* pError = nullptr, HANDLE hCancel = nullptr);
 
 // Optional eyes and a brake for the streaming variant. Both are checked about
 // every 32 samples while the transcode pumps: hCancel set abandons the work

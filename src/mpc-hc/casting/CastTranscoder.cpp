@@ -702,10 +702,11 @@ static bool DownmixToMp4Common(const CString& srcPath, const CastMediaInfo& info
 }
 
 bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
-                      const CString& outPath, CString* pError)
+                      const CString& outPath, CString* pError, HANDLE hCancel)
 {
-    return DownmixToMp4Common(srcPath, info, targetChannels, outPath, false,
-                              CastTranscodeProgress(), pError);
+    CastTranscodeProgress prog;
+    prog.hCancel = hCancel;
+    return DownmixToMp4Common(srcPath, info, targetChannels, outPath, false, prog, pError);
 }
 
 bool CastDownmixToFragmentedMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
