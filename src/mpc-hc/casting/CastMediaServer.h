@@ -22,8 +22,11 @@
 
 #include <winsock2.h>
 #include <list>
+#include <map>
 #include <mutex>
 #include <vector>
+
+#include "CastHlsStream.h"
 
 // Phase 3 of Chromecast support: a minimal local HTTP/1.1 server that serves
 // a single registered media file to the cast device for direct playback.
@@ -63,6 +66,28 @@ public:
     // file is registered. Pass CCastSession::GetLocalAddress() for localIp,
     // the address the device can reach us at on multi-NIC systems.
     CStringA GetURLForHost(const CStringA& localIp) const;
+
+    // --- HLS streaming resources ---
+    // A second way to serve media, beside the single registered file: while a
+    // transcode runs, its segmenter publishes a playlist, an init segment and
+    // media segments under their own randomized /cast/<token>/hls/ prefix as
+    // named resources built from parts (memory blobs and ranges of the raw
+    // fragmented MP4). A resource's total length is known before it is served,
+    // so every response carries an exact Content-Length. Names are matched
+    // exactly against what was published; nothing is ever resolved against the
+    // filesystem from request input.
+    void BeginHls(const CString& rawFilePath); // new random token; the table starts empty
+    // http://ip:port/cast/<token>/hls/media.m3u8, empty when HLS is not active
+    CStringA GetHlsURLForHost(const CStringA& localIp) const;
+    // Publishes (or replaces) name. Thread-safe; requests parked waiting for
+    // name are released with the new content.
+    void PublishResource(const CStringA& name, const CStringA& mime,
+                         std::vector<CCastHlsStream::Part> parts, ULONGLONG totalLen);
+    // Current and future requests for name get a 404: how a segment the
+    // transcode will never produce is kept from parking a request forever.
+    void FailResource(const CStringA& name);
+    // Clears the table and the prefix; parked requests are answered 404.
+    void EndHls();
 
     // When an allowed peer is set, connections from any other address are
     // closed immediately. The caller sets this to the cast device's IP so the
@@ -108,11 +133,16 @@ private:
     void OnClientEvent(Client& client);
     void ProcessRequests(Client& client);
     void HandleRequest(Client& client, const CStringA& header);
+    // Everything under the HLS prefix: lookup, parking an unpublished name,
+    // and serving the published parts (memory blobs and file ranges).
+    void HandleHlsRequest(Client& client, const CStringA& header, const CStringA& method,
+                          const CStringA& target, const CStringA& targetPath, bool keepAlive);
     void SendSimpleResponse(Client& client, int status, const CStringA& statusText,
                             const CStringA& extraHeaders, bool closeConnection);
     void QueueResponse(Client& client, const CStringA& headerBytes);
     bool EnsureFileOpen(Client& client, const CString& filePath);
     bool RefillOutBuf(Client& client);
+    bool RefillFromParts(Client& client); // HLS body: the current part of client.parts
     void PumpSend(Client& client);
     static void CloseClient(Client& client);
 
@@ -125,8 +155,25 @@ private:
     CStringA m_allowedPeer; // empty = allow any peer
     UINT m_port = 0;
 
+    // HLS resource table, same guard as the file registration. Entries appear
+    // when the segmenter publishes them; a name that is absent while the
+    // prefix is set is "not yet published", which parks the request rather
+    // than answering 404.
+    struct HlsResource {
+        CStringA mime;
+        std::vector<CCastHlsStream::Part> parts;
+        ULONGLONG totalLen = 0;
+        bool failed = false;
+    };
+    std::map<CStringA, HlsResource> m_hlsResources; // keyed by name under the prefix
+    CStringA m_hlsPrefix;  // "/cast/<hex>/hls/", empty when HLS is not active
+    CString m_hlsFilePath; // the raw fragmented MP4 the file-range parts read from
+
     SOCKET m_listenSocket = INVALID_SOCKET;
     bool m_bWsaInitialized = false;
     HANDLE m_hThread = nullptr;
     HANDLE m_hStopEvent = nullptr;
+    // auto-reset; PublishResource/FailResource/EndHls wake the worker so it can
+    // re-run the requests parked on what just changed
+    HANDLE m_hWakeEvent = nullptr;
 };

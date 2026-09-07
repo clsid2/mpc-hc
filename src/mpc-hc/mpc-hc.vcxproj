@@ -365,6 +365,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="casting\CastDevicesDlg.h" />
     <ClInclude Include="casting\CastTestDlg.h" />
     <ClInclude Include="casting\CastDiscovery.h" />
+    <ClInclude Include="casting\CastHlsStream.h" />
     <ClInclude Include="casting\CastMediaServer.h" />
     <ClInclude Include="casting\CastSession.h" />
     <ClInclude Include="casting\CastSessionDlg.h" />

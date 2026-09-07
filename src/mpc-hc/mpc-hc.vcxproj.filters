@@ -988,6 +988,9 @@
     <ClInclude Include="casting\CastDiscovery.h">
       <Filter>Integration\Cast</Filter>
     </ClInclude>
+    <ClInclude Include="casting\CastHlsStream.h">
+      <Filter>Integration\Cast</Filter>
+    </ClInclude>
     <ClInclude Include="casting\CastMediaServer.h">
       <Filter>Integration\Cast</Filter>
     </ClInclude>

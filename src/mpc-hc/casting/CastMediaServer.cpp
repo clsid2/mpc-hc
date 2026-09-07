@@ -36,6 +36,11 @@
 #define SEND_CHUNK_SIZE        (256 * 1024) // file bytes buffered per send round
 #define CLIENT_IDLE_TIMEOUT_MS 30000ull
 #define FILE_READ_TIMEOUT_MS   5000         // a read that takes longer is abandoned
+// How long a request for a not-yet-published HLS resource may park before it
+// is answered 503. Deliberately much longer than the idle timeout: the request
+// is not waiting for its peer, it is waiting for the transcode, and a receiver
+// gives up on its own sooner than this.
+#define HLS_PARK_TIMEOUT_MS    120000ull
 
 // The fixed part of the randomized media path, so that a URL can be put in a
 // log with only its token taken out
@@ -62,6 +67,17 @@ struct CCastMediaServer::Client {
     bool closeAfterResponse = false;
     bool remoteClosed = false;   // peer sent FIN; finish the response, then close
     ULONGLONG lastActivity = 0;  // GetTickCount64() of the last successful I/O
+    // --- HLS request state ---
+    // A request whose resource is not published yet is parked: it was consumed
+    // from recvBuf, so it is kept whole here until a publish (or failure, or
+    // the end of HLS) re-runs it, or the park timeout answers it 503.
+    CStringA parkedHeader;       // empty = nothing parked
+    ULONGLONG parkedSince = 0;   // GetTickCount64() when the request parked
+    // The HLS response body when one is in flight, as published parts; the
+    // single-file body above uses hFile/fileOffset/bytesRemaining instead.
+    std::vector<CCastHlsStream::Part> parts;
+    size_t partIndex = 0;        // current part
+    ULONGLONG partOffset = 0;    // position within that part
 };
 
 namespace
@@ -199,6 +215,27 @@ namespace
         }
         return extA;
     }
+
+    // A fresh 16-hex-digit token for a randomized URL path, so that a URL can
+    // be put in a log with only its token taken out and nothing is guessable.
+    // The same fallback as the file registration's: crypto RNG first, and a
+    // time/counter mix in the wildly unlikely case it is unavailable.
+    CStringA RandomPathToken()
+    {
+        BYTE rnd[8];
+        if (BCryptGenRandom(nullptr, rnd, sizeof(rnd), BCRYPT_USE_SYSTEM_PREFERRED_RNG) != 0 /*STATUS_SUCCESS*/) {
+            ULONGLONG fallback = GetTickCount64();
+            LARGE_INTEGER qpc;
+            QueryPerformanceCounter(&qpc);
+            fallback ^= (ULONGLONG)qpc.QuadPart * 0x9E3779B97F4A7C15ull;
+            memcpy(rnd, &fallback, sizeof(rnd));
+        }
+        CStringA token;
+        for (BYTE b : rnd) {
+            token.AppendFormat("%02x", b);
+        }
+        return token;
+    }
 }
 
 CCastMediaServer::CCastMediaServer()
@@ -232,6 +269,13 @@ bool CCastMediaServer::Start()
 
     m_hStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     if (!m_hStopEvent) {
+        Stop();
+        return false;
+    }
+
+    // auto-reset: every publish is one wake-up round over the parked requests
+    m_hWakeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    if (!m_hWakeEvent) {
         Stop();
         return false;
     }
@@ -270,6 +314,10 @@ void CCastMediaServer::Stop()
         CloseHandle(m_hStopEvent);
         m_hStopEvent = nullptr;
     }
+    if (m_hWakeEvent) {
+        CloseHandle(m_hWakeEvent);
+        m_hWakeEvent = nullptr;
+    }
     if (m_bWsaInitialized) {
         WSACleanup();
         m_bWsaInitialized = false;
@@ -282,6 +330,9 @@ void CCastMediaServer::Stop()
     m_urlPath.Empty();
     m_allowedPeer.Empty();
     m_port = 0;
+    m_hlsResources.clear();
+    m_hlsPrefix.Empty();
+    m_hlsFilePath.Empty();
 }
 
 UINT CCastMediaServer::GetPort() const
@@ -338,6 +389,74 @@ CStringA CCastMediaServer::GetURLForHost(const CStringA& localIp) const
     CStringA url;
     url.Format("http://%s:%u%s", localIp.GetString(), m_port, m_urlPath.GetString());
     return url;
+}
+
+void CCastMediaServer::BeginHls(const CString& rawFilePath)
+{
+    // Fresh token for the same reasons as SetFile: the prefix identifies one
+    // transcode session, and a device must not get a new session's segments
+    // out of a cached old URL.
+    const CStringA token = RandomPathToken();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_hlsFilePath = rawFilePath;
+    m_hlsResources.clear();
+    m_hlsPrefix.Format(URL_PATH_PREFIX "%s/hls/", token.GetString());
+}
+
+CStringA CCastMediaServer::GetHlsURLForHost(const CStringA& localIp) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (m_hlsPrefix.IsEmpty() || localIp.IsEmpty() || !m_port) {
+        return CStringA();
+    }
+    CStringA url;
+    url.Format("http://%s:%u%smedia.m3u8", localIp.GetString(), m_port, m_hlsPrefix.GetString());
+    return url;
+}
+
+void CCastMediaServer::PublishResource(const CStringA& name, const CStringA& mime,
+                                       std::vector<CCastHlsStream::Part> parts, ULONGLONG totalLen)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        HlsResource& res = m_hlsResources[name];
+        res.mime = mime;
+        res.parts = std::move(parts);
+        res.totalLen = totalLen;
+        res.failed = false;
+    }
+    // release the requests parked on this name; the ones parked on other,
+    // still-missing names re-run, find nothing, and park again
+    if (m_hWakeEvent) {
+        SetEvent(m_hWakeEvent);
+    }
+}
+
+void CCastMediaServer::FailResource(const CStringA& name)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        // operator[] default-constructs when absent: a failed name does not
+        // need parts, just the mark
+        m_hlsResources[name].failed = true;
+    }
+    if (m_hWakeEvent) {
+        SetEvent(m_hWakeEvent);
+    }
+}
+
+void CCastMediaServer::EndHls()
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_hlsResources.clear();
+        m_hlsPrefix.Empty();
+        m_hlsFilePath.Empty();
+    }
+    // parked requests re-run, find no prefix, and are answered 404
+    if (m_hWakeEvent) {
+        SetEvent(m_hWakeEvent);
+    }
 }
 
 void CCastMediaServer::SetAllowedPeer(const CStringA& ip)
@@ -448,11 +567,12 @@ DWORD CCastMediaServer::ThreadProc()
         handles.clear();
         handles.emplace_back(m_hStopEvent);
         handles.emplace_back(hListenEvent);
+        handles.emplace_back(m_hWakeEvent);
         for (const Client& c : clients) {
             handles.emplace_back(c.hEvent);
         }
 
-        // sleep until the nearest idle timeout expires; with no connection open
+        // sleep until the nearest deadline expires; with no connection open
         // there is no deadline at all and only an event can wake the thread
         DWORD timeout = INFINITE;
         const ULONGLONG tick = GetTickCount64();
@@ -460,7 +580,11 @@ DWORD CCastMediaServer::ThreadProc()
             if (c.sending) {
                 continue; // no deadline while a response is in flight, see below
             }
-            const ULONGLONG deadline = c.lastActivity + CLIENT_IDLE_TIMEOUT_MS;
+            // a parked request is not waiting for its peer but for a resource
+            // to be published; it keeps its own, much longer deadline
+            const ULONGLONG deadline = !c.parkedHeader.IsEmpty()
+                                       ? c.parkedSince + HLS_PARK_TIMEOUT_MS
+                                       : c.lastActivity + CLIENT_IDLE_TIMEOUT_MS;
             timeout = (DWORD)std::min<ULONGLONG>(timeout, deadline > tick ? deadline - tick : 0);
         }
 
@@ -471,9 +595,33 @@ DWORD CCastMediaServer::ThreadProc()
             WSANETWORKEVENTS ne;
             WSAEnumNetworkEvents(m_listenSocket, hListenEvent, &ne);
             AcceptClients(clients);
-        } else if (ret > WAIT_OBJECT_0 + 1 && ret < WAIT_OBJECT_0 + handles.size()) {
+        } else if (ret == WAIT_OBJECT_0 + 2) {
+            // a resource was published, failed, or HLS ended: every parked
+            // request is re-run; one whose name is still missing parks again
+            for (Client& c : clients) {
+                if (c.sock == INVALID_SOCKET || c.sending || c.parkedHeader.IsEmpty()) {
+                    continue;
+                }
+                const CStringA request = c.parkedHeader;
+                c.parkedHeader.Empty();
+                const ULONGLONG waitedMs = GetTickCount64() - c.parkedSince;
+                int lineEnd = request.Find("\r\n");
+                CStringA line = lineEnd >= 0 ? request.Left(lineEnd) : request;
+                int sp1 = line.Find(' ');
+                int sp2 = sp1 >= 0 ? line.Find(' ', sp1 + 1) : -1;
+                if (sp1 > 0 && sp2 > sp1) {
+                    CASTING_LOG(_T("server: %hs %hs -> released after %I64u ms"),
+                                line.Left(sp1).GetString(),
+                                MaskURLToken(line.Mid(sp1 + 1, sp2 - sp1 - 1)).GetString(), waitedMs);
+                }
+                HandleRequest(c, request);
+                if (c.sock != INVALID_SOCKET && !c.sending && c.parkedHeader.IsEmpty()) {
+                    ProcessRequests(c); // a pipelined request may sit behind it
+                }
+            }
+        } else if (ret > WAIT_OBJECT_0 + 2 && ret < WAIT_OBJECT_0 + handles.size()) {
             auto it = clients.begin();
-            std::advance(it, ret - WAIT_OBJECT_0 - 2);
+            std::advance(it, ret - WAIT_OBJECT_0 - 3);
             OnClientEvent(*it);
         }
 
@@ -488,6 +636,21 @@ DWORD CCastMediaServer::ThreadProc()
         // error that follows closes the connection here.
         const ULONGLONG now = GetTickCount64();
         for (auto it = clients.begin(); it != clients.end();) {
+            if (it->sock != INVALID_SOCKET && !it->parkedHeader.IsEmpty()) {
+                // parked: exempt from the idle close, its own deadline answers
+                // it 503 so the client is told the segment never came
+                if (!it->sending && now - it->parkedSince > HLS_PARK_TIMEOUT_MS) {
+                    const CStringA request = it->parkedHeader;
+                    it->parkedHeader.Empty();
+                    int lineEnd = request.Find("\r\n");
+                    CStringA line = lineEnd >= 0 ? request.Left(lineEnd) : request;
+                    CASTING_LOG(_T("server: %hs -> 503, nothing was published for it within %u s"),
+                                MaskURLToken(line).GetString(), (UINT)(HLS_PARK_TIMEOUT_MS / 1000));
+                    SendSimpleResponse(*it, 503, "Service Unavailable", CStringA(), true);
+                }
+                it = it->sock == INVALID_SOCKET ? clients.erase(it) : std::next(it);
+                continue;
+            }
             if (it->sock != INVALID_SOCKET && !it->sending
                     && now - it->lastActivity > CLIENT_IDLE_TIMEOUT_MS) {
                 CloseClient(*it);
@@ -612,6 +775,10 @@ void CCastMediaServer::CloseClient(Client& client)
         CloseHandle(client.hReadEvent);
         client.hReadEvent = nullptr;
     }
+    client.parkedHeader.Empty();
+    client.parts.clear(); // releases the published blobs this response held
+    client.partIndex = 0;
+    client.partOffset = 0;
 }
 
 // Opens the registered file for this connection, reusing the handle already
@@ -687,8 +854,11 @@ void CCastMediaServer::OnClientEvent(Client& client)
 void CCastMediaServer::ProcessRequests(Client& client)
 {
     // handle buffered requests one at a time; the next one (keep-alive or
-    // pipelined) is only parsed once the current response has been sent
-    while (client.sock != INVALID_SOCKET && !client.sending) {
+    // pipelined) is only parsed once the current response has been sent. A
+    // parked request also holds the connection: whatever is buffered behind it
+    // waits until the parked one has been answered.
+    while (client.sock != INVALID_SOCKET && !client.sending
+            && client.parkedHeader.IsEmpty()) {
         int headerEnd = client.recvBuf.Find("\r\n\r\n");
         if (headerEnd < 0) {
             if (client.recvBuf.GetLength() > MAX_HEADER_SIZE) {
@@ -742,6 +912,21 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
     // impossible.
     const int query = target.Find('?');
     const CStringA targetPath = query >= 0 ? target.Left(query) : target;
+
+    // HLS resources live under their own randomized prefix, beside the
+    // registered file: they answer to their own rules (exact Content-Length
+    // from parts, no ranges, parking what is not published yet), so the whole
+    // branch lives in HandleHlsRequest. Only the prefix is taken here, and the
+    // lock is released before the call -- HandleHlsRequest takes it again.
+    CStringA hlsPrefix;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        hlsPrefix = m_hlsPrefix;
+    }
+    if (!hlsPrefix.IsEmpty() && targetPath.Left(hlsPrefix.GetLength()) == hlsPrefix) {
+        HandleHlsRequest(client, header, method, target, targetPath, keepAlive);
+        return;
+    }
 
     CString filePath;
     CStringA mime, contentFeatures;
@@ -845,6 +1030,115 @@ void CCastMediaServer::HandleRequest(Client& client, const CStringA& header)
     QueueResponse(client, responseHeader);
 }
 
+void CCastMediaServer::HandleHlsRequest(Client& client, const CStringA& header, const CStringA& method,
+                                        const CStringA& target, const CStringA& targetPath, bool keepAlive)
+{
+    CStringA name, mime;
+    CString rawPath;
+    std::vector<CCastHlsStream::Part> parts;
+    ULONGLONG totalLen = 0;
+    bool live = false, failed = false, found = false;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        live = !m_hlsPrefix.IsEmpty()
+               && targetPath.Left(m_hlsPrefix.GetLength()) == m_hlsPrefix;
+        if (live) {
+            name = targetPath.Mid(m_hlsPrefix.GetLength());
+            rawPath = m_hlsFilePath;
+            const auto it = m_hlsResources.find(name);
+            if (it != m_hlsResources.end()) {
+                if (it->second.failed) {
+                    failed = true;
+                } else {
+                    found = true;
+                    mime = it->second.mime;
+                    // the parts are copied rather than referenced: the table
+                    // entry can be replaced or cleared while this response is
+                    // still being sent, and the blobs it hands out are shared
+                    parts = it->second.parts;
+                    totalLen = it->second.totalLen;
+                }
+            }
+        }
+    }
+
+    if (!live || name.IsEmpty()) {
+        // EndHls raced the request, or the bare prefix was asked for
+        CASTING_LOG(_T("server: %hs %hs -> 404, nothing is registered under that path"),
+                    method.GetString(), MaskURLToken(target).GetString());
+        SendSimpleResponse(client, 404, "Not Found", CStringA(), !keepAlive);
+        return;
+    }
+    if (failed) {
+        CASTING_LOG(_T("server: %hs %hs -> 404, that resource failed"),
+                    method.GetString(), MaskURLToken(target).GetString());
+        SendSimpleResponse(client, 404, "Not Found", CStringA(), !keepAlive);
+        return;
+    }
+    if (!found) {
+        // The playlist names every segment up front while the transcode
+        // publishes them one by one, so an absent name here is almost always
+        // "not yet", not "never". Answering 404 would make the device give up
+        // (a receiver retries twice and fails the load); the request parks
+        // until a publish releases it, the park timeout answers it 503, and a
+        // FailResource mark (a segment the transcode will not produce) is a
+        // 404 from the start.
+        client.parkedHeader = header;
+        client.parkedSince = GetTickCount64();
+        CASTING_LOG(_T("server: %hs %hs -> parked, waiting for it to be published"),
+                    method.GetString(), MaskURLToken(target).GetString());
+        return;
+    }
+
+    // The parts model promises an exact length for everything (a missing
+    // Content-Length fails the receiver's load), and the body is only what was
+    // published: ranges are not honored on HLS resources.
+    bool needsFile = false;
+    for (const auto& p : parts) {
+        if (!p.blob && p.len > 0) {
+            needsFile = true;
+        }
+    }
+    if (method != "HEAD" && needsFile && !EnsureFileOpen(client, rawPath)) {
+        CASTING_LOG(_T("server: %hs %hs -> 500, the transcode file could not be opened (error %lu)"),
+                    method.GetString(), MaskURLToken(target).GetString(), GetLastError());
+        SendSimpleResponse(client, 500, "Internal Server Error", CStringA(), !keepAlive);
+        return;
+    }
+
+    // a playlist is regenerated per session; the segments are immutable once
+    // published, so only the playlist is asked not to be cached
+    const CStringA cacheHeader = name.Find(".m3u8") >= 0 ? "Cache-Control: no-cache\r\n" : "";
+    CStringA responseHeader;
+    responseHeader.Format("HTTP/1.1 200 OK\r\n"
+                          HTTP_SERVER_HEADER
+                          "%s"
+                          "Accept-Ranges: none\r\n"
+                          "Content-Type: %s\r\n"
+                          "Content-Length: %I64u\r\n"
+                          "Access-Control-Allow-Origin: *\r\n"
+                          "%s"
+                          "Connection: %s\r\n"
+                          "\r\n",
+                          HttpDate().GetString(),
+                          mime.IsEmpty() ? "application/octet-stream" : mime.GetString(),
+                          totalLen, cacheHeader.GetString(), keepAlive ? "keep-alive" : "close");
+
+    if (CASTING_LOGGING()) {
+        CASTING_LOG(_T("server: %hs %hs -> 200, %I64u bytes in %u parts%s"),
+                    method.GetString(), MaskURLToken(target).GetString(), totalLen,
+                    (UINT)parts.size(), needsFile ? _T(", file ranges") : _T(""));
+    }
+
+    if (method != "HEAD" && totalLen != 0) {
+        client.parts = std::move(parts);
+        client.partIndex = 0;
+        client.partOffset = 0;
+        client.bytesRemaining = totalLen;
+    }
+    QueueResponse(client, responseHeader);
+}
+
 void CCastMediaServer::SendSimpleResponse(Client& client, int status, const CStringA& statusText,
                                           const CStringA& extraHeaders, bool closeConnection)
 {
@@ -877,6 +1171,10 @@ void CCastMediaServer::QueueResponse(Client& client, const CStringA& headerBytes
 
 bool CCastMediaServer::RefillOutBuf(Client& client)
 {
+    if (!client.parts.empty()) {
+        return RefillFromParts(client);
+    }
+
     const DWORD toRead = (DWORD)std::min<ULONGLONG>(SEND_CHUNK_SIZE, client.bytesRemaining);
     client.outBuf.resize(toRead);
     client.outPos = 0;
@@ -919,6 +1217,80 @@ bool CCastMediaServer::RefillOutBuf(Client& client)
     return true;
 }
 
+// Fills outBuf from the current part of an HLS response. Memory parts are
+// copied straight out of the published blob; file-range parts read the raw
+// fragmented MP4 the transcode wrote them from, through the same overlapped,
+// stop-interruptible read the single-file body uses. All parts of one resource
+// name the same file, so the handle EnsureFileOpen holds for the first of them
+// serves the rest.
+bool CCastMediaServer::RefillFromParts(Client& client)
+{
+    while (client.partIndex < client.parts.size()
+            && client.parts[client.partIndex].len == 0) {
+        client.partIndex++; // an empty part, or one fully consumed
+        client.partOffset = 0;
+    }
+    if (client.partIndex >= client.parts.size() || client.bytesRemaining == 0) {
+        // the parts hold less than the promised Content-Length; closing shows
+        // the client a short body rather than something wrong at the end
+        return false;
+    }
+    const CCastHlsStream::Part& part = client.parts[client.partIndex];
+    const ULONGLONG partRemaining = part.len - client.partOffset;
+    const DWORD toRead = (DWORD)std::min<ULONGLONG>(
+                             std::min<ULONGLONG>(SEND_CHUNK_SIZE, partRemaining),
+                             client.bytesRemaining);
+    client.outBuf.resize(toRead);
+    client.outPos = 0;
+
+    ULONGLONG got = 0;
+    if (part.blob) {
+        if (part.blob->size() < part.len) {
+            return false; // published shorter than promised
+        }
+        memcpy(client.outBuf.data(), part.blob->data() + client.partOffset, toRead);
+        got = toRead;
+    } else {
+        OVERLAPPED ov;
+        ZeroMemory(&ov, sizeof(ov));
+        const ULONGLONG absOffset = part.fileOffset + client.partOffset;
+        ov.Offset = (DWORD)absOffset;
+        ov.OffsetHigh = (DWORD)(absOffset >> 32);
+        ov.hEvent = client.hReadEvent;
+        ResetEvent(client.hReadEvent);
+
+        DWORD read = 0;
+        if (!ReadFile(client.hFile, client.outBuf.data(), toRead, &read, &ov)) {
+            if (GetLastError() != ERROR_IO_PENDING) {
+                return false;
+            }
+            HANDLE handles[] = { m_hStopEvent, client.hReadEvent };
+            if (WaitForMultipleObjects(_countof(handles), handles, FALSE, FILE_READ_TIMEOUT_MS) != WAIT_OBJECT_0 + 1) {
+                CancelIoEx(client.hFile, &ov);
+                // the cancellation must complete before the OVERLAPPED and the
+                // target buffer go out of scope
+                GetOverlappedResult(client.hFile, &ov, &read, TRUE);
+                return false;
+            }
+            if (!GetOverlappedResult(client.hFile, &ov, &read, FALSE)) {
+                return false;
+            }
+        }
+        if (read != toRead) {
+            return false; // the raw file no longer holds what was promised
+        }
+        got = read;
+    }
+
+    client.partOffset += got;
+    client.bytesRemaining -= got;
+    if (client.partOffset >= part.len) {
+        client.partIndex++;
+        client.partOffset = 0;
+    }
+    return true;
+}
+
 void CCastMediaServer::PumpSend(Client& client)
 {
     while (client.sending) {
@@ -929,12 +1301,19 @@ void CCastMediaServer::PumpSend(Client& client)
                 client.outBuf.clear();
                 client.outPos = 0;
                 client.sending = false;
+                client.parts.clear(); // an HLS body is done with its parts
+                client.partIndex = 0;
+                client.partOffset = 0;
                 if (client.closeAfterResponse) {
                     CloseClient(client);
                 }
                 return;
             }
-            if (client.hFile == INVALID_HANDLE_VALUE || !RefillOutBuf(client)) {
+            // an HLS body refills from its parts (which may need no file at
+            // all); the single-file body from the open file
+            const bool canRefill = !client.parts.empty()
+                                   || client.hFile != INVALID_HANDLE_VALUE;
+            if (!canRefill || !RefillOutBuf(client)) {
                 CloseClient(client);
                 return;
             }
