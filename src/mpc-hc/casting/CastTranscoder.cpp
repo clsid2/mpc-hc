@@ -316,11 +316,18 @@ bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* 
 bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info)
 {
     // Container: the MP4 family, which Media Foundation demuxes, or Matroska
-    // and WebM, which the LAV remux reads instead. Everything else is refused.
+    // and WebM, which the LAV remux reads instead. WAV is allowed too, but only
+    // to reach a bitstream hidden inside it: a "DTS Music Disc" .wav declares
+    // PCM in its header while carrying a DTS stream, so a receiver told it is
+    // WAV plays the DTS bytes as PCM -- the buzzing a straight cast produces.
+    // The LAV splitter detects the real codec and decodes it. A genuine PCM WAV
+    // is not swept in: it is playable as-is and its audio codec below is LPCM,
+    // which needs no rescue (the caller only transcodes on a codec/channel
+    // mismatch), and if it ever did it would take the MF path, not this one.
     const CString ext = FileExtLower(srcPath);
     const bool mp4Family = ext == _T(".mp4") || ext == _T(".m4v") || ext == _T(".mov")
                            || ext == _T(".m4a") || ext == _T(".3gp") || ext == _T(".3g2");
-    if (!mp4Family && !IsMatroskaContainer(srcPath)) {
+    if (!mp4Family && !IsMatroskaContainer(srcPath) && ext != _T(".wav")) {
         return false;
     }
 
@@ -588,15 +595,19 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
             break;
         }
     }
-    if (videoIdx == (DWORD)-1) {
-        return fail(_T("the source has no video to keep"));
+    // No video is fine here: an audio-only source (a bitstream hidden in a WAV,
+    // or a bare audio file) becomes an audio-only MP4 -- videoNative stays null,
+    // which CastCreateMp4Writer takes for the complete-file path. (The streaming
+    // path is H.264-only and never audio-only, so fragmented always has video.)
+    const bool hasVideo = videoIdx != (DWORD)-1;
+    if (hasVideo) {
+        rv->SetStreamSelection(MF_SOURCE_READER_ALL_STREAMS, FALSE);
+        rv->SetStreamSelection(videoIdx, TRUE);
+        if (FAILED(rv->SetCurrentMediaType(videoIdx, nullptr, videoNative))) {
+            return fail(_T("the video could not be set up for copying"));
+        }
+        EnsureHevcSequenceHeader(videoNative, videoSrc);
     }
-    rv->SetStreamSelection(MF_SOURCE_READER_ALL_STREAMS, FALSE);
-    rv->SetStreamSelection(videoIdx, TRUE);
-    if (FAILED(rv->SetCurrentMediaType(videoIdx, nullptr, videoNative))) {
-        return fail(_T("the video could not be set up for copying"));
-    }
-    EnsureHevcSequenceHeader(videoNative, videoSrc);
 
     CComPtr<IMFSourceReader> ra;
     if (FAILED(MFCreateSourceReaderFromURL(wavPath, nullptr, &ra))) {
@@ -632,7 +643,7 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     // Interleave the two sources by timestamp so the MP4 stays in step. As in
     // the single-pass engine, every batch of samples gives the caller its turn:
     // cancel check first, then the progress callback.
-    bool vEnd = false, aEnd = false;
+    bool vEnd = !hasVideo, aEnd = false; // no video -> only the audio is pumped
     LONGLONG vT = 0, aT = 0;
     CComPtr<IMFSample> vS, aS;
     DWORD pumped = 0;
@@ -699,8 +710,12 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     if (sink) {
         sink->Shutdown(); // closes the byte stream so the file is complete on disk
     }
-    CASTING_LOG(_T("downmix (mux): remuxed the copied video with %d-channel AAC%s"),
-                (int)chans, fragmented ? _T(", fragmented") : _T(""));
+    if (hasVideo) {
+        CASTING_LOG(_T("downmix (mux): remuxed the copied video with %d-channel AAC%s"),
+                    (int)chans, fragmented ? _T(", fragmented") : _T(""));
+    } else {
+        CASTING_LOG(_T("downmix (mux): wrote an audio-only MP4 with %d-channel AAC"), (int)chans);
+    }
     return true;
 }
 
