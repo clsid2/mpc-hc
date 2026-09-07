@@ -221,6 +221,17 @@ bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* 
     CComPtr<IMFSinkWriter> writer;
     CComPtr<IMFMediaSink> sink; // fragmented mode only
 
+    // The sink writer is created with throttling disabled: with the default
+    // on, WriteSample blocks whenever a stream's queue to the sink fills, and
+    // the MP4 sink interleaves, so the stream that runs ahead waits inside the
+    // writer for the one behind. The LAV remux writes its two streams from
+    // the splitter's separate video and audio threads under one shared mutex,
+    // where that wait is a deadlock, not pacing. With throttling off the LAV
+    // pins' own queues bound the memory instead.
+    CComPtr<IMFAttributes> writerAttrs;
+    MFCreateAttributes(&writerAttrs, 2);
+    writerAttrs->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, TRUE);
+
     // Audio out: AAC. The sink writer inserts the AAC encoder to bridge the
     // PCM input to it. ~192 kbps regardless of channel count is plenty for
     // a downmix.
@@ -238,7 +249,7 @@ bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* 
     aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
 
     if (!fragmented) {
-        if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
+        if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, writerAttrs, &writer))) {
             return fail(_T("the transcoded file could not be created"));
         }
         outVideo = outAudio = (DWORD)-1;
@@ -248,9 +259,13 @@ bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* 
                 return fail(_T("the video track could not be added to the output"));
             }
         }
-        if (FAILED(writer->AddStream(aac, &outAudio))
-                || FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
+        if (FAILED(writer->AddStream(aac, &outAudio))) {
             return fail(_T("the receiver's audio format is not available on this system"));
+        }
+        // The AAC encoder takes 44.1 and 48 kHz only and the sink writer
+        // inserts no resampler, so this is where a higher-rate track turns up.
+        if (FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
+            return fail(_T("the device's AAC encoder does not take this sample rate"));
         }
     } else {
         if (!videoNative) {
@@ -269,15 +284,17 @@ bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* 
         if (CComQIPtr<IMFAttributes> sinkAttrs = sink) {
             sinkAttrs->SetUINT64(kMpeg4SinkMinFragmentDuration, 20000000); // 2 s
         }
-        CComPtr<IMFAttributes> writerAttrs;
-        MFCreateAttributes(&writerAttrs, 1);
         writerAttrs->SetUINT32(MF_LOW_LATENCY, FALSE); // fragments cut whole, not early
         if (FAILED(MFCreateSinkWriterFromMediaSink(sink, writerAttrs, &writer))
-                || FAILED(writer->SetInputMediaType(0, videoNative, nullptr))
-                || FAILED(writer->SetInputMediaType(1, pcmActual, nullptr))) {
+                || FAILED(writer->SetInputMediaType(0, videoNative, nullptr))) {
             sink->Shutdown();
             sink.Release();
             return fail(_T("the fragmented MP4 sink writer could not be created"));
+        }
+        if (FAILED(writer->SetInputMediaType(1, pcmActual, nullptr))) {
+            sink->Shutdown();
+            sink.Release();
+            return fail(_T("the device's AAC encoder does not take this sample rate"));
         }
         outVideo = 0;
         outAudio = 1;

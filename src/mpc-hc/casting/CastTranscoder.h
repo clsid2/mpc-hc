@@ -92,7 +92,9 @@ struct IMFMediaSink;
 // audio-only downmix is a legitimate plain MP4) but not for the fragmented
 // one; stream 0 is video, stream 1 audio there. The video type serves as both
 // the stream's output and input type, so a compressed track passes through
-// untouched.
+// untouched. Both variants are created with the sink writer's throttling
+// disabled, so WriteSample never blocks on the sink's queue -- which is what
+// lets the LAV remux write its two streams from separate splitter threads.
 bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* videoNative,
                          IMFMediaType* pcmActual, UINT32 sampleRate, UINT32 chans,
                          IMFSinkWriter** ppWriter, IMFMediaSink** ppSink,

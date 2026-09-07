@@ -100,6 +100,30 @@ namespace
         }
     }
 
+    // The reorder depth the decode-timestamp synthesis below assumes: eight
+    // frames covers the x264/x265 defaults with room to spare. The cost is an
+    // eight-frame composition offset at the head of the output, which no
+    // player minds.
+    const int kDtsReorderDepth = 8;
+
+    // ~29.97 fps, for a track that declares no frame rate at all.
+    const REFERENCE_TIME kDefaultFrameDuration = 333667;
+
+    // A track's frame duration as the DTS synthesis needs it: the declared
+    // average frame time, or a sane guess when the track carries none.
+    REFERENCE_TIME FrameDurationFrom(const AM_MEDIA_TYPE& amt)
+    {
+        if (amt.formattype == FORMAT_MPEG2Video && amt.pbFormat
+                && amt.cbFormat >= FIELD_OFFSET(MPEG2VIDEOINFO, dwSequenceHeader)) {
+            const REFERENCE_TIME atpf =
+                reinterpret_cast<const MPEG2VIDEOINFO*>(amt.pbFormat)->hdr.AvgTimePerFrame;
+            if (atpf > 0) {
+                return atpf;
+            }
+        }
+        return kDefaultFrameDuration;
+    }
+
     // A DirectShow renderer that hands the PCM it receives straight to a Media
     // Foundation sink writer, which encodes it to FLAC. This is why the audio the
     // player's LAV decoder produces never lands on disk as a giant PCM WAV -- it
@@ -231,90 +255,206 @@ namespace
     // renderers below. The splitter hands video and audio to separate
     // streaming threads, so every WriteSample runs under one mutex; the writer
     // itself is created and finalized on the graph-building thread only,
-    // between which the renderers have it. ok records a failure either
-    // streaming thread hits, which is what the builder reads after the run.
+    // between which the renderers hold their own references to it. ok records
+    // a failure either streaming thread hits -- which is also what the run
+    // loop watches, because a failed sink parks its LAV pin and no event ever
+    // comes. stopped is the builder's say-so that the run is over, so a sample
+    // arriving late is dropped rather than written to a writer being torn
+    // down. timeShift is the video DTS synthesis's head shift, which the audio
+    // applies as well so picture and sound keep their relative timing.
     struct RemuxWriter {
         CComPtr<IMFSinkWriter> writer;
         DWORD videoStream = (DWORD)-1;
         DWORD audioStream = (DWORD)-1;
+        REFERENCE_TIME timeShift = 0;
         std::mutex writeMutex;
         std::atomic<bool> ok { true };
+        std::atomic<bool> stopped { false };
     };
 
-    // Wraps a DirectShow sample's bytes in a Media Foundation sample -- copied
-    // verbatim, timestamps and all -- and hands it to one stream of the shared
-    // writer under its mutex. cleanPoint marks a sample the sink should cut a
-    // seekable entry on. Returns false when the writer refused it, which ends
-    // the remux.
-    bool WriteSharedSample(RemuxWriter& mux, DWORD stream, IMediaSample* pSample, bool cleanPoint)
+    // While the pin is unconnected, anything acceptable goes; once it is
+    // connected, only the connected type is accepted again. A mid-stream
+    // proposal (the LAV filters offer one on a resolution change) must not
+    // reconfigure the stream under the writer, so the new type has to be
+    // byte-identical or it is refused.
+    bool MediaTypeUnchanged(CBasePin* pPin, const CMediaType* pmt)
     {
-        if (!mux.ok || !mux.writer || stream == (DWORD)-1) {
-            return true; // already failed elsewhere; drop the sample quietly
-        }
-        BYTE* pData = nullptr;
-        const long len = pSample->GetActualDataLength();
-        if (FAILED(pSample->GetPointer(&pData)) || !pData || len <= 0) {
+        if (!pPin || !pPin->IsConnected()) {
             return true;
         }
-        CComPtr<IMFMediaBuffer> buf;
-        if (FAILED(MFCreateMemoryBuffer(len, &buf))) {
-            mux.ok = false;
+        AM_MEDIA_TYPE cur;
+        if (FAILED(pPin->ConnectionMediaType(&cur))) {
             return false;
         }
-        BYTE* p = nullptr;
-        buf->Lock(&p, nullptr, nullptr);
-        memcpy(p, pData, len);
-        buf->Unlock();
-        buf->SetCurrentLength(len);
-        CComPtr<IMFSample> s;
-        MFCreateSample(&s);
-        s->AddBuffer(buf);
-        REFERENCE_TIME t0 = 0, t1 = 0;
-        if (pSample->GetTime(&t0, &t1) == S_OK) {
-            s->SetSampleTime(t0);
-            if (t1 > t0) {
-                s->SetSampleDuration(t1 - t0);
+        const bool identical = cur.majortype == pmt->majortype
+                               && cur.subtype == pmt->subtype
+                               && cur.formattype == pmt->formattype
+                               && cur.cbFormat == pmt->cbFormat
+                               && (cur.cbFormat == 0
+                                   || memcmp(cur.pbFormat, pmt->pbFormat, cur.cbFormat) == 0);
+        FreeMediaType(cur);
+        return identical;
+    }
+
+    // Turns a length-prefixed (AVCC/HVCC) sample into Annex-B in place: the
+    // total size never changes, so each 4-byte big-endian NAL length is simply
+    // overwritten with a 00 00 00 01 start code -- the sample form Media
+    // Foundation's H.264 and HEVC contract wants. The lengths must account for
+    // the sample exactly; anything else means the sample is not in the form
+    // its pin declared, and false refuses it rather than let the sink write
+    // garbage.
+    bool NalLengthsToStartCodes(BYTE* p, size_t len)
+    {
+        static const BYTE startCode[4] = { 0, 0, 0, 1 };
+        size_t off = 0;
+        while (off < len) {
+            if (off + 4 > len) {
+                return false;
             }
-        }
-        if (cleanPoint) {
-            s->SetUINT32(MFSampleExtension_CleanPoint, 1);
-        }
-        std::lock_guard<std::mutex> lock(mux.writeMutex);
-        if (FAILED(mux.writer->WriteSample(stream, s))) {
-            mux.ok = false;
-            return false;
+            const DWORD nalLen = ((DWORD)p[off] << 24) | ((DWORD)p[off + 1] << 16)
+                                 | ((DWORD)p[off + 2] << 8) | (DWORD)p[off + 3];
+            if (nalLen == 0 || off + 4 + nalLen > len) {
+                return false;
+            }
+            memcpy(p + off, startCode, 4);
+            off += 4 + nalLen;
         }
         return true;
     }
 
     // The video half of the remux: the compressed samples off the splitter's
-    // video pin, copied byte-for-byte. The pin delivers length-prefixed
-    // (AVCC/HVCC) NALUs -- dwFlags in the MPEG2VIDEOINFO is the prefix length,
-    // 4 -- which is exactly the bitstream form the MP4 sink consumes, so
-    // nothing is decoded or converted.
+    // video pin, rewritten rather than decoded. The pin delivers
+    // length-prefixed (AVCC/HVCC) NALUs -- dwFlags in the MPEG2VIDEOINFO is
+    // the length size, 4 -- while the MP4 sink consumes Annex-B, so every
+    // sample is converted in place first. The samples arrive in decode order
+    // carrying presentation times only, so a decode timestamp is synthesized
+    // on a frame-rate clock run kDtsReorderDepth frames behind the first
+    // presentation time, and every timestamp -- the audio's included, through
+    // the shared timeShift -- moves forward by those frames so the first
+    // decode time is the first presentation time, never negative.
     class __declspec(uuid("9C5D2A47-3E18-4F0B-8C6D-5A72E1B40D93"))
         CCompressedVideoSink : public CNullRenderer
     {
         RemuxWriter* m_mux;
+        CComPtr<IMFSinkWriter> m_writer; // taken once the writer exists, before the run
+        DWORD m_stream = (DWORD)-1;
+        DWORD m_nalLengthSize = 0; // 0 until a type is accepted; 4 is all LAV offers
+        REFERENCE_TIME m_frameDur = kDefaultFrameDuration;
+        bool m_sawKeyframe = false;
+        bool m_haveFirstPTS = false;
+        LONGLONG m_firstPTS = 0;
+        LONGLONG m_frameIndex = 0;
 
     public:
         CCompressedVideoSink(RemuxWriter* mux, HRESULT* phr)
             : CNullRenderer(__uuidof(CCompressedVideoSink), NAME("MPC cast video copy sink"), nullptr, phr)
             , m_mux(mux) {}
 
+        // The writer exists only once both pins are connected and the output
+        // type is built; each sink takes its own reference here, held until
+        // the graph lets the sink go, so a sample arriving late can never be
+        // a write to a released writer.
+        void SetWriter(IMFSinkWriter* writer, DWORD stream)
+        {
+            m_writer = writer;
+            m_stream = stream;
+        }
+
         HRESULT CheckMediaType(const CMediaType* pmt) override
         {
             if (pmt->majortype != MEDIATYPE_Video || pmt->formattype != FORMAT_MPEG2Video
+                    || !pmt->pbFormat
+                    || pmt->cbFormat < FIELD_OFFSET(MPEG2VIDEOINFO, dwSequenceHeader)
                     || ClassifyCompressedVideo(pmt->subtype) == CompressedVideo::None) {
                 return VFW_E_TYPE_NOT_ACCEPTED;
             }
+            if (!MediaTypeUnchanged(m_pInputPin, pmt)) {
+                return VFW_E_TYPE_NOT_ACCEPTED;
+            }
+            // What the connected type declares about its samples; the render
+            // below converts nothing unless this says 4-byte lengths.
+            const MPEG2VIDEOINFO& m2 = *reinterpret_cast<const MPEG2VIDEOINFO*>(pmt->pbFormat);
+            m_nalLengthSize = m2.dwFlags;
+            m_frameDur = FrameDurationFrom(*pmt);
             return S_OK;
         }
 
         HRESULT DoRenderSample(IMediaSample* pSample) override
         {
-            if (m_mux && !WriteSharedSample(*m_mux, m_mux->videoStream, pSample,
-                                            pSample->IsSyncPoint() == S_OK)) {
+            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_writer) {
+                return S_OK;
+            }
+            // Anything cut before the first keyframe cannot be written where a
+            // player would start; drop it.
+            if (!m_sawKeyframe) {
+                if (pSample->IsSyncPoint() != S_OK) {
+                    return S_OK;
+                }
+                m_sawKeyframe = true;
+            }
+
+            BYTE* pData = nullptr;
+            const long len = pSample->GetActualDataLength();
+            if (FAILED(pSample->GetPointer(&pData)) || !pData || len <= 0) {
+                return S_OK;
+            }
+            if (m_nalLengthSize != 4 || !NalLengthsToStartCodes(pData, (size_t)len)) {
+                m_mux->ok = false;
+                CASTING_LOG(_T("remux (LAV): a video sample was not 4-byte length prefixed"));
+                return E_FAIL;
+            }
+
+            REFERENCE_TIME t0 = 0, t1 = 0;
+            if (pSample->GetTime(&t0, &t1) != S_OK) {
+                m_mux->ok = false;
+                return E_FAIL;
+            }
+            if (!m_haveFirstPTS) {
+                m_haveFirstPTS = true;
+                m_firstPTS = t0;
+            }
+            // DTS on a frame-rate clock, D frames behind, everything shifted
+            // forward by those D frames (see the class comment).
+            const LONGLONG dts = m_firstPTS + m_frameIndex * m_frameDur;
+            const LONGLONG pts = t0 + (LONGLONG)kDtsReorderDepth * m_frameDur;
+            m_frameIndex++;
+            if (pts < dts) {
+                m_mux->ok = false;
+                CASTING_LOG(_T("remux (LAV): a presentation time fell behind the synthesized decode order"));
+                return E_FAIL;
+            }
+            // The splitter stamps one 100 ns tick when a block's duration is
+            // unknown; a frame lasts a frame then, not 100 ns.
+            REFERENCE_TIME dur = m_frameDur;
+            if (t1 > t0 && t1 - t0 >= m_frameDur / 2) {
+                dur = t1 - t0;
+            }
+
+            CComPtr<IMFMediaBuffer> buf;
+            if (FAILED(MFCreateMemoryBuffer(len, &buf))) {
+                m_mux->ok = false;
+                return E_FAIL;
+            }
+            BYTE* p = nullptr;
+            buf->Lock(&p, nullptr, nullptr);
+            memcpy(p, pData, len);
+            buf->Unlock();
+            buf->SetCurrentLength(len);
+            CComPtr<IMFSample> s;
+            MFCreateSample(&s);
+            s->AddBuffer(buf);
+            s->SetSampleTime(pts);
+            s->SetSampleDuration(dur);
+            s->SetUINT64(MFSampleExtension_DecodeTimestamp, dts);
+            if (pSample->IsSyncPoint() == S_OK) {
+                s->SetUINT32(MFSampleExtension_CleanPoint, 1);
+            }
+            std::lock_guard<std::mutex> lock(m_mux->writeMutex);
+            if (m_mux->stopped || !m_mux->ok) {
+                return S_OK;
+            }
+            if (FAILED(m_writer->WriteSample(m_stream, s))) {
+                m_mux->ok = false;
                 return E_FAIL;
             }
             return S_OK;
@@ -324,16 +464,28 @@ namespace
     // The audio half of the remux: shaped after CFlacSinkRenderer above, but
     // the writer is not its own -- the PCM it receives is one stream of the
     // shared writer, which encodes it to AAC as it flows -- so it neither opens
-    // nor finalizes anything.
+    // nor finalizes anything. Its times move by the same head shift the
+    // video's DTS synthesis applied, which is what keeps the two tracks in
+    // step in the output.
     class __declspec(uuid("D48B7C21-6F94-4A3E-9B0C-7E15D2F8A462"))
         CPcmToAacSink : public CNullRenderer
     {
         RemuxWriter* m_mux;
+        CComPtr<IMFSinkWriter> m_writer; // taken once the writer exists, before the run
+        DWORD m_stream = (DWORD)-1;
 
     public:
         CPcmToAacSink(RemuxWriter* mux, HRESULT* phr)
             : CNullRenderer(__uuidof(CPcmToAacSink), NAME("MPC cast PCM sink"), nullptr, phr)
             , m_mux(mux) {}
+
+        // As in the video sink above: its own reference, taken once the
+        // writer exists.
+        void SetWriter(IMFSinkWriter* writer, DWORD stream)
+        {
+            m_writer = writer;
+            m_stream = stream;
+        }
 
         HRESULT CheckMediaType(const CMediaType* pmt) override
         {
@@ -341,12 +493,48 @@ namespace
                     || pmt->formattype != FORMAT_WaveFormatEx) {
                 return VFW_E_TYPE_NOT_ACCEPTED;
             }
+            if (!MediaTypeUnchanged(m_pInputPin, pmt)) {
+                return VFW_E_TYPE_NOT_ACCEPTED;
+            }
             return S_OK;
         }
 
         HRESULT DoRenderSample(IMediaSample* pSample) override
         {
-            if (m_mux && !WriteSharedSample(*m_mux, m_mux->audioStream, pSample, false)) {
+            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_writer) {
+                return S_OK;
+            }
+            BYTE* pData = nullptr;
+            const long len = pSample->GetActualDataLength();
+            if (FAILED(pSample->GetPointer(&pData)) || !pData || len <= 0) {
+                return S_OK;
+            }
+            CComPtr<IMFMediaBuffer> buf;
+            if (FAILED(MFCreateMemoryBuffer(len, &buf))) {
+                m_mux->ok = false;
+                return E_FAIL;
+            }
+            BYTE* p = nullptr;
+            buf->Lock(&p, nullptr, nullptr);
+            memcpy(p, pData, len);
+            buf->Unlock();
+            buf->SetCurrentLength(len);
+            CComPtr<IMFSample> s;
+            MFCreateSample(&s);
+            s->AddBuffer(buf);
+            REFERENCE_TIME t0 = 0, t1 = 0;
+            if (pSample->GetTime(&t0, &t1) == S_OK) {
+                s->SetSampleTime(t0 + m_mux->timeShift);
+                if (t1 > t0) {
+                    s->SetSampleDuration(t1 - t0);
+                }
+            }
+            std::lock_guard<std::mutex> lock(m_mux->writeMutex);
+            if (m_mux->stopped || !m_mux->ok) {
+                return S_OK;
+            }
+            if (FAILED(m_writer->WriteSample(m_stream, s))) {
+                m_mux->ok = false;
                 return E_FAIL;
             }
             return S_OK;
@@ -356,11 +544,12 @@ namespace
     // Translates the splitter video pin's MPEG2VIDEOINFO into the Media
     // Foundation type the sink writer takes for a copied track. The same type
     // serves as the stream's output and input, so the writer muxes rather than
-    // transforms and the pin's length-prefixed samples pass through untouched.
-    // The format block's dwSequenceHeader carries the parameter sets -- H.264
-    // as a run of two-byte-length NALs, HEVC as a whole hvcC record -- which
-    // become the Annex-B blob MF_MT_MPEG_SEQUENCE_HEADER wants; without it the
-    // sink writes a track that does not decode, so a track we cannot read them
+    // transforms; the pin's length-prefixed samples reach it as Annex-B, the
+    // conversion the video sink does in place. The format block's
+    // dwSequenceHeader carries the parameter sets -- H.264 as a run of
+    // two-byte-length NALs, HEVC as a whole hvcC record -- which become the
+    // Annex-B blob MF_MT_MPEG_SEQUENCE_HEADER wants; without it the sink
+    // writes a track that does not decode, so a track we cannot read them
     // from is refused outright.
     bool MakeVideoTypeFromPin(const AM_MEDIA_TYPE& amt, CComPtr<IMFMediaType>& mt, CString* pWhy)
     {
@@ -379,6 +568,17 @@ namespace
         const CompressedVideo kind = ClassifyCompressedVideo(amt.subtype);
         if (kind == CompressedVideo::None) {
             return fail(_T("the video track is not H.264 or HEVC"));
+        }
+        // Only the length-prefixed sample format is taken. The H264/HEVC
+        // fourccs mean Annex-B samples with dwFlags 0 -- a form mkvmerge and
+        // ffmpeg never write -- and a wrong dwFlags means an unknown layout;
+        // neither is guessed at, the remux is refused.
+        if (amt.subtype.Data1 != 0x31435641 /* 'AVC1' */
+                && amt.subtype.Data1 != 0x31435648 /* 'HVC1' */) {
+            return fail(_T("the video track's samples are not in the length-prefixed form this remux takes"));
+        }
+        if (m2.dwFlags != 4) {
+            return fail(_T("the video track's NAL units are not 4-byte length prefixed"));
         }
         if (amt.cbFormat < FIELD_OFFSET(MPEG2VIDEOINFO, dwSequenceHeader) + m2.cbSequenceHeader) {
             return fail(_T("the video track's format could not be read"));
@@ -649,6 +849,7 @@ static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
         CASTING_LOG(_T("remux (LAV): %s"), why.GetString());
+        mux.stopped = true; // the sinks write nothing past this point
         mux.writer.Release(); // let go of the output before trying to delete it
         if (sink) {
             sink->Shutdown();
@@ -714,11 +915,12 @@ static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString
     // The two sinks. Like the FLAC sink above, they go into the graph through
     // their non-delegating unknown -- casting the object to IBaseFilter directly
     // picks the wrong vtable and the graph hangs.
+    CCompressedVideoSink* pVideoSink = nullptr;
     CComPtr<IUnknown> pVideoSinkUnk;
     CComQIPtr<IBaseFilter> pVideoSinkBF;
     if (pSplitterVideo) {
         HRESULT videoSinkHr = S_OK;
-        CCompressedVideoSink* pVideoSink = DEBUG_NEW CCompressedVideoSink(&mux, &videoSinkHr);
+        pVideoSink = DEBUG_NEW CCompressedVideoSink(&mux, &videoSinkHr);
         pVideoSinkUnk = (IUnknown*)(INonDelegatingUnknown*)pVideoSink;
         if (FAILED(videoSinkHr) || !pVideoSinkUnk) {
             return fail(_T("the video copy sink could not be created"));
@@ -761,20 +963,26 @@ static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString
         return fail(_T("the PCM sink would not accept the decoded audio"));
     }
 
-    // Open the shared writer now, from the negotiated pin formats, on this
-    // thread and before the graph runs: video first, audio second.
+    // Open the shared writer now, from the types the pins actually settled on
+    // -- which only exist after the connects -- on this thread and before the
+    // graph runs: video first, audio second.
     CComPtr<IMFMediaType> videoType;
     if (pSplitterVideo) {
+        CComPtr<IPin> pVideoIn = GetFirstPin(pVideoSinkBF, PINDIR_INPUT);
         AM_MEDIA_TYPE amt;
-        if (FAILED(pSplitterVideo->ConnectionMediaType(&amt))) {
+        if (!pVideoIn || FAILED(pVideoIn->ConnectionMediaType(&amt))) {
             return fail(_T("the video track's format could not be read"));
         }
         CString why;
         const bool okType = MakeVideoTypeFromPin(amt, videoType, &why);
+        const REFERENCE_TIME frameDur = FrameDurationFrom(amt);
         FreeMediaType(amt);
         if (!okType) {
             return fail(why);
         }
+        // The head shift the video's DTS synthesis applies; the audio moves by
+        // it too (RemuxWriter::timeShift) so the tracks stay in step.
+        mux.timeShift = (LONGLONG)kDtsReorderDepth * frameDur;
     }
     CComPtr<IMFMediaType> pcmType;
     UINT32 sampleRate = 48000, chans = 2;
@@ -788,6 +996,13 @@ static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString
             return fail(err);
         }
     }
+    // The sinks take their own references now that the writer exists; they
+    // hold them until the graph lets the sinks go, so the writer outlives the
+    // builder's own reference to it.
+    if (pVideoSink) {
+        pVideoSink->SetWriter(mux.writer, mux.videoStream);
+    }
+    pPcmSink->SetWriter(mux.writer, mux.audioStream);
 
     // Run to the end of the file, sliced short so a cancel event can be
     // noticed between the slices; the caller's progress callback gets its turn
@@ -810,17 +1025,27 @@ static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString
         if (waitHr != E_ABORT) {
             break;
         }
+        // A sink that failed returns E_FAIL, which parks its LAV pin: that pin
+        // never delivers its end of stream, so EC_COMPLETE would never fire
+        // and this loop would spin until cancelled. Fail now instead.
+        if (!mux.ok) {
+            evCode = 0;
+            break;
+        }
     }
     pControl->Stop();
+    mux.stopped = true; // whatever arrives now is dropped, not written
+    if (!mux.ok) {
+        return fail(_T("the remux failed while writing a sample"));
+    }
+    if (evCode != EC_COMPLETE) {
+        return fail(_T("the remux did not finish cleanly"));
+    }
     if (FAILED(mux.writer->Finalize())) {
         return fail(_T("the output file could not be finalized"));
     }
     if (sink) {
         sink->Shutdown(); // closes the byte stream so the file is complete on disk
-    }
-
-    if (evCode != EC_COMPLETE || !mux.ok) {
-        return fail(_T("the remux did not finish cleanly"));
     }
 
     CASTING_LOG(_T("remux (LAV): copied the video and wrote %d-channel AAC"), (int)chans);
