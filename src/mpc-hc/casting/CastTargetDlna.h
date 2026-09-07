@@ -138,7 +138,8 @@ private:
     // plays the source, and one that does not is not helped by touching the
     // audio, so a file with a video track is never offered this.
     static bool CanTranscodeForSink(const CStringA& sink, const CString& path, const CastMediaInfo& info);
-    static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok);
+    static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok,
+                           bool viaTranscode = false);
     static CStringA BuildMetadata(const Command& cmd);
     static CStringA FormatDuration(double seconds, bool withMilliseconds);
     static double ParseDuration(const CStringA& text); // < 0 when not a time

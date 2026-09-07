@@ -411,7 +411,8 @@ bool CDlnaTarget::CanTranscodeForSink(const CStringA& sink, const CString& path,
 // Both verdicts read the same way in the log, whether the device came out of a
 // live discovery or out of the saved list. The file is named by whoever asked,
 // so that only its name is ever written down and never the path to it.
-void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok)
+void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok,
+                            bool viaTranscode)
 {
     if (!CASTING_LOGGING()) {
         return;
@@ -422,6 +423,9 @@ void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CS
         CASTING_LOG(_T("cast: DLNA \"%s\" is handed this file unchecked, sent as %hs: ")
                     _T("CastIgnoreFormatSupport is on, so nothing was judged and the renderer decides"),
                     name.GetString(), mime.GetString());
+    } else if (viaTranscode) {
+        CASTING_LOG(_T("cast: DLNA \"%s\" does not take %hs, but its audio can be transcoded to AAC ")
+                    _T("for it (%s)"), name.GetString(), mime.GetString(), source);
     } else if (ok) {
         CASTING_LOG(_T("cast: DLNA \"%s\" takes this file, sent as %hs (%s)"),
                     name.GetString(), mime.GetString(), source);
@@ -439,9 +443,10 @@ bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& 
 {
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     const CStringA sink(saved.formats);
-    const bool ok = ignoreFormatSupport || AcceptsMime(sink, mime)
-                    || CanTranscodeForSink(sink, path, info);
-    LogVerdict(saved.DisplayName(), sink, mime, ok);
+    const bool native = AcceptsMime(sink, mime);
+    const bool viaTranscode = !native && CanTranscodeForSink(sink, path, info);
+    const bool ok = ignoreFormatSupport || native || viaTranscode;
+    LogVerdict(saved.DisplayName(), sink, mime, ok, viaTranscode && !ignoreFormatSupport);
     return ok;
 }
 
@@ -451,9 +456,10 @@ bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, cons
 
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
         if (dev.udn == deviceId) {
-            const bool ok = ignoreFormatSupport || AcceptsMime(dev.sinkProtocolInfo, mime)
-                            || CanTranscodeForSink(dev.sinkProtocolInfo, path, info);
-            LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok);
+            const bool native = AcceptsMime(dev.sinkProtocolInfo, mime);
+            const bool viaTranscode = !native && CanTranscodeForSink(dev.sinkProtocolInfo, path, info);
+            const bool ok = ignoreFormatSupport || native || viaTranscode;
+            LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok, viaTranscode && !ignoreFormatSupport);
             return ok;
         }
     }
