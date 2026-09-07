@@ -893,9 +893,16 @@ void CChromecastTarget::OnSessionStateChanged()
 
     const CastSessionState state = m_session.GetState();
 
-    // A streaming transcode holds the LOAD back until its first segments
-    // exist, so the session reaching Ready is not by itself enough.
-    if (state == CastSessionState::Ready && m_loadPending && (!m_hlsPending || m_hlsReady)) {
+    // A transcode holds the LOAD back until it has something to serve, so the
+    // session reaching Ready is not by itself enough: a streaming transcode
+    // waits for its first segments (m_hlsPending until m_hlsReady), and a
+    // whole-file transcode waits for the finished copy (m_downmixPending, until
+    // OnDownmixDone registers the file). Without the second guard a fast
+    // direct-connect that reaches Ready before the background downmix finishes
+    // sends the LOAD with nothing registered -- "nothing to hand the device"
+    // -- and tears the session down mid-transcode.
+    if (state == CastSessionState::Ready && m_loadPending
+            && (!m_hlsPending || m_hlsReady) && !m_downmixPending) {
         SendLoad();
     } else if (m_pendingSeek >= 0.0
                && (state == CastSessionState::Playing || state == CastSessionState::Paused
