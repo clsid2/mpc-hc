@@ -1143,6 +1143,16 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,283,86,60,14
 END
 
+IDD_REDIRECT_WAIT_DLG DIALOGEX 0, 0, 262, 76
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MPC-HC"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "Opening files is taking some time. Waiting for the first MPC-HC instance to respond.",IDC_STATIC,10,10,242,18
+    LTEXT           "Please wait and do not open more files for the next 30 seconds.",IDC_STATIC,10,32,242,18
+    PUSHBUTTON      "Open new window",IDCANCEL,166,55,86,14
+END
+
 IDD_PPAGETHEME DIALOGEX 0, 0, 356, 289
 STYLE DS_SETFONT | DS_NOFAILCREATE | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1

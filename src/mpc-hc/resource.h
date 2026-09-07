@@ -673,6 +673,7 @@
 #define IDD_PPAGEVIDEORENDERER          20076
 #define IDD_HISTORY                     20077
 #define IDD_COLORCONTROLS_DLG           20078
+#define IDD_REDIRECT_WAIT_DLG           20079
 #define IDB_DT_CB_96                    20050
 #define IDB_DT_CB_120                   20051
 #define IDB_DT_CB_144                   20052

@@ -34,6 +34,7 @@
 #include "PPageFormats.h"
 #include "PPageSheet.h"
 #include "PathUtils.h"
+#include "RedirectWaitDlg.h"
 #include "Struct.h"
 #include "UpdateChecker.h"
 #include "WebServer.h"
@@ -1490,24 +1491,40 @@ CMPlayerCApp::RedirectResult CMPlayerCApp::RedirectToOtherInstance()
     mutexRecovery.Create(nullptr, FALSE, MPC_RECOVERY_MUTEX_NAME);
     const bool bOwnsRecovery = (GetLastError() != ERROR_ALREADY_EXISTS);
 
-    const ULONGLONG tStart = GetTickCount64();
-    const ULONGLONG tRetryFor = bOwnsRecovery ? 30000ULL : 60000ULL;
-    while (GetTickCount64() - tStart < tRetryFor) {
-        Sleep(1000);
-
-        hWnd = FindOtherInstance();
-        if (!hWnd) { // it exited while we were waiting
-            return bOwnsRecovery ? RedirectResult::OpenNormally : RedirectResult::ExitSilently;
+    auto retry = [this]() -> int {
+        HWND hRetry = FindOtherInstance();
+        if (!hRetry) { // it exited while we were waiting
+            return IDABORT;
         }
-        if (SendCommandLine(hWnd)) {
-            return RedirectResult::Redirected;
-        }
-    }
+        return SendCommandLine(hRetry) ? IDOK : 0;
+    };
 
     if (!bOwnsRecovery) {
-        // Another process owns the recovery and has told the user about it. Opening one
-        // window per file is exactly what this path exists to prevent.
+        // Another process owns the recovery and is the one talking to the user. Retry
+        // quietly: opening one window per file is exactly what this path exists to prevent.
+        const ULONGLONG tStart = GetTickCount64();
+        while (GetTickCount64() - tStart < 60000ULL) {
+            Sleep(1000);
+            switch (retry()) {
+                case IDOK:
+                    return RedirectResult::Redirected;
+                case IDABORT:
+                    return RedirectResult::ExitSilently;
+            }
+        }
         return RedirectResult::ExitSilently;
+    }
+
+    // Say what is happening rather than leaving the desktop silent for half a minute, which
+    // is what makes people start opening yet more files. The dialog runs the retry on its
+    // own timer, so it closes itself as soon as the other instance answers.
+    CRedirectWaitDlg dlg(retry, 30000ULL);
+    switch (dlg.DoModal()) {
+        case IDOK:
+            return RedirectResult::Redirected;
+        case IDABORT: // it exited while we were waiting
+        case IDCANCEL: // the user would rather have a window now than keep waiting
+            return RedirectResult::OpenNormally;
     }
 
     // Still not responding. Ask before killing anything: from the outside a deadlocked
