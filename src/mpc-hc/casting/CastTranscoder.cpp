@@ -28,6 +28,8 @@
 #include <mferror.h>
 #include <atlbase.h>
 #include <atomic>
+#include <vector>
+#include <algorithm>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
@@ -74,6 +76,104 @@ namespace
             case 6: return 0x3F;                  // 5.1: FL FR FC LFE BL BR
             case 8: return 0x3F | 0x200 | 0x400;  // 7.1 surround
             default: return 0;
+        }
+    }
+
+    // Media Foundation's MP4 source does not put the HEVC sequence header on the
+    // native video type the way it does for H.264, so the MP4 sink writes an
+    // unusable sample entry (the video track comes out undecodable). Recover the
+    // VPS/SPS/PPS from the source file's hvcC box, as Annex-B, to hand back as
+    // MF_MT_MPEG_SEQUENCE_HEADER. The hvcC lives in the moov, at the file head on
+    // a fast-start file or the tail otherwise, so both ends are scanned. (The
+    // fragmented sink refuses HEVC outright regardless, which is why HEVC never
+    // takes the HLS path -- only this complete-file one.)
+    bool ExtractHevcSequenceHeader(const CString& srcPath, std::vector<BYTE>& seq)
+    {
+        seq.clear();
+        CFile file;
+        if (!file.Open(srcPath, CFile::modeRead | CFile::shareDenyNone)) {
+            return false;
+        }
+        const ULONGLONG total = file.GetLength();
+        auto scan = [&](ULONGLONG at, DWORD want) -> bool {
+            std::vector<BYTE> buf(want);
+            file.Seek((LONGLONG)at, CFile::begin);
+            const UINT got = file.Read(buf.data(), want);
+            for (UINT i = 4; i + 8 <= got; i++) {
+                if (buf[i] != 'h' || buf[i + 1] != 'v' || buf[i + 2] != 'c' || buf[i + 3] != 'C') {
+                    continue;
+                }
+                const DWORD boxSize = (buf[i - 4] << 24) | (buf[i - 3] << 16) | (buf[i - 2] << 8) | buf[i - 1];
+                if (boxSize < 8 + 23 || (ULONGLONG)(i - 4) + boxSize > got) {
+                    continue;
+                }
+                const BYTE* p = &buf[i + 4]; // hvcC payload
+                const DWORD payloadLen = boxSize - 8;
+                if (p[0] != 1) { // configurationVersion
+                    continue;
+                }
+                DWORD off = 22;
+                if (off >= payloadLen) {
+                    continue;
+                }
+                const BYTE numArrays = p[off++];
+                std::vector<BYTE> out;
+                bool bad = false;
+                for (BYTE a = 0; a < numArrays && !bad; a++) {
+                    if (off + 3 > payloadLen) { bad = true; break; }
+                    const BYTE nalType = p[off] & 0x3f;
+                    const WORD numNalus = (WORD)((p[off + 1] << 8) | p[off + 2]);
+                    off += 3;
+                    for (WORD n = 0; n < numNalus && !bad; n++) {
+                        if (off + 2 > payloadLen) { bad = true; break; }
+                        const WORD len = (WORD)((p[off] << 8) | p[off + 1]);
+                        off += 2;
+                        if (off + len > payloadLen) { bad = true; break; }
+                        if (nalType == 32 || nalType == 33 || nalType == 34) { // VPS/SPS/PPS
+                            static const BYTE startCode[4] = { 0, 0, 0, 1 };
+                            out.insert(out.end(), startCode, startCode + 4);
+                            out.insert(out.end(), p + off, p + off + len);
+                        }
+                        off += len;
+                    }
+                }
+                if (!bad && !out.empty()) {
+                    seq = std::move(out);
+                    return true;
+                }
+            }
+            return false;
+        };
+        const DWORD window = 16 * 1024 * 1024;
+        if (scan(0, (DWORD)std::min<ULONGLONG>(window, total))) {
+            return true;
+        }
+        return total > window && scan(total - window, window);
+    }
+
+    // If videoNative is HEVC and carries no sequence header, recover one from the
+    // source so the MP4 sink writes a track that actually decodes.
+    void EnsureHevcSequenceHeader(IMFMediaType* videoNative, const CString& srcPath)
+    {
+        if (!videoNative) {
+            return;
+        }
+        GUID subtype = GUID_NULL;
+        videoNative->GetGUID(MF_MT_SUBTYPE, &subtype);
+        if (subtype != MFVideoFormat_HEVC && subtype != MFVideoFormat_HEVC_ES) {
+            return;
+        }
+        UINT32 have = 0;
+        if (SUCCEEDED(videoNative->GetBlobSize(MF_MT_MPEG_SEQUENCE_HEADER, &have)) && have > 0) {
+            return;
+        }
+        std::vector<BYTE> seq;
+        if (ExtractHevcSequenceHeader(srcPath, seq)) {
+            videoNative->SetBlob(MF_MT_MPEG_SEQUENCE_HEADER, seq.data(), (UINT32)seq.size());
+            CASTING_LOG(_T("downmix: recovered the %d-byte HEVC sequence header the source omitted"),
+                        (int)seq.size());
+        } else {
+            CASTING_LOG(_T("downmix: could not recover the HEVC sequence header; the video may not decode"));
         }
     }
 
@@ -287,6 +387,7 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
         if (FAILED(hr = reader->SetCurrentMediaType(videoIdx, nullptr, videoNative))) {
             return fail(_T("the video track could not be set up for copying"));
         }
+        EnsureHevcSequenceHeader(videoNative, srcPath);
     }
 
     // Audio: ask for PCM at the target channel count; the reader inserts the
@@ -448,6 +549,7 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     if (FAILED(rv->SetCurrentMediaType(videoIdx, nullptr, videoNative))) {
         return fail(_T("the video could not be set up for copying"));
     }
+    EnsureHevcSequenceHeader(videoNative, videoSrc);
 
     CComPtr<IMFSourceReader> ra;
     if (FAILED(MFCreateSourceReaderFromURL(wavPath, nullptr, &ra))) {
