@@ -31,6 +31,11 @@
 
 namespace
 {
+    // How far short of the container's duration the video may end before the
+    // last playlist window is held back (audio padding runs ~0.1 s past the
+    // picture; a second is generous, and only the tail window is affected).
+    constexpr double kTailGuardSec = 1.0;
+
     UINT32 Be32(const BYTE* p)
     {
         return (UINT32(p[0]) << 24) | (UINT32(p[1]) << 16) | (UINT32(p[2]) << 8) | UINT32(p[3]);
@@ -226,9 +231,14 @@ bool CCastHlsStream::Start(const CString& srcPath, const CastMediaInfo& info, in
     m_hNotify = hNotify;
     m_notifyMsg = notifyMsg;
 
-    // The short tail folds into the last window rather than earning a segment
-    // of its own.
-    const int count = int(std::ceil(m_durationSec / kSegmentSec - 1e-9));
+    // Every window the playlist announces gets asked for almost at once -- the
+    // device buffers well ahead of playback -- so a window announced past the
+    // end of the picture is a 404 that fails the whole load. The count is
+    // derived from the container's duration, which runs a little past the
+    // video (audio padding at the end of the file), so the last window is
+    // announced only when the video is safely into it; anything past that
+    // folds into it instead.
+    const int count = 1 + int(std::floor((m_durationSec - kTailGuardSec) / kSegmentSec));
     m_segmentCount = std::max(1, count);
     m_segmentDone.assign(m_segmentCount, false);
 
@@ -288,7 +298,10 @@ CStringA CCastHlsStream::BuildPlaylist() const
         s.Format("%d.%03d,", ms / 1000, ms % 1000);
         return s;
     };
-    const int targetDuration = int(std::ceil(kSegmentSec));
+    // TARGETDURATION has to cover the longest EXTINF, and with the tail folded
+    // into the last window that one can run a little past a full window.
+    const double lastSec = m_durationSec - (m_segmentCount - 1) * kSegmentSec;
+    const int targetDuration = int(std::ceil(std::max(kSegmentSec, lastSec)));
     CStringA text;
     text += "#EXTM3U\n";
     text += "#EXT-X-VERSION:7\n";
@@ -372,6 +385,13 @@ void CCastHlsStream::Finish(bool ok, const CString& why)
         m_server->FailResource("init.mp4");
     }
     if (ok) {
+        // A stream that finished before the ready threshold was ever met -- a
+        // file too short to produce a second segment, chiefly -- is still
+        // worth loading: everything it will ever serve exists from here on.
+        if (!m_readyPosted) {
+            m_readyPosted = true;
+            PostMessage(m_hNotify, m_notifyMsg, WPARAM(NotifyReady), 0);
+        }
         CASTING_LOG(_T("hls: the stream is complete; %d segment(s) served"), m_publishedSegments);
     } else {
         std::lock_guard<std::mutex> lock(m_stateMutex);
@@ -613,11 +633,12 @@ bool CCastHlsStream::Poll()
                 if (k < m_openIndex) {
                     return FailParse(_T("a fragment's video time went backwards"));
                 }
+                const int closedIndex = m_openIndex; // CloseOpenSegment() resets it
                 CloseOpenSegment();
                 // Windows no fragment ever started in: impossible while
                 // fragments are contiguous, but the announced table stays
                 // honest.
-                for (int missing = m_openIndex + 1; missing < k; missing++) {
+                for (int missing = closedIndex + 1; missing < k; missing++) {
                     CStringA name;
                     name.Format("seg%05d.m4s", missing);
                     m_server->FailResource(name);

@@ -26,6 +26,9 @@
 
 #define CAST_MSGWND_CLASS   _T("MPCHCCastTarget")
 #define WM_CAST_SESSION     (WM_APP + 0)
+// what the streaming transcode (CCastHlsStream) reports its progress on:
+// wParam is one of CCastHlsStream::Notify
+#define WM_CAST_HLS         (WM_APP + 1)
 
 // how long StopCasting() lets the polite media STOP reach the device before
 // the connection is torn down regardless
@@ -34,9 +37,16 @@
 CChromecastTarget::~CChromecastTarget()
 {
     m_session.Stop();
+    // The server stops before the transcode is abandoned, in the same order as
+    // StopCasting(): its file-range parts read the raw fragmented MP4, and
+    // only once the server is gone is its handle of it closed, so the
+    // transcode's temp file can actually be deleted.
+    m_server.EndHls();
+    m_server.ClearFile();
+    m_server.ClearAllowedPeer();
     m_server.Stop();
+    AbandonTranscode();
     m_discovery.Stop();
-    DeleteDownmixTemp();
     if (m_hMsgWnd) {
         DestroyWindow(m_hMsgWnd);
         m_hMsgWnd = nullptr;
@@ -48,6 +58,10 @@ LRESULT CALLBACK CChromecastTarget::MsgWndProc(HWND hWnd, UINT uMsg, WPARAM wPar
     auto* pThis = reinterpret_cast<CChromecastTarget*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
     if (pThis && uMsg == WM_CAST_SESSION) {
         pThis->OnSessionStateChanged();
+        return 0;
+    }
+    if (pThis && uMsg == WM_CAST_HLS) {
+        pThis->OnHlsEvent(static_cast<int>(wParam));
         return 0;
     }
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -222,6 +236,7 @@ bool CChromecastTarget::StartSession(const CastDevice& dev, const CString& devic
     m_model = dev.model; // drives the receiver rules the load is judged against
     m_casting = true;
     m_failed = false;
+    m_failReason.Empty();
     // notifications of the previous session no longer apply
     m_generation = CastNextSessionGeneration();
     m_lastNotifiedState = CastTargetState::Connecting;
@@ -525,9 +540,12 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
     // A device that cannot output the file's channel layout drops the sound
     // silently while it plays the picture. When that is what we would otherwise
     // hand it, and the audio can be reduced to fit, serve a downmixed copy so
-    // there is sound. The transcode runs here on the calling thread and finishes
-    // before the file is handed over, because the server serves a complete file.
-    DeleteDownmixTemp();
+    // there is sound: as an HLS stream the device starts playing while the
+    // transcode still runs, or, when the stream cannot take the file, as a
+    // complete copy the transcode finishes before the file is handed over.
+    AbandonTranscode();
+    m_failed = false; // a new load answers for itself
+    m_failReason.Empty();
     CString servePath = filePath;
     const int target = DownmixTargetChannels(info, m_model, m_maxAudioChannels);
     // The file needs transcoding when it has more channels than the device will
@@ -538,6 +556,40 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
                                || info.audio == CastMediaInfo::Audio::DTS
                                || info.audio == CastMediaInfo::Audio::TrueHD;
     if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
+        if (info.video == CastMediaInfo::Video::H264) {
+            // The streaming transcode. Only H.264: the fragmented-MP4 sink it
+            // writes through refuses HEVC, and a file with no picture has
+            // nothing to show progressively -- both fall through to the
+            // complete-file transcode below.
+            m_hls = std::make_unique<CCastHlsStream>();
+            if (m_hls->Start(filePath, info, target, durationSec, m_server, m_hMsgWnd, WM_CAST_HLS)) {
+                m_mime = "application/vnd.apple.mpegurl";
+                m_hlsPending = true;
+                m_hlsReady = false;
+                m_pendingTitle = title;
+                m_pendingDuration = durationSec;
+                m_pendingSeek = startSec >= 1.0 ? startSec : -1.0;
+                // The LOAD goes out when the stream has published its init
+                // segment and first segments -- not before, because the device
+                // would ask for bytes that do not exist yet. Until then the
+                // most that can be truthfully said is that media is being
+                // made ready.
+                m_loadPending = true;
+                CASTING_LOG(_T("cast: the file's %d-channel audio is being downmixed to %d as it is ")
+                            _T("streamed; the device is handed the file while it is still transcoded"),
+                            info.channels, target);
+                NotifyState(CastTargetState::Loading);
+                return;
+            }
+            m_hls.reset();
+            CASTING_LOG(_T("cast: the streaming transcode did not start; transcoding the whole file first instead"));
+        } else if (info.video == CastMediaInfo::Video::HEVC) {
+            CASTING_LOG(_T("cast: the streaming transcode takes H.264 only, and this file's video is ")
+                        _T("HEVC; transcoding the whole file first instead"));
+        } else {
+            CASTING_LOG(_T("cast: the streaming transcode takes H.264 video, which this file does not ")
+                        _T("have; transcoding the whole file first instead"));
+        }
         TCHAR tempDir[MAX_PATH] = { 0 };
         GetTempPath(MAX_PATH, tempDir);
         CString temp;
@@ -582,7 +634,11 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
 void CChromecastTarget::SendLoad()
 {
     m_loadPending = false;
-    const CStringA url = m_server.GetURLForHost(CStringA(m_session.GetLocalAddress()));
+    // The streaming transcode serves its own manifest; everything else is the
+    // single registered file.
+    const CStringA url = m_hls
+                         ? m_server.GetHlsURLForHost(CStringA(m_session.GetLocalAddress()))
+                         : m_server.GetURLForHost(CStringA(m_session.GetLocalAddress()));
     if (url.IsEmpty()) {
         // no file registered or no local address: the session would sit there
         // casting nothing, so report the failure and let the UI tear it down
@@ -610,7 +666,24 @@ void CChromecastTarget::Pause()
 
 void CChromecastTarget::Seek(double seconds)
 {
-    m_session.Seek(seconds);
+    m_session.Seek(ClampHlsSeek(seconds));
+}
+
+// A seek ahead of what the streaming transcode has produced parks the segment
+// request until the transcode reaches it, and the receiver stops waiting long
+// before a far-ahead segment lands. Keep seeks just behind what exists
+// instead; once the transcode finishes the clamp stops biting.
+double CChromecastTarget::ClampHlsSeek(double seconds) const
+{
+    if (m_hls && m_hls->IsRunning()) {
+        const double behind = std::max(0.0, m_hls->ProducedSeconds() - 2.0);
+        if (seconds > behind) {
+            CASTING_LOG(_T("cast: a seek to %.1f s is held to %.1f s, as far as the transcode has got"),
+                        seconds, behind);
+            seconds = behind;
+        }
+    }
+    return seconds;
 }
 
 void CChromecastTarget::SetVolume(double level, bool muted)
@@ -618,8 +691,27 @@ void CChromecastTarget::SetVolume(double level, bool muted)
     m_session.SetVolume(level, muted);
 }
 
-void CChromecastTarget::DeleteDownmixTemp()
+// Cancels whatever transcode is behind the file being served -- the streaming
+// one, whose raw file it deletes once its worker has joined, and the
+// complete-file one, whose copy goes with it -- and leaves nothing behind for
+// the next load to trip over.
+void CChromecastTarget::AbandonTranscode()
 {
+    if (m_hls) {
+        m_hls->Abort();
+        m_hls.reset();
+        // The worker posted its last notification before it exited, so
+        // anything of its still queued is discarded here: it would otherwise
+        // be handled as if the next stream had sent it.
+        if (m_hMsgWnd) {
+            MSG msg;
+            while (PeekMessage(&msg, m_hMsgWnd, WM_CAST_HLS, WM_CAST_HLS, PM_REMOVE)) {
+                // nothing to do with it
+            }
+        }
+    }
+    m_hlsPending = false;
+    m_hlsReady = false;
     if (!m_downmixTemp.IsEmpty()) {
         DeleteFile(m_downmixTemp);
         m_downmixTemp.Empty();
@@ -636,12 +728,18 @@ void CChromecastTarget::StopCasting()
     // to go out - the queued command would never run if we joined right away.
     m_session.StopMediaAndWait(STOP_MEDIA_TIMEOUT_MS);
     m_session.Stop();
+    // The server stops before the transcode is abandoned: its file-range parts
+    // read the raw fragmented MP4, and only once the server is gone is its
+    // handle of it closed, so the transcode's temp file can actually be
+    // deleted.
+    m_server.EndHls();
     m_server.ClearFile();
     m_server.ClearAllowedPeer();
     m_server.Stop();
-    DeleteDownmixTemp();
+    AbandonTranscode();
     m_casting = false;
     m_failed = false;
+    m_failReason.Empty();
     m_loadPending = false;
     m_pendingSeek = -1.0;
     m_deviceId.Empty();
@@ -688,7 +786,18 @@ CastTargetState CChromecastTarget::GetState() const
     if (m_failed) {
         return CastTargetState::Failed;
     }
+    // While the load waits on the transcode's first segments the session
+    // itself still sits in Ready, which would read as Connecting; the honest
+    // state is that media is being made ready for it.
+    if (m_hlsPending) {
+        return CastTargetState::Loading;
+    }
     return SimplifyState(m_session.GetState());
+}
+
+CString CChromecastTarget::GetFailureReason() const
+{
+    return m_failReason;
 }
 
 void CChromecastTarget::OnSessionStateChanged()
@@ -699,19 +808,63 @@ void CChromecastTarget::OnSessionStateChanged()
 
     const CastSessionState state = m_session.GetState();
 
-    if (state == CastSessionState::Ready && m_loadPending) {
+    // A streaming transcode holds the LOAD back until its first segments
+    // exist, so the session reaching Ready is not by itself enough.
+    if (state == CastSessionState::Ready && m_loadPending && (!m_hlsPending || m_hlsReady)) {
         SendLoad();
     } else if (m_pendingSeek >= 0.0
                && (state == CastSessionState::Playing || state == CastSessionState::Paused
                    || state == CastSessionState::Buffering)) {
         // the first non-IDLE media status has arrived, so the session knows
         // the mediaSessionId and the initial seek can go out
-        m_session.Seek(m_pendingSeek);
+        m_session.Seek(ClampHlsSeek(m_pendingSeek));
         m_pendingSeek = -1.0;
     }
 
     const CastTargetState simplified = SimplifyState(state);
     if (simplified != m_lastNotifiedState) {
         NotifyState(simplified);
+    }
+}
+
+// The streaming transcode reports its milestones as messages, because they
+// decide when the load can happen at all: the LOAD goes out once the first
+// segments exist, a stream that gave up fails the session, and a completed
+// stream changes nothing -- by then the device is playing it.
+void CChromecastTarget::OnHlsEvent(int notify)
+{
+    if (!m_hls) {
+        return; // left over from a stream that was already abandoned
+    }
+    switch (notify) {
+        case CCastHlsStream::NotifyReady:
+            m_hlsReady = true;
+            m_hlsPending = false;
+            switch (m_session.GetState()) {
+                case CastSessionState::Ready:
+                case CastSessionState::Loading:
+                case CastSessionState::Buffering:
+                case CastSessionState::Playing:
+                case CastSessionState::Paused:
+                case CastSessionState::Stopped:
+                    SendLoad();
+                    break;
+                default:
+                    m_loadPending = true; // sent when the session reaches Ready
+                    break;
+            }
+            break;
+        case CCastHlsStream::NotifyFailed:
+            m_hlsPending = false;
+            m_failReason = m_hls->FailureReason();
+            m_failed = true;
+            CASTING_LOG(_T("cast: the streaming transcode failed: %s"), m_failReason.GetString());
+            NotifyState(CastTargetState::Failed);
+            break;
+        case CCastHlsStream::NotifyComplete:
+            CASTING_LOG(_T("cast: the whole file has been transcoded; every segment is served"));
+            break;
+        default:
+            break;
     }
 }

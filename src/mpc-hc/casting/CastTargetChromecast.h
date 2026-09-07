@@ -20,17 +20,21 @@
 
 #pragma once
 
+#include <memory>
+
 #include "CastTarget.h"
 #include "CastDiscovery.h"
 #include "CastSession.h"
 #include "CastMediaServer.h"
+#include "CastHlsStream.h"
 
 // The Chromecast implementation of CCastTarget: composes the mDNS discovery,
 // the CastV2 session and the local HTTP media server, and owns the glue
 // between them. Raw session and discovery notifications arrive at an internal
 // message-only window (all on the UI thread), where deferred work is executed
-// (the LOAD once the session is up, the initial seek once the device reports
-// playback) before the simplified state is forwarded to the notify window.
+// (the LOAD once the session is up, or once a still-transcoding file's first
+// segments exist; the initial seek once the device reports playback) before
+// the simplified state is forwarded to the notify window.
 class CChromecastTarget : public CCastTarget
 {
 public:
@@ -83,13 +87,18 @@ public:
     CastTargetState GetState() const override;
     double GetPosition() const override { return m_session.GetPosition(); }
     double GetDuration() const override { return m_session.GetDuration(); }
+    CString GetFailureReason() const override;
 
 private:
     static LRESULT CALLBACK MsgWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     bool EnsureMessageWindow();
     void OnSessionStateChanged();
+    void OnHlsEvent(int notify); // WM_CAST_HLS, from the streaming transcode
     void NotifyState(CastTargetState state);
     void SendLoad();
+    // A seek ahead of what the streaming transcode has produced so far, held
+    // back to just behind it; a no-op once the transcode has finished.
+    double ClampHlsSeek(double seconds) const;
     static CastTargetState SimplifyState(CastSessionState state);
     static CString DeviceKey(const CastDevice& dev);
     static CString DeviceDisplayName(const CastDevice& dev);
@@ -128,9 +137,17 @@ private:
     // rules, the cap is the user's per-device channel limit (0 = none).
     CString m_model;
     int m_maxAudioChannels = 0;
-    // A downmixed copy of the file being served in place of the original, so a
-    // device that cannot output the original layout still gets sound. Deleted
-    // when the next file loads, the session stops, or the target goes away.
-    CString m_downmixTemp;
-    void DeleteDownmixTemp();
+    // The transcode behind the file being served. An H.264 file is handed to
+    // the device as an HLS stream that is produced while the device plays it
+    // (m_hls); everything the stream cannot take -- HEVC video, which its
+    // fragmented-MP4 sink refuses, a file with no picture, a stream that would
+    // not start -- is transcoded whole first (m_downmixTemp) and served only
+    // once finished. Both are torn down when the next file loads, the session
+    // stops, or the target goes away.
+    std::unique_ptr<CCastHlsStream> m_hls;
+    bool m_hlsPending = false; // the load waits on the stream's first segments
+    bool m_hlsReady = false;   // those segments are up; the LOAD may be sent
+    CString m_downmixTemp;     // the complete-file transcode's copy, if any
+    CString m_failReason;      // detail for the Failed state
+    void AbandonTranscode();
 };

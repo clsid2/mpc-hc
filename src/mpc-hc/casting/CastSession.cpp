@@ -1573,6 +1573,17 @@ void CCastSession::ProcessCommands()
                 json.Format("{\"type\":\"LOAD\",\"media\":{\"contentId\":%s,"
                             "\"streamType\":\"BUFFERED\",\"contentType\":%s",
                             JSONString(cmd.url).GetString(), JSONString(cmd.mime).GetString());
+                // A manifest is served as fragmented MP4, and the receiver's
+                // player reads that from the load request: without the hint it
+                // parses HLS segments as MPEG-TS and rejects the fMP4 init
+                // segment before playing anything.
+                {
+                    CString mime = cmd.mime;
+                    mime.MakeLower();
+                    if (mime.Find(_T("mpegurl")) >= 0) {
+                        json.AppendFormat(",\"hlsSegmentFormat\":\"FMP4\",\"hlsVideoSegmentFormat\":\"FMP4\"");
+                    }
+                }
                 if (cmd.param > 0.0) {
                     json.AppendFormat(",\"duration\":%.6f", cmd.param);
                 }
