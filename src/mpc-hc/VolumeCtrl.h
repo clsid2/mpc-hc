@@ -42,6 +42,7 @@ public:
 protected:
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     void getCustomChannelRect(LPRECT rc);
+    void drawPercentage(CDC& dc, const CStringW& str, const CRect& rc);
     void updateModernVolCtrl(CPoint point);
     bool m_bDrag, m_bHover;
     bool modernStyle;
