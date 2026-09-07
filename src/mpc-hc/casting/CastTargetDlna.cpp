@@ -312,7 +312,11 @@ bool CDlnaTarget::ConnectSaved(CastSavedDevice& saved, DWORD directMs, DWORD sea
         saved.supportsVideo = dev.supportsVideo;
         saved.supportsAudio = dev.supportsAudio;
     }
-    return StartSession(dev, saved.DisplayName());
+    if (!StartSession(dev, saved.DisplayName())) {
+        return false;
+    }
+    m_reencodeAudio = saved.reencodeAudio; // the user's per-device override
+    return true;
 }
 
 bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
@@ -322,6 +326,7 @@ bool CDlnaTarget::StartSession(const DlnaDevice& dev, const CString& deviceName)
                 dev.modelName.GetString(), dev.avTransportURL.GetString());
     m_deviceAddress = dev.ipAddress;
     m_sink = dev.sinkProtocolInfo;
+    m_reencodeAudio = false; // no override for a live (unsaved) device; ConnectSaved sets it
     m_localAddress = Dlna::LocalAddressFor(dev.ipAddress);
     if (m_localAddress.IsEmpty()) {
         CASTING_LOG(_T("cast: this machine has no address the device could reach us at"));
@@ -395,14 +400,20 @@ bool CDlnaTarget::AcceptsMime(const CStringA& sink, const CStringA& mime)
 }
 
 CStringA CDlnaTarget::ChooseTranscodeOutputMime(const CStringA& sink, const CString& path,
-                                                const CastMediaInfo& info)
+                                                const CastMediaInfo& info, bool forced)
 {
-    // Audio only: a file with a picture is left alone (a renderer that plays
-    // video plays the source; one that does not is an audio renderer, and it
-    // cannot show the picture whatever we do to the sound).
-    const bool hasVideo = info.video != CastMediaInfo::Video::Unknown || info.width > 0;
-    if (hasVideo || !CastCanDownmix(path, info)) {
+    if (!CastCanDownmix(path, info)) {
         return CStringA();
+    }
+    // A file with a picture is normally left alone -- a renderer that plays
+    // video plays the source, so we do not proactively touch it. But when the
+    // user has forced re-encoding for this device (it played the picture and
+    // dropped the sound, the failure the protocol never reports), the audio is
+    // re-encoded to AAC and the video copied, muxed into an MP4 the renderer
+    // takes.
+    const bool hasVideo = info.video != CastMediaInfo::Video::Unknown || info.width > 0;
+    if (hasVideo) {
+        return forced ? CStringA("video/mp4") : CStringA();
     }
     // A surround file to a renderer that takes FLAC keeps its layout, losslessly
     // -- an AV receiver gets its surround. FLAC encodes more than two channels
@@ -522,13 +533,17 @@ void CDlnaTarget::LoadMedia(const CString& filePath, const CString& title, doubl
 
     const CStringA mime = CCastMediaServer::MimeForFile(filePath);
 
-    // A file the renderer will not take as-is but whose audio we can re-encode
-    // to one it will (an audio-only file -- multichannel FLAC if it takes FLAC,
-    // else stereo AAC in MP4) is transcoded on the worker before it is served:
-    // the transcode blocks, and only the worker thread may block. Nothing is
-    // registered here; the worker fills in the url once the copy exists.
-    const CStringA xcodeMime = AcceptsMime(m_sink, mime)
-                               ? CStringA() : ChooseTranscodeOutputMime(m_sink, filePath, info);
+    // A file the renderer will not take as-is -- or any file when the user has
+    // forced re-encoding for this device -- whose audio we can re-encode to one
+    // it will (audio-only: multichannel FLAC if it takes FLAC, else stereo AAC;
+    // a video file when forced: the video copied and the audio to AAC, in MP4)
+    // is transcoded on the worker before it is served: the transcode blocks, and
+    // only the worker thread may block. Nothing is registered here; the worker
+    // fills in the url once the copy exists.
+    const bool needsHelp = m_reencodeAudio || !AcceptsMime(m_sink, mime);
+    const CStringA xcodeMime = needsHelp
+                               ? ChooseTranscodeOutputMime(m_sink, filePath, info, m_reencodeAudio)
+                               : CStringA();
     if (!xcodeMime.IsEmpty()) {
         Command cmd;
         cmd.type = Command::Type::Load;

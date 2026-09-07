@@ -143,7 +143,7 @@ private:
     // audio to a renderer that takes FLAC is preserved as multichannel FLAC
     // (lossless, surround kept); otherwise it is stereo AAC in MP4.
     static CStringA ChooseTranscodeOutputMime(const CStringA& sink, const CString& path,
-                                              const CastMediaInfo& info);
+                                              const CastMediaInfo& info, bool forced = false);
     static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok,
                            bool viaTranscode = false);
     static CStringA BuildMetadata(const Command& cmd);
@@ -162,6 +162,9 @@ private:
     CString m_localAddress; // the address of ours this device can reach
     CStringA m_sink;        // the renderer's ConnectionManager sink protocolinfo
     CString m_transcodeTemp; // an audio transcode's temp file, deleted on stop/next load
+    bool m_reencodeAudio = false; // the saved device's "re-encode the audio" override:
+                                  // transcode even audio the renderer is assumed to take,
+                                  // and even on a file with video (copy the picture)
     // Made before the worker starts and destroyed after it is joined, so the
     // worker may use it without any further synchronization.
     std::unique_ptr<CDlnaVendorHook> m_vendorHook;

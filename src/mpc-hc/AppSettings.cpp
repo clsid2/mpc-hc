@@ -3026,7 +3026,7 @@ void CAppSettings::AddFav(favtype ft, CString s)
 enum {
     CASTDEV_PROTOCOL, CASTDEV_ID, CASTDEV_NAME, CASTDEV_USERNAME, CASTDEV_ADDRESS,
     CASTDEV_PORT, CASTDEV_LOCATION, CASTDEV_FLAGS, CASTDEV_FORMATS, CASTDEV_MODEL,
-    CASTDEV_MAXCHANNELS,
+    CASTDEV_MAXCHANNELS, CASTDEV_REENCODE,
     CASTDEV_FIELDS
 };
 
@@ -3108,6 +3108,9 @@ void CAppSettings::GetCastDevices(std::vector<CastSavedDevice>& devices) const
         // an older entry has none and picks one up when it is next connected to
         dev.model = fields[CASTDEV_MODEL];
         dev.maxAudioChannels = _ttoi(fields[CASTDEV_MAXCHANNELS]);
+        // written since the reactive re-encode override was added; an older
+        // entry has none (empty -> 0 -> off), and picks one up if the user sets it
+        dev.reencodeAudio = _ttoi(fields[CASTDEV_REENCODE]) != 0;
         if (!dev.id.IsEmpty()) {
             devices.emplace_back(std::move(dev));
         }
@@ -3149,6 +3152,8 @@ void CAppSettings::SetCastDevices(const std::vector<CastSavedDevice>& devices)
         fields.AddTail(dev.formats.GetLength() <= CASTDEV_MAX_FORMATS ? storable(dev.formats) : CString());
         fields.AddTail(storable(dev.model));
         number.Format(_T("%d"), dev.maxAudioChannels);
+        fields.AddTail(number);
+        number.Format(_T("%d"), dev.reencodeAudio ? 1 : 0);
         fields.AddTail(number);
 
         CString entry;

@@ -213,6 +213,12 @@ struct CastTargetDevice {
     // handle a channel layout drops the audio silently while it plays the video
     // and reports success, so nothing on the wire reveals the limit.
     int maxAudioChannels = 0;
+    // Force the audio to be re-encoded for this device, even audio the device
+    // is assumed to accept. Set by the user (the cast window's "no audio"
+    // button, or Manage Devices) when a renderer plays the picture but drops
+    // the sound with no error -- the one failure the protocol never reports, so
+    // only the listener knows. Remembered so the next cast to it just works.
+    bool reencodeAudio = false;
 };
 
 // A device the user has kept. The cast submenu is built from these alone, so
