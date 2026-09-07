@@ -23,10 +23,12 @@
 #include <atlstr.h>
 
 // Decodes the first audio track of srcPath with the player's own LAV filters --
-// which read what Media Foundation cannot, DTS and 7.1 among them -- downmixes
-// it to targetChannels, and writes it as a PCM WAV to outWavPath. A short
-// DirectShow graph run to end of stream, on the calling thread. The caller then
-// muxes that WAV's audio against the original file's copied video. Returns false
-// (with a reason in pError) on any failure, leaving no output behind.
-bool CastLavDecodeToWav(const CString& srcPath, int targetChannels, const CString& outWavPath,
-                        CString* pError = nullptr);
+// which read what Media Foundation cannot, DTS and 7.1 among them -- downmixes it
+// to stereo, and writes it as FLAC to outFlacPath (compressed as it flows, so no
+// gigabyte PCM WAV ever lands on disk). A short DirectShow graph run to end of
+// stream, whose audio renderer hands the PCM to a Media Foundation FLAC writer.
+// The caller then muxes that FLAC against the original file's copied video.
+// targetChannels is accepted for the interface's sake; the LAV path is stereo.
+// Returns false (with a reason in pError) on any failure, leaving no output.
+bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
+                         CString* pError = nullptr);

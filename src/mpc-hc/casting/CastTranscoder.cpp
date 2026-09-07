@@ -470,14 +470,14 @@ bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int tar
 
     TCHAR tempDir[MAX_PATH] = { 0 };
     GetTempPath(MAX_PATH, tempDir);
-    CString wav;
-    wav.Format(_T("%smpc-castdownmix-%u.wav"), tempDir, GetCurrentProcessId());
+    CString flac;
+    flac.Format(_T("%smpc-castdownmix-%u.flac"), tempDir, GetCurrentProcessId());
     CASTING_LOG(_T("downmix: %d-channel %s goes through LAV"), info.channels,
                 CastAudioCodecName(info.audio));
-    if (!CastLavDecodeToWav(srcPath, targetChannels, wav, pError)) {
+    if (!CastLavDecodeToFlac(srcPath, targetChannels, flac, pError)) {
         return false;
     }
-    const bool ok = MfMuxVideoAndWav(srcPath, wav, outPath, pError);
-    DeleteFile(wav);
+    const bool ok = MfMuxVideoAndWav(srcPath, flac, outPath, pError);
+    DeleteFile(flac);
     return ok;
 }

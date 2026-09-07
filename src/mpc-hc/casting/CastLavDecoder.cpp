@@ -22,9 +22,23 @@
 #include "CastLavDecoder.h"
 #include "DSUtil.h"
 #include "FGFilterLAV.h"
-#include "../filters/Filters.h"
+#include "NullRenderers.h"
 #include "Logger.h"
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
 #include <thread>
+
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
+
+#ifndef MFAudioFormat_FLAC
+// The player targets a Windows version whose mfapi.h guards this out, but the
+// FLAC encoder MFT is there at run time on Windows 10. WAVE_FORMAT_FLAC 0xF1AC.
+static const GUID MFAudioFormat_FLAC =
+{ 0x0000F1AC, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
+#endif
 
 namespace
 {
@@ -60,31 +74,158 @@ namespace
         }
         return nullptr;
     }
+
+    // A DirectShow renderer that hands the PCM it receives straight to a Media
+    // Foundation sink writer, which encodes it to FLAC. This is why the audio the
+    // player's LAV decoder produces never lands on disk as a giant PCM WAV -- it
+    // is compressed losslessly as it flows. The sink writer is opened and closed
+    // on the caller's thread (StartWriter/FinalizeWriter); only WriteSample runs
+    // on the streaming thread, which it tolerates.
+    class __declspec(uuid("6B3F1E22-9C4A-4E2B-8B3D-2E7A1C9F5D40"))
+        CFlacSinkRenderer : public CNullRenderer
+    {
+        CComPtr<IMFSinkWriter> m_writer;
+        DWORD m_stream = 0;
+        CStringW m_path;
+        bool m_ok = true;
+
+    public:
+        CFlacSinkRenderer(LPCWSTR path, HRESULT* phr)
+            : CNullRenderer(__uuidof(CFlacSinkRenderer), NAME("MPC FLAC sink"), nullptr, phr)
+            , m_path(path) {}
+
+        bool Ok() const { return m_ok; }
+
+        HRESULT CheckMediaType(const CMediaType* pmt) override
+        {
+            if (pmt->majortype != MEDIATYPE_Audio || pmt->subtype != MEDIASUBTYPE_PCM
+                    || pmt->formattype != FORMAT_WaveFormatEx) {
+                return VFW_E_TYPE_NOT_ACCEPTED;
+            }
+            return S_OK;
+        }
+
+        // Opens the FLAC writer from the negotiated input format. Called after the
+        // pins connect and before the graph runs, on the graph-building thread.
+        HRESULT StartWriter()
+        {
+            AM_MEDIA_TYPE amt;
+            if (FAILED(m_pInputPin->ConnectionMediaType(&amt))) {
+                m_ok = false;
+                return E_FAIL;
+            }
+            if (amt.formattype != FORMAT_WaveFormatEx || !amt.pbFormat
+                    || amt.cbFormat < sizeof(WAVEFORMATEX)) {
+                FreeMediaType(amt);
+                m_ok = false;
+                return E_FAIL;
+            }
+            const WAVEFORMATEX wfe = *reinterpret_cast<const WAVEFORMATEX*>(amt.pbFormat);
+            FreeMediaType(amt);
+
+            CComPtr<IMFMediaType> pcm;
+            MFCreateMediaType(&pcm);
+            pcm->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+            pcm->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+            pcm->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, wfe.wBitsPerSample);
+            pcm->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, wfe.nSamplesPerSec);
+            pcm->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, wfe.nChannels);
+            pcm->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, wfe.nBlockAlign);
+            pcm->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, wfe.nAvgBytesPerSec);
+
+            if (FAILED(MFCreateSinkWriterFromURL(m_path, nullptr, nullptr, &m_writer))) {
+                m_ok = false;
+                return E_FAIL;
+            }
+            CComPtr<IMFMediaType> flac;
+            MFCreateMediaType(&flac);
+            flac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+            flac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_FLAC);
+            flac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, wfe.wBitsPerSample);
+            flac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, wfe.nSamplesPerSec);
+            flac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, wfe.nChannels);
+            if (FAILED(m_writer->AddStream(flac, &m_stream))
+                    || FAILED(m_writer->SetInputMediaType(m_stream, pcm, nullptr))
+                    || FAILED(m_writer->BeginWriting())) {
+                m_ok = false;
+                return E_FAIL;
+            }
+            return S_OK;
+        }
+
+        HRESULT DoRenderSample(IMediaSample* pSample) override
+        {
+            if (!m_ok || !m_writer) {
+                return S_OK;
+            }
+            BYTE* pData = nullptr;
+            const long len = pSample->GetActualDataLength();
+            if (FAILED(pSample->GetPointer(&pData)) || !pData || len <= 0) {
+                return S_OK;
+            }
+            CComPtr<IMFMediaBuffer> buf;
+            if (FAILED(MFCreateMemoryBuffer(len, &buf))) {
+                m_ok = false;
+                return E_FAIL;
+            }
+            BYTE* p = nullptr;
+            buf->Lock(&p, nullptr, nullptr);
+            memcpy(p, pData, len);
+            buf->Unlock();
+            buf->SetCurrentLength(len);
+            CComPtr<IMFSample> s;
+            MFCreateSample(&s);
+            s->AddBuffer(buf);
+            REFERENCE_TIME t0 = 0, t1 = 0;
+            if (pSample->GetTime(&t0, &t1) == S_OK) {
+                s->SetSampleTime(t0);
+                if (t1 > t0) {
+                    s->SetSampleDuration(t1 - t0);
+                }
+            }
+            if (FAILED(m_writer->WriteSample(m_stream, s))) {
+                m_ok = false;
+                return E_FAIL;
+            }
+            return S_OK;
+        }
+
+        // Called on the graph-building thread after the run completes.
+        void FinalizeWriter()
+        {
+            if (m_writer) {
+                if (FAILED(m_writer->Finalize())) {
+                    m_ok = false;
+                }
+                m_writer.Release();
+            }
+        }
+    };
 }
 
 // Builds and runs the decode graph. Runs on its own thread (see below) so its
 // COM apartment is not the caller's UI STA -- a DirectShow graph built there and
 // waited on with WaitForCompletion deadlocks, since the wait blocks the very
 // thread the graph needs to deliver its completion to.
-static bool DecodeGraph(const CString& srcPath, int targetChannels, const CString& outWavPath,
+static bool DecodeGraph(const CString& srcPath, int targetChannels, const CString& outPath,
                         CString* pError)
 {
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
         CASTING_LOG(_T("downmix (LAV): %s"), why.GetString());
-        DeleteFile(outWavPath);
+        DeleteFile(outPath);
         return false;
     };
 
+    UNREFERENCED_PARAMETER(targetChannels);
     HRESULT hr = S_OK;
 
-    // The graph, and the two controls used to run it to the end of the file.
     CComPtr<IGraphBuilder> pGraph;
     if (FAILED(pGraph.CoCreateInstance(CLSID_FilterGraph))) {
         return fail(_T("a filter graph could not be created"));
     }
-    // No reference clock: this is a file-to-file transcode, so let it run as fast
-    // as it can rather than pacing the audio out in real time.
+    // No reference clock: a file-to-file transcode should run flat-out, not pace
+    // the audio in real time.
     if (CComQIPtr<IMediaFilter> pMediaFilter = pGraph) {
         pMediaFilter->SetSyncSource(nullptr);
     }
@@ -94,8 +235,6 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
         return fail(_T("the graph is missing its control interfaces"));
     }
 
-    // The player's own splitter/source and audio decoder, loaded straight from
-    // the bundled .ax without relying on them being registered.
     CComPtr<IBaseFilter> pSplitter, pAudio;
     if (FAILED(LoadExternalFilter(CFGFilterLAV::GetFilterPath(CFGFilterLAV::SPLITTER_SOURCE),
                                   GUID_LAVSplitterSource, &pSplitter)) || !pSplitter) {
@@ -105,7 +244,6 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
                                   GUID_LAVAudio, &pAudio)) || !pAudio) {
         return fail(_T("the LAV audio decoder could not be loaded"));
     }
-
     if (FAILED(pGraph->AddFilter(pSplitter, L"LAV Splitter Source"))
             || FAILED(pGraph->AddFilter(pAudio, L"LAV Audio Decoder"))) {
         return fail(_T("the LAV filters could not be added to the graph"));
@@ -118,9 +256,7 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
 
     // Make the audio decoder downmix to stereo, isolated from the user's saved
     // settings. Stereo is the LAV engine's floor -- it makes the sound audible on
-    // a device that could not output the original layout, which is the point;
-    // preserving 5.1 through this path is a later refinement.
-    UNREFERENCED_PARAMETER(targetChannels);
+    // a device that could not output the original layout, which is the point.
     if (CComQIPtr<ILAVAudioSettings> pLav = pAudio) {
         pLav->SetRuntimeConfig(TRUE);
         pLav->SetMixingEnabled(TRUE);
@@ -130,35 +266,20 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
         pLav->SetOutputStandardLayout(TRUE);
     }
 
-    // The WAV sink: WavDest turns the decoder's PCM into a RIFF/WAVE stream, the
-    // File Writer puts it on disk.
-    // The DShow base class delegates its IUnknown, so reach IBaseFilter through
-    // the non-delegating unknown -- a plain cast of the C++ object gives a wrong
-    // vtable and any call through it hangs.
-    CComPtr<IUnknown> pWavUnk = (IUnknown*)(INonDelegatingUnknown*)DEBUG_NEW CWavDestFilter(nullptr, &hr);
-    if (FAILED(hr) || !pWavUnk) {
-        return fail(_T("the WAV muxer could not be created"));
+    // The FLAC sink: our own renderer, which compresses the PCM as it arrives.
+    HRESULT sinkHr = S_OK;
+    CFlacSinkRenderer* pSink = DEBUG_NEW CFlacSinkRenderer(CStringW(outPath), &sinkHr);
+    CComPtr<IUnknown> pSinkUnk = (IUnknown*)(INonDelegatingUnknown*)pSink;
+    if (FAILED(sinkHr) || !pSinkUnk) {
+        return fail(_T("the FLAC sink could not be created"));
     }
-    CComQIPtr<IBaseFilter> pWavDest = pWavUnk;
-    if (!pWavDest) {
-        return fail(_T("the WAV muxer has no filter interface"));
-    }
-    CComPtr<IBaseFilter> pWriter;
-    if (FAILED(pWriter.CoCreateInstance(CLSID_FileWriter))) {
-        return fail(_T("the file writer could not be created"));
-    }
-    if (CComQIPtr<IFileSinkFilter2> pSink = pWriter) {
-        pSink->SetFileName(CStringW(outWavPath), nullptr);
-        pSink->SetMode(AM_FILE_OVERWRITE);
-    } else {
-        return fail(_T("the file writer has no sink interface"));
-    }
-    if (FAILED(pGraph->AddFilter(pWavDest, L"WavDest")) || FAILED(pGraph->AddFilter(pWriter, L"File Writer"))) {
-        return fail(_T("the WAV sink could not be added to the graph"));
+    CComQIPtr<IBaseFilter> pSinkBF = pSinkUnk;
+    if (!pSinkBF || FAILED(pGraph->AddFilter(pSinkBF, L"FLAC Sink"))) {
+        return fail(_T("the FLAC sink could not be added to the graph"));
     }
 
-    // Wire it up: splitter audio -> decoder -> WavDest -> file. Direct, so the
-    // graph builder cannot substitute some other decoder for LAV.
+    // Wire it up: splitter audio -> decoder -> FLAC sink. Direct, so the graph
+    // builder cannot substitute another decoder for LAV.
     CComPtr<IPin> pSplitterAudio = AudioOutputPin(pSplitter);
     if (!pSplitterAudio) {
         return fail(_T("the file has no audio track"));
@@ -166,16 +287,14 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
     if (FAILED(hr = pGraph->ConnectDirect(pSplitterAudio, GetFirstPin(pAudio, PINDIR_INPUT), nullptr))) {
         return fail(_T("the audio decoder would not accept the track"));
     }
-    // Let the decoder offer its own PCM type (16-bit stereo at the source rate,
-    // per the settings above) and the muxer take it -- forcing a type here made
-    // LAV deliver at the wrong rate, doubling the running time.
     if (FAILED(hr = pGraph->ConnectDirect(GetFirstPin(pAudio, PINDIR_OUTPUT),
-                                          GetFirstPin(pWavDest, PINDIR_INPUT), nullptr))) {
-        return fail(_T("the WAV muxer would not accept the decoded audio"));
+                                          GetFirstPin(pSinkBF, PINDIR_INPUT), nullptr))) {
+        return fail(_T("the FLAC sink would not accept the decoded audio"));
     }
-    if (FAILED(hr = pGraph->ConnectDirect(GetFirstPin(pWavDest, PINDIR_OUTPUT),
-                                          GetFirstPin(pWriter, PINDIR_INPUT), nullptr))) {
-        return fail(_T("the file writer would not accept the WAV stream"));
+
+    // Open the FLAC writer now, from the negotiated input format, on this thread.
+    if (FAILED(pSink->StartWriter())) {
+        return fail(_T("the FLAC writer could not be started"));
     }
 
     // Run to the end of the file. The source is finite, so this completes.
@@ -185,28 +304,34 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
     long evCode = 0;
     pEvent->WaitForCompletion(INFINITE, &evCode);
     pControl->Stop();
-    if (evCode != EC_COMPLETE) {
+    pSink->FinalizeWriter();
+
+    if (evCode != EC_COMPLETE || !pSink->Ok()) {
         return fail(_T("the decode did not finish cleanly"));
     }
 
-    CASTING_LOG(_T("downmix (LAV): decoded the audio to a %d-channel WAV"), targetChannels >= 6 ? 6 : 2);
+    CASTING_LOG(_T("downmix (LAV): decoded the audio to a stereo FLAC"));
     return true;
 }
 
-bool CastLavDecodeToWav(const CString& srcPath, int targetChannels, const CString& outWavPath,
-                        CString* pError)
+bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
+                         CString* pError)
 {
     // The graph runs on this worker thread, in its own COM apartment, and the
-    // caller blocks on the join. The caller's UI thread is thus free of the
-    // graph entirely, so nothing the graph does has to marshal into a thread
-    // that is blocked waiting for it.
+    // caller blocks on the join. The caller's UI thread is thus free of the graph
+    // entirely, so nothing the graph does has to marshal into a thread that is
+    // blocked waiting for it.
     bool ok = false;
     CString err;
     std::thread worker([&]() {
         // The multithreaded apartment, not an STA: a headless transcode graph has
         // no message pump, and DirectShow in an STA without one deadlocks.
         const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        ok = DecodeGraph(srcPath, targetChannels, outWavPath, &err);
+        const bool mf = SUCCEEDED(MFStartup(MF_VERSION)); // the FLAC sink needs it up
+        ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err);
+        if (mf) {
+            MFShutdown();
+        }
         if (SUCCEEDED(hrCo)) {
             CoUninitialize();
         }
