@@ -259,11 +259,11 @@ public:
     static inline bool ignoreFormatSupport = false;
 
     // Set from the options: when a surround file must be transcoded and the
-    // receiver takes E-AC-3, encode to E-AC-3 (keeping the 5.1 layout) rather
-    // than folding to stereo AAC -- for a Chromecast feeding a capable AV
-    // receiver. Off by default, since a device with no surround decoder would
-    // get silence where stereo AAC always plays; opt-in until the device is
-    // known to handle it.
+    // receiver takes E-AC-3, encode to E-AC-3 (keeping the source's 5.1, or
+    // downmixing 6.1/7.1 to 5.1) rather than folding to stereo AAC -- for a
+    // Chromecast feeding a capable AV receiver. Off by default, since a device
+    // with no surround decoder would get silence where stereo AAC always plays;
+    // opt-in until the device is known to handle it.
     static inline bool preferSurround = false;
 
     // Device discovery; runs in the background once started. The device list

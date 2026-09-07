@@ -66,12 +66,12 @@ bool CastLavRemuxToMp4(const CString& srcPath, const CastMediaInfo& info, int ta
 // with the format block's sequence header as the track's extradata; beside
 // them the decoded PCM -- the source's own multichannel layout, mixing off,
 // never downmixed -- is resampled to planar float and encoded to E-AC-3 as it
-// flows (FLTP at 384 kbit/s up to 5.1, 640 above). The E-AC-3 encoder takes a
-// fixed set of channel layouts and refuses the rest -- 7.1 among them -- and
-// that refusal is a clean failure, logged, so the caller can fall back to the
-// stereo AAC engine. targetChannels is what routed the call here; it is not
-// applied. Non-fragmented output only. Fails like the other engines,
-// cancellation included, leaving no output.
+// flows (FLTP at 384 kbit/s). The E-AC-3 encoder takes up to 5.1, so a 6.1/7.1
+// source is downmixed to 5.1 rather than folded to stereo -- a device asked for
+// surround still gets surround. A layout it still refuses is a clean failure,
+// logged, so the caller can fall back to the stereo AAC engine. targetChannels
+// is what routed the call here; it is not applied. Non-fragmented output only.
+// Fails like the other engines, cancellation included, leaving no output.
 bool CastLavRemuxToEac3Mp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                            const CString& outPath, const CastTranscodeProgress& prog,
                            CString* pError = nullptr);

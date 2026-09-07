@@ -708,6 +708,8 @@ namespace
         AVStream* ast = nullptr;
         AVCodecContext* actx = nullptr; // the E-AC-3 encoder
         SwrContext* swr = nullptr;      // the pin's s16 PCM to the encoder's format
+        int srcChannels = 0;            // the decoded PCM's channel count (swr's input;
+                                        // differs from the encoder's when 7.1 is folded to 5.1)
         REFERENCE_TIME timeShift = 0;
         std::mutex writeMutex;
         std::atomic<bool> ok { true };
@@ -937,8 +939,13 @@ namespace
         if (!actx || !m_mux->swr || !m_mux->ast || !m_mux->oc) {
             return false;
         }
-        const int frameBytes = actx->frame_size * actx->ch_layout.nb_channels
-                             * (int)sizeof(short);
+        // The buffered PCM is the decoded source's own channel count, which is
+        // what swr takes as input; the encoder's channel count may be smaller
+        // (7.1 folded to 5.1), so the block stride is the source's, not the
+        // encoder's.
+        const int srcChannels = m_mux->srcChannels > 0 ? m_mux->srcChannels
+                                                       : actx->ch_layout.nb_channels;
+        const int frameBytes = actx->frame_size * srcChannels * (int)sizeof(short);
         while (m_pending.size() >= (size_t)frameBytes || (flush && !m_pending.empty())) {
             if (m_pending.size() < (size_t)frameBytes) {
                 m_pending.resize(frameBytes, 0); // a tail short of one block rides out on silence
@@ -1196,9 +1203,9 @@ namespace
     // LAV audio decoder settled on: the source's own channel count and layout
     // -- this engine exists because a surround-capable device is being handed
     // its surround -- with swresample bridging the pin's s16 to the encoder's
-    // planar float. The encoder takes a fixed set of layouts and refuses the
-    // rest (7.1 among them); that refusal is a clean failure, logged, so the
-    // caller can fall back to the stereo AAC engine.
+    // planar float. The encoder takes up to 5.1, so 6.1/7.1 is downmixed to
+    // 5.1 here rather than lost. A layout it still refuses (an exotic one) is a
+    // clean failure, logged, so the caller can fall back to the stereo AAC engine.
     bool OpenEac3EncoderFromPin(const AM_MEDIA_TYPE& amt, AVFormatContext* oc, Eac3Mux& mux,
                                 CString* pWhy)
     {
@@ -1265,16 +1272,33 @@ namespace
             chosen = sfmts[0];
         }
         mux.actx->sample_fmt = chosen;
-        mux.actx->bit_rate = nch <= 6 ? 384000 : 640000;
-        av_channel_layout_copy(&mux.actx->ch_layout, &layout);
+        // The E-AC-3 encoder takes up to 5.1. A 6.1/7.1 source is downmixed to
+        // 5.1 rather than folded all the way to stereo -- a device asked for
+        // E-AC-3 surround still gets surround. swresample below builds the
+        // downmix matrix from the mismatch between the source layout (its input)
+        // and the encoder's 5.1 (its output); six channels or fewer keep the
+        // source's own layout untouched.
+        const bool downmixToFive1 = nch > 6;
+        if (downmixToFive1) {
+            AVChannelLayout five1 = AV_CHANNEL_LAYOUT_5POINT1;
+            av_channel_layout_copy(&mux.actx->ch_layout, &five1);
+        } else {
+            av_channel_layout_copy(&mux.actx->ch_layout, &layout);
+        }
+        mux.actx->bit_rate = 384000;
         if (oc->oformat->flags & AVFMT_GLOBALHEADER) {
             mux.actx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
         if (avcodec_open2(mux.actx, enc, nullptr) < 0) {
             CASTING_LOG(_T("remux E-AC-3 (LAV): the encoder would not open for %d channels at %u Hz"),
-                        nch, wfe.nSamplesPerSec);
+                        mux.actx->ch_layout.nb_channels, wfe.nSamplesPerSec);
             return fail(_T("the E-AC-3 encoder would not open for this audio layout"));
         }
+        if (downmixToFive1) {
+            CASTING_LOG(_T("remux E-AC-3 (LAV): %d-channel audio downmixed to 5.1 for the E-AC-3 encoder"),
+                        nch);
+        }
+        mux.srcChannels = nch; // swr's input width; the encoder's may be smaller (7.1 -> 5.1)
 
         if (swr_alloc_set_opts2(&mux.swr, &mux.actx->ch_layout, mux.actx->sample_fmt,
                                 mux.actx->sample_rate, &layout, AV_SAMPLE_FMT_S16,

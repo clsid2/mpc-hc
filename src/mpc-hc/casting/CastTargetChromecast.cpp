@@ -576,8 +576,8 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
         // E-AC-3 rather than folding it down to stereo AAC. That is a whole-file
         // transcode -- the streaming path muxes stereo AAC only -- so a surround
         // source skips HLS and goes straight to the worker below, which tries the
-        // E-AC-3 engine first and falls back to the stereo path if it declines
-        // the layout (7.1, chiefly).
+        // E-AC-3 engine first (downmixing 6.1/7.1 to 5.1) and falls back to the
+        // stereo path only if the encoder still declines the layout.
         const bool preferSurround = CCastTarget::preferSurround && info.channels > 2;
         if (!preferSurround && info.video == CastMediaInfo::Video::H264) {
             // The streaming transcode, for any H.264 source -- an MP4 (Media
