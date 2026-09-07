@@ -72,6 +72,7 @@ public:
     void Seek(double seconds) override;
     bool CanSeek() const override;
     void SetVolume(double level, bool muted) override;
+    void SetReencodeAudio(bool reencode) override { m_reencodeAudio = reencode; }
     void StopCasting() override;
 
     CastTargetState GetState() const override;

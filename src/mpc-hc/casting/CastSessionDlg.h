@@ -143,5 +143,6 @@ public:
     afx_msg void OnNext();
     afx_msg void OnLoadFile();
     afx_msg void OnAutoNext();
+    afx_msg void OnReencodeAudio();
     afx_msg LRESULT OnCastStateChanged(WPARAM wParam, LPARAM lParam);
 };

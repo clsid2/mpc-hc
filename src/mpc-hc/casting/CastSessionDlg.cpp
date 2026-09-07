@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CCastSessionDlg, CModelessDialog)
     ON_BN_CLICKED(IDC_CASTSESS_NEXT, OnNext)
     ON_BN_CLICKED(IDC_CASTSESS_LOADFILE, OnLoadFile)
     ON_BN_CLICKED(IDC_CASTSESS_AUTONEXT, OnAutoNext)
+    ON_BN_CLICKED(IDC_CASTSESS_REENCODE, OnReencodeAudio)
     ON_MESSAGE(WM_CAST_STATE_CHANGED, OnCastStateChanged)
 END_MESSAGE_MAP()
 
@@ -122,6 +123,7 @@ void CCastSessionDlg::SetupAnchors()
     AddAnchor(IDC_CASTSESS_VOLLABEL, TOP_RIGHT);
     AddAnchor(IDC_CASTSESS_VOLUME, TOP_RIGHT);
     AddAnchor(IDC_CASTSESS_AUTONEXT, TOP_LEFT);
+    AddAnchor(IDC_CASTSESS_REENCODE, TOP_LEFT);
     AddAnchor(IDCANCEL, TOP_RIGHT);
 }
 
@@ -157,6 +159,10 @@ void CCastSessionDlg::StartSession(const CastSavedDevice& device, const CastSess
     EndSession(0, false); // a session being replaced needs no epilogue
 
     m_device = device;
+    // Reflect the device's saved re-encode override, and hand it to the target
+    // so the first load already honours it.
+    CheckDlgButton(IDC_CASTSESS_REENCODE, m_device.reencodeAudio ? BST_CHECKED : BST_UNCHECKED);
+    m_pTarget->SetReencodeAudio(m_device.reencodeAudio);
 
     CString strDevice;
     strDevice.Format(IDS_CAST_CASTING_TO, m_pTarget->GetDeviceName().GetString());
@@ -616,6 +622,29 @@ void CCastSessionDlg::OnAutoNext()
 {
     m_bAutoNext = IsDlgButtonChecked(IDC_CASTSESS_AUTONEXT) == BST_CHECKED;
     AfxGetAppSettings().bCastAutoPlayNext = m_bAutoNext;
+}
+
+// The "no sound?" answer: re-encode the audio for this device. A renderer that
+// plays the picture but drops the audio reports success, so nothing but the
+// listener can tell -- this is that signal. The choice is remembered on the
+// device (so the next cast to it just works) and applied to what is playing now
+// by reloading it, which the transcode then re-encodes.
+void CCastSessionDlg::OnReencodeAudio()
+{
+    const bool on = IsDlgButtonChecked(IDC_CASTSESS_REENCODE) == BST_CHECKED;
+    m_device.reencodeAudio = on;
+    if (m_pTarget) {
+        m_pTarget->SetReencodeAudio(on);
+    }
+    if (CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd()) {
+        pFrame->UpdateSavedCastDevice(m_device);
+    }
+    // Apply it to the file already on the device by handing it over again,
+    // resuming from where it had got to.
+    if (m_pTarget && m_bSessionLive && !m_media.path.IsEmpty()) {
+        m_media.startSec = GetPosition();
+        PlayMedia(m_media);
+    }
 }
 
 void CCastSessionDlg::OnLoadFile()

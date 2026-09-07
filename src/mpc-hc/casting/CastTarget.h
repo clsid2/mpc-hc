@@ -330,6 +330,10 @@ public:
     // the UI can disable the seekbar instead of pretending it works
     virtual bool CanSeek() const { return true; }
     virtual void SetVolume(double level, bool muted) = 0; // level 0.0 - 1.0
+    // Turn the per-device "re-encode the audio" override on or off for the
+    // running session (the cast window's re-encode control). The next LoadMedia
+    // honours it. A no-op on a target that does not transcode; DLNA overrides.
+    virtual void SetReencodeAudio(bool /*reencode*/) {}
     virtual void StopCasting() = 0; // polite stop and disconnect, back to Idle
 
     virtual CastTargetState GetState() const = 0;

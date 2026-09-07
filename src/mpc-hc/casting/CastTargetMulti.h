@@ -65,6 +65,7 @@ public:
     void Seek(double seconds) override;
     bool CanSeek() const override { return !m_pActive || m_pActive->CanSeek(); }
     void SetVolume(double level, bool muted) override;
+    void SetReencodeAudio(bool reencode) override { if (m_pActive) { m_pActive->SetReencodeAudio(reencode); } }
     void StopCasting() override;
 
     CastTargetState GetState() const override;

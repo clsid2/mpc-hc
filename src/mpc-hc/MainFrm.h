@@ -451,7 +451,6 @@ private:
     void EnsureCastTarget(); // builds the target on first use; touches no socket
     CCastSessionDlg* EnsureCastWindow(); // the session window, created hidden
     UINT StartCastingTo(CastSavedDevice& device); // 0, or the string id of what went wrong
-    void UpdateSavedCastDevice(const CastSavedDevice& device);
     // A file just opened here, offered to a running session instead of being
     // played on this screen. Does nothing when nothing is casting.
     void RedirectOpenedFileToCast();
@@ -464,6 +463,9 @@ public:
     // the user back to the menu. device is updated, and the saved list follows
     // it if it moved, the same way starting a cast does.
     bool ReconnectCastDevice(CastSavedDevice& device);
+    // Writes a saved device back to settings (its stable id matched), so a
+    // change made from the session window -- the re-encode override -- is kept.
+    void UpdateSavedCastDevice(const CastSavedDevice& device);
 private:
 
     // /castto: the device is only discovered a second or two after the file is

@@ -815,6 +815,7 @@
 #define IDC_CASTTEST_CODEC              22138
 #define IDC_CASTTEST_STATUS             22139
 #define IDC_CASTTEST_START              22140
+#define IDC_CASTSESS_REENCODE           22141
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
