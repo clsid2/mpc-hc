@@ -43,6 +43,50 @@
 static const GUID kMpeg4SinkMinFragmentDuration =
 { 0xa30b570c, 0x8efd, 0x45e8, { 0x94, 0xfe, 0x27, 0xc8, 0x4b, 0x5b, 0xdf, 0xf6 } };
 
+// The hvcC parsing half of the HEVC recovery below, kept on its own because
+// the LAV remux calls it on the record a Matroska video pin carries rather
+// than on a file. 22-byte header, then a count of NAL arrays; each array is a
+// type (six low bits), a count, and that many two-byte-length-prefixed NALs.
+bool CastHvcCToAnnexB(const BYTE* hvcc, size_t len, std::vector<BYTE>& seq)
+{
+    seq.clear();
+    if (!hvcc || len < 23 || hvcc[0] != 1) { // configurationVersion
+        return false;
+    }
+    size_t off = 22;
+    const BYTE numArrays = hvcc[off++];
+    std::vector<BYTE> out;
+    for (BYTE a = 0; a < numArrays; a++) {
+        if (off + 3 > len) {
+            return false;
+        }
+        const BYTE nalType = hvcc[off] & 0x3f;
+        const WORD numNalus = (WORD)((hvcc[off + 1] << 8) | hvcc[off + 2]);
+        off += 3;
+        for (WORD n = 0; n < numNalus; n++) {
+            if (off + 2 > len) {
+                return false;
+            }
+            const WORD nalLen = (WORD)((hvcc[off] << 8) | hvcc[off + 1]);
+            off += 2;
+            if (off + nalLen > len) {
+                return false;
+            }
+            if (nalType == 32 || nalType == 33 || nalType == 34) { // VPS/SPS/PPS
+                static const BYTE startCode[4] = { 0, 0, 0, 1 };
+                out.insert(out.end(), startCode, startCode + 4);
+                out.insert(out.end(), hvcc + off, hvcc + off + nalLen);
+            }
+            off += nalLen;
+        }
+    }
+    if (out.empty()) {
+        return false;
+    }
+    seq = std::move(out);
+    return true;
+}
+
 namespace
 {
     CString FileExtLower(const CString& path)
@@ -54,6 +98,14 @@ namespace
         CString ext = path.Mid(dot);
         ext.MakeLower();
         return ext;
+    }
+
+    // The containers the LAV remux exists for: Media Foundation cannot demux
+    // Matroska or WebM at all, so the splitter reads them instead.
+    bool IsMatroskaContainer(const CString& path)
+    {
+        const CString ext = FileExtLower(path);
+        return ext == _T(".mkv") || ext == _T(".webm");
     }
 
     // Media Foundation has to be up for the whole transcode; RAII so an early
@@ -109,35 +161,8 @@ namespace
                 }
                 const BYTE* p = &buf[i + 4]; // hvcC payload
                 const DWORD payloadLen = boxSize - 8;
-                if (p[0] != 1) { // configurationVersion
-                    continue;
-                }
-                DWORD off = 22;
-                if (off >= payloadLen) {
-                    continue;
-                }
-                const BYTE numArrays = p[off++];
                 std::vector<BYTE> out;
-                bool bad = false;
-                for (BYTE a = 0; a < numArrays && !bad; a++) {
-                    if (off + 3 > payloadLen) { bad = true; break; }
-                    const BYTE nalType = p[off] & 0x3f;
-                    const WORD numNalus = (WORD)((p[off + 1] << 8) | p[off + 2]);
-                    off += 3;
-                    for (WORD n = 0; n < numNalus && !bad; n++) {
-                        if (off + 2 > payloadLen) { bad = true; break; }
-                        const WORD len = (WORD)((p[off] << 8) | p[off + 1]);
-                        off += 2;
-                        if (off + len > payloadLen) { bad = true; break; }
-                        if (nalType == 32 || nalType == 33 || nalType == 34) { // VPS/SPS/PPS
-                            static const BYTE startCode[4] = { 0, 0, 0, 1 };
-                            out.insert(out.end(), startCode, startCode + 4);
-                            out.insert(out.end(), p + off, p + off + len);
-                        }
-                        off += len;
-                    }
-                }
-                if (!bad && !out.empty()) {
+                if (CastHvcCToAnnexB(p, payloadLen, out)) {
                     seq = std::move(out);
                     return true;
                 }
@@ -177,103 +202,108 @@ namespace
         }
     }
 
-    // Builds the MP4 output both engines write into. The non-fragmented variant
-    // is the plain sink writer over a file URL. The fragmented one goes through
-    // MFCreateFMPEG4MediaSink on a byte stream -- the moov lands up front and
-    // samples are cut into moof/mdat fragments as they arrive, which is what
-    // lets a segmenter read the file while it is still being written; the sink
-    // comes back separately because it must be ShutDown after Finalize or the
-    // file stays open. Video is optional for the complete-file path (an
-    // audio-only downmix is a legitimate plain MP4) but required for the
-    // fragmented one; stream 0 is video, stream 1 audio there.
-    bool CreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* videoNative,
+}
+
+// Builds the MP4 output the engines write into; declared in CastTranscoder.h
+// because the LAV remux builds one too. The details are in the header.
+bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* videoNative,
                          IMFMediaType* pcmActual, UINT32 sampleRate, UINT32 chans,
-                         CComPtr<IMFSinkWriter>& writer, CComPtr<IMFMediaSink>& sink,
+                         IMFSinkWriter** ppWriter, IMFMediaSink** ppSink,
                          DWORD& outVideo, DWORD& outAudio, CString* pError)
-    {
-        auto fail = [&](const TCHAR* why) -> bool {
-            if (pError) {
-                *pError = why;
-            }
-            return false;
-        };
-
-        // Audio out: AAC. The sink writer inserts the AAC encoder to bridge the
-        // PCM input to it. ~192 kbps regardless of channel count is plenty for
-        // a downmix.
-        CComPtr<IMFMediaType> aac;
-        MFCreateMediaType(&aac);
-        aac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-        aac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
-        aac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
-        aac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
-        aac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, chans);
-        if (ChannelMask((int)chans)) {
-            aac->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, ChannelMask((int)chans));
+{
+    auto fail = [&](const TCHAR* why) -> bool {
+        if (pError) {
+            *pError = why;
         }
-        aac->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 24000);
-        aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
+        return false;
+    };
 
-        if (!fragmented) {
-            if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
-                return fail(_T("the transcoded file could not be created"));
-            }
-            outVideo = outAudio = (DWORD)-1;
-            if (videoNative) {
-                if (FAILED(writer->AddStream(videoNative, &outVideo))
-                        || FAILED(writer->SetInputMediaType(outVideo, videoNative, nullptr))) {
-                    return fail(_T("the video track could not be added to the output"));
-                }
-            }
-            if (FAILED(writer->AddStream(aac, &outAudio))
-                    || FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
-                return fail(_T("the receiver's audio format is not available on this system"));
-            }
-        } else {
-            if (!videoNative) {
-                return fail(_T("the fragmented output needs a video track"));
-            }
-            CComPtr<IMFByteStream> byteStream;
-            if (FAILED(MFCreateFile(MF_ACCESSMODE_READWRITE, MF_OPENMODE_DELETE_IF_EXIST,
-                                    MF_FILEFLAGS_NONE, outPath, &byteStream))) {
-                return fail(_T("the fragmented output file could not be created"));
-            }
-            if (FAILED(MFCreateFMPEG4MediaSink(byteStream, videoNative, aac, &sink))) {
-                return fail(_T("the fragmented MP4 sink refused the media types (H.264 video only)"));
-            }
-            // Bigger fragments mean less surgery per byte served; a failed set
-            // only leaves the sink at its default cutting.
-            if (CComQIPtr<IMFAttributes> sinkAttrs = sink) {
-                sinkAttrs->SetUINT64(kMpeg4SinkMinFragmentDuration, 20000000); // 2 s
-            }
-            CComPtr<IMFAttributes> writerAttrs;
-            MFCreateAttributes(&writerAttrs, 1);
-            writerAttrs->SetUINT32(MF_LOW_LATENCY, FALSE); // fragments cut whole, not early
-            if (FAILED(MFCreateSinkWriterFromMediaSink(sink, writerAttrs, &writer))
-                    || FAILED(writer->SetInputMediaType(0, videoNative, nullptr))
-                    || FAILED(writer->SetInputMediaType(1, pcmActual, nullptr))) {
-                sink->Shutdown();
-                sink.Release();
-                return fail(_T("the fragmented MP4 sink writer could not be created"));
-            }
-            outVideo = 0;
-            outAudio = 1;
-        }
+    CComPtr<IMFSinkWriter> writer;
+    CComPtr<IMFMediaSink> sink; // fragmented mode only
 
-        if (FAILED(writer->BeginWriting())) {
-            return fail(_T("the transcode could not be started"));
-        }
-        return true;
+    // Audio out: AAC. The sink writer inserts the AAC encoder to bridge the
+    // PCM input to it. ~192 kbps regardless of channel count is plenty for
+    // a downmix.
+    CComPtr<IMFMediaType> aac;
+    MFCreateMediaType(&aac);
+    aac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+    aac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
+    aac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
+    aac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
+    aac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, chans);
+    if (ChannelMask((int)chans)) {
+        aac->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, ChannelMask((int)chans));
     }
+    aac->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 24000);
+    aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
+
+    if (!fragmented) {
+        if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
+            return fail(_T("the transcoded file could not be created"));
+        }
+        outVideo = outAudio = (DWORD)-1;
+        if (videoNative) {
+            if (FAILED(writer->AddStream(videoNative, &outVideo))
+                    || FAILED(writer->SetInputMediaType(outVideo, videoNative, nullptr))) {
+                return fail(_T("the video track could not be added to the output"));
+            }
+        }
+        if (FAILED(writer->AddStream(aac, &outAudio))
+                || FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
+            return fail(_T("the receiver's audio format is not available on this system"));
+        }
+    } else {
+        if (!videoNative) {
+            return fail(_T("the fragmented output needs a video track"));
+        }
+        CComPtr<IMFByteStream> byteStream;
+        if (FAILED(MFCreateFile(MF_ACCESSMODE_READWRITE, MF_OPENMODE_DELETE_IF_EXIST,
+                                MF_FILEFLAGS_NONE, outPath, &byteStream))) {
+            return fail(_T("the fragmented output file could not be created"));
+        }
+        if (FAILED(MFCreateFMPEG4MediaSink(byteStream, videoNative, aac, &sink))) {
+            return fail(_T("the fragmented MP4 sink refused the media types (H.264 video only)"));
+        }
+        // Bigger fragments mean less surgery per byte served; a failed set
+        // only leaves the sink at its default cutting.
+        if (CComQIPtr<IMFAttributes> sinkAttrs = sink) {
+            sinkAttrs->SetUINT64(kMpeg4SinkMinFragmentDuration, 20000000); // 2 s
+        }
+        CComPtr<IMFAttributes> writerAttrs;
+        MFCreateAttributes(&writerAttrs, 1);
+        writerAttrs->SetUINT32(MF_LOW_LATENCY, FALSE); // fragments cut whole, not early
+        if (FAILED(MFCreateSinkWriterFromMediaSink(sink, writerAttrs, &writer))
+                || FAILED(writer->SetInputMediaType(0, videoNative, nullptr))
+                || FAILED(writer->SetInputMediaType(1, pcmActual, nullptr))) {
+            sink->Shutdown();
+            sink.Release();
+            return fail(_T("the fragmented MP4 sink writer could not be created"));
+        }
+        outVideo = 0;
+        outAudio = 1;
+    }
+
+    if (FAILED(writer->BeginWriting())) {
+        if (sink) {
+            sink->Shutdown(); // never leave the byte stream open on a file we abandon
+        }
+        return fail(_T("the transcode could not be started"));
+    }
+    *ppWriter = writer.Detach();
+    if (ppSink && sink) {
+        *ppSink = sink.Detach();
+    }
+    return true;
 }
 
 bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info)
 {
-    // Container Media Foundation can demux. Matroska and WebM are the common
-    // ones it cannot, and those are exactly what the FFmpeg engine is for.
+    // Container: the MP4 family, which Media Foundation demuxes, or Matroska
+    // and WebM, which the LAV remux reads instead. Everything else is refused.
     const CString ext = FileExtLower(srcPath);
-    if (ext != _T(".mp4") && ext != _T(".m4v") && ext != _T(".mov")
-            && ext != _T(".m4a") && ext != _T(".3gp") && ext != _T(".3g2")) {
+    const bool mp4Family = ext == _T(".mp4") || ext == _T(".m4v") || ext == _T(".mov")
+                           || ext == _T(".m4a") || ext == _T(".3gp") || ext == _T(".3g2");
+    if (!mp4Family && !IsMatroskaContainer(srcPath)) {
         return false;
     }
 
@@ -430,8 +460,8 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
     DWORD outVideo = (DWORD)-1, outAudio = (DWORD)-1;
     {
         CString err;
-        if (!CreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
-                             writer, sink, outVideo, outAudio, &err)) {
+        if (!CastCreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
+                                 &writer, &sink, outVideo, outAudio, &err)) {
             return fail(err);
         }
     }
@@ -576,8 +606,8 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     DWORD outVideo = (DWORD)-1, outAudio = (DWORD)-1;
     {
         CString err;
-        if (!CreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
-                             writer, sink, outVideo, outAudio, &err)) {
+        if (!CastCreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
+                                 &writer, &sink, outVideo, outAudio, &err)) {
             return fail(err);
         }
     }
@@ -657,17 +687,25 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     return true;
 }
 
-// The routing both public entry points share: Media Foundation decodes these
-// itself at 5.1 or below, in one pass and with no temp file. Everything else --
-// the surround-only codecs, and 7.1, which MF's AAC decoder cannot read at all
-// -- goes through LAV to a FLAC that is then muxed back against the copied
-// video.
+// The routing both public entry points share: Matroska and WebM go to the LAV
+// remux, which is the only engine whose demuxer reads them. Of the rest,
+// Media Foundation decodes these itself at 5.1 or below, in one pass and with
+// no temp file. Everything else -- the surround-only codecs, and 7.1, which
+// MF's AAC decoder cannot read at all -- goes through LAV to a FLAC that is
+// then muxed back against the copied video.
 static bool DownmixToMp4Common(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                                const CString& outPath, bool fragmented,
                                const CastTranscodeProgress& prog, CString* pError)
 {
     if (targetChannels < 1) {
         targetChannels = 2;
+    }
+    // Matroska and WebM never touch a Media Foundation demuxer: the LAV
+    // splitter reads the container and the compressed video is copied off its
+    // video pin, so the audio's codec decides nothing here -- LAV decodes it
+    // either way.
+    if (IsMatroskaContainer(srcPath)) {
+        return CastLavRemuxToMp4(srcPath, info, targetChannels, outPath, fragmented, prog, pError);
     }
     const bool mfCanDecode = info.channels <= 6
                              && (info.audio == CastMediaInfo::Audio::AAC

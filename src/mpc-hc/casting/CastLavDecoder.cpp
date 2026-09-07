@@ -27,7 +27,11 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <dvdmedia.h> // MPEG2VIDEOINFO, the splitter video pin's format block
+#include <atomic>
+#include <mutex>
 #include <thread>
+#include <vector>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
@@ -42,8 +46,10 @@ static const GUID MFAudioFormat_FLAC =
 
 namespace
 {
-    // The splitter exposes a video and an audio output pin; we want the audio one.
-    CComPtr<IPin> AudioOutputPin(IBaseFilter* pFilter)
+    // The splitter exposes one output pin per stream; this finds the first one
+    // offering the wanted major type. Enumerating a pin's offered types is what
+    // tells a video pin from an audio one before anything is connected.
+    CComPtr<IPin> SplitterOutputPin(IBaseFilter* pFilter, const GUID& majortype)
     {
         CComPtr<IEnumPins> pEnum;
         if (!pFilter || FAILED(pFilter->EnumPins(&pEnum))) {
@@ -59,20 +65,39 @@ namespace
                 continue;
             }
             AM_MEDIA_TYPE* pmt = nullptr;
-            bool isAudio = false;
+            bool wants = false;
             while (pTypes->Next(1, &pmt, nullptr) == S_OK && pmt) {
-                isAudio = pmt->majortype == MEDIATYPE_Audio;
+                wants = pmt->majortype == majortype;
                 DeleteMediaType(pmt);
                 pmt = nullptr;
-                if (isAudio) {
+                if (wants) {
                     break;
                 }
             }
-            if (isAudio) {
+            if (wants) {
                 return pPin;
             }
         }
         return nullptr;
+    }
+
+    // What the splitter names its compressed video by: the fourcc sits in the
+    // subtype GUID's Data1. AVC1/avc1/H264/h264 are all H.264, HVC1/hvc1/HEVC/
+    // hev1 all HEVC; anything else (VP9, AV1...) has no place in an MP4.
+    enum class CompressedVideo { None, H264, HEVC };
+
+    CompressedVideo ClassifyCompressedVideo(const GUID& subtype)
+    {
+        switch (subtype.Data1) {
+            case 0x31435641: case 0x31637661: // 'AVC1' 'avc1'
+            case 0x34363248: case 0x34363268: // 'H264' 'h264'
+                return CompressedVideo::H264;
+            case 0x31435648: case 0x31637668: // 'HVC1' 'hvc1'
+            case 0x43564548: case 0x31766568: // 'HEVC' 'hev1'
+                return CompressedVideo::HEVC;
+            default:
+                return CompressedVideo::None;
+        }
     }
 
     // A DirectShow renderer that hands the PCM it receives straight to a Media
@@ -201,6 +226,256 @@ namespace
             }
         }
     };
+
+    // One sink writer with a video and an audio stream, shared by the two
+    // renderers below. The splitter hands video and audio to separate
+    // streaming threads, so every WriteSample runs under one mutex; the writer
+    // itself is created and finalized on the graph-building thread only,
+    // between which the renderers have it. ok records a failure either
+    // streaming thread hits, which is what the builder reads after the run.
+    struct RemuxWriter {
+        CComPtr<IMFSinkWriter> writer;
+        DWORD videoStream = (DWORD)-1;
+        DWORD audioStream = (DWORD)-1;
+        std::mutex writeMutex;
+        std::atomic<bool> ok { true };
+    };
+
+    // Wraps a DirectShow sample's bytes in a Media Foundation sample -- copied
+    // verbatim, timestamps and all -- and hands it to one stream of the shared
+    // writer under its mutex. cleanPoint marks a sample the sink should cut a
+    // seekable entry on. Returns false when the writer refused it, which ends
+    // the remux.
+    bool WriteSharedSample(RemuxWriter& mux, DWORD stream, IMediaSample* pSample, bool cleanPoint)
+    {
+        if (!mux.ok || !mux.writer || stream == (DWORD)-1) {
+            return true; // already failed elsewhere; drop the sample quietly
+        }
+        BYTE* pData = nullptr;
+        const long len = pSample->GetActualDataLength();
+        if (FAILED(pSample->GetPointer(&pData)) || !pData || len <= 0) {
+            return true;
+        }
+        CComPtr<IMFMediaBuffer> buf;
+        if (FAILED(MFCreateMemoryBuffer(len, &buf))) {
+            mux.ok = false;
+            return false;
+        }
+        BYTE* p = nullptr;
+        buf->Lock(&p, nullptr, nullptr);
+        memcpy(p, pData, len);
+        buf->Unlock();
+        buf->SetCurrentLength(len);
+        CComPtr<IMFSample> s;
+        MFCreateSample(&s);
+        s->AddBuffer(buf);
+        REFERENCE_TIME t0 = 0, t1 = 0;
+        if (pSample->GetTime(&t0, &t1) == S_OK) {
+            s->SetSampleTime(t0);
+            if (t1 > t0) {
+                s->SetSampleDuration(t1 - t0);
+            }
+        }
+        if (cleanPoint) {
+            s->SetUINT32(MFSampleExtension_CleanPoint, 1);
+        }
+        std::lock_guard<std::mutex> lock(mux.writeMutex);
+        if (FAILED(mux.writer->WriteSample(stream, s))) {
+            mux.ok = false;
+            return false;
+        }
+        return true;
+    }
+
+    // The video half of the remux: the compressed samples off the splitter's
+    // video pin, copied byte-for-byte. The pin delivers length-prefixed
+    // (AVCC/HVCC) NALUs -- dwFlags in the MPEG2VIDEOINFO is the prefix length,
+    // 4 -- which is exactly the bitstream form the MP4 sink consumes, so
+    // nothing is decoded or converted.
+    class __declspec(uuid("9C5D2A47-3E18-4F0B-8C6D-5A72E1B40D93"))
+        CCompressedVideoSink : public CNullRenderer
+    {
+        RemuxWriter* m_mux;
+
+    public:
+        CCompressedVideoSink(RemuxWriter* mux, HRESULT* phr)
+            : CNullRenderer(__uuidof(CCompressedVideoSink), NAME("MPC cast video copy sink"), nullptr, phr)
+            , m_mux(mux) {}
+
+        HRESULT CheckMediaType(const CMediaType* pmt) override
+        {
+            if (pmt->majortype != MEDIATYPE_Video || pmt->formattype != FORMAT_MPEG2Video
+                    || ClassifyCompressedVideo(pmt->subtype) == CompressedVideo::None) {
+                return VFW_E_TYPE_NOT_ACCEPTED;
+            }
+            return S_OK;
+        }
+
+        HRESULT DoRenderSample(IMediaSample* pSample) override
+        {
+            if (m_mux && !WriteSharedSample(*m_mux, m_mux->videoStream, pSample,
+                                            pSample->IsSyncPoint() == S_OK)) {
+                return E_FAIL;
+            }
+            return S_OK;
+        }
+    };
+
+    // The audio half of the remux: shaped after CFlacSinkRenderer above, but
+    // the writer is not its own -- the PCM it receives is one stream of the
+    // shared writer, which encodes it to AAC as it flows -- so it neither opens
+    // nor finalizes anything.
+    class __declspec(uuid("D48B7C21-6F94-4A3E-9B0C-7E15D2F8A462"))
+        CPcmToAacSink : public CNullRenderer
+    {
+        RemuxWriter* m_mux;
+
+    public:
+        CPcmToAacSink(RemuxWriter* mux, HRESULT* phr)
+            : CNullRenderer(__uuidof(CPcmToAacSink), NAME("MPC cast PCM sink"), nullptr, phr)
+            , m_mux(mux) {}
+
+        HRESULT CheckMediaType(const CMediaType* pmt) override
+        {
+            if (pmt->majortype != MEDIATYPE_Audio || pmt->subtype != MEDIASUBTYPE_PCM
+                    || pmt->formattype != FORMAT_WaveFormatEx) {
+                return VFW_E_TYPE_NOT_ACCEPTED;
+            }
+            return S_OK;
+        }
+
+        HRESULT DoRenderSample(IMediaSample* pSample) override
+        {
+            if (m_mux && !WriteSharedSample(*m_mux, m_mux->audioStream, pSample, false)) {
+                return E_FAIL;
+            }
+            return S_OK;
+        }
+    };
+
+    // Translates the splitter video pin's MPEG2VIDEOINFO into the Media
+    // Foundation type the sink writer takes for a copied track. The same type
+    // serves as the stream's output and input, so the writer muxes rather than
+    // transforms and the pin's length-prefixed samples pass through untouched.
+    // The format block's dwSequenceHeader carries the parameter sets -- H.264
+    // as a run of two-byte-length NALs, HEVC as a whole hvcC record -- which
+    // become the Annex-B blob MF_MT_MPEG_SEQUENCE_HEADER wants; without it the
+    // sink writes a track that does not decode, so a track we cannot read them
+    // from is refused outright.
+    bool MakeVideoTypeFromPin(const AM_MEDIA_TYPE& amt, CComPtr<IMFMediaType>& mt, CString* pWhy)
+    {
+        auto fail = [&](const TCHAR* why) -> bool {
+            if (pWhy) {
+                *pWhy = why;
+            }
+            return false;
+        };
+
+        if (amt.formattype != FORMAT_MPEG2Video || !amt.pbFormat
+                || amt.cbFormat < FIELD_OFFSET(MPEG2VIDEOINFO, dwSequenceHeader)) {
+            return fail(_T("the video track's format could not be read"));
+        }
+        const MPEG2VIDEOINFO& m2 = *reinterpret_cast<const MPEG2VIDEOINFO*>(amt.pbFormat);
+        const CompressedVideo kind = ClassifyCompressedVideo(amt.subtype);
+        if (kind == CompressedVideo::None) {
+            return fail(_T("the video track is not H.264 or HEVC"));
+        }
+        if (amt.cbFormat < FIELD_OFFSET(MPEG2VIDEOINFO, dwSequenceHeader) + m2.cbSequenceHeader) {
+            return fail(_T("the video track's format could not be read"));
+        }
+
+        LONG w = m2.hdr.bmiHeader.biWidth;
+        LONG h = m2.hdr.bmiHeader.biHeight;
+        if ((w <= 0 || h <= 0) && m2.hdr.rcSource.right > m2.hdr.rcSource.left
+                && m2.hdr.rcSource.bottom > m2.hdr.rcSource.top) {
+            w = m2.hdr.rcSource.right - m2.hdr.rcSource.left;
+            h = m2.hdr.rcSource.bottom - m2.hdr.rcSource.top;
+        }
+        if (h < 0) { // a negative height only says top-down; the size is its abs
+            h = -h;
+        }
+        if (w <= 0 || h <= 0) {
+            return fail(_T("the video track has no size"));
+        }
+
+        std::vector<BYTE> seq; // the parameter sets as Annex-B
+        const BYTE* seqHeader = reinterpret_cast<const BYTE*>(m2.dwSequenceHeader); // DWORD[1]
+        if (kind == CompressedVideo::H264) {
+            static const BYTE startCode[4] = { 0, 0, 0, 1 };
+            DWORD off = 0;
+            while (off + 2 <= m2.cbSequenceHeader) {
+                const WORD nalLen = (WORD)((seqHeader[off] << 8) | seqHeader[off + 1]);
+                off += 2;
+                if (off + nalLen > m2.cbSequenceHeader) {
+                    break;
+                }
+                seq.insert(seq.end(), startCode, startCode + 4);
+                seq.insert(seq.end(), seqHeader + off, seqHeader + off + nalLen);
+                off += nalLen;
+            }
+        } else {
+            CastHvcCToAnnexB(seqHeader, m2.cbSequenceHeader, seq);
+        }
+        if (seq.empty()) {
+            return fail(_T("the video track's parameter sets could not be read"));
+        }
+
+        CComPtr<IMFMediaType> type;
+        if (FAILED(MFCreateMediaType(&type))) {
+            return fail(_T("the video track's output type could not be built"));
+        }
+        type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+        type->SetGUID(MF_MT_SUBTYPE,
+                      kind == CompressedVideo::H264 ? MFVideoFormat_H264 : MFVideoFormat_HEVC);
+        MFSetAttributeSize(type, MF_MT_FRAME_SIZE, (UINT32)w, (UINT32)h);
+        type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+        MFSetAttributeRatio(type, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+        if (m2.hdr.AvgTimePerFrame > 0) {
+            MFSetAttributeRatio(type, MF_MT_FRAME_RATE, 10000000, (UINT32)m2.hdr.AvgTimePerFrame);
+        } else {
+            MFSetAttributeRatio(type, MF_MT_FRAME_RATE, 30000, 1000);
+        }
+        type->SetBlob(MF_MT_MPEG_SEQUENCE_HEADER, seq.data(), (UINT32)seq.size());
+        mt = type;
+        return true;
+    }
+
+    // Reads the PCM the LAV audio decoder settled on off the sink's connected
+    // input pin, as the input type the AAC stream takes. rate and chans come
+    // back for the AAC output type beside it.
+    bool MakePcmTypeFromPin(IPin* pPin, CComPtr<IMFMediaType>& mt, UINT32& rate, UINT32& chans)
+    {
+        if (!pPin) {
+            return false;
+        }
+        AM_MEDIA_TYPE amt;
+        if (FAILED(pPin->ConnectionMediaType(&amt))) {
+            return false;
+        }
+        if (amt.formattype != FORMAT_WaveFormatEx || !amt.pbFormat
+                || amt.cbFormat < sizeof(WAVEFORMATEX)) {
+            FreeMediaType(amt);
+            return false;
+        }
+        const WAVEFORMATEX wfe = *reinterpret_cast<const WAVEFORMATEX*>(amt.pbFormat);
+        FreeMediaType(amt);
+
+        CComPtr<IMFMediaType> type;
+        if (FAILED(MFCreateMediaType(&type))) {
+            return false;
+        }
+        type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+        type->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+        type->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, wfe.wBitsPerSample);
+        type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, wfe.nSamplesPerSec);
+        type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, wfe.nChannels);
+        type->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, wfe.nBlockAlign);
+        type->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, wfe.nAvgBytesPerSec);
+        mt = type;
+        rate = wfe.nSamplesPerSec;
+        chans = wfe.nChannels;
+        return true;
+    }
 }
 
 // Builds and runs the decode graph. Runs on its own thread (see below) so its
@@ -280,7 +555,7 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
 
     // Wire it up: splitter audio -> decoder -> FLAC sink. Direct, so the graph
     // builder cannot substitute another decoder for LAV.
-    CComPtr<IPin> pSplitterAudio = AudioOutputPin(pSplitter);
+    CComPtr<IPin> pSplitterAudio = SplitterOutputPin(pSplitter, MEDIATYPE_Audio);
     if (!pSplitterAudio) {
         return fail(_T("the file has no audio track"));
     }
@@ -342,6 +617,230 @@ bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CStri
         const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         const bool mf = SUCCEEDED(MFStartup(MF_VERSION)); // the FLAC sink needs it up
         ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err, hCancel);
+        if (mf) {
+            MFShutdown();
+        }
+        if (SUCCEEDED(hrCo)) {
+            CoUninitialize();
+        }
+    });
+    worker.join();
+    if (!ok && pError) {
+        *pError = err;
+    }
+    return ok;
+}
+
+// Builds and runs the remux graph. Runs on its own thread (see below) for the
+// same apartment reasons as the decode graph: the LAV splitter reads a
+// container Media Foundation cannot, the compressed video goes to one sink
+// byte-for-byte, and the decoded, downmixed audio goes to the other -- both
+// streams of one sink writer, which is opened between the pin connections and
+// the run, and finalized once after it.
+static bool RemuxGraph(const CString& srcPath, int targetChannels, const CString& outPath,
+                       bool fragmented, const CastTranscodeProgress& prog, CString* pError)
+{
+    // The LAV engine's floor is stereo, as in the decode graph above.
+    UNREFERENCED_PARAMETER(targetChannels);
+
+    RemuxWriter mux;
+    CComPtr<IMFMediaSink> sink; // fragmented mode only
+
+    auto fail = [&](const CString & why) -> bool {
+        if (pError) { *pError = why; }
+        CASTING_LOG(_T("remux (LAV): %s"), why.GetString());
+        mux.writer.Release(); // let go of the output before trying to delete it
+        if (sink) {
+            sink->Shutdown();
+            sink.Release();
+        }
+        DeleteFile(outPath); // never leave a half-written file the server might serve
+        return false;
+    };
+
+    HRESULT hr = S_OK;
+
+    CComPtr<IGraphBuilder> pGraph;
+    if (FAILED(pGraph.CoCreateInstance(CLSID_FilterGraph))) {
+        return fail(_T("a filter graph could not be created"));
+    }
+    // No reference clock: a file-to-file remux should run flat-out, not pace
+    // the audio in real time.
+    if (CComQIPtr<IMediaFilter> pMediaFilter = pGraph) {
+        pMediaFilter->SetSyncSource(nullptr);
+    }
+    CComQIPtr<IMediaControl> pControl = pGraph;
+    CComQIPtr<IMediaEvent> pEvent = pGraph;
+    if (!pControl || !pEvent) {
+        return fail(_T("the graph is missing its control interfaces"));
+    }
+
+    CComPtr<IBaseFilter> pSplitter, pAudio;
+    if (FAILED(LoadExternalFilter(CFGFilterLAV::GetFilterPath(CFGFilterLAV::SPLITTER_SOURCE),
+                                  GUID_LAVSplitterSource, &pSplitter)) || !pSplitter) {
+        return fail(_T("the LAV splitter could not be loaded"));
+    }
+    if (FAILED(LoadExternalFilter(CFGFilterLAV::GetFilterPath(CFGFilterLAV::AUDIO_DECODER),
+                                  GUID_LAVAudio, &pAudio)) || !pAudio) {
+        return fail(_T("the LAV audio decoder could not be loaded"));
+    }
+    if (FAILED(pGraph->AddFilter(pSplitter, L"LAV Splitter Source"))
+            || FAILED(pGraph->AddFilter(pAudio, L"LAV Audio Decoder"))) {
+        return fail(_T("the LAV filters could not be added to the graph"));
+    }
+
+    CComQIPtr<IFileSourceFilter> pSource = pSplitter;
+    if (!pSource || FAILED(pSource->Load(srcPath, nullptr))) {
+        return fail(_T("the file could not be opened by the splitter"));
+    }
+
+    // Make the audio decoder downmix to stereo, isolated from the user's saved
+    // settings, exactly as the decode graph does.
+    if (CComQIPtr<ILAVAudioSettings> pLav = pAudio) {
+        pLav->SetRuntimeConfig(TRUE);
+        pLav->SetMixingEnabled(TRUE);
+        pLav->SetMixingLayout(0x3); // stereo (FL FR)
+        pLav->SetMixingFlags(LAV_MIXING_FLAG_CLIP_PROTECTION | LAV_MIXING_FLAG_NORMALIZE_MATRIX);
+        pLav->SetSampleFormat(SampleFormat_16, TRUE);
+        pLav->SetOutputStandardLayout(TRUE);
+    }
+
+    CComPtr<IPin> pSplitterVideo = SplitterOutputPin(pSplitter, MEDIATYPE_Video);
+    CComPtr<IPin> pSplitterAudio = SplitterOutputPin(pSplitter, MEDIATYPE_Audio);
+    if (!pSplitterAudio) {
+        return fail(_T("the file has no audio track"));
+    }
+
+    // The two sinks. Like the FLAC sink above, they go into the graph through
+    // their non-delegating unknown -- casting the object to IBaseFilter directly
+    // picks the wrong vtable and the graph hangs.
+    CComPtr<IUnknown> pVideoSinkUnk;
+    CComQIPtr<IBaseFilter> pVideoSinkBF;
+    if (pSplitterVideo) {
+        HRESULT videoSinkHr = S_OK;
+        CCompressedVideoSink* pVideoSink = DEBUG_NEW CCompressedVideoSink(&mux, &videoSinkHr);
+        pVideoSinkUnk = (IUnknown*)(INonDelegatingUnknown*)pVideoSink;
+        if (FAILED(videoSinkHr) || !pVideoSinkUnk) {
+            return fail(_T("the video copy sink could not be created"));
+        }
+        pVideoSinkBF = pVideoSinkUnk;
+        if (!pVideoSinkBF || FAILED(pGraph->AddFilter(pVideoSinkBF, L"Cast Video Copy Sink"))) {
+            return fail(_T("the video copy sink could not be added to the graph"));
+        }
+    } else if (fragmented) {
+        // A fragmented output has nothing to show progressively without one.
+        return fail(_T("the file has no video track to fragment"));
+    }
+
+    HRESULT pcmSinkHr = S_OK;
+    CPcmToAacSink* pPcmSink = DEBUG_NEW CPcmToAacSink(&mux, &pcmSinkHr);
+    CComPtr<IUnknown> pPcmSinkUnk = (IUnknown*)(INonDelegatingUnknown*)pPcmSink;
+    if (FAILED(pcmSinkHr) || !pPcmSinkUnk) {
+        return fail(_T("the PCM sink could not be created"));
+    }
+    CComQIPtr<IBaseFilter> pPcmSinkBF = pPcmSinkUnk;
+    if (!pPcmSinkBF || FAILED(pGraph->AddFilter(pPcmSinkBF, L"Cast PCM Sink"))) {
+        return fail(_T("the PCM sink could not be added to the graph"));
+    }
+
+    // Wire it up: splitter video -> copy sink, splitter audio -> decoder ->
+    // PCM sink. Direct, so the graph builder can neither insert a video
+    // decoder -- the point is that the compressed samples are never touched --
+    // nor substitute another audio decoder for LAV.
+    if (pSplitterVideo) {
+        if (FAILED(hr = pGraph->ConnectDirect(pSplitterVideo,
+                                              GetFirstPin(pVideoSinkBF, PINDIR_INPUT), nullptr))) {
+            return fail(_T("the video track would not connect for copying"));
+        }
+    }
+    if (FAILED(hr = pGraph->ConnectDirect(pSplitterAudio, GetFirstPin(pAudio, PINDIR_INPUT), nullptr))) {
+        return fail(_T("the audio decoder would not accept the track"));
+    }
+    if (FAILED(hr = pGraph->ConnectDirect(GetFirstPin(pAudio, PINDIR_OUTPUT),
+                                          GetFirstPin(pPcmSinkBF, PINDIR_INPUT), nullptr))) {
+        return fail(_T("the PCM sink would not accept the decoded audio"));
+    }
+
+    // Open the shared writer now, from the negotiated pin formats, on this
+    // thread and before the graph runs: video first, audio second.
+    CComPtr<IMFMediaType> videoType;
+    if (pSplitterVideo) {
+        AM_MEDIA_TYPE amt;
+        if (FAILED(pSplitterVideo->ConnectionMediaType(&amt))) {
+            return fail(_T("the video track's format could not be read"));
+        }
+        CString why;
+        const bool okType = MakeVideoTypeFromPin(amt, videoType, &why);
+        FreeMediaType(amt);
+        if (!okType) {
+            return fail(why);
+        }
+    }
+    CComPtr<IMFMediaType> pcmType;
+    UINT32 sampleRate = 48000, chans = 2;
+    if (!MakePcmTypeFromPin(GetFirstPin(pPcmSinkBF, PINDIR_INPUT), pcmType, sampleRate, chans)) {
+        return fail(_T("the decoded audio format could not be read"));
+    }
+    {
+        CString err;
+        if (!CastCreateMp4Writer(outPath, fragmented, videoType, pcmType, sampleRate, chans,
+                                 &mux.writer, &sink, mux.videoStream, mux.audioStream, &err)) {
+            return fail(err);
+        }
+    }
+
+    // Run to the end of the file, sliced short so a cancel event can be
+    // noticed between the slices; the caller's progress callback gets its turn
+    // on every slice too, which is the HLS segmenter's chance to tail the
+    // output as it grows.
+    if (FAILED(hr = pControl->Run())) {
+        return fail(_T("the remux graph would not run"));
+    }
+    long evCode = 0;
+    for (;;) {
+        if (prog.hCancel && WaitForSingleObject(prog.hCancel, 0) == WAIT_OBJECT_0) {
+            pControl->Stop();
+            return fail(_T("cancelled"));
+        }
+        if (prog.onProgress) {
+            prog.onProgress();
+        }
+        // E_ABORT is the slice elapsing; anything else is an event (or an error)
+        const HRESULT waitHr = pEvent->WaitForCompletion(200, &evCode);
+        if (waitHr != E_ABORT) {
+            break;
+        }
+    }
+    pControl->Stop();
+    if (FAILED(mux.writer->Finalize())) {
+        return fail(_T("the output file could not be finalized"));
+    }
+    if (sink) {
+        sink->Shutdown(); // closes the byte stream so the file is complete on disk
+    }
+
+    if (evCode != EC_COMPLETE || !mux.ok) {
+        return fail(_T("the remux did not finish cleanly"));
+    }
+
+    CASTING_LOG(_T("remux (LAV): copied the video and wrote %d-channel AAC"), (int)chans);
+    return true;
+}
+
+bool CastLavRemuxToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                       const CString& outPath, bool fragmented, const CastTranscodeProgress& prog,
+                       CString* pError)
+{
+    // The same worker-thread wrapper as CastLavDecodeToFlac: the graph runs in
+    // its own multithreaded apartment and the caller blocks on the join, so
+    // nothing the graph does has to marshal into a thread waiting for it.
+    CASTING_LOG(_T("remux (LAV): %s"), CastDescribeMedia(info).GetString());
+    bool ok = false;
+    CString err;
+    std::thread worker([&]() {
+        const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        const bool mf = SUCCEEDED(MFStartup(MF_VERSION)); // the shared sink writer needs it up
+        ok = RemuxGraph(srcPath, targetChannels, outPath, fragmented, prog, &err);
         if (mf) {
             MFShutdown();
         }

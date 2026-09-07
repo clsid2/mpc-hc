@@ -22,6 +22,7 @@
 
 #include "CastTarget.h"
 #include <functional>
+#include <vector>
 
 // Reducing a file's audio to fewer channels so a device that cannot output the
 // original layout plays it with sound instead of dropping it silently. The
@@ -33,13 +34,16 @@
 // MP3, FLAC, LPCM) -- all in OS code, nothing added to the player's FFmpeg. What
 // it cannot read -- DTS, TrueHD, 7.1 -- goes through the player's own LAV
 // decoder to a temp WAV that MF then muxes against the copied video. Both need
-// Media Foundation to demux the container for the video copy, so both are
-// limited to MP4-family containers (not Matroska or WebM, which stay refused).
-// CastCanDownmix() is the single place that says what can be taken, so the
-// decision to downmix or refuse stays honest.
+// Media Foundation to demux the container for the video copy, so both take
+// MP4-family containers only. Matroska and WebM, which Media Foundation cannot
+// demux at all, take a third route: the LAV splitter reads the container, the
+// compressed video is copied off its video pin, and the decoded audio joins it
+// in one pass (CastLavRemuxToMp4). CastCanDownmix() is the single place that
+// says what can be taken, so the decision to downmix or refuse stays honest.
 
-// Whether either engine can downmix this file: an MP4-family container, an audio
-// codec one of them can decode, and video that copies into MP4.
+// Whether either engine can downmix this file: a container one of them can
+// demux (MP4 family, Matroska, WebM), an audio codec one of them can decode,
+// and video that copies into MP4.
 bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info);
 
 // Produces outPath: an MP4 with srcPath's video copied and its audio downmixed
@@ -70,3 +74,33 @@ struct CastTranscodeProgress {
 // Fails like CastDownmixToMp4 does, cancellation included, leaving no output.
 bool CastDownmixToFragmentedMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                                 const CString& outPath, const CastTranscodeProgress& prog, CString* pError = nullptr);
+
+// Plumbing the engines share, declared here so both CastTranscoder.cpp and
+// CastLavDecoder.cpp reach it. The Media Foundation interfaces are spelled as
+// forward-declared raw pointers so this header stays free of MF includes.
+struct IMFMediaType;
+struct IMFSinkWriter;
+struct IMFMediaSink;
+
+// Builds the MP4 output every engine writes into. The non-fragmented variant
+// is the plain sink writer over a file URL. The fragmented one goes through
+// MFCreateFMPEG4MediaSink on a byte stream -- the moov lands up front and
+// samples are cut into moof/mdat fragments as they arrive, which is what lets
+// a segmenter read the file while it is still being written; the sink comes
+// back separately because it must be ShutDown after Finalize or the file
+// stays open. videoNative may be null for the complete-file path (an
+// audio-only downmix is a legitimate plain MP4) but not for the fragmented
+// one; stream 0 is video, stream 1 audio there. The video type serves as both
+// the stream's output and input type, so a compressed track passes through
+// untouched.
+bool CastCreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* videoNative,
+                         IMFMediaType* pcmActual, UINT32 sampleRate, UINT32 chans,
+                         IMFSinkWriter** ppWriter, IMFMediaSink** ppSink,
+                         DWORD& outVideo, DWORD& outAudio, CString* pError);
+
+// Parses an hvcC record -- an HEVC decoder configuration, as carried in an
+// MP4's hvcC box or on a Matroska video pin's format block -- into the
+// VPS/SPS/PPS NALs it holds, as an Annex-B blob (each NAL preceded by
+// 00 00 00 01), the form MF_MT_MPEG_SEQUENCE_HEADER wants. Everything else the
+// record carries (type-39 SEI among it) is left out.
+bool CastHvcCToAnnexB(const BYTE* hvcc, size_t len, std::vector<BYTE>& seq);

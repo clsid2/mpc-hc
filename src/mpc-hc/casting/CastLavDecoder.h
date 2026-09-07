@@ -21,6 +21,7 @@
 #pragma once
 
 #include <atlstr.h>
+#include "CastTranscoder.h"
 
 // Decodes the first audio track of srcPath with the player's own LAV filters --
 // which read what Media Foundation cannot, DTS and 7.1 among them -- downmixes it
@@ -34,3 +35,19 @@
 // failure, leaving no output.
 bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
                          CString* pError = nullptr, HANDLE hCancel = nullptr);
+
+// Remuxes a Matroska or WebM file -- a container Media Foundation cannot demux
+// at all -- into an MP4 in one DirectShow graph: the LAV splitter reads the
+// file, its compressed H.264/HEVC video is taken off the video pin and copied
+// byte-for-byte (the pin's samples are already length-prefixed NALUs, the form
+// the MP4 sink consumes, so nothing is decoded), and the audio, decoded and
+// downmixed to stereo by the LAV audio decoder, is encoded to AAC beside it.
+// Video and audio flow to the two streams of one shared sink writer, one from
+// each of the splitter's streaming threads, which is why every sample is
+// written under a common mutex. fragmented writes the segmented output the HLS
+// path tails as it grows. info is logged, not trusted: the graph reads what the
+// file actually holds. Fails like the other engines, cancellation included,
+// leaving no output.
+bool CastLavRemuxToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                       const CString& outPath, bool fragmented, const CastTranscodeProgress& prog,
+                       CString* pError = nullptr);
