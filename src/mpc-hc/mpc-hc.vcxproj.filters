@@ -391,6 +391,9 @@
     <ClCompile Include="casting\CastTargetChromecast.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>
+    <ClCompile Include="casting\CastHlsStream.cpp">
+      <Filter>Integration\Cast</Filter>
+    </ClCompile>
     <ClCompile Include="casting\CastLavDecoder.cpp">
       <Filter>Integration\Cast</Filter>
     </ClCompile>

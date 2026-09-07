@@ -21,6 +21,7 @@
 #pragma once
 
 #include "CastTarget.h"
+#include <functional>
 
 // Reducing a file's audio to fewer channels so a device that cannot output the
 // original layout plays it with sound instead of dropping it silently. The
@@ -48,3 +49,21 @@ bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info);
 // output behind.
 bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                       const CString& outPath, CString* pError = nullptr);
+
+// Optional eyes and a brake for the streaming variant. Both are checked about
+// every 32 samples while the transcode pumps: hCancel set abandons the work
+// (the call then fails with "cancelled"), onProgress is the HLS segmenter's
+// chance to tail the output file as it grows.
+struct CastTranscodeProgress {
+    HANDLE hCancel = nullptr;
+    std::function<void()> onProgress;
+};
+
+// The streaming variant: same two engines and the same routing as
+// CastDownmixToMp4, but outPath is written as a fragmented MP4 whose moov
+// precedes the samples, so a segmenter can read whole fragments out of it
+// while it is still being written. Only takes a file with H.264 video; an
+// audio-only or HEVC source is refused (the complete-file path serves those).
+// Fails like CastDownmixToMp4 does, cancellation included, leaving no output.
+bool CastDownmixToFragmentedMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                                const CString& outPath, const CastTranscodeProgress& prog, CString* pError = nullptr);

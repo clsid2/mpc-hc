@@ -208,7 +208,7 @@ namespace
 // waited on with WaitForCompletion deadlocks, since the wait blocks the very
 // thread the graph needs to deliver its completion to.
 static bool DecodeGraph(const CString& srcPath, int targetChannels, const CString& outPath,
-                        CString* pError)
+                        CString* pError, HANDLE hCancel)
 {
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
@@ -297,12 +297,25 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
         return fail(_T("the FLAC writer could not be started"));
     }
 
-    // Run to the end of the file. The source is finite, so this completes.
+    // Run to the end of the file. The source is finite, so this completes --
+    // unless the caller cancels, which is why the wait is sliced short rather
+    // than INFINITE: a cancel event can only be noticed between the slices.
     if (FAILED(hr = pControl->Run())) {
         return fail(_T("the decode graph would not run"));
     }
     long evCode = 0;
-    pEvent->WaitForCompletion(INFINITE, &evCode);
+    for (;;) {
+        if (hCancel && WaitForSingleObject(hCancel, 0) == WAIT_OBJECT_0) {
+            pControl->Stop();
+            pSink->FinalizeWriter(); // releases the file so the fail() delete works
+            return fail(_T("cancelled"));
+        }
+        // E_ABORT is the slice elapsing; anything else is an event (or an error)
+        const HRESULT waitHr = pEvent->WaitForCompletion(200, &evCode);
+        if (waitHr != E_ABORT) {
+            break;
+        }
+    }
     pControl->Stop();
     pSink->FinalizeWriter();
 
@@ -315,7 +328,7 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
 }
 
 bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
-                         CString* pError)
+                         CString* pError, HANDLE hCancel)
 {
     // The graph runs on this worker thread, in its own COM apartment, and the
     // caller blocks on the join. The caller's UI thread is thus free of the graph
@@ -328,7 +341,7 @@ bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CStri
         // no message pump, and DirectShow in an STA without one deadlocks.
         const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         const bool mf = SUCCEEDED(MFStartup(MF_VERSION)); // the FLAC sink needs it up
-        ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err);
+        ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err, hCancel);
         if (mf) {
             MFShutdown();
         }

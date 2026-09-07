@@ -27,10 +27,19 @@
 #include <mfreadwrite.h>
 #include <mferror.h>
 #include <atlbase.h>
+#include <atomic>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
+#pragma comment(lib, "mf.lib") // IMFByteStream/MFCreateFile and the fragmented MP4 sink
+
+// The 8.1 SDK the player builds against does not know this attribute (the
+// GUID is from the Windows 10 SDK's mfidl.h); the MPEG-4 sink honours it at
+// run time on Windows 10. 100-ns units. Named distinctly so an SDK that does
+// declare the real one cannot collide with it.
+static const GUID kMpeg4SinkMinFragmentDuration =
+{ 0xa30b570c, 0x8efd, 0x45e8, { 0x94, 0xfe, 0x27, 0xc8, 0x4b, 0x5b, 0xdf, 0xf6 } };
 
 namespace
 {
@@ -52,6 +61,110 @@ namespace
         MFScope() { ok = SUCCEEDED(MFStartup(MF_VERSION)); }
         ~MFScope() { if (ok) { MFShutdown(); } }
     };
+
+    // The speaker mask for a channel count; Media Foundation rejects a
+    // multichannel PCM type that does not carry one. Stereo needs none.
+    // Raw KSAUDIO speaker masks, to avoid pulling in ksmedia.h: FL=0x1 FR=0x2
+    // FC=0x4 LFE=0x8 BL=0x10 BR=0x20 SL=0x200 SR=0x400.
+    UINT32 ChannelMask(int ch)
+    {
+        switch (ch) {
+            case 1: return 0x4;                   // front centre
+            case 2: return 0x1 | 0x2;             // L R
+            case 6: return 0x3F;                  // 5.1: FL FR FC LFE BL BR
+            case 8: return 0x3F | 0x200 | 0x400;  // 7.1 surround
+            default: return 0;
+        }
+    }
+
+    // Builds the MP4 output both engines write into. The non-fragmented variant
+    // is the plain sink writer over a file URL. The fragmented one goes through
+    // MFCreateFMPEG4MediaSink on a byte stream -- the moov lands up front and
+    // samples are cut into moof/mdat fragments as they arrive, which is what
+    // lets a segmenter read the file while it is still being written; the sink
+    // comes back separately because it must be ShutDown after Finalize or the
+    // file stays open. Video is optional for the complete-file path (an
+    // audio-only downmix is a legitimate plain MP4) but required for the
+    // fragmented one; stream 0 is video, stream 1 audio there.
+    bool CreateMp4Writer(const CString& outPath, bool fragmented, IMFMediaType* videoNative,
+                         IMFMediaType* pcmActual, UINT32 sampleRate, UINT32 chans,
+                         CComPtr<IMFSinkWriter>& writer, CComPtr<IMFMediaSink>& sink,
+                         DWORD& outVideo, DWORD& outAudio, CString* pError)
+    {
+        auto fail = [&](const TCHAR* why) -> bool {
+            if (pError) {
+                *pError = why;
+            }
+            return false;
+        };
+
+        // Audio out: AAC. The sink writer inserts the AAC encoder to bridge the
+        // PCM input to it. ~192 kbps regardless of channel count is plenty for
+        // a downmix.
+        CComPtr<IMFMediaType> aac;
+        MFCreateMediaType(&aac);
+        aac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+        aac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
+        aac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
+        aac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
+        aac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, chans);
+        if (ChannelMask((int)chans)) {
+            aac->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, ChannelMask((int)chans));
+        }
+        aac->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 24000);
+        aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
+
+        if (!fragmented) {
+            if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
+                return fail(_T("the transcoded file could not be created"));
+            }
+            outVideo = outAudio = (DWORD)-1;
+            if (videoNative) {
+                if (FAILED(writer->AddStream(videoNative, &outVideo))
+                        || FAILED(writer->SetInputMediaType(outVideo, videoNative, nullptr))) {
+                    return fail(_T("the video track could not be added to the output"));
+                }
+            }
+            if (FAILED(writer->AddStream(aac, &outAudio))
+                    || FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
+                return fail(_T("the receiver's audio format is not available on this system"));
+            }
+        } else {
+            if (!videoNative) {
+                return fail(_T("the fragmented output needs a video track"));
+            }
+            CComPtr<IMFByteStream> byteStream;
+            if (FAILED(MFCreateFile(MF_ACCESSMODE_READWRITE, MF_OPENMODE_DELETE_IF_EXIST,
+                                    MF_FILEFLAGS_NONE, outPath, &byteStream))) {
+                return fail(_T("the fragmented output file could not be created"));
+            }
+            if (FAILED(MFCreateFMPEG4MediaSink(byteStream, videoNative, aac, &sink))) {
+                return fail(_T("the fragmented MP4 sink refused the media types (H.264 video only)"));
+            }
+            // Bigger fragments mean less surgery per byte served; a failed set
+            // only leaves the sink at its default cutting.
+            if (CComQIPtr<IMFAttributes> sinkAttrs = sink) {
+                sinkAttrs->SetUINT64(kMpeg4SinkMinFragmentDuration, 20000000); // 2 s
+            }
+            CComPtr<IMFAttributes> writerAttrs;
+            MFCreateAttributes(&writerAttrs, 1);
+            writerAttrs->SetUINT32(MF_LOW_LATENCY, FALSE); // fragments cut whole, not early
+            if (FAILED(MFCreateSinkWriterFromMediaSink(sink, writerAttrs, &writer))
+                    || FAILED(writer->SetInputMediaType(0, videoNative, nullptr))
+                    || FAILED(writer->SetInputMediaType(1, pcmActual, nullptr))) {
+                sink->Shutdown();
+                sink.Release();
+                return fail(_T("the fragmented MP4 sink writer could not be created"));
+            }
+            outVideo = 0;
+            outAudio = 1;
+        }
+
+        if (FAILED(writer->BeginWriting())) {
+            return fail(_T("the transcode could not be started"));
+        }
+        return true;
+    }
 }
 
 bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info)
@@ -92,13 +205,22 @@ bool CastCanDownmix(const CString& srcPath, const CastMediaInfo& info)
 
 // The Media Foundation single-pass engine: decode + downmix + re-encode + mux in
 // one SourceReader -> SinkWriter run. Used for the codecs MF can read at 5.1 or
-// below; the orchestrator routes everything else to LAV.
+// below; the orchestrator routes everything else to LAV. fragmented selects the
+// output half (see CreateMp4Writer); prog is polled between batches of samples.
 static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CString& outPath,
-                           CString* pError)
+                           bool fragmented, const CastTranscodeProgress& prog, CString* pError)
 {
+    CComPtr<IMFSinkWriter> writer; // released by fail() before the output is deleted
+    CComPtr<IMFMediaSink> sink;    // fragmented mode only
+
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
         CASTING_LOG(_T("downmix (MF): %s"), why.GetString());
+        writer.Release(); // let go of the output before trying to delete it
+        if (sink) {
+            sink->Shutdown();
+            sink.Release();
+        }
         DeleteFile(outPath); // never leave a half-written file the server might serve
         return false;
     };
@@ -150,6 +272,9 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
     if (audioIdx == (DWORD)-1) {
         return fail(_T("the file has no audio track to downmix"));
     }
+    if (fragmented && videoIdx == (DWORD)-1) {
+        return fail(_T("the file has no video track to fragment"));
+    }
 
     reader->SetStreamSelection(MF_SOURCE_READER_ALL_STREAMS, FALSE);
     if (videoIdx != (DWORD)-1) {
@@ -163,20 +288,6 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
             return fail(_T("the video track could not be set up for copying"));
         }
     }
-
-    // The speaker mask for a channel count; Media Foundation rejects a
-    // multichannel PCM type that does not carry one. Stereo needs none.
-    // Raw KSAUDIO speaker masks, to avoid pulling in ksmedia.h: FL=0x1 FR=0x2
-    // FC=0x4 LFE=0x8 BL=0x10 BR=0x20 SL=0x200 SR=0x400.
-    auto channelMask = [](int ch) -> UINT32 {
-        switch (ch) {
-            case 1: return 0x4;                   // front centre
-            case 2: return 0x1 | 0x2;             // L R
-            case 6: return 0x3F;                  // 5.1: FL FR FC LFE BL BR
-            case 8: return 0x3F | 0x200 | 0x400;  // 7.1 surround
-            default: return 0;
-        }
-    };
 
     // Audio: ask for PCM at the target channel count; the reader inserts the
     // decoder and the resampler, and the resampler applies the standard down-mix
@@ -196,8 +307,8 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
         pcmReq->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
         pcmReq->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
         pcmReq->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, (UINT32)ch);
-        if (channelMask(ch)) {
-            pcmReq->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, channelMask(ch));
+        if (ChannelMask(ch)) {
+            pcmReq->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, ChannelMask(ch));
         }
         if (SUCCEEDED(reader->SetCurrentMediaType(audioIdx, nullptr, pcmReq))) {
             audioSet = true;
@@ -215,44 +326,20 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
     pcmActual->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
     pcmActual->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &chans);
 
-    CComPtr<IMFSinkWriter> writer;
-    if (FAILED(hr = MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
-        return fail(_T("the transcoded file could not be created"));
-    }
-
     DWORD outVideo = (DWORD)-1, outAudio = (DWORD)-1;
-    if (videoIdx != (DWORD)-1) {
-        if (FAILED(writer->AddStream(videoNative, &outVideo))
-                || FAILED(writer->SetInputMediaType(outVideo, videoNative, nullptr))) {
-            return fail(_T("the video track could not be added to the output"));
+    {
+        CString err;
+        if (!CreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
+                             writer, sink, outVideo, outAudio, &err)) {
+            return fail(err);
         }
     }
 
-    // Audio out: AAC. The sink writer inserts the AAC encoder to bridge the PCM
-    // input to it. ~192 kbps regardless of channel count is plenty for a downmix.
-    CComPtr<IMFMediaType> aac;
-    MFCreateMediaType(&aac);
-    aac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-    aac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
-    aac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
-    aac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
-    aac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, chans);
-    if (channelMask((int)chans)) {
-        aac->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, channelMask((int)chans));
-    }
-    aac->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 24000);
-    aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
-    if (FAILED(writer->AddStream(aac, &outAudio))
-            || FAILED(hr = writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
-        return fail(_T("the receiver's audio format is not available on this system"));
-    }
-
-    if (FAILED(hr = writer->BeginWriting())) {
-        return fail(_T("the transcode could not be started"));
-    }
-
     // Pump every sample to the matching output stream. Timestamps ride along on
-    // the samples, so the two tracks stay in step.
+    // the samples, so the two tracks stay in step. Every so often the caller
+    // gets a look in: cancellation first, then whatever it wants to do as the
+    // output grows (the HLS segmenter tails the file here).
+    DWORD pumped = 0;
     for (;;) {
         DWORD streamIndex = 0, flags = 0;
         LONGLONG ts = 0;
@@ -277,25 +364,46 @@ static bool MfDownmixToMp4(const CString& srcPath, int targetChannels, const CSt
         if (FAILED(hr)) {
             return fail(_T("a sample could not be written while transcoding"));
         }
+        if (++pumped % 32 == 0) {
+            if (prog.hCancel && WaitForSingleObject(prog.hCancel, 0) == WAIT_OBJECT_0) {
+                return fail(_T("cancelled"));
+            }
+            if (prog.onProgress) {
+                prog.onProgress();
+            }
+        }
     }
 
     if (FAILED(hr = writer->Finalize())) {
         return fail(_T("the transcoded file could not be finalized"));
     }
+    if (sink) {
+        sink->Shutdown(); // closes the byte stream so the file is complete on disk
+    }
 
-    CASTING_LOG(_T("downmix (MF): wrote %d-channel AAC copy of the file's video"), (int)chans);
+    CASTING_LOG(_T("downmix (MF): wrote %d-channel AAC copy of the file's video%s"),
+                (int)chans, fragmented ? _T(", fragmented") : _T(""));
     return true;
 }
 
-// Muxes one file's video (copied) with a separate WAV's audio (re-encoded to
-// AAC) into an MP4. The LAV engine's second half: LAV writes the downmixed WAV,
-// this puts it back together with the original's untouched picture.
+// Muxes one file's video (copied) with a separate WAV's or FLAC's audio
+// (re-encoded to AAC) into an MP4. The LAV engine's second half: LAV writes the
+// downmixed FLAC, this puts it back together with the original's untouched
+// picture. fragmented and prog as in MfDownmixToMp4.
 static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, const CString& outPath,
-                             CString* pError)
+                             bool fragmented, const CastTranscodeProgress& prog, CString* pError)
 {
+    CComPtr<IMFSinkWriter> writer; // released by fail() before the output is deleted
+    CComPtr<IMFMediaSink> sink;    // fragmented mode only
+
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
         CASTING_LOG(_T("downmix (mux): %s"), why.GetString());
+        writer.Release(); // let go of the output before trying to delete it
+        if (sink) {
+            sink->Shutdown();
+            sink.Release();
+        }
         DeleteFile(outPath);
         return false;
     };
@@ -363,36 +471,22 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
     pcmActual->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
     pcmActual->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &chans);
 
-    CComPtr<IMFSinkWriter> writer;
-    if (FAILED(MFCreateSinkWriterFromURL(outPath, nullptr, nullptr, &writer))) {
-        return fail(_T("the output file could not be created"));
-    }
     DWORD outVideo = (DWORD)-1, outAudio = (DWORD)-1;
-    if (FAILED(writer->AddStream(videoNative, &outVideo))
-            || FAILED(writer->SetInputMediaType(outVideo, videoNative, nullptr))) {
-        return fail(_T("the video could not be added to the output"));
-    }
-    CComPtr<IMFMediaType> aac;
-    MFCreateMediaType(&aac);
-    aac->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-    aac->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
-    aac->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
-    aac->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
-    aac->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, chans);
-    aac->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 24000);
-    aac->SetUINT32(MF_MT_AAC_PAYLOAD_TYPE, 0);
-    if (FAILED(writer->AddStream(aac, &outAudio))
-            || FAILED(writer->SetInputMediaType(outAudio, pcmActual, nullptr))) {
-        return fail(_T("the receiver's audio format is not available on this system"));
-    }
-    if (FAILED(writer->BeginWriting())) {
-        return fail(_T("the mux could not be started"));
+    {
+        CString err;
+        if (!CreateMp4Writer(outPath, fragmented, videoNative, pcmActual, sampleRate, chans,
+                             writer, sink, outVideo, outAudio, &err)) {
+            return fail(err);
+        }
     }
 
-    // Interleave the two sources by timestamp so the MP4 stays in step.
+    // Interleave the two sources by timestamp so the MP4 stays in step. As in
+    // the single-pass engine, every batch of samples gives the caller its turn:
+    // cancel check first, then the progress callback.
     bool vEnd = false, aEnd = false;
     LONGLONG vT = 0, aT = 0;
     CComPtr<IMFSample> vS, aS;
+    DWORD pumped = 0;
     for (;;) {
         if (!vEnd && !vS) {
             DWORD si, fl = 0;
@@ -440,44 +534,93 @@ static bool MfMuxVideoAndWav(const CString& videoSrc, const CString& wavPath, co
             }
             aS.Release();
         }
+        if (++pumped % 32 == 0) {
+            if (prog.hCancel && WaitForSingleObject(prog.hCancel, 0) == WAIT_OBJECT_0) {
+                return fail(_T("cancelled"));
+            }
+            if (prog.onProgress) {
+                prog.onProgress();
+            }
+        }
     }
 
     if (FAILED(writer->Finalize())) {
         return fail(_T("the output file could not be finalized"));
     }
-    CASTING_LOG(_T("downmix (mux): remuxed the copied video with %d-channel AAC"), (int)chans);
+    if (sink) {
+        sink->Shutdown(); // closes the byte stream so the file is complete on disk
+    }
+    CASTING_LOG(_T("downmix (mux): remuxed the copied video with %d-channel AAC%s"),
+                (int)chans, fragmented ? _T(", fragmented") : _T(""));
     return true;
 }
 
-bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
-                      const CString& outPath, CString* pError)
+// The routing both public entry points share: Media Foundation decodes these
+// itself at 5.1 or below, in one pass and with no temp file. Everything else --
+// the surround-only codecs, and 7.1, which MF's AAC decoder cannot read at all
+// -- goes through LAV to a FLAC that is then muxed back against the copied
+// video.
+static bool DownmixToMp4Common(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                               const CString& outPath, bool fragmented,
+                               const CastTranscodeProgress& prog, CString* pError)
 {
     if (targetChannels < 1) {
         targetChannels = 2;
     }
-    // Media Foundation decodes these itself at 5.1 or below, in one pass and with
-    // no temp file. Everything else -- the surround-only codecs, and 7.1, which
-    // MF's AAC decoder cannot read at all -- goes through LAV to a WAV that is
-    // then muxed back against the copied video.
     const bool mfCanDecode = info.channels <= 6
                              && (info.audio == CastMediaInfo::Audio::AAC
                                  || info.audio == CastMediaInfo::Audio::MP3
                                  || info.audio == CastMediaInfo::Audio::FLAC
                                  || info.audio == CastMediaInfo::Audio::LPCM);
     if (mfCanDecode) {
-        return MfDownmixToMp4(srcPath, targetChannels, outPath, pError);
+        return MfDownmixToMp4(srcPath, targetChannels, outPath, fragmented, prog, pError);
     }
 
     TCHAR tempDir[MAX_PATH] = { 0 };
     GetTempPath(MAX_PATH, tempDir);
     CString flac;
-    flac.Format(_T("%smpc-castdownmix-%u.flac"), tempDir, GetCurrentProcessId());
+    if (fragmented) {
+        // Its own name per run: a quick file switch must not overwrite the temp
+        // a still-aborting previous worker is holding. The complete-file path
+        // has no such race -- it never overlaps itself.
+        static std::atomic<ULONG> hlsGeneration(0);
+        flac.Format(_T("%smpc-casthls-%u-%u.flac"), tempDir, GetCurrentProcessId(),
+                    ++hlsGeneration);
+    } else {
+        flac.Format(_T("%smpc-castdownmix-%u.flac"), tempDir, GetCurrentProcessId());
+    }
     CASTING_LOG(_T("downmix: %d-channel %s goes through LAV"), info.channels,
                 CastAudioCodecName(info.audio));
-    if (!CastLavDecodeToFlac(srcPath, targetChannels, flac, pError)) {
+    if (!CastLavDecodeToFlac(srcPath, targetChannels, flac, pError, prog.hCancel)) {
         return false;
     }
-    const bool ok = MfMuxVideoAndWav(srcPath, flac, outPath, pError);
+    const bool ok = MfMuxVideoAndWav(srcPath, flac, outPath, fragmented, prog, pError);
     DeleteFile(flac);
     return ok;
+}
+
+bool CastDownmixToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                      const CString& outPath, CString* pError)
+{
+    return DownmixToMp4Common(srcPath, info, targetChannels, outPath, false,
+                              CastTranscodeProgress(), pError);
+}
+
+bool CastDownmixToFragmentedMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                                const CString& outPath, const CastTranscodeProgress& prog, CString* pError)
+{
+    // H.264 video only, and there must be video at all: the fragmented MP4 sink
+    // refuses HEVC outright (proven in Phase 0), and a file with no picture has
+    // nothing to show progressively -- both stay on the complete-file path.
+    if (info.video != CastMediaInfo::Video::H264) {
+        const CString why = info.video == CastMediaInfo::Video::HEVC
+                            ? _T("the fragmented transcode does not take HEVC video")
+                            : _T("the fragmented transcode needs an H.264 video track");
+        if (pError) {
+            *pError = why;
+        }
+        CASTING_LOG(_T("downmix (fmp4): %s"), why.GetString());
+        return false;
+    }
+    return DownmixToMp4Common(srcPath, info, targetChannels, outPath, true, prog, pError);
 }

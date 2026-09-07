@@ -20,19 +20,21 @@
 
 #pragma once
 
+#include <atomic>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
+#include "CastTarget.h"
+
 class CCastMediaServer;
-struct CastMediaInfo;
 
 // Serving a still-transcoding file to a cast device as HLS: one worker drives
 // Media Foundation's fragmented-MP4 sink into a temp file while a segmenter
 // tails that file and publishes the playlist, the init segment and ~6 s media
 // segments as server resources, so playback starts before the transcode ends.
-// The media server's HLS resource table is typed in terms of Part below, which
-// is why this header exists before the engine does; the class itself is
-// implemented with the engine in a later phase.
+// The media server's HLS resource table is typed in terms of Part below.
 class CCastHlsStream
 {
 public:
@@ -47,17 +49,17 @@ public:
         ULONGLONG len = 0;
     };
 
-    // The fragments whose video starts inside one kSegmentSec window: closed
-    // and published as a unit when the next window opens.
-    struct Segment {
-        std::vector<Part> parts;
-        ULONGLONG bytes = 0;
-        double startSec = 0.0;
-        double durSec = 0.0;
-        bool published = false;
-    };
-
     static constexpr double kSegmentSec = 6.0;
+
+    // What Run() posts to the window Start() was given, as the wParam: Ready
+    // once the init segment and the first segments are up (worth loading),
+    // Failed when the transcode or the segmenter gave up, Complete when the
+    // whole file has been produced and served.
+    enum Notify {
+        NotifyReady,
+        NotifyFailed,
+        NotifyComplete,
+    };
 
     bool Start(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                double durationSec, CCastMediaServer& server, HWND hNotify, UINT notifyMsg);
@@ -68,11 +70,69 @@ public:
     double ProducedSeconds() const;  // end of the last published segment
     CStringA PlaylistText() const;   // built once in Start(): the full VOD playlist
 
+    CCastHlsStream(); // the deleted copy constructor suppresses the implicit default one
+    ~CCastHlsStream();
+
 private:
     CCastHlsStream(const CCastHlsStream&) = delete;
     CCastHlsStream& operator=(const CCastHlsStream&) = delete;
 
+    // One track of the movie header: what the segmenter needs to place and
+    // time fragments. decodeTime runs in the track's timescale units.
+    struct TrackState {
+        UINT32 timescale = 0;
+        bool isVideo = false;
+        ULONGLONG decodeTime = 0;
+    };
+
     static DWORD WINAPI StaticThreadProc(LPVOID lpParam);
     DWORD Run();
     bool Poll();                     // parse whatever landed in the raw file since last time
+    void Finish(bool ok, const CString& why);
+    void CloseOpenSegment();         // publish the segments-parts accumulated so far
+    void CheckReady();               // post NotifyReady once init + first segments are up
+    bool FailParse(const CString& why); // remember the reason, return false for Poll()
+    bool ReadAt(ULONGLONG offset, ULONG len, BYTE* buf);
+    bool ParseMoovTracks(const BYTE* moov, ULONGLONG moovSize);
+    CStringA BuildPlaylist() const;
+
+    // Set once by Start(), read-only afterwards.
+    CString m_srcPath;
+    CastMediaInfo m_info;
+    int m_targetChannels = 2;
+    double m_durationSec = 0.0;
+    CCastMediaServer* m_server = nullptr;
+    HWND m_hNotify = nullptr;
+    UINT m_notifyMsg = 0;
+    CString m_rawPath;               // the growing fragmented MP4
+    CStringA m_playlist;             // the full VOD playlist, published in Start()
+
+    // Worker plumbing.
+    HANDLE m_hThread = nullptr;
+    HANDLE m_hCancel = nullptr;      // manual-reset; set by Abort()
+    std::atomic<bool> m_running{ false };
+
+    // Shared outcome, guarded by m_stateMutex.
+    mutable std::mutex m_stateMutex;
+    bool m_failed = false;
+    CString m_failReason;
+    double m_producedSec = 0.0;
+
+    // Segmenter state; touched only on the worker thread (or the Start caller
+    // before the thread exists).
+    HANDLE m_hFile = nullptr;        // read handle onto m_rawPath, opened lazily
+    ULONGLONG m_parseOffset = 0;     // next top-level box to consider
+    std::vector<BYTE> m_ftyp;        // kept for the init segment
+    std::map<UINT, TrackState> m_tracks;
+    UINT m_videoTrack = 0;
+    bool m_initPublished = false;
+    bool m_readyPosted = false;
+    int m_segmentCount = 0;          // windows the playlist announced
+    std::vector<bool> m_segmentDone; // published or explicitly failed
+    int m_publishedSegments = 0;
+    int m_openIndex = -1;            // the segment now accumulating fragments
+    std::vector<Part> m_openParts;
+    ULONGLONG m_openBytes = 0;
+    double m_openStartSec = 0.0;
+    double m_openDurSec = 0.0;
 };

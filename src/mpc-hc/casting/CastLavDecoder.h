@@ -29,6 +29,8 @@
 // stream, whose audio renderer hands the PCM to a Media Foundation FLAC writer.
 // The caller then muxes that FLAC against the original file's copied video.
 // targetChannels is accepted for the interface's sake; the LAV path is stereo.
-// Returns false (with a reason in pError) on any failure, leaving no output.
+// hCancel, when set, is checked while the graph runs and abandons the decode
+// with a "cancelled" failure. Returns false (with a reason in pError) on any
+// failure, leaving no output.
 bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
-                         CString* pError = nullptr);
+                         CString* pError = nullptr, HANDLE hCancel = nullptr);

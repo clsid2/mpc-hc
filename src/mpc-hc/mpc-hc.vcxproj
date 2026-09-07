@@ -151,6 +151,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="casting\CastDevicesDlg.cpp" />
     <ClCompile Include="casting\CastTestDlg.cpp" />
     <ClCompile Include="casting\CastDiscovery.cpp" />
+    <ClCompile Include="casting\CastHlsStream.cpp" />
     <ClCompile Include="casting\CastMediaServer.cpp" />
     <ClCompile Include="casting\CastSession.cpp" />
     <ClCompile Include="casting\CastSessionDlg.cpp" />
