@@ -401,8 +401,15 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
     // Matroska is the one container that separates the two lists in practice:
     // the receiver will not take it, every Android TV device plays it. AVI is
     // not offered either way, having been tried and failed on such a device.
+    // A container the receiver will not take is still fine when we can remux it
+    // to MP4 on the way out -- that is exactly what the transcode does for
+    // Matroska and WebM (CastCanDownmix, which also demands the video be copyable
+    // and the audio decodable, so a container we cannot actually remux still
+    // fails here). The audio and video checks below still apply: the remux copies
+    // the video untouched, so the device must play the codec regardless.
     const bool takesContainer = CCastMediaServer::IsCastableFile(path)
-                                || (!googleReceiver && mime == "video/x-matroska");
+                                || (!googleReceiver && mime == "video/x-matroska")
+                                || CastCanDownmix(path, info);
     if (!takesContainer) {
         if (mime == "application/octet-stream") {
             refusal = _T("casting knows no media type for a file of this kind");
@@ -562,8 +569,19 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
                                || info.audio == CastMediaInfo::Audio::EAC3
                                || info.audio == CastMediaInfo::Audio::DTS
                                || info.audio == CastMediaInfo::Audio::TrueHD;
+    // The streaming (HLS) transcode writes a fragmented MP4 through Media
+    // Foundation's sink, which needs MF to demux the source -- so it takes
+    // MP4-family containers only. Matroska and WebM are demuxed by the LAV
+    // splitter instead and go the complete-file route (CastLavRemuxToMp4).
+    CString ext;
+    const int dot = filePath.ReverseFind(_T('.'));
+    if (dot >= 0) {
+        ext = filePath.Mid(dot);
+        ext.MakeLower();
+    }
+    const bool matroskaSource = ext == _T(".mkv") || ext == _T(".webm");
     if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
-        if (info.video == CastMediaInfo::Video::H264) {
+        if (info.video == CastMediaInfo::Video::H264 && !matroskaSource) {
             // The streaming transcode. Only H.264: the fragmented-MP4 sink it
             // writes through refuses HEVC, and a file with no picture has
             // nothing to show progressively -- both fall through to the
@@ -590,6 +608,9 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
             }
             m_hls.reset();
             CASTING_LOG(_T("cast: the streaming transcode did not start; transcoding the whole file first instead"));
+        } else if (matroskaSource) {
+            CASTING_LOG(_T("cast: the streaming transcode needs an MP4-family container, and this is ")
+                        _T("Matroska/WebM; the LAV splitter remuxes the whole file first instead"));
         } else if (info.video == CastMediaInfo::Video::HEVC) {
             CASTING_LOG(_T("cast: the streaming transcode takes H.264 only, and this file's video is ")
                         _T("HEVC; transcoding the whole file first instead"));
