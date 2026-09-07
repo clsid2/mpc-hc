@@ -33,11 +33,12 @@
 #include <thread>
 #include <vector>
 
-// The E-AC-3 remux's output side: FFmpeg's muxer and encoder take the place the
-// sink-writer remux gives Media Foundation. Headers as the rest of the player
+// The E-AC-3 remux's output side: FFmpeg's encoder and resampler take the
+// place the sink-writer remux gives Media Foundation, and the MP4 they land
+// in is written by hand below -- a small non-fragmented box writer, so no
+// muxer library is linked for its sake. Headers as the rest of the player
 // includes them (the thirdparty include paths the vcxproj carries for this).
 extern "C" {
-#include <ffmpeg/libavformat/avformat.h>
 #include <ffmpeg/libavcodec/avcodec.h>
 #include <ffmpeg/libavutil/channel_layout.h>
 #include <ffmpeg/libavutil/mathematics.h>
@@ -694,47 +695,161 @@ namespace
     // the rescaling calls below take.
     const AVRational kDShowTimeBase = { 1, 10000000 };
 
-    // The FFmpeg output side of the E-AC-3 remux: one "mp4" AVFormatContext
-    // whose video track takes the compressed samples as the pin delivers them
-    // and whose audio track is fed by an E-AC-3 encoder through swresample.
-    // The video and audio streaming threads both write into it, and the muxer
-    // is not thread-safe, so every FFmpeg call runs under one mutex -- the
-    // same shape as RemuxWriter's writer guard. ok and stopped mean what they
-    // mean there. timeShift is the video DTS synthesis's head shift, applied
-    // to the audio as well so picture and sound keep their relative timing.
+    // The output's own clocks. An MP4 track carries its timescale beside its
+    // timeline; the video track runs on the broadcast-standard 90 kHz (every
+    // frame rate lands on it), the audio track on its sample rate, and the
+    // movie rounds the longest of them into its 1 ms.
+    const uint32_t kMp4VideoTimescale = 90000;
+    const uint32_t kMp4MovieTimescale = 1000;
+
+    // Big-endian appends -- the byte order every MP4 box's fields come in.
+    void Mp4Put16(std::vector<BYTE>& v, uint32_t x)
+    {
+        v.push_back(BYTE(x >> 8));
+        v.push_back(BYTE(x));
+    }
+
+    void Mp4Put24(std::vector<BYTE>& v, uint32_t x)
+    {
+        v.push_back(BYTE(x >> 16));
+        v.push_back(BYTE(x >> 8));
+        v.push_back(BYTE(x));
+    }
+
+    void Mp4Put32(std::vector<BYTE>& v, uint32_t x)
+    {
+        Mp4Put16(v, x >> 16);
+        Mp4Put16(v, x);
+    }
+
+    void Mp4Put64(std::vector<BYTE>& v, uint64_t x)
+    {
+        Mp4Put32(v, (uint32_t)(x >> 32));
+        Mp4Put32(v, (uint32_t)x);
+    }
+
+    void Mp4Fourcc(std::vector<BYTE>& v, const char* s)
+    {
+        v.insert(v.end(), s, s + 4);
+    }
+
+    // One sample as the output's tables need it: where its bytes sit in the
+    // file, and where in time -- already on its track's timescale, rescaled
+    // where the sink delivered it. dts and pts are the clocks the sinks
+    // compute (the synthesized one for video, the encoder's for audio); dur
+    // is the sample's own duration.
+    struct Eac3Mp4Sample {
+        uint64_t fileOffset = 0;
+        uint32_t size = 0;
+        int64_t dts = 0;
+        int64_t pts = 0;
+        int64_t dur = 0;
+        bool keyframe = false;
+    };
+
+    // What the video track's sample entry needs, filled once from the
+    // connected pin's format. The compressed samples pass through untouched,
+    // so this is only a description -- codec, size, and the parameter sets
+    // the format block's dwSequenceHeader carries, as the entry's
+    // configuration box (an avcC assembled for H.264, a real hvcC taken
+    // verbatim for HEVC).
+    struct Eac3Mp4Video {
+        bool present = false;
+        CompressedVideo kind = CompressedVideo::None;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        std::vector<BYTE> config; // the avcC / hvcC record
+    };
+
+    // The output side of the E-AC-3 remux: a hand-rolled MP4 writer. The file
+    // opens as ftyp then an mdat whose 64-bit size is a placeholder -- the
+    // video and audio streaming threads append their samples' bytes to it as
+    // they arrive, each recording its offset and timing in its track's table
+    // -- and the close patches the mdat's size and appends the moov built
+    // from those tables. Both threads write, so every append runs under one
+    // mutex -- the same shape as RemuxWriter's writer guard. ok and stopped
+    // mean what they mean there. timeShift is the video DTS synthesis's head
+    // shift, applied to the audio as well so picture and sound keep their
+    // relative timing.
     struct Eac3Mux {
-        AVFormatContext* oc = nullptr;
-        AVStream* vst = nullptr; // null when the file has no video track
-        AVStream* ast = nullptr;
-        AVCodecContext* actx = nullptr; // the E-AC-3 encoder
-        SwrContext* swr = nullptr;      // the pin's s16 PCM to the encoder's format
+        HANDLE file = INVALID_HANDLE_VALUE; // the MP4 being written
+        uint64_t mdatPos = 0;               // the mdat box's offset in the file
+        uint64_t dataEnd = 0;               // just past the last sample byte
+        std::vector<BYTE> writeBuf;         // sample bytes not yet handed to the OS
+        Eac3Mp4Video video;                 // absent when the file has no video
+        std::vector<Eac3Mp4Sample> videoSamples;
+        std::vector<Eac3Mp4Sample> audioSamples;
+        uint32_t audioTimescale = 0;        // the encoder's sample rate
+        AVCodecContext* actx = nullptr;     // the E-AC-3 encoder
+        SwrContext* swr = nullptr;          // the pin's s16 PCM to the encoder's format
         int srcChannels = 0;            // the decoded PCM's channel count (swr's input;
                                         // differs from the encoder's when 7.1 is folded to 5.1)
         REFERENCE_TIME timeShift = 0;
         std::mutex writeMutex;
         std::atomic<bool> ok { true };
         std::atomic<bool> stopped { false };
+
+        bool IsOpen() const { return file != INVALID_HANDLE_VALUE; }
+
+        // Appends a sample's bytes to the mdat and its entry to its track's
+        // table, in one motion under the write mutex so the two tracks'
+        // bytes never overlap. Only ever called with writeMutex held.
+        bool WriteSample(const void* data, uint32_t size, int64_t dts, int64_t pts,
+                         int64_t dur, bool keyframe, std::vector<Eac3Mp4Sample>& track)
+        {
+            if (!IsOpen()) {
+                return false;
+            }
+            Eac3Mp4Sample s;
+            s.fileOffset = dataEnd;
+            s.size = size;
+            s.dts = dts;
+            s.pts = pts;
+            s.dur = dur;
+            s.keyframe = keyframe;
+            track.push_back(s);
+            const BYTE* p = static_cast<const BYTE*>(data);
+            writeBuf.insert(writeBuf.end(), p, p + size);
+            dataEnd += size;
+            // Kept small: a receiver tailing the growing file stays fed.
+            return writeBuf.size() < 64 * 1024 || Flush();
+        }
+
+        // Writes what has accumulated. The OS refusing bytes is a failed
+        // remux -- the callers set ok to false.
+        bool Flush()
+        {
+            if (!IsOpen()) {
+                return writeBuf.empty();
+            }
+            size_t wrote = 0;
+            while (wrote < writeBuf.size()) {
+                DWORD n = 0;
+                if (!WriteFile(file, writeBuf.data() + wrote,
+                               (DWORD)(writeBuf.size() - wrote), &n, nullptr) || !n) {
+                    return false;
+                }
+                wrote += n;
+            }
+            writeBuf.clear();
+            return true;
+        }
     };
 
-    // Tears the muxer down in the opposite order it was built in, and closes
+    // Tears the output down in the opposite order it was built in, and closes
     // the file first so the DeleteFile that follows a failure can succeed.
     // Called only when the graph is stopped, never racing a streaming thread.
     void CloseEac3Output(Eac3Mux& mux)
     {
-        if (mux.oc && mux.oc->pb) {
-            avio_closep(&mux.oc->pb);
+        if (mux.file != INVALID_HANDLE_VALUE) {
+            CloseHandle(mux.file);
+            mux.file = INVALID_HANDLE_VALUE;
         }
         if (mux.swr) {
             swr_free(&mux.swr);
         }
         if (mux.actx) {
             avcodec_free_context(&mux.actx);
-        }
-        if (mux.oc) {
-            avformat_free_context(mux.oc);
-            mux.oc = nullptr;
-            mux.vst = nullptr;
-            mux.ast = nullptr;
         }
     }
 
@@ -778,7 +893,7 @@ namespace
 
         HRESULT DoRenderSample(IMediaSample* pSample) override
         {
-            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_mux->oc || !m_mux->vst) {
+            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_mux->IsOpen()) {
                 return S_OK;
             }
             // Anything cut before the first keyframe cannot be written where a
@@ -821,37 +936,24 @@ namespace
                 dur = t1 - t0;
             }
 
-            // The packet is built off to the side and handed over under the
-            // same lock the audio encode takes: one muxer, two threads.
-            AVPacket* pkt = av_packet_alloc();
-            if (!pkt || av_new_packet(pkt, len) < 0) {
-                if (pkt) {
-                    av_packet_free(&pkt);
-                }
-                m_mux->ok = false;
-                return E_FAIL;
-            }
-            memcpy(pkt->data, pData, len);
-            pkt->stream_index = m_mux->vst->index;
-            if (pSample->IsSyncPoint() == S_OK) {
-                pkt->flags |= AV_PKT_FLAG_KEY;
-            }
-            pkt->pts = pts;
-            pkt->dts = dts;
-            pkt->duration = dur;
-            av_packet_rescale_ts(pkt, kDShowTimeBase, m_mux->vst->time_base);
+            // The sample's bytes go to the mdat under the same lock the audio
+            // encode takes: one writer, two threads. Its times move onto the
+            // video track's timescale first, rescaled as they would have been
+            // for a stream's time base.
+            const AVRational videoTimeBase = { 1, kMp4VideoTimescale };
+            const int64_t sampleDts = av_rescale_q(dts, kDShowTimeBase, videoTimeBase);
+            const int64_t samplePts = av_rescale_q(pts, kDShowTimeBase, videoTimeBase);
+            const int64_t sampleDur = av_rescale_q(dur, kDShowTimeBase, videoTimeBase);
             std::lock_guard<std::mutex> lock(m_mux->writeMutex);
             if (m_mux->stopped || !m_mux->ok) {
-                av_packet_free(&pkt);
                 return S_OK;
             }
-            if (av_interleaved_write_frame(m_mux->oc, pkt) < 0) {
+            if (!m_mux->WriteSample(pData, (uint32_t)len, sampleDts, samplePts, sampleDur,
+                                    pSample->IsSyncPoint() == S_OK, m_mux->videoSamples)) {
                 m_mux->ok = false;
-                av_packet_free(&pkt);
                 CASTING_LOG(_T("remux E-AC-3 (LAV): the muxer refused a video sample"));
                 return E_FAIL;
             }
-            av_packet_free(&pkt);
             return S_OK;
         }
     };
@@ -894,7 +996,7 @@ namespace
 
         HRESULT DoRenderSample(IMediaSample* pSample) override
         {
-            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_mux->oc || !m_mux->ast) {
+            if (!m_mux || m_mux->stopped || !m_mux->ok || !m_mux->IsOpen()) {
                 return S_OK;
             }
             BYTE* pData = nullptr;
@@ -936,7 +1038,7 @@ namespace
     bool CPcmToEac3Sink::EncodePending(bool flush)
     {
         AVCodecContext* actx = m_mux->actx;
-        if (!actx || !m_mux->swr || !m_mux->ast || !m_mux->oc) {
+        if (!actx || !m_mux->swr || !m_mux->IsOpen()) {
             return false;
         }
         // The buffered PCM is the decoded source's own channel count, which is
@@ -1007,8 +1109,8 @@ namespace
         return true;
     }
 
-    // Drains the encoder's ready packets into the muxer. Only ever called with
-    // the mux's mutex held.
+    // Drains the encoder's ready packets into the output. Only ever called
+    // with the mux's mutex held.
     bool CPcmToEac3Sink::WriteEncodedPackets()
     {
         AVPacket* pkt = av_packet_alloc();
@@ -1027,16 +1129,22 @@ namespace
                 CASTING_LOG(_T("remux E-AC-3 (LAV): the encoder failed mid-stream"));
                 return false;
             }
-            if (pkt->pts != AV_NOPTS_VALUE) {
-                pkt->dts = pkt->pts; // audio never reorders
+            // The packets come off the encoder clocked in samples, which is
+            // the audio track's timescale itself, so their times go to the
+            // table exactly as they are. Audio never reorders; a packet
+            // without a pts (never happens, every frame is sent with one)
+            // continues from the last sample's end so the table stays a clock.
+            int64_t ts = pkt->pts;
+            if (ts == AV_NOPTS_VALUE) {
+                const auto& tail = m_mux->audioSamples;
+                ts = tail.empty() ? 0 : tail.back().dts + tail.back().dur;
             }
-            if (!pkt->duration) {
-                pkt->duration = m_mux->actx->frame_size;
+            int64_t dur = pkt->duration;
+            if (!dur) {
+                dur = m_mux->actx->frame_size;
             }
-            pkt->stream_index = m_mux->ast->index;
-            av_packet_rescale_ts(pkt, AVRational{ 1, m_mux->actx->sample_rate },
-                                 m_mux->ast->time_base);
-            if (av_interleaved_write_frame(m_mux->oc, pkt) < 0) {
+            if (!m_mux->WriteSample(pkt->data, pkt->size, ts, ts, dur, false,
+                                    m_mux->audioSamples)) {
                 m_mux->ok = false;
                 av_packet_free(&pkt);
                 CASTING_LOG(_T("remux E-AC-3 (LAV): the muxer refused an audio packet"));
@@ -1047,20 +1155,21 @@ namespace
         return true;
     }
 
-    // Fills the muxer's video stream in from the connected pin's format: the
-    // compressed samples pass through untouched, so the stream is only a
-    // description -- codec, size, and the parameter sets the format block's
-    // dwSequenceHeader carries, taken byte-for-byte as the track's extradata.
-    // No Annex-B form is built here, unlike the sink-writer remux's type
-    // builder: the MP4 muxer wants the samples length-prefixed, the way the
-    // pin delivers them, with the blob beside them.
-    AVStream* MakeVideoStreamFromPin(const AM_MEDIA_TYPE& amt, AVFormatContext* oc, CString* pWhy)
+    // Fills the mux's video description in from the connected pin's format: the
+    // compressed samples pass through untouched, so the description is only
+    // what the track's sample entry will say -- codec, size, and the parameter
+    // sets the format block's dwSequenceHeader carries, taken byte-for-byte
+    // as the entry's configuration box. No Annex-B form is built here, unlike
+    // the sink-writer remux's type builder: the MP4 takes the samples
+    // length-prefixed, the way the pin delivers them, with the blob beside
+    // them.
+    bool MakeVideoStreamFromPin(const AM_MEDIA_TYPE& amt, Eac3Mux& mux, CString* pWhy)
     {
-        auto fail = [&](const TCHAR* why) -> AVStream* {
+        auto fail = [&](const TCHAR* why) -> bool {
             if (pWhy) {
                 *pWhy = why;
             }
-            return nullptr;
+            return false;
         };
 
         if (amt.formattype != FORMAT_MPEG2Video || !amt.pbFormat
@@ -1124,25 +1233,14 @@ namespace
             }
         }
 
-        AVStream* vst = avformat_new_stream(oc, nullptr);
-        if (!vst) {
-            return fail(_T("the video track's output stream could not be created"));
-        }
-        vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-        vst->codecpar->codec_id = kind == CompressedVideo::H264 ? AV_CODEC_ID_H264
-                                                                : AV_CODEC_ID_HEVC;
-        vst->codecpar->codec_tag = 0; // let the muxer pick its sample entry
-        vst->codecpar->width = (int)w;
-        vst->codecpar->height = (int)h;
-        // The track's extradata. HEVC carries a real hvcC on the pin, taken
-        // verbatim. H.264 does not: dwSequenceHeader is a run of two-byte-length
-        // SPS/PPS NALs, which the mov muxer would mis-read (a valid avcC starts
-        // with configurationVersion 1, and one that does not makes movenc treat
-        // the length-prefixed packets as Annex-B). So an avcC is assembled from
-        // those parameter sets.
-        std::vector<BYTE> avcc;
-        const BYTE* extra = seqHeader;
-        int extraLen = (int)m2.cbSequenceHeader;
+        // The track's configuration record, as the sample entry will carry
+        // it. HEVC's is a real hvcC on the pin, taken verbatim. H.264's is
+        // not: dwSequenceHeader is a run of two-byte-length SPS/PPS NALs,
+        // which no MP4 reader accepts as an avcC (a valid one starts with
+        // configurationVersion 1, and one that does not makes a reader treat
+        // the length-prefixed packets as Annex-B). So an avcC is assembled
+        // from those parameter sets.
+        std::vector<BYTE> config;
         if (kind == CompressedVideo::H264) {
             std::vector<std::vector<BYTE>> sps, pps;
             DWORD off = 0;
@@ -1163,40 +1261,33 @@ namespace
             if (sps.empty() || pps.empty() || sps[0].size() < 4) {
                 return fail(_T("the video track's H.264 parameter sets could not be read"));
             }
-            avcc.push_back(1);            // configurationVersion
-            avcc.push_back(sps[0][1]);    // AVCProfileIndication
-            avcc.push_back(sps[0][2]);    // profile_compatibility
-            avcc.push_back(sps[0][3]);    // AVCLevelIndication
-            avcc.push_back(0xFF);         // reserved(6) | lengthSizeMinusOne=3 (4-byte prefixes)
-            avcc.push_back((BYTE)(0xE0 | (sps.size() & 0x1F))); // reserved(3) | numOfSPS
+            config.push_back(1);            // configurationVersion
+            config.push_back(sps[0][1]);    // AVCProfileIndication
+            config.push_back(sps[0][2]);    // profile_compatibility
+            config.push_back(sps[0][3]);    // AVCLevelIndication
+            config.push_back(0xFF);         // reserved(6) | lengthSizeMinusOne=3 (4-byte prefixes)
+            config.push_back((BYTE)(0xE0 | (sps.size() & 0x1F))); // reserved(3) | numOfSPS
             for (const auto& s : sps) {
-                avcc.push_back((BYTE)(s.size() >> 8));
-                avcc.push_back((BYTE)(s.size() & 0xFF));
-                avcc.insert(avcc.end(), s.begin(), s.end());
+                config.push_back((BYTE)(s.size() >> 8));
+                config.push_back((BYTE)(s.size() & 0xFF));
+                config.insert(config.end(), s.begin(), s.end());
             }
-            avcc.push_back((BYTE)pps.size()); // numOfPPS
+            config.push_back((BYTE)pps.size()); // numOfPPS
             for (const auto& p : pps) {
-                avcc.push_back((BYTE)(p.size() >> 8));
-                avcc.push_back((BYTE)(p.size() & 0xFF));
-                avcc.insert(avcc.end(), p.begin(), p.end());
+                config.push_back((BYTE)(p.size() >> 8));
+                config.push_back((BYTE)(p.size() & 0xFF));
+                config.insert(config.end(), p.begin(), p.end());
             }
-            extra = avcc.data();
-            extraLen = (int)avcc.size();
+        } else {
+            config.assign(seqHeader, seqHeader + m2.cbSequenceHeader);
         }
-        vst->codecpar->extradata_size = extraLen;
-        vst->codecpar->extradata =
-            (uint8_t*)av_malloc(extraLen + AV_INPUT_BUFFER_PADDING_SIZE);
-        if (!vst->codecpar->extradata) {
-            vst->codecpar->extradata_size = 0;
-            return fail(_T("the video track's output stream could not be created"));
-        }
-        memset(vst->codecpar->extradata + extraLen, 0, AV_INPUT_BUFFER_PADDING_SIZE);
-        memcpy(vst->codecpar->extradata, extra, extraLen);
-        vst->time_base = kDShowTimeBase;
-        if (m2.hdr.AvgTimePerFrame > 0) {
-            vst->avg_frame_rate = AVRational{ 10000000, (int)m2.hdr.AvgTimePerFrame };
-        }
-        return vst;
+
+        mux.video.present = true;
+        mux.video.kind = kind;
+        mux.video.width = (uint32_t)w;
+        mux.video.height = (uint32_t)h;
+        mux.video.config = std::move(config);
+        return true;
     }
 
     // Opens the E-AC-3 encoder the audio track encodes with, from the PCM the
@@ -1206,8 +1297,7 @@ namespace
     // planar float. The encoder takes up to 5.1, so 6.1/7.1 is downmixed to
     // 5.1 here rather than lost. A layout it still refuses (an exotic one) is a
     // clean failure, logged, so the caller can fall back to the stereo AAC engine.
-    bool OpenEac3EncoderFromPin(const AM_MEDIA_TYPE& amt, AVFormatContext* oc, Eac3Mux& mux,
-                                CString* pWhy)
+    bool OpenEac3EncoderFromPin(const AM_MEDIA_TYPE& amt, Eac3Mux& mux, CString* pWhy)
     {
         auto fail = [&](const TCHAR* why) -> bool {
             if (pWhy) {
@@ -1286,9 +1376,6 @@ namespace
             av_channel_layout_copy(&mux.actx->ch_layout, &layout);
         }
         mux.actx->bit_rate = 384000;
-        if (oc->oformat->flags & AVFMT_GLOBALHEADER) {
-            mux.actx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-        }
         if (avcodec_open2(mux.actx, enc, nullptr) < 0) {
             CASTING_LOG(_T("remux E-AC-3 (LAV): the encoder would not open for %d channels at %u Hz"),
                         mux.actx->ch_layout.nb_channels, wfe.nSamplesPerSec);
@@ -1307,15 +1394,617 @@ namespace
             return fail(_T("the PCM could not be resampled for the E-AC-3 encoder"));
         }
 
-        mux.ast = avformat_new_stream(oc, nullptr);
-        if (!mux.ast) {
-            return fail(_T("the audio track's output stream could not be created"));
+        mux.audioTimescale = (uint32_t)mux.actx->sample_rate;
+        return true;
+    }
+
+    // ===== The MP4, written out at close =====
+    //
+    // ftyp, then the mdat the samples streamed into, then the moov -- the box
+    // tree a non-fragmented MP4 is. The receiver reads the file with Range
+    // requests, so the moov may sit at the end: nothing needs it before the
+    // samples are all on disk.
+
+    // Appends a box: a 32-bit size, the type, the payload. Every box this
+    // writer emits is small enough for the 32-bit size; only the mdat, whose
+    // end is not known when its header is written, needs the 64-bit form.
+    void Mp4Box(std::vector<BYTE>& v, const char* type, const std::vector<BYTE>& payload)
+    {
+        Mp4Put32(v, (uint32_t)(8 + payload.size()));
+        Mp4Fourcc(v, type);
+        v.insert(v.end(), payload.begin(), payload.end());
+    }
+
+    // The identity transformation matrix every tkhd and mvhd carries.
+    void Mp4IdentityMatrix(std::vector<BYTE>& v)
+    {
+        Mp4Put32(v, 0x00010000);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0x00010000);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0);
+        Mp4Put32(v, 0x40000000);
+    }
+
+    // MSB-first bit packing, the shape the dec3 box's fields come in.
+    struct Mp4Bits {
+        std::vector<BYTE>& out;
+        uint32_t acc = 0;
+        int held = 0;
+        explicit Mp4Bits(std::vector<BYTE>& o) : out(o) {}
+
+        void Put(int n, uint32_t value)
+        {
+            acc = (acc << n) | (value & ((1u << n) - 1));
+            held += n;
+            while (held >= 8) {
+                held -= 8;
+                out.push_back(BYTE((acc >> held) & 0xff));
+            }
         }
-        if (avcodec_parameters_from_context(mux.ast->codecpar, mux.actx) < 0) {
-            mux.ast = nullptr;
-            return fail(_T("the audio track's output stream could not be filled in"));
+
+        // Pads the tail with zero bits to the byte boundary.
+        void Flush()
+        {
+            if (held) {
+                out.push_back(BYTE((acc << (8 - held)) & 0xff));
+                held = 0;
+            }
         }
-        mux.ast->time_base = AVRational{ 1, mux.actx->sample_rate };
+    };
+
+    // A/52's acmod -- the channel configuration the bitstream itself declares,
+    // which dec3 repeats: front count and surround count read off the layout's
+    // channel positions, mapped to the table's codes. The layout is what the
+    // encoder was opened on, so what it is encoding; lfeon comes back beside
+    // it, the LFE channel being a flag of its own rather than an acmod bit.
+    int Mp4AcmodFromLayout(const AVChannelLayout* layout, bool& lfeon)
+    {
+        uint64_t mask = 0;
+        if (layout->order == AV_CHANNEL_ORDER_NATIVE) {
+            mask = layout->u.mask;
+        } else if (layout->order == AV_CHANNEL_ORDER_CUSTOM && layout->u.map) {
+            for (int i = 0; i < layout->nb_channels; i++) {
+                mask |= (uint64_t)1 << av_channel_layout_channel_from_index(layout, i);
+            }
+        }
+        if (!mask) { // an unspecified layout: count is all there is to go on
+            return layout->nb_channels == 1 ? 1
+                                           : (layout->nb_channels == 2 ? 2 : 7);
+        }
+        lfeon = (mask & AV_CH_LOW_FREQUENCY) != 0;
+        const int fronts = (mask & AV_CH_FRONT_CENTER ? 1 : 0)
+                           + (mask & (AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT) ? 2 : 0);
+        const int surs = (mask & (AV_CH_SIDE_LEFT | AV_CH_SIDE_RIGHT
+                                  | AV_CH_BACK_LEFT | AV_CH_BACK_RIGHT) ? 2 : 0)
+                         + (mask & AV_CH_BACK_CENTER ? 1 : 0);
+        if (fronts >= 3) {
+            return surs >= 2 ? 7 : (surs == 1 ? 5 : 3);
+        }
+        if (fronts == 2) {
+            return surs >= 2 ? 6 : (surs == 1 ? 4 : 2);
+        }
+        return 1; // center only, or nothing the table can name
+    }
+
+    // The dec3 box's payload, synthesized from what the encoder was opened
+    // with rather than parsed out of the bitstream: the encode is one
+    // independent substream with no dependent substreams, so the fields are
+    // simply the encoder's own parameters -- data_rate in kbit/s, fscod the
+    // sample rate's A/52 code, bsid 16 saying E-AC-3, acmod/lfeon the layout.
+    std::vector<BYTE> Mp4Dec3Payload(const AVCodecContext* actx)
+    {
+        uint32_t fscod = 0;
+        switch (actx->sample_rate) {
+            case 44100: fscod = 1; break;
+            case 32000: fscod = 2; break;
+            default: fscod = 0; break; // 48000; the encoder opens at no other rate
+        }
+        bool lfeon = false;
+        const int acmod = Mp4AcmodFromLayout(&actx->ch_layout, lfeon);
+
+        std::vector<BYTE> p;
+        Mp4Bits bits(p);
+        bits.Put(13, (uint32_t)(actx->bit_rate / 1000)); // data_rate
+        bits.Put(3, 0);                                  // num_ind_sub - 1
+        bits.Put(2, fscod);                              // substream 0
+        bits.Put(5, 16);                                 // bsid
+        bits.Put(1, 0);                                  // reserved
+        bits.Put(1, 0);                                  // asvc
+        bits.Put(3, 0);                                  // bsmod
+        bits.Put(3, (uint32_t)acmod);
+        bits.Put(1, lfeon ? 1 : 0);
+        bits.Put(3, 0);                                  // reserved
+        bits.Put(4, 0);                                  // num_dep_sub
+        bits.Put(1, 0);                                  // reserved (num_dep_sub == 0)
+        bits.Flush();
+        return p;
+    }
+
+    // The audio sample entry: an ec-3 one, with the synthesized dec3 beside
+    // it. channels, sample size and rate are the encoder's; the rate is the
+    // field's 16.16 fixed-point form.
+    std::vector<BYTE> Mp4Ec3SampleEntry(const AVCodecContext* actx)
+    {
+        std::vector<BYTE> e;
+        Mp4Put32(e, 0);                                  // reserved
+        Mp4Put16(e, 0);                                  // reserved
+        Mp4Put16(e, 1);                                  // data reference index
+        Mp4Put16(e, 0);                                  // entry version
+        Mp4Put16(e, 0);                                  // revision level
+        Mp4Put32(e, 0);                                  // vendor
+        Mp4Put16(e, (uint32_t)actx->ch_layout.nb_channels);
+        Mp4Put16(e, 16);                                 // sample size
+        Mp4Put16(e, 0);                                  // predefined (compression id)
+        Mp4Put16(e, 0);                                  // reserved (packet size)
+        Mp4Put32(e, (uint32_t)actx->sample_rate << 16);  // 16.16 fixed
+        Mp4Box(e, "dec3", Mp4Dec3Payload(actx));
+        std::vector<BYTE> entry;
+        Mp4Box(entry, "ec-3", e);
+        return entry;
+    }
+
+    // The video sample entry: an avc1 or hvc1 one, with the configuration
+    // record the description holds riding beside the generic fields as its
+    // own box.
+    std::vector<BYTE> Mp4VideoSampleEntry(const Eac3Mp4Video& v)
+    {
+        std::vector<BYTE> e;
+        Mp4Put32(e, 0);                              // reserved
+        Mp4Put16(e, 0);                              // reserved
+        Mp4Put16(e, 1);                              // data reference index
+        Mp4Put16(e, 0);                              // pre_defined
+        Mp4Put16(e, 0);                              // reserved
+        e.insert(e.end(), 12, 0);                    // pre_defined
+        Mp4Put16(e, v.width);
+        Mp4Put16(e, v.height);
+        Mp4Put32(e, 0x00480000);                     // 72 dpi, horizontal
+        Mp4Put32(e, 0x00480000);                     // 72 dpi, vertical
+        Mp4Put32(e, 0);                              // data size
+        Mp4Put16(e, 1);                              // frame count
+        e.insert(e.end(), 32, 0);                    // compressor name, empty
+        Mp4Put16(e, 0x0018);                         // depth
+        Mp4Put16(e, 0xffff);                         // pre_defined
+        Mp4Box(e, v.kind == CompressedVideo::H264 ? "avcC" : "hvcC", v.config);
+        std::vector<BYTE> entry;
+        Mp4Box(entry, v.kind == CompressedVideo::H264 ? "avc1" : "hvc1", e);
+        return entry;
+    }
+
+    // A track's duration on its own clock: from its first sample's dts to the
+    // end of its last sample. Every table below is written in differences,
+    // which is what keeps a player's reconstruction of the timeline equal to
+    // the one the sinks recorded, whatever head shift was applied to both.
+    int64_t Mp4TrackDuration(const std::vector<Eac3Mp4Sample>& samples)
+    {
+        const Eac3Mp4Sample& first = samples.front();
+        const Eac3Mp4Sample& last = samples.back();
+        return last.dts + last.dur - first.dts;
+    }
+
+    // Builds a trak. samples is the track's table, entry its ready stsd
+    // sample entry -- the one part that differs between video and audio;
+    // everything else every MP4 track carries is derived here. width/height
+    // are zero for audio, pixels for video.
+    std::vector<BYTE> Mp4TrakBox(const std::vector<Eac3Mp4Sample>& samples,
+                                 const std::vector<BYTE>& entry, bool isVideo,
+                                 uint32_t trackId, uint32_t width, uint32_t height,
+                                 uint32_t timescale)
+    {
+        const int64_t trackDur = Mp4TrackDuration(samples);
+        const int64_t movieDur = av_rescale_rnd(trackDur, kMp4MovieTimescale, timescale,
+                                                AV_ROUND_UP);
+
+        std::vector<BYTE> trakPayload;
+        {
+            // tkhd: the track's presence, identity, and duration on the
+            // movie's clock. Version 1 (64-bit times and durations) only when
+            // the 32-bit field would not hold.
+            std::vector<BYTE> tkhd;
+            const bool big = movieDur > 0x7fffffff;
+            tkhd.push_back(BYTE(big ? 1 : 0));
+            Mp4Put24(tkhd, 3);                     // enabled | in_movie
+            if (big) {
+                Mp4Put64(tkhd, 0);                 // creation time
+                Mp4Put64(tkhd, 0);                 // modification time
+            } else {
+                Mp4Put32(tkhd, 0);
+                Mp4Put32(tkhd, 0);
+            }
+            Mp4Put32(tkhd, trackId);
+            Mp4Put32(tkhd, 0);                     // reserved
+            if (big) {
+                Mp4Put64(tkhd, movieDur);
+            } else {
+                Mp4Put32(tkhd, (uint32_t)movieDur);
+            }
+            tkhd.insert(tkhd.end(), 8, 0);         // reserved
+            Mp4Put16(tkhd, 0);                     // layer
+            Mp4Put16(tkhd, 0);                     // alternate group
+            Mp4Put16(tkhd, isVideo ? 0 : 0x0100);  // volume: full for audio
+            Mp4Put16(tkhd, 0);                     // reserved
+            Mp4IdentityMatrix(tkhd);
+            Mp4Put32(tkhd, width << 16);           // width, 16.16 fixed
+            Mp4Put32(tkhd, height << 16);          // height, 16.16 fixed
+            Mp4Box(trakPayload, "tkhd", tkhd);
+        }
+        {
+            std::vector<BYTE> mdia;
+            {
+                // mdhd: the track's own clock and span. The language is left
+                // 'und' -- the graph carries nothing to say otherwise with.
+                std::vector<BYTE> mdhd;
+                const bool big = trackDur > 0x7fffffff;
+                mdhd.push_back(BYTE(big ? 1 : 0));
+                Mp4Put24(mdhd, 0);
+                if (big) {
+                    Mp4Put64(mdhd, 0);             // creation time
+                    Mp4Put64(mdhd, 0);             // modification time
+                } else {
+                    Mp4Put32(mdhd, 0);
+                    Mp4Put32(mdhd, 0);
+                }
+                Mp4Put32(mdhd, timescale);
+                if (big) {
+                    Mp4Put64(mdhd, trackDur);
+                } else {
+                    Mp4Put32(mdhd, (uint32_t)trackDur);
+                }
+                Mp4Put16(mdhd, 0x55c4);            // language 'und'
+                Mp4Put16(mdhd, 0);                 // pre_defined
+                Mp4Box(mdia, "mdhd", mdhd);
+
+                std::vector<BYTE> hdlr;
+                Mp4Put32(hdlr, 0);                 // version & flags
+                Mp4Put32(hdlr, 0);                 // pre_defined
+                Mp4Fourcc(hdlr, isVideo ? "vide" : "soun");
+                hdlr.insert(hdlr.end(), 12, 0);    // reserved
+                const char* name = isVideo ? "VideoHandler" : "SoundHandler";
+                hdlr.insert(hdlr.end(), name, name + strlen(name));
+                hdlr.push_back(0);                 // the c string's terminator
+                Mp4Box(mdia, "hdlr", hdlr);
+            }
+            {
+                std::vector<BYTE> minf;
+                {
+                    // The media's header box: vmhd for video, smhd for audio.
+                    std::vector<BYTE> mh;
+                    if (isVideo) {
+                        mh.push_back(1);           // vmhd, version 1
+                        Mp4Put24(mh, 0);
+                        mh.insert(mh.end(), 8, 0); // graphicsmode + opcolor
+                    } else {
+                        Mp4Put32(mh, 0);           // smhd, version 0
+                        Mp4Put16(mh, 0);           // balance
+                        Mp4Put16(mh, 0);           // reserved
+                    }
+                    Mp4Box(minf, isVideo ? "vmhd" : "smhd", mh);
+                }
+                {
+                    // dinf/dref: the one data reference, pointing back into
+                    // this file -- the mdat the samples already sit in.
+                    std::vector<BYTE> dref;
+                    Mp4Put32(dref, 0);             // version & flags
+                    Mp4Put32(dref, 1);             // one entry
+                    Mp4Put32(dref, 12);            // the url box's size
+                    Mp4Fourcc(dref, "url ");
+                    Mp4Put32(dref, 1);             // self-contained
+                    std::vector<BYTE> dinf;
+                    Mp4Box(dinf, "dref", dref);
+                    Mp4Box(minf, "dinf", dinf);
+                }
+                {
+                    // stbl: the tables a player walks to find and time the
+                    // samples. stsd declares the entry the bytes decode with;
+                    // stts, stss, ctts, stsc, stsz and stco/co64 locate them.
+                    std::vector<BYTE> stbl;
+                    {
+                        std::vector<BYTE> stsd;
+                        Mp4Put32(stsd, 0);         // version & flags
+                        Mp4Put32(stsd, 1);         // one entry
+                        stsd.insert(stsd.end(), entry.begin(), entry.end());
+                        Mp4Box(stbl, "stsd", stsd);
+                    }
+                    {
+                        // stts: the dts steps as run lengths; the last sample
+                        // keeps its own duration, closing the track where its
+                        // content ends.
+                        std::vector<std::pair<uint32_t, int64_t>> runs;
+                        for (size_t i = 0; i < samples.size(); i++) {
+                            const int64_t d = i + 1 < samples.size()
+                                ? samples[i + 1].dts - samples[i].dts
+                                : samples[i].dur;
+                            if (!runs.empty() && runs.back().second == d) {
+                                runs.back().first++;
+                            } else {
+                                runs.emplace_back(1, d);
+                            }
+                        }
+                        std::vector<BYTE> stts;
+                        Mp4Put32(stts, 0);
+                        Mp4Put32(stts, (uint32_t)runs.size());
+                        for (const auto& r : runs) {
+                            Mp4Put32(stts, r.first);
+                            Mp4Put32(stts, (uint32_t)r.second);
+                        }
+                        Mp4Box(stbl, "stts", stts);
+                    }
+                    if (isVideo) {
+                        // stss: the keyframes, as sample numbers. Left out
+                        // when every sample is one -- a track nothing else
+                        // depends on.
+                        size_t keys = 0;
+                        for (const auto& s : samples) {
+                            keys += s.keyframe;
+                        }
+                        if (keys > 0 && keys < samples.size()) {
+                            std::vector<BYTE> stss;
+                            Mp4Put32(stss, 0);
+                            Mp4Put32(stss, (uint32_t)keys);
+                            for (size_t i = 0; i < samples.size(); i++) {
+                                if (samples[i].keyframe) {
+                                    Mp4Put32(stss, (uint32_t)i + 1);
+                                }
+                            }
+                            Mp4Box(stbl, "stss", stss);
+                        }
+
+                        // ctts: each sample's presentation is this far past
+                        // its decode time, run-length compressed. Written
+                        // only when the two ever differ, and signed only if
+                        // an offset went negative -- which the synthesis
+                        // above refuses, so in practice version 0.
+                        bool anyOffset = false, negOffset = false;
+                        for (const auto& s : samples) {
+                            anyOffset = anyOffset || s.pts != s.dts;
+                            negOffset = negOffset || s.pts < s.dts;
+                        }
+                        if (anyOffset) {
+                            std::vector<std::pair<uint32_t, int64_t>> runs;
+                            for (const auto& s : samples) {
+                                const int64_t off = s.pts - s.dts;
+                                if (!runs.empty() && runs.back().second == off) {
+                                    runs.back().first++;
+                                } else {
+                                    runs.emplace_back(1, off);
+                                }
+                            }
+                            std::vector<BYTE> ctts;
+                            ctts.push_back(BYTE(negOffset ? 1 : 0)); // version 1 = signed
+                            Mp4Put24(ctts, 0);
+                            Mp4Put32(ctts, (uint32_t)runs.size());
+                            for (const auto& r : runs) {
+                                Mp4Put32(ctts, r.first);
+                                Mp4Put32(ctts, (uint32_t)r.second); // two's complement when signed
+                            }
+                            Mp4Box(stbl, "ctts", ctts);
+                        }
+                    }
+                    {
+                        // stsc/stco: chunks. The two tracks' samples
+                        // interleaved as their threads delivered them; every
+                        // maximal run of this track's samples contiguous in
+                        // the file is one chunk.
+                        std::vector<std::pair<uint32_t, uint32_t>> chunks; // first chunk -> samples in it
+                        std::vector<uint64_t> offsets;
+                        for (size_t i = 0; i < samples.size(); i++) {
+                            const bool startsChunk = i == 0
+                                || samples[i].fileOffset
+                                   != samples[i - 1].fileOffset + samples[i - 1].size;
+                            if (startsChunk) {
+                                chunks.emplace_back((uint32_t)(offsets.size() + 1), 1);
+                                offsets.push_back(samples[i].fileOffset);
+                            } else {
+                                chunks.back().second++;
+                            }
+                        }
+                        {
+                            std::vector<BYTE> stsc;
+                            Mp4Put32(stsc, 0);
+                            Mp4Put32(stsc, (uint32_t)chunks.size());
+                            for (const auto& c : chunks) {
+                                Mp4Put32(stsc, c.first);   // first chunk
+                                Mp4Put32(stsc, c.second);  // samples per chunk
+                                Mp4Put32(stsc, 1);         // sample description index
+                            }
+                            Mp4Box(stbl, "stsc", stsc);
+                        }
+                        {
+                            bool big = false;
+                            for (uint64_t off : offsets) {
+                                big = big || off > 0xffffffffu;
+                            }
+                            std::vector<BYTE> stco;
+                            Mp4Put32(stco, 0);
+                            Mp4Put32(stco, (uint32_t)offsets.size());
+                            for (uint64_t off : offsets) {
+                                if (big) {
+                                    Mp4Put64(stco, off);
+                                } else {
+                                    Mp4Put32(stco, (uint32_t)off);
+                                }
+                            }
+                            Mp4Box(stbl, big ? "co64" : "stco", stco);
+                        }
+                    }
+                    {
+                        // stsz: per-sample sizes, collapsed into the constant
+                        // field when they do not vary (E-AC-3 frames never
+                        // do at a fixed bitrate).
+                        const uint32_t size0 = samples[0].size;
+                        bool constant = true;
+                        for (const auto& s : samples) {
+                            constant = constant && s.size == size0;
+                        }
+                        std::vector<BYTE> stsz;
+                        Mp4Put32(stsz, 0);
+                        Mp4Put32(stsz, constant ? size0 : 0);
+                        Mp4Put32(stsz, (uint32_t)samples.size());
+                        if (!constant) {
+                            for (const auto& s : samples) {
+                                Mp4Put32(stsz, s.size);
+                            }
+                        }
+                        Mp4Box(stbl, "stsz", stsz);
+                    }
+                    Mp4Box(minf, "stbl", stbl);
+                }
+                Mp4Box(mdia, "minf", minf);
+            }
+            Mp4Box(trakPayload, "mdia", mdia);
+        }
+        std::vector<BYTE> trak;
+        Mp4Box(trak, "trak", trakPayload);
+        return trak;
+    }
+
+    // Creates the output file and writes what can exist before any sample
+    // does: the ftyp, then the mdat's 16-byte 64-bit header with a zero
+    // largesize to be patched at close -- the samples are simply appended as
+    // the two threads deliver them. The file is shared-read so the media
+    // server can tail it while it grows. The brands say what the moov will
+    // hold: the generic ISO set, avc1 when the video track is H.264, dby1 for
+    // the Dolby audio.
+    bool OpenEac3Output(Eac3Mux& mux, LPCWSTR path)
+    {
+        mux.file = CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
+                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (mux.file == INVALID_HANDLE_VALUE) {
+            return false;
+        }
+        std::vector<BYTE> head;
+        {
+            std::vector<BYTE> ftyp;
+            Mp4Fourcc(ftyp, "isom");   // major brand
+            Mp4Put32(ftyp, 0x200);     // minor version
+            Mp4Fourcc(ftyp, "isom");   // compatible brands, the major one first
+            Mp4Fourcc(ftyp, "dby1");   // the E-AC-3 track
+            Mp4Fourcc(ftyp, "iso2");
+            if (mux.video.present && mux.video.kind == CompressedVideo::H264) {
+                Mp4Fourcc(ftyp, "avc1");
+            }
+            Mp4Fourcc(ftyp, "mp41");
+            Mp4Box(head, "ftyp", ftyp);
+        }
+        mux.mdatPos = head.size();     // where the mdat's header starts
+        Mp4Put32(head, 1);             // size 1: the box's size is the 64-bit one
+        Mp4Fourcc(head, "mdat");
+        Mp4Put64(head, 0);             // largesize, patched at close
+        mux.dataEnd = head.size();     // just past the mdat's header
+        mux.writeBuf.reserve(128 * 1024);
+        DWORD wrote = 0;
+        while (wrote < head.size()) {
+            DWORD n = 0;
+            if (!WriteFile(mux.file, head.data() + wrote,
+                           (DWORD)(head.size() - wrote), &n, nullptr) || !n) {
+                return false;
+            }
+            wrote += n;
+        }
+        return true;
+    }
+
+    // Closes the output the way a finished MP4 closes: the last sample bytes
+    // to disk, the mdat's 64-bit size patched, the moov -- built from the
+    // tables the two tracks filled -- appended after it. The builder calls it
+    // once the graph has stopped and the encoder has been drained, with
+    // nothing racing. A track that collected no samples gets no trak, as a
+    // player reading a moov expects.
+    bool FinishEac3Output(Eac3Mux& mux)
+    {
+        if (!mux.IsOpen() || !mux.Flush()) {
+            return false;
+        }
+        if (mux.videoSamples.empty() && mux.audioSamples.empty()) {
+            return false; // nothing was ever written; the run has failed elsewhere
+        }
+        if (!mux.audioSamples.empty() && !mux.actx) {
+            return false; // the audio entry is built from the encoder
+        }
+
+        std::vector<BYTE> moovPayload;
+        int64_t movieDur = 0;
+        uint32_t nextTrackId = 1;
+        std::vector<BYTE> videoTrak, audioTrak;
+        if (!mux.videoSamples.empty()) {
+            const int64_t d = av_rescale_rnd(Mp4TrackDuration(mux.videoSamples),
+                                             kMp4MovieTimescale, kMp4VideoTimescale,
+                                             AV_ROUND_UP);
+            if (d > movieDur) {
+                movieDur = d;
+            }
+            videoTrak = Mp4TrakBox(mux.videoSamples, Mp4VideoSampleEntry(mux.video), true,
+                                   nextTrackId++, mux.video.width, mux.video.height,
+                                   kMp4VideoTimescale);
+        }
+        if (!mux.audioSamples.empty()) {
+            const int64_t d = av_rescale_rnd(Mp4TrackDuration(mux.audioSamples),
+                                             kMp4MovieTimescale, mux.audioTimescale,
+                                             AV_ROUND_UP);
+            if (d > movieDur) {
+                movieDur = d;
+            }
+            audioTrak = Mp4TrakBox(mux.audioSamples, Mp4Ec3SampleEntry(mux.actx), false,
+                                   nextTrackId++, 0, 0, mux.audioTimescale);
+        }
+        {
+            // mvhd: the movie's own clock, as long as its longest track.
+            std::vector<BYTE> mvhd;
+            const bool big = movieDur > 0x7fffffff;
+            mvhd.push_back(BYTE(big ? 1 : 0));
+            Mp4Put24(mvhd, 0);
+            if (big) {
+                Mp4Put64(mvhd, 0);     // creation time
+                Mp4Put64(mvhd, 0);     // modification time
+            } else {
+                Mp4Put32(mvhd, 0);
+                Mp4Put32(mvhd, 0);
+            }
+            Mp4Put32(mvhd, kMp4MovieTimescale);
+            if (big) {
+                Mp4Put64(mvhd, movieDur);
+            } else {
+                Mp4Put32(mvhd, (uint32_t)movieDur);
+            }
+            Mp4Put32(mvhd, 0x00010000);    // preferred rate, 1.0
+            Mp4Put16(mvhd, 0x0100);        // preferred volume, 1.0
+            mvhd.insert(mvhd.end(), 10, 0); // reserved
+            Mp4IdentityMatrix(mvhd);
+            mvhd.insert(mvhd.end(), 24, 0); // pre_defined
+            Mp4Put32(mvhd, nextTrackId);
+            Mp4Box(moovPayload, "mvhd", mvhd);
+        }
+        moovPayload.insert(moovPayload.end(), videoTrak.begin(), videoTrak.end());
+        moovPayload.insert(moovPayload.end(), audioTrak.begin(), audioTrak.end());
+        std::vector<BYTE> moov;
+        Mp4Box(moov, "moov", moovPayload);
+
+        // The mdat's largesize covers its own 16-byte header as well.
+        std::vector<BYTE> sizeField;
+        Mp4Put64(sizeField, mux.dataEnd - mux.mdatPos);
+        LARGE_INTEGER at = {};
+        at.QuadPart = (LONGLONG)(mux.mdatPos + 8);
+        DWORD n = 0;
+        if (!SetFilePointerEx(mux.file, at, nullptr, FILE_BEGIN)
+                || !WriteFile(mux.file, sizeField.data(), 8, &n, nullptr) || n != 8) {
+            return false;
+        }
+        at.QuadPart = 0;
+        if (!SetFilePointerEx(mux.file, at, nullptr, FILE_END)) {
+            return false;
+        }
+        size_t wrote = 0;
+        while (wrote < moov.size()) {
+            n = 0;
+            if (!WriteFile(mux.file, moov.data() + wrote,
+                           (DWORD)(moov.size() - wrote), &n, nullptr) || !n) {
+                return false;
+            }
+            wrote += n;
+        }
         return true;
     }
 }
@@ -1731,11 +2420,12 @@ bool CastLavRemuxToMp4(const CString& srcPath, const CastMediaInfo& info, int ta
 }
 
 // Builds and runs the E-AC-3 remux graph: the LAV graph machinery of the
-// sink-writer remux above, verbatim, with FFmpeg on the output side in place
-// of the shared sink writer -- one "mp4" muxer whose video track takes the
-// compressed samples as the pin delivers them and whose audio track is the
-// E-AC-3 encoding of the decoded PCM, the source's own layout kept. Runs on
-// its own thread (see below) for the same apartment reasons as the others.
+// sink-writer remux above, verbatim, with the E-AC-3 engine on the output
+// side in place of the shared sink writer -- a hand-rolled MP4 writer whose
+// video track takes the compressed samples as the pin delivers them and
+// whose audio track is the E-AC-3 encoding of the decoded PCM, the source's
+// own layout kept. Runs on its own thread (see below) for the same apartment
+// reasons as the others.
 static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CString& outPath,
                            const CastTranscodeProgress& prog, CString* pError)
 {
@@ -1855,14 +2545,10 @@ static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CSt
         return fail(_T("the PCM sink would not accept the decoded audio"));
     }
 
-    // Open the FFmpeg output now, from the types the pins actually settled on
-    // -- which only exist after the connects -- on this thread and before the
-    // graph runs: the muxer first, then the video stream and the E-AC-3
-    // encoder, then the file and its header.
-    CW2A outUtf8(outPath, CP_UTF8);
-    if (!outUtf8 || avformat_alloc_output_context2(&mux.oc, nullptr, "mp4", outUtf8) < 0) {
-        return fail(_T("the MP4 output could not be created"));
-    }
+    // Open the output now, from the types the pins actually settled on --
+    // which only exist after the connects -- on this thread and before the
+    // graph runs: the video track's description first, then the E-AC-3
+    // encoder, then the file itself, ftyp and the mdat's header.
     if (pSplitterVideo) {
         CComPtr<IPin> pVideoIn = GetFirstPin(pVideoSinkBF, PINDIR_INPUT);
         AM_MEDIA_TYPE amt;
@@ -1870,10 +2556,10 @@ static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CSt
             return fail(_T("the video track's format could not be read"));
         }
         CString why;
-        mux.vst = MakeVideoStreamFromPin(amt, mux.oc, &why);
+        const bool okVideo = MakeVideoStreamFromPin(amt, mux, &why);
         const REFERENCE_TIME frameDur = FrameDurationFrom(amt);
         FreeMediaType(amt);
-        if (!mux.vst) {
+        if (!okVideo) {
             return fail(why);
         }
         // The head shift the video's DTS synthesis applies; the audio moves by
@@ -1887,17 +2573,14 @@ static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CSt
             return fail(_T("the decoded audio format could not be read"));
         }
         CString why;
-        const bool okEnc = OpenEac3EncoderFromPin(amt, mux.oc, mux, &why);
+        const bool okEnc = OpenEac3EncoderFromPin(amt, mux, &why);
         FreeMediaType(amt);
         if (!okEnc) {
             return fail(why);
         }
     }
-    if (avio_open(&mux.oc->pb, outUtf8, AVIO_FLAG_WRITE) < 0) {
+    if (!OpenEac3Output(mux, CStringW(outPath))) {
         return fail(_T("the output file could not be created"));
-    }
-    if (avformat_write_header(mux.oc, nullptr) < 0) {
-        return fail(_T("the MP4 output could not be started"));
     }
 
     // Run to the end of the file, sliced short so a cancel event can be
@@ -1941,7 +2624,7 @@ static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CSt
     if (!mux.ok) {
         return fail(_T("the audio could not be encoded to the end"));
     }
-    if (av_write_trailer(mux.oc) < 0) {
+    if (!FinishEac3Output(mux)) {
         return fail(_T("the output file could not be finalized"));
     }
     CloseEac3Output(mux);
