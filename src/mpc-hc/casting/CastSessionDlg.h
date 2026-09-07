@@ -123,6 +123,8 @@ protected:
     CastSavedDevice m_device;  // what the session was started on, to reach it again
     CastSessionMedia m_media;
     bool m_bSessionLive = false;
+    CString m_reencodeRetriedPath; // the file a hard LOAD failure already retried with
+                                   // re-encoded audio, so it is tried at most once
     int m_nLoops = 0;              // times the device has played the media out
     bool m_bAutoNext = false;      // load the next file by itself when one plays out
     bool m_bSeekDrag = false;      // the user has hold of the seekbar thumb

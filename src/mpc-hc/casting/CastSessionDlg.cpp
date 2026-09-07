@@ -730,6 +730,25 @@ LRESULT CCastSessionDlg::OnCastStateChanged(WPARAM /*wParam*/, LPARAM lParam)
             break;
         case CastTargetState::Failed: {
             const CString reason = m_pTarget->GetFailureReason();
+            // A device that refuses the file outright may take a re-encoded one.
+            // Try that once per file before giving up -- the automatic sibling of
+            // the "re-encode audio" button, for the failure the device does
+            // report (a silent audio drop, which it does not, stays the button's
+            // job). Guarded by the path so a re-encoded file that still fails is
+            // not retried forever.
+            if (!m_device.reencodeAudio && m_reencodeRetriedPath != m_media.path
+                    && !m_media.path.IsEmpty()) {
+                m_reencodeRetriedPath = m_media.path;
+                m_device.reencodeAudio = true;
+                m_pTarget->SetReencodeAudio(true);
+                CheckDlgButton(IDC_CASTSESS_REENCODE, BST_CHECKED);
+                if (CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd()) {
+                    pFrame->UpdateSavedCastDevice(m_device);
+                }
+                m_media.startSec = 0.0;
+                PlayMedia(m_media);
+                break;
+            }
             EndSession(0);
             SetStatusText(IDS_CAST_FAILED, reason);
             break;
