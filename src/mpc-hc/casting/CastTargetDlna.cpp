@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "CastTargetDlna.h"
 #include "CastTranscoder.h"
+#include "CastLavDecoder.h"
 #include "Logger.h"
 #include <PathUtils.h>
 #include <algorithm>
@@ -393,19 +394,30 @@ bool CDlnaTarget::AcceptsMime(const CStringA& sink, const CStringA& mime)
     return sink.IsEmpty() ? IsCommonRendererFormat(mime) : SinkAccepts(sink, mime);
 }
 
-bool CDlnaTarget::CanTranscodeForSink(const CStringA& sink, const CString& path, const CastMediaInfo& info)
+CStringA CDlnaTarget::ChooseTranscodeOutputMime(const CStringA& sink, const CString& path,
+                                                const CastMediaInfo& info)
 {
     // Audio only: a file with a picture is left alone (a renderer that plays
     // video plays the source; one that does not is an audio renderer, and it
     // cannot show the picture whatever we do to the sound).
     const bool hasVideo = info.video != CastMediaInfo::Video::Unknown || info.width > 0;
-    if (hasVideo) {
-        return false;
+    if (hasVideo || !CastCanDownmix(path, info)) {
+        return CStringA();
     }
-    // The engines have to be able to decode it (an MP4/M4A/Matroska audio track
-    // in a codec they read), and the renderer has to take what we would make of
-    // it: stereo AAC in MP4.
-    return CastCanDownmix(path, info) && AcceptsMime(sink, "audio/mp4");
+    // A surround file to a renderer that takes FLAC keeps its layout, losslessly
+    // -- an AV receiver gets its surround. FLAC encodes more than two channels
+    // where AAC (via Media Foundation) does not. Otherwise, stereo AAC in MP4.
+    if (info.channels > 2 && AcceptsMime(sink, "audio/flac")) {
+        return "audio/flac";
+    }
+    if (AcceptsMime(sink, "audio/mp4")) {
+        return "audio/mp4";
+    }
+    // A renderer that takes FLAC but not our MP4 still gets it, losslessly.
+    if (AcceptsMime(sink, "audio/flac")) {
+        return "audio/flac";
+    }
+    return CStringA();
 }
 
 // Both verdicts read the same way in the log, whether the device came out of a
@@ -424,8 +436,8 @@ void CDlnaTarget::LogVerdict(const CString& name, const CStringA& sink, const CS
                     _T("CastIgnoreFormatSupport is on, so nothing was judged and the renderer decides"),
                     name.GetString(), mime.GetString());
     } else if (viaTranscode) {
-        CASTING_LOG(_T("cast: DLNA \"%s\" does not take %hs, but its audio can be transcoded to AAC ")
-                    _T("for it (%s)"), name.GetString(), mime.GetString(), source);
+        CASTING_LOG(_T("cast: DLNA \"%s\" does not take %hs, but its audio can be re-encoded to a ")
+                    _T("format it takes (%s)"), name.GetString(), mime.GetString(), source);
     } else if (ok) {
         CASTING_LOG(_T("cast: DLNA \"%s\" takes this file, sent as %hs (%s)"),
                     name.GetString(), mime.GetString(), source);
@@ -444,7 +456,7 @@ bool CDlnaTarget::CanCastFileSaved(const CastSavedDevice& saved, const CString& 
     const CStringA mime = CCastMediaServer::MimeForFile(path);
     const CStringA sink(saved.formats);
     const bool native = AcceptsMime(sink, mime);
-    const bool viaTranscode = !native && CanTranscodeForSink(sink, path, info);
+    const bool viaTranscode = !native && !ChooseTranscodeOutputMime(sink, path, info).IsEmpty();
     const bool ok = ignoreFormatSupport || native || viaTranscode;
     LogVerdict(saved.DisplayName(), sink, mime, ok, viaTranscode && !ignoreFormatSupport);
     return ok;
@@ -457,7 +469,8 @@ bool CDlnaTarget::CanCastFile(const CString& deviceId, const CString& path, cons
     for (const DlnaDevice& dev : m_discovery.GetDevices()) {
         if (dev.udn == deviceId) {
             const bool native = AcceptsMime(dev.sinkProtocolInfo, mime);
-            const bool viaTranscode = !native && CanTranscodeForSink(dev.sinkProtocolInfo, path, info);
+            const bool viaTranscode = !native
+                                      && !ChooseTranscodeOutputMime(dev.sinkProtocolInfo, path, info).IsEmpty();
             const bool ok = ignoreFormatSupport || native || viaTranscode;
             LogVerdict(dev.friendlyName, dev.sinkProtocolInfo, mime, ok, viaTranscode && !ignoreFormatSupport);
             return ok;
@@ -510,20 +523,23 @@ void CDlnaTarget::LoadMedia(const CString& filePath, const CString& title, doubl
     const CStringA mime = CCastMediaServer::MimeForFile(filePath);
 
     // A file the renderer will not take as-is but whose audio we can re-encode
-    // to one it will (an audio-only file; stereo AAC in MP4) is transcoded on
-    // the worker before it is served -- the transcode blocks, and only the
-    // worker thread may block. Nothing is registered here; the worker fills in
-    // the url once the copy exists.
-    if (!AcceptsMime(m_sink, mime) && CanTranscodeForSink(m_sink, filePath, info)) {
+    // to one it will (an audio-only file -- multichannel FLAC if it takes FLAC,
+    // else stereo AAC in MP4) is transcoded on the worker before it is served:
+    // the transcode blocks, and only the worker thread may block. Nothing is
+    // registered here; the worker fills in the url once the copy exists.
+    const CStringA xcodeMime = AcceptsMime(m_sink, mime)
+                               ? CStringA() : ChooseTranscodeOutputMime(m_sink, filePath, info);
+    if (!xcodeMime.IsEmpty()) {
         Command cmd;
         cmd.type = Command::Type::Load;
         cmd.sourcePath = filePath;
         cmd.info = info;
+        cmd.transcodeMime = xcodeMime;
         cmd.title = title;
         cmd.duration = durationSec;
         cmd.param = startSec >= 1.0 ? startSec : 0.0;
-        CASTING_LOG(_T("cast: the renderer does not take %hs; the audio is transcoded to AAC first"),
-                    mime.GetString());
+        CASTING_LOG(_T("cast: the renderer does not take %hs; the audio is transcoded to %hs first"),
+                    mime.GetString(), xcodeMime.GetString());
         QueueCommand(std::move(cmd));
         return;
     }
@@ -849,24 +865,31 @@ void CDlnaTarget::RunCommand(const Command& cmd)
 
             if (!load.sourcePath.IsEmpty()) {
                 // The renderer would not take the file as it is; re-encode its
-                // audio to stereo AAC in an MP4 and serve that instead. This
-                // blocks, which is why it runs here on the worker and not in
-                // LoadMedia. m_hStopEvent cancels it if the session is torn down.
+                // audio to what it will take -- multichannel FLAC (layout kept)
+                // or stereo AAC in MP4 -- and serve that instead. This blocks,
+                // which is why it runs here on the worker and not in LoadMedia.
+                // m_hStopEvent cancels it if the session is torn down.
                 if (!m_transcodeTemp.IsEmpty()) {
                     DeleteFile(m_transcodeTemp);
                     m_transcodeTemp.Empty();
                 }
+                const bool toFlac = load.transcodeMime == "audio/flac";
                 TCHAR tempDir[MAX_PATH] = { 0 };
                 GetTempPath(MAX_PATH, tempDir);
                 CString temp;
-                temp.Format(_T("%smpc-dlnadownmix-%u.mp4"), tempDir, GetCurrentProcessId());
+                temp.Format(_T("%smpc-dlnaxcode-%u.%s"), tempDir, GetCurrentProcessId(),
+                            toFlac ? _T("flac") : _T("mp4"));
                 CString err;
-                if (!CastDownmixToMp4(load.sourcePath, load.info, 2, temp, &err, m_hStopEvent)) {
+                const bool ok = toFlac
+                                ? CastLavDecodeToFlac(load.sourcePath, load.info.channels, temp, &err,
+                                                      m_hStopEvent, /*preserveLayout*/ true)
+                                : CastDownmixToMp4(load.sourcePath, load.info, 2, temp, &err, m_hStopEvent);
+                if (!ok) {
                     Fail(err.IsEmpty() ? CString(_T("the audio could not be transcoded")) : err);
                     return;
                 }
                 m_transcodeTemp = temp;
-                const CStringA outMime = "audio/mp4";
+                const CStringA outMime = load.transcodeMime;
                 load.features = ContentFeatures(temp, outMime, load.info);
                 m_server.SetFile(temp, outMime, load.features);
                 const CStringA url = m_server.GetURLForHost(CStringA(m_localAddress));
@@ -879,8 +902,8 @@ void CDlnaTarget::RunCommand(const Command& cmd)
                             ? (((ULONGLONG)attr.nFileSizeHigh << 32) | attr.nFileSizeLow) : 0;
                 load.url = CString(url);
                 load.mime = CString(outMime);
-                CASTING_LOG(_T("dlna: transcoded the audio to AAC; handing the device %hs as %hs"),
-                            CCastMediaServer::MaskURLToken(url).GetString(), outMime.GetString());
+                CASTING_LOG(_T("dlna: transcoded the audio to %hs; handing the device %hs"),
+                            outMime.GetString(), CCastMediaServer::MaskURLToken(url).GetString());
             }
 
             m_mediaURL = load.url;

@@ -106,6 +106,9 @@ private:
                                    // transcoded on the worker before serving;
                                    // empty when url/mime/features are already final
         CastMediaInfo info;        // Load: drives that transcode
+        CStringA transcodeMime;    // Load: the output the transcode produces --
+                                   // "audio/mp4" (stereo AAC) or "audio/flac"
+                                   // (multichannel, layout preserved)
     };
 
     static DWORD WINAPI StaticThreadProc(LPVOID lpParam);
@@ -133,11 +136,14 @@ private:
     bool StartSession(const DlnaDevice& dev, const CString& deviceName);
 
     static bool SinkAccepts(const CStringA& sink, const CStringA& mime);
-    // Whether an audio file a renderer will not take can be re-encoded to one it
-    // will (stereo AAC in MP4). Audio-only: a renderer that plays video usually
+    // The output an audio file a renderer will not take can be re-encoded to,
+    // or empty when it cannot be helped. Audio-only: a renderer that plays video
     // plays the source, and one that does not is not helped by touching the
-    // audio, so a file with a video track is never offered this.
-    static bool CanTranscodeForSink(const CStringA& sink, const CString& path, const CastMediaInfo& info);
+    // audio, so a file with a video track is never offered this. Multichannel
+    // audio to a renderer that takes FLAC is preserved as multichannel FLAC
+    // (lossless, surround kept); otherwise it is stereo AAC in MP4.
+    static CStringA ChooseTranscodeOutputMime(const CStringA& sink, const CString& path,
+                                              const CastMediaInfo& info);
     static void LogVerdict(const CString& name, const CStringA& sink, const CStringA& mime, bool ok,
                            bool viaTranscode = false);
     static CStringA BuildMetadata(const Command& cmd);

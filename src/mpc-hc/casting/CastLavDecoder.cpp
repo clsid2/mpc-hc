@@ -683,7 +683,7 @@ namespace
 // waited on with WaitForCompletion deadlocks, since the wait blocks the very
 // thread the graph needs to deliver its completion to.
 static bool DecodeGraph(const CString& srcPath, int targetChannels, const CString& outPath,
-                        CString* pError, HANDLE hCancel)
+                        CString* pError, HANDLE hCancel, bool preserveLayout)
 {
     auto fail = [&](const CString & why) -> bool {
         if (pError) { *pError = why; }
@@ -729,14 +729,22 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
         return fail(_T("the file could not be opened by the splitter"));
     }
 
-    // Make the audio decoder downmix to stereo, isolated from the user's saved
-    // settings. Stereo is the LAV engine's floor -- it makes the sound audible on
-    // a device that could not output the original layout, which is the point.
+    // Configure the audio decoder, isolated from the user's saved settings.
+    // Normally it downmixes to stereo -- the LAV engine's floor, which makes the
+    // sound audible on a device that could not output the original layout. When
+    // the layout is to be preserved (a surround-capable renderer that takes
+    // FLAC), mixing is turned off so the source's own channels pass through
+    // untouched; SetOutputStandardLayout still puts them in the standard order a
+    // multichannel FLAC is expected to carry.
     if (CComQIPtr<ILAVAudioSettings> pLav = pAudio) {
         pLav->SetRuntimeConfig(TRUE);
-        pLav->SetMixingEnabled(TRUE);
-        pLav->SetMixingLayout(0x3); // stereo (FL FR)
-        pLav->SetMixingFlags(LAV_MIXING_FLAG_CLIP_PROTECTION | LAV_MIXING_FLAG_NORMALIZE_MATRIX);
+        if (preserveLayout) {
+            pLav->SetMixingEnabled(FALSE);
+        } else {
+            pLav->SetMixingEnabled(TRUE);
+            pLav->SetMixingLayout(0x3); // stereo (FL FR)
+            pLav->SetMixingFlags(LAV_MIXING_FLAG_CLIP_PROTECTION | LAV_MIXING_FLAG_NORMALIZE_MATRIX);
+        }
         pLav->SetSampleFormat(SampleFormat_16, TRUE);
         pLav->SetOutputStandardLayout(TRUE);
     }
@@ -803,7 +811,7 @@ static bool DecodeGraph(const CString& srcPath, int targetChannels, const CStrin
 }
 
 bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
-                         CString* pError, HANDLE hCancel)
+                         CString* pError, HANDLE hCancel, bool preserveLayout)
 {
     // The graph runs on this worker thread, in its own COM apartment, and the
     // caller blocks on the join. The caller's UI thread is thus free of the graph
@@ -816,7 +824,7 @@ bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CStri
         // no message pump, and DirectShow in an STA without one deadlocks.
         const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         const bool mf = SUCCEEDED(MFStartup(MF_VERSION)); // the FLAC sink needs it up
-        ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err, hCancel);
+        ok = DecodeGraph(srcPath, targetChannels, outFlacPath, &err, hCancel, preserveLayout);
         if (mf) {
             MFShutdown();
         }

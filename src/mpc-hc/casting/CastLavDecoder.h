@@ -29,12 +29,16 @@
 // gigabyte PCM WAV ever lands on disk). A short DirectShow graph run to end of
 // stream, whose audio renderer hands the PCM to a Media Foundation FLAC writer.
 // The caller then muxes that FLAC against the original file's copied video.
-// targetChannels is accepted for the interface's sake; the LAV path is stereo.
-// hCancel, when set, is checked while the graph runs and abandons the decode
-// with a "cancelled" failure. Returns false (with a reason in pError) on any
-// failure, leaving no output.
+// targetChannels is accepted for the interface's sake; the LAV path is stereo
+// unless preserveLayout is set, when the source's own channel layout is kept
+// (a surround-capable renderer that takes FLAC is handed its surround, since
+// FLAC -- unlike Media Foundation's AAC encoder -- encodes more than two
+// channels). hCancel, when set, is checked while the graph runs and abandons
+// the decode with a "cancelled" failure. Returns false (with a reason in
+// pError) on any failure, leaving no output.
 bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CString& outFlacPath,
-                         CString* pError = nullptr, HANDLE hCancel = nullptr);
+                         CString* pError = nullptr, HANDLE hCancel = nullptr,
+                         bool preserveLayout = false);
 
 // Remuxes a Matroska or WebM file -- a container Media Foundation cannot demux
 // at all -- into an MP4 in one DirectShow graph: the LAV splitter reads the
