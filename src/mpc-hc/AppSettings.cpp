@@ -258,6 +258,7 @@ CAppSettings::CAppSettings()
     , bEnableCasting(true)
     , nCastServerPort(13580)
     , bCastIgnoreFormatSupport(false)
+    , bCastPreferSurround(false)
     , bCastAutoPlayNext(true)
     , DebugLogMask(0)
     , iLAVGPUDevice(DWORD_MAX)
@@ -1328,6 +1329,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ENABLE_CASTING, bEnableCasting);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_SERVER_PORT, nCastServerPort);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, bCastIgnoreFormatSupport);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_PREFER_SURROUND, bCastPreferSurround);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_AUTOPLAYNEXT, bCastAutoPlayNext);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, DebugLogMask);
@@ -2317,6 +2319,7 @@ void CAppSettings::LoadSettings()
         nCastServerPort = 13580;
     }
     bCastIgnoreFormatSupport = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_IGNORE_FORMAT_SUPPORT, FALSE);
+    bCastPreferSurround = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_PREFER_SURROUND, FALSE);
     bCastAutoPlayNext = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAST_AUTOPLAYNEXT, TRUE);
 
     DebugLogMask = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_LOGGING, 0);

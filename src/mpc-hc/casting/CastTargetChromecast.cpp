@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "CastTargetChromecast.h"
 #include "CastTranscoder.h"
+#include "CastLavDecoder.h"
 #include "Logger.h"
 #include <algorithm>
 
@@ -570,7 +571,15 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
                                || info.audio == CastMediaInfo::Audio::DTS
                                || info.audio == CastMediaInfo::Audio::TrueHD;
     if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
-        if (info.video == CastMediaInfo::Video::H264) {
+        // When the device is set up for surround and the file carries more than
+        // two channels, the audio can be kept in its 5.1 layout by encoding it to
+        // E-AC-3 rather than folding it down to stereo AAC. That is a whole-file
+        // transcode -- the streaming path muxes stereo AAC only -- so a surround
+        // source skips HLS and goes straight to the worker below, which tries the
+        // E-AC-3 engine first and falls back to the stereo path if it declines
+        // the layout (7.1, chiefly).
+        const bool preferSurround = CCastTarget::preferSurround && info.channels > 2;
+        if (!preferSurround && info.video == CastMediaInfo::Video::H264) {
             // The streaming transcode, for any H.264 source -- an MP4 (Media
             // Foundation demuxes it) or a Matroska/WebM (the LAV splitter does,
             // feeding the same fragmented-MP4 sink). Only H.264: that sink
@@ -598,6 +607,9 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
             }
             m_hls.reset();
             CASTING_LOG(_T("cast: the streaming transcode did not start; transcoding the whole file first instead"));
+        } else if (preferSurround) {
+            CASTING_LOG(_T("cast: this device is set to keep surround; encoding the %d-channel audio to ")
+                        _T("E-AC-3 for the whole file rather than streaming it as stereo"), info.channels);
         } else if (info.video == CastMediaInfo::Video::HEVC) {
             CASTING_LOG(_T("cast: the streaming transcode takes H.264 only, and this file's video is ")
                         _T("HEVC; transcoding the whole file first instead"));
@@ -625,16 +637,42 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
         const HWND hWnd = m_hMsgWnd;
         const HANDLE hCancel = m_downmixCancel;
         const int chans = info.channels;
-        m_downmixThread = std::thread([this, filePath, info, target, temp, hCancel, hWnd, chans] {
+        m_downmixThread = std::thread([this, filePath, info, target, temp, hCancel, hWnd, chans, preferSurround] {
             // The transcode's engines (Media Foundation, and LAV's DirectShow
             // graph) are COM; this thread is their apartment.
             HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
             CString err;
-            const bool ok = CastDownmixToMp4(filePath, info, target, temp, &err, hCancel);
-            if (ok) {
-                CASTING_LOG(_T("cast: the file's %d-channel audio was downmixed to %d for this device"),
-                            chans, target);
-            } else {
+            bool ok = false;
+            bool surroundKept = false;
+            bool cancelled = false;
+            if (preferSurround) {
+                // Keep the source's channel layout by encoding it to E-AC-3. The
+                // encoder declines some layouts (7.1 among them) at open time,
+                // which is a clean failure -- so a refusal, unlike a cancel,
+                // drops through to the stereo path below.
+                CastTranscodeProgress prog;
+                prog.hCancel = hCancel;
+                ok = CastLavRemuxToEac3Mp4(filePath, info, chans, temp, prog, &err);
+                if (ok) {
+                    surroundKept = true;
+                    CASTING_LOG(_T("cast: the file's %d-channel audio was kept as E-AC-3 for this device"),
+                                chans);
+                } else if (hCancel && WaitForSingleObject(hCancel, 0) == WAIT_OBJECT_0) {
+                    cancelled = true; // load going away; do not fall back
+                } else {
+                    CASTING_LOG(_T("cast: the E-AC-3 surround encode was declined (%s); folding to %d-channel ")
+                                _T("stereo AAC instead"), err.GetString(), target);
+                    err.Empty();
+                }
+            }
+            if (!ok && !cancelled) {
+                ok = CastDownmixToMp4(filePath, info, target, temp, &err, hCancel);
+                if (ok) {
+                    CASTING_LOG(_T("cast: the file's %d-channel audio was downmixed to %d for this device"),
+                                chans, target);
+                }
+            }
+            if (!ok) {
                 m_downmixError = err;
             }
             if (SUCCEEDED(hrCo)) {
@@ -644,8 +682,13 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
             // written above, only after this post is observed.
             PostMessage(hWnd, WM_CAST_DOWNMIX, ok ? 1 : 0, 0);
         });
-        CASTING_LOG(_T("cast: transcoding the whole file's %d-channel audio to %d before handing it over"),
-                    info.channels, target);
+        if (preferSurround) {
+            CASTING_LOG(_T("cast: transcoding the whole file, keeping its %d-channel audio as E-AC-3, ")
+                        _T("before handing it over"), info.channels);
+        } else {
+            CASTING_LOG(_T("cast: transcoding the whole file's %d-channel audio to %d before handing it over"),
+                        info.channels, target);
+        }
         NotifyState(CastTargetState::Loading);
         return;
     }

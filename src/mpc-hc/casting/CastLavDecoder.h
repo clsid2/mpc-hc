@@ -57,3 +57,21 @@ bool CastLavDecodeToFlac(const CString& srcPath, int targetChannels, const CStri
 bool CastLavRemuxToMp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
                        const CString& outPath, bool fragmented, const CastTranscodeProgress& prog,
                        CString* pError = nullptr);
+
+// The surround variant of the remux above, for a device that plays E-AC-3:
+// the same LAV graph -- splitter, compressed video off the pin, audio through
+// the LAV decoder -- but the output side is the player's FFmpeg instead of the
+// Media Foundation sink writer. One "mp4" muxer takes the H.264/HEVC samples
+// length-prefixed exactly as the pin delivers them, no Annex-B conversion,
+// with the format block's sequence header as the track's extradata; beside
+// them the decoded PCM -- the source's own multichannel layout, mixing off,
+// never downmixed -- is resampled to planar float and encoded to E-AC-3 as it
+// flows (FLTP at 384 kbit/s up to 5.1, 640 above). The E-AC-3 encoder takes a
+// fixed set of channel layouts and refuses the rest -- 7.1 among them -- and
+// that refusal is a clean failure, logged, so the caller can fall back to the
+// stereo AAC engine. targetChannels is what routed the call here; it is not
+// applied. Non-fragmented output only. Fails like the other engines,
+// cancellation included, leaving no output.
+bool CastLavRemuxToEac3Mp4(const CString& srcPath, const CastMediaInfo& info, int targetChannels,
+                           const CString& outPath, const CastTranscodeProgress& prog,
+                           CString* pError = nullptr);

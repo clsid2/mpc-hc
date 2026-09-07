@@ -76,7 +76,7 @@
       <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\include;..\DSUtil;..\filters\renderer\VideoRenderers;..\thirdparty;..\thirdparty\AudioTools;..\thirdparty\MediaInfo\library\Source;..\thirdparty\freetype2\freetype2\include;..\thirdparty\ResizableLib\ResizableLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\include;..\DSUtil;..\filters\renderer\VideoRenderers;..\thirdparty;..\thirdparty\AudioTools;..\thirdparty\MediaInfo\library\Source;..\thirdparty\freetype2\freetype2\include;..\thirdparty\ResizableLib\ResizableLib;..\thirdparty\LAVFilters\src;..\thirdparty\ffmpeg;..\thirdparty\LAVFilters\src\ffmpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
       <AdditionalManifestFiles>$(ProjectDir)res\mpc-hc.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
