@@ -105,6 +105,7 @@ enum {
     WM_MPC_SHUTDOWN,
     WM_MPC_LOGOFF,
     WM_MPC_OPENCURPLAYLIST,
+    WM_MPC_CMDLINE, // deliberately outside the range purged while closing: a command line must not be dropped
     WM_LAV_PROPPAGE_CALLBACK,
     WM_MPCVR_SWITCH_FULLSCREEN = WM_APP + 4096,
 };

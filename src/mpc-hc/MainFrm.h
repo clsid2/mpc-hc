@@ -478,6 +478,16 @@ private:
     ULONGLONG m_dwLastRun;
     int m_nLastAppendSelectionIndex; // playlist index where the current batch of redirected opens started
 
+    // A command line redirected from another instance, waiting to be acted on. OnCopyData only
+    // queues it, so that handler returns immediately instead of probing the filesystem while
+    // the sending instances wait on it.
+    struct PendingCommandLine {
+        CAtlList<CString> cmdln;
+        ULONGLONG tArrived = 0;
+    };
+    std::deque<PendingCommandLine> m_pendingCommandLines;
+    bool m_bProcessingCommandLine = false;
+
     bool m_bBuffering;
 
     bool m_fLiveWM;
@@ -1011,6 +1021,8 @@ public:
     afx_msg void OnFileOpenmedia();
     afx_msg void OnUpdateFileOpen(CCmdUI* pCmdUI);
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+    afx_msg LRESULT OnCommandLineReceived(WPARAM wParam, LPARAM lParam);
+    void ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived);
     afx_msg void OnFileOpendvd();
     afx_msg void OnFileOpendevice();
     afx_msg void OnFileOpenOpticalDisk(UINT nID);
