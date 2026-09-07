@@ -44,6 +44,7 @@
 #include <afxwinappex.h>
 
 #define MPC_WND_CLASS_NAME L"MediaPlayerClassicW"
+#define MPC_RECOVERY_MUTEX_NAME L"MediaPlayerClassicW_RedirectRecovery"
 
 // define the default logo we use
 #define DEF_LOGO IDF_LOGO3
@@ -132,9 +133,13 @@ class CMPlayerCApp : public CWinAppEx
 
     ATL::CMutex m_mutexOneInstance;
 
+    enum class RedirectResult { Redirected, OpenNormally, ExitSilently };
+
     CAtlList<CString> m_cmdln;
     void PreProcessCommandLine();
     bool SendCommandLine(HWND hWnd);
+    HWND FindOtherInstance();
+    RedirectResult RedirectToOtherInstance();
     UINT GetVKFromAppCommand(UINT nAppCommand);
 
     COLORPROPERTY_RANGE     m_ColorControl[4];

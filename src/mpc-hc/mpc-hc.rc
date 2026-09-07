@@ -4316,6 +4316,7 @@ STRINGTABLE
 BEGIN
     IDS_AG_COLOR_CONTROLS   "Color Controls"
     IDC_COLOR_CONTROLS      "You can also open Color controls from the Play menu"
+    IDS_REDIRECT_HUNG_INSTANCE "The first MPC-HC instance is not responding.\n\nClick Yes to close it and continue in this window. Any settings and history it has not yet saved will be lost.\n\nClick No to open a new window and leave it running."
 END
 
 #endif    // English (United States) resources

@@ -1437,6 +1437,104 @@ bool CMPlayerCApp::SendCommandLine(HWND hWnd)
     return !!SendMessageTimeoutW(hWnd, WM_COPYDATA, (WPARAM)nullptr, (LPARAM)&cds, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 5000, nullptr);
 }
 
+HWND CMPlayerCApp::FindOtherInstance()
+{
+    HWND hWnd = ::FindWindow(MPC_WND_CLASS_NAME, nullptr);
+    if (!hWnd) {
+        return nullptr;
+    }
+
+    DWORD dwProcessId = 0;
+    if (GetWindowThreadProcessId(hWnd, &dwProcessId) && dwProcessId) {
+        VERIFY(AllowSetForegroundWindow(dwProcessId));
+    } else {
+        ASSERT(FALSE);
+    }
+
+    // Do not poke a window that has already stopped responding: ShowWindow on another
+    // process window can block on it.
+    if (!IsHungAppWindow(hWnd) && !(m_s->nCLSwitches & CLSW_MINIMIZED) && IsIconic(hWnd) &&
+            (!(m_s->nCLSwitches & CLSW_ADD) || m_s->nCLSwitches & CLSW_PLAY) //do not restore when adding to playlist of minimized player, unless also playing
+       ) {
+        ShowWindow(hWnd, SW_RESTORE);
+    }
+
+    return hWnd;
+}
+
+CMPlayerCApp::RedirectResult CMPlayerCApp::RedirectToOtherInstance()
+{
+    HWND hWnd = FindOtherInstance();
+    if (!hWnd) {
+        return RedirectResult::OpenNormally;
+    }
+    if (SendCommandLine(hWnd)) {
+        return RedirectResult::Redirected;
+    }
+
+    // SendCommandLine only fails because SMTO_ABORTIFHUNG saw a ghosted window; anything
+    // else (an empty command line) is not a hang and must not start a recovery.
+    if (!IsHungAppWindow(hWnd)) {
+        return RedirectResult::OpenNormally;
+    }
+
+    // Windows ghosts a window about 5 seconds after it stops pumping messages, which does
+    // not mean the process is deadlocked, since a path on an unreachable share blocks the
+    // first instance for about half a minute and it then recovers on its own. A send to a
+    // ghosted window fails in about 20 ms, so retry rather than opening a window straight
+    // away, and an aborted send is never delivered, so a retry cannot open the same file
+    // twice. Only the process that wins this mutex runs the recovery and talks to the
+    // user; the others retry quietly so a large selection cannot become one new window
+    // per file.
+    ATL::CMutex mutexRecovery;
+    mutexRecovery.Create(nullptr, FALSE, MPC_RECOVERY_MUTEX_NAME);
+    const bool bOwnsRecovery = (GetLastError() != ERROR_ALREADY_EXISTS);
+
+    const ULONGLONG tStart = GetTickCount64();
+    const ULONGLONG tRetryFor = bOwnsRecovery ? 30000ULL : 60000ULL;
+    while (GetTickCount64() - tStart < tRetryFor) {
+        Sleep(1000);
+
+        hWnd = FindOtherInstance();
+        if (!hWnd) { // it exited while we were waiting
+            return bOwnsRecovery ? RedirectResult::OpenNormally : RedirectResult::ExitSilently;
+        }
+        if (SendCommandLine(hWnd)) {
+            return RedirectResult::Redirected;
+        }
+    }
+
+    if (!bOwnsRecovery) {
+        // Another process owns the recovery and has told the user about it. Opening one
+        // window per file is exactly what this path exists to prevent.
+        return RedirectResult::ExitSilently;
+    }
+
+    // Still not responding. Ask before killing anything: from the outside a deadlocked
+    // instance is indistinguishable from one blocked on a slow share.
+    if (AfxMessageBox(ResStr(IDS_REDIRECT_HUNG_INSTANCE), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+        hWnd = FindOtherInstance();
+        if (!hWnd) {
+            return RedirectResult::OpenNormally;
+        }
+        if (SendCommandLine(hWnd)) { // it may have recovered while the prompt was up
+            return RedirectResult::Redirected;
+        }
+
+        DWORD dwProcessId = 0;
+        if (GetWindowThreadProcessId(hWnd, &dwProcessId) && dwProcessId) {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, FALSE, dwProcessId);
+            if (hProcess) {
+                TerminateProcess(hProcess, 0xDEAD4149);
+                WaitForSingleObject(hProcess, 5000);
+                CloseHandle(hProcess);
+            }
+        }
+    }
+
+    return RedirectResult::OpenNormally;
+}
+
 // CMPlayerCApp initialization
 
 // This hook prevents the program from reporting that a debugger is attached
@@ -2131,30 +2229,27 @@ BOOL CMPlayerCApp::InitInstance()
 
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         if ((m_s->nCLSwitches & CLSW_ADD) || !(m_s->GetAllowMultiInst() || m_s->nCLSwitches & CLSW_NEW || m_cmdln.IsEmpty())) {
+            // The first instance owns this mutex until it has created its window, so waiting
+            // for it means waiting for startup to finish. Release it again straight away:
+            // holding it across the send serialized every redirecting process, so one slow
+            // open in the first instance made all the others time out here and open their
+            // own windows.
             DWORD res = WaitForSingleObject(m_mutexOneInstance.m_h, 5000);
             if (res == WAIT_OBJECT_0 || res == WAIT_ABANDONED) {
-                HWND hWnd = ::FindWindow(MPC_WND_CLASS_NAME, nullptr);
-                if (hWnd) {
-                    DWORD dwProcessId = 0;
-                    if (GetWindowThreadProcessId(hWnd, &dwProcessId) && dwProcessId) {
-                        VERIFY(AllowSetForegroundWindow(dwProcessId));
-                    } else {
-                        ASSERT(FALSE);
-                    }
-                    if (!(m_s->nCLSwitches & CLSW_MINIMIZED) && IsIconic(hWnd) &&
-                        (!(m_s->nCLSwitches & CLSW_ADD) || m_s->nCLSwitches & CLSW_PLAY) //do not restore when adding to playlist of minimized player, unless also playing
-                        ) {
-                        ShowWindow(hWnd, SW_RESTORE);
-                    }
-                    if (SendCommandLine(hWnd)) {
-                        m_mutexOneInstance.Close();
-                        return FALSE;
-                    }
-                }
+                ReleaseMutex(m_mutexOneInstance.m_h);
             }
+
+            const RedirectResult result = RedirectToOtherInstance();
+            if (result != RedirectResult::OpenNormally) {
+                m_mutexOneInstance.Close();
+                return FALSE;
+            }
+            // We are going to become an instance ourselves, so take ownership back. A process
+            // starting behind us then waits for our window instead of racing its creation.
+            WaitForSingleObject(m_mutexOneInstance.m_h, 0);
             if ((m_s->nCLSwitches & CLSW_ADD)) {
                 ASSERT(FALSE);
-                return FALSE; // don't open new instance if SendCommandLine() failed
+                return FALSE; // don't open new instance if the redirect failed
             }
         }
     }
