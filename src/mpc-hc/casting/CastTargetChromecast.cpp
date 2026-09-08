@@ -571,14 +571,18 @@ void CChromecastTarget::LoadMedia(const CString& filePath, const CString& title,
                                || info.audio == CastMediaInfo::Audio::DTS
                                || info.audio == CastMediaInfo::Audio::TrueHD;
     if ((info.channels > target || rejectedCodec) && CastCanDownmix(filePath, info)) {
-        // When the device is set up for surround and the file carries more than
-        // two channels, the audio can be kept in its 5.1 layout by encoding it to
-        // E-AC-3 rather than folding it down to stereo AAC. That is a whole-file
-        // transcode -- the streaming path muxes stereo AAC only -- so a surround
-        // source skips HLS and goes straight to the worker below, which tries the
-        // E-AC-3 engine first (downmixing 6.1/7.1 to 5.1) and falls back to the
-        // stereo path only if the encoder still declines the layout.
-        const bool preferSurround = CCastTarget::preferSurround && info.channels > 2;
+        // When the device has been told it can output surround (its channel cap
+        // is 5.1 or higher) and the file carries more than two channels, the audio
+        // is kept in its 5.1 layout by encoding it to E-AC-3 rather than folded
+        // down to stereo AAC. That is a whole-file transcode -- the streaming path
+        // muxes stereo AAC only -- so a surround source skips HLS and goes straight
+        // to the worker below, which tries the E-AC-3 engine first (downmixing
+        // 6.1/7.1 to 5.1) and falls back to stereo only if the encoder still
+        // declines the layout. The cap is the only per-device surround signal
+        // there is: a Chromecast never reports whether it (or the HDMI/ARC sink
+        // behind it) decodes E-AC-3, so the user marks a capable device 5.1/7.1
+        // and the default stays stereo, which every receiver plays.
+        const bool preferSurround = m_maxAudioChannels >= 6 && info.channels > 2;
         if (!preferSurround && info.video == CastMediaInfo::Video::H264) {
             // The streaming transcode, for any H.264 source -- an MP4 (Media
             // Foundation demuxes it) or a Matroska/WebM (the LAV splitter does,

@@ -18745,7 +18745,6 @@ void CMainFrame::EnsureCastTarget()
     // is early enough and follows a change made in the options.
     CCastMediaServer::preferredPort = (UINT)AfxGetAppSettings().nCastServerPort;
     CCastTarget::ignoreFormatSupport = AfxGetAppSettings().bCastIgnoreFormatSupport;
-    CCastTarget::preferSurround = AfxGetAppSettings().bCastPreferSurround;
 }
 
 // The window a session runs in. It is made before the device is connected, so

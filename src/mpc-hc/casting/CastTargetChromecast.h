@@ -72,7 +72,10 @@ public:
     // one thing a report of "it did not work" has to carry. Public so that the
     // decision can be exercised on its own.
     // maxAudioChannels caps the audio the device is known to output (0 = no
-    // cap); it is last so existing callers need not pass it.
+    // cap); it is last so existing callers need not pass it. Set to 6 or 8 it
+    // is also the one per-device signal that the device (or the HDMI/ARC sink
+    // behind it) plays surround, so a file that must be transcoded is kept as
+    // 5.1 E-AC-3 rather than folded to stereo -- see LoadMedia.
     static bool ReceiverCanPlay(const CString& path, const CastMediaInfo& info, const CString& model,
                                 CString* pRefusal = nullptr, int maxAudioChannels = 0);
 

@@ -972,7 +972,6 @@ public:
     bool            bEnableCasting;
     int             nCastServerPort;
     bool            bCastIgnoreFormatSupport;
-    bool            bCastPreferSurround;
     bool            bCastAutoPlayNext;
 
     int             DebugLogMask;
