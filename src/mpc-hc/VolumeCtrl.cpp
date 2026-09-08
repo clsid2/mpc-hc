@@ -130,6 +130,43 @@ void CVolumeCtrl::getCustomChannelRect(LPRECT rc)
     }
 }
 
+void CVolumeCtrl::drawPercentage(CDC& dc, const CStringW& str, const CRect& rc)
+{
+    const UINT format = DT_CENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+
+    // DT_VCENTER centres the line box, which is ascent + descent. The readout is only
+    // digits and '%', none of which descend, so the descent below the baseline is dead
+    // space while the font's internal leading pads the top, and the glyphs sit low in
+    // the channel by (ascent - capHeight - descent) / 2. Centre the glyph ink instead,
+    // measured from the font itself so it holds at every DPI and toolbar size.
+    static const MAT2 identity = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
+    TEXTMETRIC tm;
+    int aboveBaseline = 0, belowBaseline = 0;
+    if (dc.GetTextMetrics(&tm)) {
+        for (int i = 0; i < str.GetLength(); i++) {
+            GLYPHMETRICS gm;
+            if (GDI_ERROR != ::GetGlyphOutlineW(dc.GetSafeHdc(), str[i], GGO_METRICS, &gm, 0, nullptr, &identity)) {
+                aboveBaseline = std::max<int>(aboveBaseline, gm.gmptGlyphOrigin.y);
+                belowBaseline = std::max<int>(belowBaseline, (int)gm.gmBlackBoxY - gm.gmptGlyphOrigin.y);
+            }
+        }
+    }
+
+    CRect textRect(rc);
+    const int inkHeight = aboveBaseline + belowBaseline;
+    if (inkHeight <= 0 || inkHeight > rc.Height()) {
+        // bitmap font, or the glyphs do not fit anyway: nothing better than DT_VCENTER
+        dc.DrawTextW(str, textRect, format | DT_VCENTER);
+        return;
+    }
+
+    // equal space above and below the ink; any odd leftover pixel goes below, which
+    // reads better than the other way round
+    textRect.top = rc.top + (rc.Height() - inkHeight) / 2 + aboveBaseline - tm.tmAscent;
+    textRect.bottom = textRect.top + tm.tmHeight;
+    dc.DrawTextW(str, textRect, format | DT_TOP);
+}
+
 void CVolumeCtrl::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
@@ -488,7 +525,7 @@ void CVolumeCtrl::OnPaint() {
             int oldMode = dcMem.SetBkMode(TRANSPARENT);
             CStringW str;
             str.Format(IDS_VOLUME, GetPos());
-            dcMem.DrawTextW(str, r, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
+            drawPercentage(dcMem, str, r);
             dcMem.SelectObject(oldFont);
             dcMem.SetBkMode(oldMode);
         }
