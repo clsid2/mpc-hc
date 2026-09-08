@@ -166,6 +166,9 @@ CAppSettings::CAppSettings()
     , fAudioNormalizeRecover(true)
     , nAudioBoost(0)
     , bAudioBoostWarned(false)
+    , iReplayGainMode(0)
+    , iReplayGainPreamp(0)
+    , bReplayGainPreventClipping(true)
     , fAudioTimeShift(false)
     , iAudioTimeShift(0)
     , fCustomChannelMapping(false)
@@ -1094,6 +1097,9 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIONORMALIZERECOVER, fAudioNormalizeRecover);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOST, nAudioBoost);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOSTWARNED, bAudioBoostWarned);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINMODE, iReplayGainMode);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREAMP, iReplayGainPreamp);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREVENTCLIPPING, bReplayGainPreventClipping);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPEAKERCHANNELS, nSpeakerChannels);
 
@@ -2017,6 +2023,9 @@ void CAppSettings::LoadSettings()
     fAudioNormalizeRecover = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIONORMALIZERECOVER, TRUE);
     nAudioBoost = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOST, 0);
     bAudioBoostWarned = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOSTWARNED, FALSE);
+    iReplayGainMode = std::clamp((int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINMODE, 0), 0, 2);
+    iReplayGainPreamp = std::clamp((int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREAMP, 0), -15, 15);
+    bReplayGainPreventClipping = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREVENTCLIPPING, TRUE);
 
     nSpeakerChannels = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPEAKERCHANNELS, 2);
 
