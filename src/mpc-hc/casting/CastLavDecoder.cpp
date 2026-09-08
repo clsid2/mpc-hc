@@ -2487,7 +2487,16 @@ static bool Eac3RemuxGraph(const CString& srcPath, int targetChannels, const CSt
     if (CComQIPtr<ILAVAudioSettings> pLav = pAudio) {
         pLav->SetRuntimeConfig(TRUE);
         pLav->SetMixingEnabled(FALSE);
+        // 16-bit only. Enabling 16 alone is not enough: a lossless hi-res source
+        // (DTS-HD MA, TrueHD) decodes to 24-bit and LAV would hand that over,
+        // which the s16 sink below refuses -- so the wider formats are disabled
+        // and LAV downconverts to 16-bit, ample before a 384 kbit/s E-AC-3
+        // encode. Bitstream is not controllable this way and is irrelevant here.
         pLav->SetSampleFormat(SampleFormat_16, TRUE);
+        pLav->SetSampleFormat(SampleFormat_24, FALSE);
+        pLav->SetSampleFormat(SampleFormat_32, FALSE);
+        pLav->SetSampleFormat(SampleFormat_U8, FALSE);
+        pLav->SetSampleFormat(SampleFormat_FP32, FALSE);
         pLav->SetOutputStandardLayout(TRUE);
     }
 
