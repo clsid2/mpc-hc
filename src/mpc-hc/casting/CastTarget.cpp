@@ -82,6 +82,8 @@ CastMediaInfo GetCastMediaInfo(const CString& path)
     } else if (videoFormat.CompareNoCase(_T("MPEG Video")) == 0
                && field(MediaInfoDLL::Stream_Video, __T("Format_Version")).CompareNoCase(_T("Version 2")) == 0) {
         info.video = CastMediaInfo::Video::MPEG2;
+    } else if (videoFormat.CompareNoCase(_T("VC-1")) == 0) {
+        info.video = CastMediaInfo::Video::VC1;
     }
     if (info.video != CastMediaInfo::Video::Unknown) {
         info.width = MediaInfoInt(field(MediaInfoDLL::Stream_Video, __T("Width")));

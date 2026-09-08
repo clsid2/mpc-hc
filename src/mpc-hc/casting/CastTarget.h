@@ -74,7 +74,7 @@ inline LPCTSTR CastTargetStateName(CastTargetState state)
 // plays. Every field may be left Unknown or zero, which simply means nothing
 // is claimed about it.
 struct CastMediaInfo {
-    enum class Video { Unknown, H264, HEVC, MPEG2, VP8, VP9, AV1 };
+    enum class Video { Unknown, H264, HEVC, MPEG2, VP8, VP9, AV1, VC1 };
     enum class Audio { Unknown, AAC, MP3, WMA, FLAC, Opus, Vorbis, LPCM, AC3, EAC3, DTS, TrueHD };
 
     Video video = Video::Unknown;
@@ -110,6 +110,8 @@ inline LPCTSTR CastVideoCodecName(CastMediaInfo::Video video)
             return _T("VP9");
         case CastMediaInfo::Video::AV1:
             return _T("AV1");
+        case CastMediaInfo::Video::VC1:
+            return _T("VC-1");
         default:
             return _T("unrecognized");
     }

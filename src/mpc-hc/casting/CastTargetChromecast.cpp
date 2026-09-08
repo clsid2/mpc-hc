@@ -468,9 +468,12 @@ bool CChromecastTarget::ReceiverCanPlay(const CString& path, const CastMediaInfo
             break;
     }
 
-    if (info.video == CastMediaInfo::Video::MPEG2) {
-        // MP2T is a container the receiver takes, MPEG-2 video is not
-        refusal = _T("the receiver does not decode MPEG-2 video");
+    if (info.video == CastMediaInfo::Video::MPEG2 || info.video == CastMediaInfo::Video::VC1) {
+        // Neither is a Cast video codec (MP2T is a container the receiver takes,
+        // its MPEG-2 video is not; VC-1 rides in MKV/WMV the same way). The video
+        // is copied untouched by every transcode path, so an unplayable codec is
+        // refused here rather than sent as a picture the device cannot decode.
+        refusal.Format(_T("the receiver does not decode %s video"), CastVideoCodecName(info.video));
         return false;
     }
     if (info.video != CastMediaInfo::Video::HEVC && info.video != CastMediaInfo::Video::AV1) {
