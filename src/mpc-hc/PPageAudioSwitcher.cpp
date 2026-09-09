@@ -49,6 +49,9 @@ CPPageAudioSwitcher::CPPageAudioSwitcher(IFilterGraph* pFG)
     , m_nChannels(0)
     , m_tAudioTimeShift(0)
     , m_fAudioTimeShift(FALSE)
+    , m_iReplayGainMode(0)
+    , m_iReplayGainPreamp(0)
+    , m_bReplayGainPreventClipping(TRUE)
 {
     CComQIPtr<IAudioSwitcherFilter> pASF = FindFilter(__uuidof(CAudioSwitcherFilter), pFG);
 
@@ -88,6 +91,12 @@ void CPPageAudioSwitcher::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_EDIT2, m_tAudioTimeShift);
     DDX_Check(pDX, IDC_CHECK4, m_fAudioTimeShift);
     DDX_Control(pDX, IDC_CHECK4, m_fAudioTimeShiftCtrl);
+    DDX_Control(pDX, IDC_COMBO1, m_replayGainModeCtrl);
+    DDX_CBIndex(pDX, IDC_COMBO1, m_iReplayGainMode);
+    DDX_Control(pDX, IDC_EDIT4, m_replayGainPreampCtrl);
+    DDX_Control(pDX, IDC_SPIN4, m_replayGainPreampSpin);
+    DDX_Text(pDX, IDC_EDIT4, m_iReplayGainPreamp);
+    DDX_Check(pDX, IDC_CHECK7, m_bReplayGainPreventClipping);
 }
 
 BEGIN_MESSAGE_MAP(CPPageAudioSwitcher, CMPCThemePPageBase)
@@ -103,6 +112,12 @@ BEGIN_MESSAGE_MAP(CPPageAudioSwitcher, CMPCThemePPageBase)
     ON_UPDATE_COMMAND_UI(IDC_EDIT3, OnUpdateNormalize)
     ON_UPDATE_COMMAND_UI(IDC_SPIN3, OnUpdateNormalize)
     ON_UPDATE_COMMAND_UI(IDC_CHECK6, OnUpdateNormalize)
+    ON_UPDATE_COMMAND_UI(IDC_STATIC7, OnUpdateAudioSwitcher)
+    ON_UPDATE_COMMAND_UI(IDC_COMBO1, OnUpdateAudioSwitcher)
+    ON_UPDATE_COMMAND_UI(IDC_STATIC8, OnUpdateReplayGain)
+    ON_UPDATE_COMMAND_UI(IDC_EDIT4, OnUpdateReplayGain)
+    ON_UPDATE_COMMAND_UI(IDC_SPIN4, OnUpdateReplayGain)
+    ON_UPDATE_COMMAND_UI(IDC_CHECK7, OnUpdateReplayGain)
     ON_UPDATE_COMMAND_UI(IDC_EDIT2, OnUpdateTimeShift)
     ON_UPDATE_COMMAND_UI(IDC_SPIN2, OnUpdateTimeShift)
     ON_UPDATE_COMMAND_UI(IDC_CHECK3, OnUpdateAudioSwitcher)
@@ -148,6 +163,14 @@ BOOL CPPageAudioSwitcher::OnInitDialog()
     m_fAudioTimeShift = s.fAudioTimeShift;
     m_tAudioTimeShift = s.iAudioTimeShift;
     m_tAudioTimeShiftSpin.SetRange32(-1000 * 60 * 60 * 24, 1000 * 60 * 60 * 24);
+    m_replayGainModeCtrl.AddString(ResStr(IDS_REPLAYGAIN_MODE_OFF));
+    m_replayGainModeCtrl.AddString(ResStr(IDS_REPLAYGAIN_MODE_TRACK));
+    m_replayGainModeCtrl.AddString(ResStr(IDS_REPLAYGAIN_MODE_ALBUM));
+    CorrectComboListWidth(m_replayGainModeCtrl);
+    m_iReplayGainMode = s.iReplayGainMode;
+    m_iReplayGainPreamp = s.iReplayGainPreamp;
+    m_replayGainPreampSpin.SetRange32(-15, 15);
+    m_bReplayGainPreventClipping = s.bReplayGainPreventClipping;
     m_fCustomChannelMapping = s.fCustomChannelMapping;
     memcpy(m_pSpeakerToChannelMap, s.pSpeakerToChannelMap, sizeof(s.pSpeakerToChannelMap));
 
@@ -220,6 +243,9 @@ BOOL CPPageAudioSwitcher::OnApply()
     s.nAudioBoost = m_AudioBoostPos;
     s.fAudioTimeShift = !!m_fAudioTimeShift;
     s.iAudioTimeShift = m_tAudioTimeShift;
+    s.iReplayGainMode = std::clamp(m_iReplayGainMode, 0, 2);
+    s.iReplayGainPreamp = std::clamp(m_iReplayGainPreamp, -15, 15);
+    s.bReplayGainPreventClipping = !!m_bReplayGainPreventClipping;
     s.fCustomChannelMapping = !!m_fCustomChannelMapping;
     memcpy(s.pSpeakerToChannelMap, m_pSpeakerToChannelMap, sizeof(m_pSpeakerToChannelMap));
     s.nSpeakerChannels = std::clamp(m_nChannels, 1, AS_MAX_CHANNELS);
@@ -399,6 +425,12 @@ void CPPageAudioSwitcher::OnUpdateTimeShift(CCmdUI* pCmdUI)
     //  UpdateData();
     pCmdUI->Enable(IsDlgButtonChecked(IDC_CHECK2)/*m_fEnableAudioSwitcher*/
                    && IsDlgButtonChecked(IDC_CHECK4)/*m_fAudioTimeShift)*/);
+}
+
+void CPPageAudioSwitcher::OnUpdateReplayGain(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(IsDlgButtonChecked(IDC_CHECK2)/*m_fEnableAudioSwitcher*/
+                   && m_replayGainModeCtrl.GetCurSel() > 0);
 }
 
 void CPPageAudioSwitcher::OnUpdateChannelMapping(CCmdUI* pCmdUI)

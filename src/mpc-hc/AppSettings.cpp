@@ -166,6 +166,9 @@ CAppSettings::CAppSettings()
     , fAudioNormalizeRecover(true)
     , nAudioBoost(0)
     , bAudioBoostWarned(false)
+    , iReplayGainMode(0)
+    , iReplayGainPreamp(0)
+    , bReplayGainPreventClipping(true)
     , fAudioTimeShift(false)
     , iAudioTimeShift(0)
     , fCustomChannelMapping(false)
@@ -1094,6 +1097,9 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIONORMALIZERECOVER, fAudioNormalizeRecover);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOST, nAudioBoost);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOSTWARNED, bAudioBoostWarned);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINMODE, iReplayGainMode);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREAMP, iReplayGainPreamp);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREVENTCLIPPING, bReplayGainPreventClipping);
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPEAKERCHANNELS, nSpeakerChannels);
 
@@ -2017,6 +2023,9 @@ void CAppSettings::LoadSettings()
     fAudioNormalizeRecover = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIONORMALIZERECOVER, TRUE);
     nAudioBoost = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOST, 0);
     bAudioBoostWarned = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUDIOBOOSTWARNED, FALSE);
+    iReplayGainMode = std::clamp((int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINMODE, 0), 0, 2);
+    iReplayGainPreamp = std::clamp((int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREAMP, 0), -15, 15);
+    bReplayGainPreventClipping = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_REPLAYGAINPREVENTCLIPPING, TRUE);
 
     nSpeakerChannels = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPEAKERCHANNELS, 2);
 
@@ -3944,11 +3953,6 @@ void CAppSettings::MigrateSettings()
             }
         }
         [[fallthrough]];
-        case 1: {
-            // Internal decoding of WMV 1/2/3 is now disabled by default so we reinitialize its value
-            pApp->WriteProfileInt(IDS_R_INTERNAL_FILTERS, _T("TRA_WMV"), FALSE);
-        }
-        [[fallthrough]];
         case 2: {
             const CString section(_T("Settings"));
             if (pApp->HasProfileEntry(section, _T("FullScreenCtrls")) &&
@@ -4057,10 +4061,6 @@ void CAppSettings::MigrateSettings()
             VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DISABLE_SUBTITLE_ANIMATION, bDisableSubtitleAnimation));
         }
         [[fallthrough]];
-        case 5:
-            copyInt(IDS_R_INTERNAL_FILTERS, _T("SRC_DTSAC3"), IDS_R_INTERNAL_FILTERS, _T("SRC_DTS"));
-            copyInt(IDS_R_INTERNAL_FILTERS, _T("SRC_DTSAC3"), IDS_R_INTERNAL_FILTERS, _T("SRC_AC3"));
-        [[fallthrough]];
         case 6: {
             SubtitleRenderer subrenderer = SubtitleRenderer::INTERNAL;
             if (!pApp->GetProfileInt(IDS_R_SETTINGS, _T("AutoloadSubtitles"), TRUE)) {
@@ -4082,7 +4082,7 @@ void CAppSettings::MigrateSettings()
             // Update the settings after the removal of DirectX 7 renderers
             switch (pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, VIDRNDT_DS_VMR7)) {
                 case 3: // VIDRNDT_DS_VMR7WINDOWED
-                    VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, VIDRNDT_DS_VMR9WINDOWED));
+                    VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, VIDRNDT_DS_VMR7));
                     break;
                 case 5: // VIDRNDT_DS_VMR7RENDERLESS
                     VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, VIDRNDT_DS_VMR9RENDERLESS));

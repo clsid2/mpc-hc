@@ -818,6 +818,9 @@ public:
     bool            fAudioNormalizeRecover;
     UINT            nAudioBoost;
     bool            bAudioBoostWarned;
+    int             iReplayGainMode; // 0: off, 1: track, 2: album
+    int             iReplayGainPreamp; // dB
+    bool            bReplayGainPreventClipping;
     bool            fAudioTimeShift;
     int             iAudioTimeShift;
     bool            fCustomChannelMapping;

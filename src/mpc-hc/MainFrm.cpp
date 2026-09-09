@@ -16647,6 +16647,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
 
     m_fValidDVDOpen = false;
     m_iDefRotation = 0;
+    m_replayGain = ReplayGainInfo();
 
     OpenFileData* pFileData = dynamic_cast<OpenFileData*>(pOMD.m_p);
     OpenDVDData* pDVDData = dynamic_cast<OpenDVDData*>(pOMD.m_p);
@@ -16899,12 +16900,27 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
                             var.Clear();
                         }
                         if (m_pAudioSwitcherSS) {
-                            if (SUCCEEDED(pPB->Read(_T("replaygain_track_gain"), &var, nullptr)) && var.vt == VT_BSTR) {
-                                // ToDo: parse value, add function to audio switcher filter to set replaygain value, apply it similar to boost and skip normalize (and regular boost?)
+                            // ReplayGain tags, as ffmpeg keeps them in the container-level metadata (FLAC, MP4, ID3v2)
+                            auto readGain = [&](LPCWSTR key, float& value) {
+                                bool ok = false;
+                                if (SUCCEEDED(pPB->Read(key, &var, nullptr)) && var.vt == VT_BSTR) {
+                                    ok = ParseReplayGainValue(var.bstrVal, value);
+                                }
                                 var.Clear();
-                            } else if (SUCCEEDED(pPB->Read(_T("replaygain_album_gain"), &var, nullptr)) && var.vt == VT_BSTR) {
-                                var.Clear();
+                                return ok;
+                            };
+                            m_replayGain.bHasTrackGain = readGain(L"replaygain_track_gain", m_replayGain.fTrackGain);
+                            m_replayGain.bHasAlbumGain = readGain(L"replaygain_album_gain", m_replayGain.fAlbumGain);
+                            if (m_replayGain.bHasTrackGain && !readGain(L"replaygain_track_peak", m_replayGain.fTrackPeak)) {
+                                m_replayGain.fTrackPeak = 0.0f;
                             }
+                            if (m_replayGain.bHasAlbumGain && !readGain(L"replaygain_album_peak", m_replayGain.fAlbumPeak)) {
+                                m_replayGain.fAlbumPeak = 0.0f;
+                            }
+                            TRACE(_T("ReplayGain tags: track %d (%.2f dB, peak %f), album %d (%.2f dB, peak %f)\n"),
+                                  m_replayGain.bHasTrackGain, m_replayGain.fTrackGain, m_replayGain.fTrackPeak,
+                                  m_replayGain.bHasAlbumGain, m_replayGain.fAlbumGain, m_replayGain.fAlbumPeak);
+                            ApplyReplayGain();
                         }
                     }
                 }
@@ -23581,7 +23597,63 @@ void CMainFrame::UpdateAudioSwitcher()
         pASF->SetSpeakerConfig(s.fCustomChannelMapping, s.pSpeakerToChannelMap);
         pASF->SetAudioTimeShift(s.fAudioTimeShift ? 10000i64 * s.iAudioTimeShift : 0);
         pASF->SetNormalizeBoost2(s.fAudioNormalize, s.nAudioMaxNormFactor, s.fAudioNormalizeRecover, s.nAudioBoost);
+        ApplyReplayGain();
     }
+}
+
+// Parses a ReplayGain tag value such as "-6.20 dB", "+1.5" or "0.988525" (peak)
+bool CMainFrame::ParseReplayGainValue(LPCWSTR str, float& value)
+{
+    if (!str) {
+        return false;
+    }
+    while (*str == L' ' || *str == L'\t') {
+        str++;
+    }
+    wchar_t* end = nullptr;
+    double d = wcstod(str, &end);
+    if (end == str || !std::isfinite(d)) {
+        return false;
+    }
+    value = float(d);
+    return true;
+}
+
+// Pushes the gain for the current file into the audio switcher, according to the ReplayGain settings
+void CMainFrame::ApplyReplayGain()
+{
+    CComQIPtr<IAudioSwitcherFilter> pASF = FindFilter(__uuidof(CAudioSwitcherFilter), m_pGB);
+    if (!pASF) {
+        return;
+    }
+
+    const CAppSettings& s = AfxGetAppSettings();
+    bool bApply = false;
+    float gain_dB = 0.0f, peak = 0.0f;
+
+    if (s.iReplayGainMode == 1 || s.iReplayGainMode == 2) {
+        // use the preferred tag, falling back to the other one when it is missing
+        bool bUseAlbum = (s.iReplayGainMode == 2) ? m_replayGain.bHasAlbumGain : !m_replayGain.bHasTrackGain;
+        if (bUseAlbum && m_replayGain.bHasAlbumGain) {
+            bApply = true;
+            gain_dB = m_replayGain.fAlbumGain;
+            peak = m_replayGain.fAlbumPeak;
+        } else if (m_replayGain.bHasTrackGain) {
+            bApply = true;
+            gain_dB = m_replayGain.fTrackGain;
+            peak = m_replayGain.fTrackPeak;
+        }
+    }
+
+    if (bApply) {
+        gain_dB = std::clamp(gain_dB, -60.0f, 60.0f) + s.iReplayGainPreamp;
+        if (s.bReplayGainPreventClipping && peak > 0.0f) {
+            // do not raise the tagged peak above full scale
+            gain_dB = std::min(gain_dB, float(-20.0 * log10(peak)));
+        }
+    }
+    TRACE(_T("ReplayGain: %s, %.2f dB\n"), bApply ? _T("on") : _T("off"), gain_dB);
+    pASF->SetReplayGain(bApply, gain_dB);
 }
 
 void CMainFrame::LoadArtToViews(const CString& imagePath)

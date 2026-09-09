@@ -332,6 +332,14 @@ private:
     void UpdateDXVAStatus();
 
     void SetVolumeBoost(UINT nAudioBoost);
+    // ReplayGain values found in the tags of the currently open file
+    struct ReplayGainInfo {
+        bool bHasTrackGain = false, bHasAlbumGain = false;
+        float fTrackGain = 0.0f, fAlbumGain = 0.0f; // dB
+        float fTrackPeak = 0.0f, fAlbumPeak = 0.0f; // 0 = unknown
+    } m_replayGain;
+    static bool ParseReplayGainValue(LPCWSTR str, float& value);
+    void ApplyReplayGain();
     void SetBalance(int balance);
 	
 	// temp fonts loader
