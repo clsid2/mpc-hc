@@ -99,6 +99,18 @@ msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
 msgid "Boost:"
 msgstr "Pojačanje:"
 
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC7"
+msgid "ReplayGain:"
+msgstr ""
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC8"
+msgid "Preamp (dB):"
+msgstr ""
+
+msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK7"
+msgid "Prevent clipping"
+msgstr ""
+
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
 msgid "Audio time shift (ms):"
 msgstr "Vremenski pomak za audio (ms):"
@@ -1834,6 +1846,24 @@ msgstr "Resetuj"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
+msgstr ""
+
+msgctxt "IDD_REDIRECT_WAIT_DLG_CAPTION"
+msgid "MPC-HC"
+msgstr ""
+
+msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
+msgid ""
+"Opening files is taking some time. Waiting for the first MPC-HC instance to "
+"respond."
+msgstr ""
+
+msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
+msgid "Please wait and do not open more files for the next 30 seconds."
+msgstr ""
+
+msgctxt "IDD_REDIRECT_WAIT_DLG_IDCANCEL"
+msgid "Open new window"
 msgstr ""
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"

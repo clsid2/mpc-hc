@@ -5141,10 +5141,31 @@ msgctxt "IDS_PPAGEADVANCED_GRP_MISC"
 msgid "Miscellaneous"
 msgstr ""
 
+msgctxt "IDS_REPLAYGAIN_MODE_OFF"
+msgid "Off"
+msgstr ""
+
+msgctxt "IDS_REPLAYGAIN_MODE_TRACK"
+msgid "Track"
+msgstr ""
+
+msgctxt "IDS_REPLAYGAIN_MODE_ALBUM"
+msgid "Album"
+msgstr ""
+
 msgctxt "IDS_AG_COLOR_CONTROLS"
 msgid "Color Controls"
 msgstr ""
 
 msgctxt "IDC_COLOR_CONTROLS"
 msgid "You can also open Color controls from the Play menu"
+msgstr ""
+
+msgctxt "IDS_REDIRECT_HUNG_INSTANCE"
+msgid ""
+"The first MPC-HC instance is not responding.\n"
+"\n"
+"Click Yes to close it and continue in this window. Any settings and history it has not yet saved will be lost.\n"
+"\n"
+"Click No to open a new window and leave it running."
 msgstr ""
