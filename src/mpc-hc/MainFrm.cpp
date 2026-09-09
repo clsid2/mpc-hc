@@ -299,6 +299,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_SHUTDOWN, OnDoShutdown)
     ON_MESSAGE(WM_MPC_LOGOFF, OnDoLogOff)
     ON_MESSAGE(WM_MPC_OPENCURPLAYLIST, OnDoOpenCurPlaylist)
+    ON_MESSAGE(WM_MPC_CMDLINE, OnCommandLineReceived)
 
     ON_MESSAGE(WM_SMTC_SEEK, OnSmtcSeek)
     ON_MESSAGE(WM_SMTC_AUTOREPEAT, OnSmtcAutoRepeat)
@@ -5180,6 +5181,49 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
         cmdln.AddTail(str);
     }
 
+    // Queue the command line and return at once. Everything past this point probes the
+    // filesystem, and a path on an unreachable share blocks it for half a minute. While that
+    // ran inside this handler the window was not pumping messages, so Windows marked it as
+    // not responding and the other instances redirecting to us gave up and each opened a
+    // window of their own (#4149). The arrival time travels with the command line, so a slow
+    // open cannot make the next file of the same Explorer selection look like a new one.
+    m_pendingCommandLines.emplace_back();
+    PendingCommandLine& pending = m_pendingCommandLines.back();
+    pending.tArrived = GetTickCount64();
+    pending.cmdln.AddTailList(&cmdln);
+    VERIFY(PostMessage(WM_MPC_CMDLINE));
+
+    return TRUE;
+}
+
+LRESULT CMainFrame::OnCommandLineReceived(WPARAM wParam, LPARAM lParam)
+{
+    if (m_bProcessingCommandLine) {
+        // Re-entered through a nested message pump: opening and closing the graph both pump
+        // posted messages. The call already running drains the queue before it returns.
+        return 0;
+    }
+
+    m_bProcessingCommandLine = true;
+    while (!m_pendingCommandLines.empty()) {
+        PendingCommandLine& pending = m_pendingCommandLines.front();
+        ProcessCommandLine(pending.cmdln, pending.tArrived);
+        m_pendingCommandLines.pop_front();
+    }
+    m_bProcessingCommandLine = false;
+
+    return 0;
+}
+
+void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived)
+{
+    // Re-checked because this now runs later than the message that carried the command line.
+    if (AfxGetMyApp()->m_fClosingState || m_bScanDlgOpened) {
+        return;
+    }
+
+    CAppSettings& s = AfxGetAppSettings();
+
     s.ParseCommandLine(cmdln);
 
     if (s.nCLSwitches & CLSW_SLAVE) {
@@ -5248,7 +5292,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     if ((s.nCLSwitches & CLSW_DVD) && !s.slFiles.IsEmpty()) {
         if (!CloseMediaBeforeOpen()) {
-            return TRUE;
+            return;
         }
         fSetForegroundWindow = true;
 
@@ -5332,7 +5376,10 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
             // ToDo: open indirectly
             OpenMedia(p);
         } else {
-            ULONGLONG tcnow = GetTickCount64();
+            // When the command line reached us, not when we got round to acting on it: an open
+            // that took a long time must not make the next file of the same selection, which
+            // arrived while we were busy, look like the start of a new one.
+            const ULONGLONG tcnow = tArrived;
             // Opening a multi-file selection in Explorer spawns one process per file. Those arrive here in
             // arbitrary order, so the entries added by the second and later ones are sorted back into place.
             bool bSameSelection = m_dwLastRun && ((tcnow - m_dwLastRun) < s.iRedirectOpenToAppendThreshold);
@@ -5467,8 +5514,6 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
     if (fSetForegroundWindow && !(s.nCLSwitches & CLSW_NOFOCUS)) {
         SetForegroundWindow();
     }
-
-    return TRUE;
 }
 
 int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)

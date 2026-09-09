@@ -301,6 +301,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="PPageWebServer.cpp" />
     <ClCompile Include="RarEntrySelectorDialog.cpp" />
     <ClCompile Include="RegFilterChooserDlg.cpp" />
+    <ClCompile Include="RedirectWaitDlg.cpp" />
     <ClCompile Include="SaveDlg.cpp" />
     <ClCompile Include="SaveImageDialog.cpp" />
     <ClCompile Include="SaveSubtitlesFileDialog.cpp" />
@@ -510,6 +511,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="RarEntrySelectorDialog.h" />
     <ClInclude Include="RegFilterChooserDlg.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RedirectWaitDlg.h" />
     <ClInclude Include="SaveDlg.h" />
     <ClInclude Include="SaveImageDialog.h" />
     <ClInclude Include="SaveSubtitlesFileDialog.h" />

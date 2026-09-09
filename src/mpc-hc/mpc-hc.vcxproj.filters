@@ -304,6 +304,9 @@
     <ClCompile Include="RegFilterChooserDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="RedirectWaitDlg.cpp">
+      <Filter>Modal Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="SaveDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
@@ -866,6 +869,9 @@
       <Filter>Modal Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="SaveThumbnailsDialog.h">
+      <Filter>Modal Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="RedirectWaitDlg.h">
       <Filter>Modal Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="SaveDlg.h">
