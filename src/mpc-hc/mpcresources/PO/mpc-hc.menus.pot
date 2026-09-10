@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-08-22 12:16:02+0000\n"
+"POT-Creation-Date: 2026-09-10 18:40:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -623,6 +623,10 @@ msgstr ""
 
 msgctxt "ID_PLAY_PLAYBACKRATE_800"
 msgid "8.00 x"
+msgstr ""
+
+msgctxt "ID_PLAY_PLAYBACKRATE_1600"
+msgid "16.00 x"
 msgstr ""
 
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"

@@ -631,6 +631,10 @@ msgctxt "ID_PLAY_PLAYBACKRATE_800"
 msgid "8.00 x"
 msgstr "8배속"
 
+msgctxt "ID_PLAY_PLAYBACKRATE_1600"
+msgid "16.00 x"
+msgstr ""
+
 msgctxt "ID_PLAY_PLAYBACKRATE_FPS23"
 msgid "23.976 fps"
 msgstr "초당 23.976프레임"
