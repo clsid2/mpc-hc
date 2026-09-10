@@ -65,6 +65,24 @@ LRESULT CFullscreenWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
     }
 #endif
 
+    if (m_pMainFrame->m_pVideoWnd == this) {
+        // the renderer is parented to this top-level window, so it gets the messages it would otherwise have hooked from here
+        LRESULT ret = 0;
+        switch (message) {
+            case WM_CLOSE:
+                break;
+            case WM_MOUSEMOVE:
+            case WM_LBUTTONDOWN:
+            case WM_LBUTTONUP:
+                // CMouseWnd will call madVR window proc
+                break;
+            default:
+                if (m_pMainFrame->ForwardMessageToRenderer(m_hWnd, message, wParam, lParam, ret)) {
+                    return ret;
+                }
+        }
+    }
+
     return __super::WindowProc(message, wParam, lParam);
 }
 

@@ -483,7 +483,9 @@ void CMouse::InternalOnRButtonUp(UINT nFlags, const CPoint& point)
 {
     if (m_bWaitingRButtonUp) {
         m_bWaitingRButtonUp = false;
-        OnButton(wmcmd::RUP, point);
+        if (!m_pMainFrame->m_bIsMPCVRExclusiveMode) {
+            OnButton(wmcmd::RUP, point);
+        }
         SetCursor(nFlags, point);
     }
 }
@@ -663,6 +665,17 @@ void CMouse::InternalOnMouseMove(UINT nFlags, const CPoint& point)
 
 void CMouse::InternalOnMouseLeave()
 {
+    // A renderer child window created on our thread (MPCVR in exclusive mode)
+    // makes TrackMouseEvent report a leave while the cursor is still on the video.
+    // Ignore it; the next mouse move re-arms the tracker.
+    CPoint screenPoint;
+    if (GetCursorPos(&screenPoint)) {
+        HWND hUnder = ::WindowFromPoint(screenPoint);
+        if (hUnder && (hUnder == GetWnd().m_hWnd || ::IsChild(GetWnd().m_hWnd, hUnder))) {
+            m_bTrackingMouseLeave = false;
+            return;
+        }
+    }
     StopMouseHider();
     m_bTrackingMouseLeave = false;
     m_cursor = Cursor::ARROW;

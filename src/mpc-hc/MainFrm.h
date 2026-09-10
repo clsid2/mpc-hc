@@ -72,6 +72,7 @@ interface IMadVRInfo;
 interface IMadVRFrameGrabber;
 interface IMadVRSettings;
 interface IMadVRSubclassReplacement;
+interface IMPCVRSubclassReplacement;
 interface ISubClock;
 interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
@@ -302,6 +303,7 @@ private:
 
     CComPtr<IMadVRSettings> m_pMVRS;
     CComPtr<IMadVRSubclassReplacement> m_pMVRSR;
+    CComPtr<IMPCVRSubclassReplacement> m_pMPCVRSR;
     CComPtr<IMadVRCommand> m_pMVRC;
     CComPtr<IMadVRInfo> m_pMVRI;
     CComPtr<IMadVRFrameGrabber> m_pMVRFG;
@@ -1395,6 +1397,7 @@ protected:
     afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
     // GDI+
     virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    bool ForwardMessageToRenderer(HWND hWnd, UINT message, WPARAM& wParam, LPARAM& lParam, LRESULT& ret);
     void WTSRegisterSessionNotification();
     void WTSUnRegisterSessionNotification();
 

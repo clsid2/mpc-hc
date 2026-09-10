@@ -28,6 +28,7 @@
 #include "uuids.h"
 #include "moreuuids.h"
 #include <mvrInterfaces.h>
+#include <IMPCVRSubclassReplacement.h>
 
 #include <initguid.h>
 #include "AllocatorCommon.h"
@@ -605,6 +606,9 @@ HRESULT CFGFilterVideoRenderer::Create(IBaseFilter** ppBF, CInterfaceList<IUnkno
         *ppBF = CComQIPtr<IBaseFilter>(pRenderer).Detach();
 
         if (m_clsid == CLSID_MPCVRAllocatorPresenter) {
+            if (CComQIPtr<IMPCVRSubclassReplacement> pSR  = pCAP) {
+                pSR->DisableSubclassing();
+            }
             auto pMainFrame = (CMainFrame*)(AfxGetApp()->m_pMainWnd);
             if (pMainFrame && pMainFrame->HasDedicatedFSVideoWindow()) {
                 if (CComQIPtr<ID3DFullscreenControl> pD3DFSC = *ppBF) {
