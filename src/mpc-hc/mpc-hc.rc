@@ -1782,6 +1782,7 @@ BEGIN
             MENUITEM "4.00 x",                      ID_PLAY_PLAYBACKRATE_400
             MENUITEM "6.00 x",                      ID_PLAY_PLAYBACKRATE_600
             MENUITEM "8.00 x",                      ID_PLAY_PLAYBACKRATE_800
+            MENUITEM "16.00 x",                     ID_PLAY_PLAYBACKRATE_1600
             MENUITEM "23.976 fps",                  ID_PLAY_PLAYBACKRATE_FPS23
             MENUITEM "24 fps",                      ID_PLAY_PLAYBACKRATE_FPS24
             MENUITEM "25 fps",                      ID_PLAY_PLAYBACKRATE_FPS25
@@ -1908,6 +1909,7 @@ BEGIN
             MENUITEM "4.00 x",                      ID_PLAY_PLAYBACKRATE_400
             MENUITEM "6.00 x",                      ID_PLAY_PLAYBACKRATE_600
             MENUITEM "8.00 x",                      ID_PLAY_PLAYBACKRATE_800
+            MENUITEM "16.00 x",                     ID_PLAY_PLAYBACKRATE_1600
             MENUITEM "23.976 fps",                  ID_PLAY_PLAYBACKRATE_FPS23
             MENUITEM "24 fps",                      ID_PLAY_PLAYBACKRATE_FPS24
             MENUITEM "25 fps",                      ID_PLAY_PLAYBACKRATE_FPS25
@@ -2325,6 +2327,7 @@ BEGIN
                 MENUITEM "4.00 x",                      ID_PLAY_PLAYBACKRATE_400
                 MENUITEM "6.00 x",                      ID_PLAY_PLAYBACKRATE_600
                 MENUITEM "8.00 x",                      ID_PLAY_PLAYBACKRATE_800
+                MENUITEM "16.00 x",                     ID_PLAY_PLAYBACKRATE_1600
                 MENUITEM "23.976 fps",                  ID_PLAY_PLAYBACKRATE_FPS23
                 MENUITEM "24 fps",                      ID_PLAY_PLAYBACKRATE_FPS24
                 MENUITEM "25 fps",                      ID_PLAY_PLAYBACKRATE_FPS25

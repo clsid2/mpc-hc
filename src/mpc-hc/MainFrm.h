@@ -590,6 +590,7 @@ public:
     double GetPlayingRate() const {
         return m_dSpeedRate;
     }
+    static bool GetNextPlaybackRate(double dCurrentRate, bool bIncrease, double& dNewRate);
 
 public:
     CMainFrame();

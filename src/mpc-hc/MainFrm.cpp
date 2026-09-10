@@ -151,6 +151,7 @@ CMainFrame::PlaybackRateMap CMainFrame::filePlaybackRates = {
     { ID_PLAY_PLAYBACKRATE_400, 4.00f},
     { ID_PLAY_PLAYBACKRATE_600, 6.00f},
     { ID_PLAY_PLAYBACKRATE_800, 8.00f},
+    { ID_PLAY_PLAYBACKRATE_1600, 16.00f},
 };
 
 CMainFrame::PlaybackRateMap CMainFrame::dvdPlaybackRates = {
@@ -10246,6 +10247,27 @@ void CMainFrame::SetPlayingRate(double rate)
     }
 }
 
+// Increase/Decrease Rate walk the rates offered by the Playback Rate submenu, so that a
+// single key press is a usable step and repeated presses stay on familiar values. Returns
+// false at either end of the list, which is what stops the rate there.
+bool CMainFrame::GetNextPlaybackRate(double dCurrentRate, bool bIncrease, double& dNewRate)
+{
+    // Tolerance, so that a rate which did not come from the list (mpc-hc API, fps matching)
+    // is not mistaken for a neighbouring step of its own.
+    const double dEpsilon = 1e-4;
+    bool bFound = false;
+    for (auto const& [nID, rate] : filePlaybackRates) {
+        double dRate = rate;
+        if (bIncrease ? dRate > dCurrentRate + dEpsilon : dRate < dCurrentRate - dEpsilon) {
+            if (!bFound || (bIncrease ? dRate < dNewRate : dRate > dNewRate)) {
+                dNewRate = dRate;
+                bFound = true;
+            }
+        }
+    }
+    return bFound;
+}
+
 void CMainFrame::OnPlayChangeRate(UINT nID)
 {
     if (GetLoadState() != MLS::LOADED) {
@@ -10265,13 +10287,19 @@ void CMainFrame::OnPlayChangeRate(UINT nID)
                     SetPlayingRate(std::max(0.05, m_dSpeedRate + dSpeedStep));
                 }
             } else {
-                SetPlayingRate(std::max(0.0625, m_dSpeedRate * 2.0));
+                double dNewRate;
+                if (GetNextPlaybackRate(m_dSpeedRate, true, dNewRate)) {
+                    SetPlayingRate(dNewRate);
+                }
             }
         } else if (nID == ID_PLAY_DECRATE) {
             if (s.nSpeedStep > 0) {
                 SetPlayingRate(std::max(0.05, m_dSpeedRate - dSpeedStep));
             } else {
-                SetPlayingRate(std::max(0.0625, m_dSpeedRate / 2.0));
+                double dNewRate;
+                if (GetNextPlaybackRate(m_dSpeedRate, false, dNewRate)) {
+                    SetPlayingRate(dNewRate);
+                }
             }
         } else if (nID > ID_PLAY_PLAYBACKRATE_START && nID < ID_PLAY_PLAYBACKRATE_END) {
             if (filePlaybackRates.count(nID) != 0) {
@@ -10397,7 +10425,11 @@ void CMainFrame::OnUpdatePlayChangeRate(CCmdUI* pCmdUI)
             bool fInc = pCmdUI->m_nID == ID_PLAY_INCRATE;
 
             fEnable = true;
-            if (fInc && m_dSpeedRate >= 128.0) {
+            double dNewRate;
+            if (GetPlaybackMode() == PM_FILE && AfxGetAppSettings().nSpeedStep == 0
+                    && !GetNextPlaybackRate(m_dSpeedRate, fInc, dNewRate)) {
+                fEnable = false;
+            } else if (fInc && m_dSpeedRate >= 128.0) {
                 fEnable = false;
             } else if (!fInc && GetPlaybackMode() == PM_FILE && m_dSpeedRate <= 0.05) {
                 fEnable = false;
