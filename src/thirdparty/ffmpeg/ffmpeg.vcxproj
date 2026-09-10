@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{438286B7-A9F4-411D-BCC5-948C40E37D8F}</ProjectGuid>
@@ -12,9 +24,9 @@
     <RootNamespace>ffmpeg</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="..\..\platform.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
     <!-- NotSet: ffmpeg is never built with UNICODE/_UNICODE (the old ffmpeg-msvc.mak did not define them either) -->
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -48,7 +60,7 @@
       <PreprocessorDefinitions>_ISOC99_SOURCE;_FILE_OFFSET_BITS=64;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZLIB_CONST;HAVE_AV_CONFIG_H;_WIN32_WINNT=0x0600;WINVER=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">WIN64=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>-GS- -wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -utf-8 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers Condition="'$(Platform)'=='Win32'">false</OmitFramePointers>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -57,186 +69,660 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <DebugInformationFormat Condition="'$(Configuration)'=='Debug'">OldStyle</DebugInformationFormat>
       <AdditionalOptions Condition="'$(Configuration)'=='Debug'">-Zo %(AdditionalOptions)</AdditionalOptions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Lib>
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\ac3_parser.c"><ObjectFileName>$(IntDir)libavcodec\ac3_parser.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\adts_parser.c"><ObjectFileName>$(IntDir)libavcodec\adts_parser.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\allcodecs.c"><ObjectFileName>$(IntDir)libavcodec\allcodecs.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\avcodec.c"><ObjectFileName>$(IntDir)libavcodec\avcodec.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\avdct.c"><ObjectFileName>$(IntDir)libavcodec\avdct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\bitstream.c"><ObjectFileName>$(IntDir)libavcodec\bitstream.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\bitstream_filters.c"><ObjectFileName>$(IntDir)libavcodec\bitstream_filters.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\bsf.c"><ObjectFileName>$(IntDir)libavcodec\bsf.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\codec_desc.c"><ObjectFileName>$(IntDir)libavcodec\codec_desc.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\codec_par.c"><ObjectFileName>$(IntDir)libavcodec\codec_par.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\decode.c"><ObjectFileName>$(IntDir)libavcodec\decode.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\encode.c"><ObjectFileName>$(IntDir)libavcodec\encode.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\faandct.c"><ObjectFileName>$(IntDir)libavcodec\faandct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\faanidct.c"><ObjectFileName>$(IntDir)libavcodec\faanidct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\fdctdsp.c"><ObjectFileName>$(IntDir)libavcodec\fdctdsp.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\get_buffer.c"><ObjectFileName>$(IntDir)libavcodec\get_buffer.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\idctdsp.c"><ObjectFileName>$(IntDir)libavcodec\idctdsp.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\imgconvert.c"><ObjectFileName>$(IntDir)libavcodec\imgconvert.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\jfdctfst.c"><ObjectFileName>$(IntDir)libavcodec\jfdctfst.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\jfdctint.c"><ObjectFileName>$(IntDir)libavcodec\jfdctint.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\jni.c"><ObjectFileName>$(IntDir)libavcodec\jni.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\jrevdct.c"><ObjectFileName>$(IntDir)libavcodec\jrevdct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\mathtables.c"><ObjectFileName>$(IntDir)libavcodec\mathtables.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\options.c"><ObjectFileName>$(IntDir)libavcodec\options.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\packet.c"><ObjectFileName>$(IntDir)libavcodec\packet.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\parser.c"><ObjectFileName>$(IntDir)libavcodec\parser.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\parsers.c"><ObjectFileName>$(IntDir)libavcodec\parsers.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\profiles.c"><ObjectFileName>$(IntDir)libavcodec\profiles.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread.c"><ObjectFileName>$(IntDir)libavcodec\pthread.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread_frame.c"><ObjectFileName>$(IntDir)libavcodec\pthread_frame.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread_slice.c"><ObjectFileName>$(IntDir)libavcodec\pthread_slice.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\raw.c"><ObjectFileName>$(IntDir)libavcodec\raw.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\simple_idct.c"><ObjectFileName>$(IntDir)libavcodec\simple_idct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\utils.c"><ObjectFileName>$(IntDir)libavcodec\utils.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\constants.c"><ObjectFileName>$(IntDir)libavcodec\x86\constants.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\fdctdsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\fdctdsp_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\idctdsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\idctdsp_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\af_aresample.c"><ObjectFileName>$(IntDir)libavfilter\af_aresample.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\af_atempo.c"><ObjectFileName>$(IntDir)libavfilter\af_atempo.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\af_biquads.c"><ObjectFileName>$(IntDir)libavfilter\af_biquads.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\allfilters.c"><ObjectFileName>$(IntDir)libavfilter\allfilters.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\audio.c"><ObjectFileName>$(IntDir)libavfilter\audio.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\avfilter.c"><ObjectFileName>$(IntDir)libavfilter\avfilter.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\avfiltergraph.c"><ObjectFileName>$(IntDir)libavfilter\avfiltergraph.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\buffersink.c"><ObjectFileName>$(IntDir)libavfilter\buffersink.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\buffersrc.c"><ObjectFileName>$(IntDir)libavfilter\buffersrc.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\formats.c"><ObjectFileName>$(IntDir)libavfilter\formats.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\framepool.c"><ObjectFileName>$(IntDir)libavfilter\framepool.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\framequeue.c"><ObjectFileName>$(IntDir)libavfilter\framequeue.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\graphparser.c"><ObjectFileName>$(IntDir)libavfilter\graphparser.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\pthread.c"><ObjectFileName>$(IntDir)libavfilter\pthread.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\video.c"><ObjectFileName>$(IntDir)libavfilter\video.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\adler32.c"><ObjectFileName>$(IntDir)libavutil\adler32.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\aes.c"><ObjectFileName>$(IntDir)libavutil\aes.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\aes_ctr.c"><ObjectFileName>$(IntDir)libavutil\aes_ctr.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\audio_fifo.c"><ObjectFileName>$(IntDir)libavutil\audio_fifo.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\avsscanf.c"><ObjectFileName>$(IntDir)libavutil\avsscanf.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\avstring.c"><ObjectFileName>$(IntDir)libavutil\avstring.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\base64.c"><ObjectFileName>$(IntDir)libavutil\base64.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\blowfish.c"><ObjectFileName>$(IntDir)libavutil\blowfish.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\bprint.c"><ObjectFileName>$(IntDir)libavutil\bprint.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\buffer.c"><ObjectFileName>$(IntDir)libavutil\buffer.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\camellia.c"><ObjectFileName>$(IntDir)libavutil\camellia.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\cast5.c"><ObjectFileName>$(IntDir)libavutil\cast5.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\channel_layout.c"><ObjectFileName>$(IntDir)libavutil\channel_layout.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\cpu.c"><ObjectFileName>$(IntDir)libavutil\cpu.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\crc.c"><ObjectFileName>$(IntDir)libavutil\crc.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\des.c"><ObjectFileName>$(IntDir)libavutil\des.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\dict.c"><ObjectFileName>$(IntDir)libavutil\dict.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\display.c"><ObjectFileName>$(IntDir)libavutil\display.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\dovi_meta.c"><ObjectFileName>$(IntDir)libavutil\dovi_meta.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\downmix_info.c"><ObjectFileName>$(IntDir)libavutil\downmix_info.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\encryption_info.c"><ObjectFileName>$(IntDir)libavutil\encryption_info.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\error.c"><ObjectFileName>$(IntDir)libavutil\error.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\eval.c"><ObjectFileName>$(IntDir)libavutil\eval.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\fifo.c"><ObjectFileName>$(IntDir)libavutil\fifo.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\file.c"><ObjectFileName>$(IntDir)libavutil\file.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\file_open.c"><ObjectFileName>$(IntDir)libavutil\file_open.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\film_grain_params.c"><ObjectFileName>$(IntDir)libavutil\film_grain_params.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\fixed_dsp.c"><ObjectFileName>$(IntDir)libavutil\fixed_dsp.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\float_dsp.c"><ObjectFileName>$(IntDir)libavutil\float_dsp.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\frame.c"><ObjectFileName>$(IntDir)libavutil\frame.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\hash.c"><ObjectFileName>$(IntDir)libavutil\hash.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\hdr_dynamic_metadata.c"><ObjectFileName>$(IntDir)libavutil\hdr_dynamic_metadata.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\hmac.c"><ObjectFileName>$(IntDir)libavutil\hmac.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\hwcontext.c"><ObjectFileName>$(IntDir)libavutil\hwcontext.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\imgutils.c"><ObjectFileName>$(IntDir)libavutil\imgutils.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\integer.c"><ObjectFileName>$(IntDir)libavutil\integer.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\intmath.c"><ObjectFileName>$(IntDir)libavutil\intmath.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\lfg.c"><ObjectFileName>$(IntDir)libavutil\lfg.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\lls.c"><ObjectFileName>$(IntDir)libavutil\lls.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\log.c"><ObjectFileName>$(IntDir)libavutil\log.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\log2_tab.c"><ObjectFileName>$(IntDir)libavutil\log2_tab.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\mastering_display_metadata.c"><ObjectFileName>$(IntDir)libavutil\mastering_display_metadata.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\mathematics.c"><ObjectFileName>$(IntDir)libavutil\mathematics.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\md5.c"><ObjectFileName>$(IntDir)libavutil\md5.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\mem.c"><ObjectFileName>$(IntDir)libavutil\mem.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\murmur3.c"><ObjectFileName>$(IntDir)libavutil\murmur3.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\opt.c"><ObjectFileName>$(IntDir)libavutil\opt.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\parseutils.c"><ObjectFileName>$(IntDir)libavutil\parseutils.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\pixdesc.c"><ObjectFileName>$(IntDir)libavutil\pixdesc.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\pixelutils.c"><ObjectFileName>$(IntDir)libavutil\pixelutils.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\random_seed.c"><ObjectFileName>$(IntDir)libavutil\random_seed.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\rational.c"><ObjectFileName>$(IntDir)libavutil\rational.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\rc4.c"><ObjectFileName>$(IntDir)libavutil\rc4.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\refstruct.c"><ObjectFileName>$(IntDir)libavutil\refstruct.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\reverse.c"><ObjectFileName>$(IntDir)libavutil\reverse.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\ripemd.c"><ObjectFileName>$(IntDir)libavutil\ripemd.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\samplefmt.c"><ObjectFileName>$(IntDir)libavutil\samplefmt.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\sha.c"><ObjectFileName>$(IntDir)libavutil\sha.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\sha512.c"><ObjectFileName>$(IntDir)libavutil\sha512.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\side_data.c"><ObjectFileName>$(IntDir)libavutil\side_data.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\slicethread.c"><ObjectFileName>$(IntDir)libavutil\slicethread.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\spherical.c"><ObjectFileName>$(IntDir)libavutil\spherical.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\stereo3d.c"><ObjectFileName>$(IntDir)libavutil\stereo3d.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tea.c"><ObjectFileName>$(IntDir)libavutil\tea.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\threadmessage.c"><ObjectFileName>$(IntDir)libavutil\threadmessage.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\time.c"><ObjectFileName>$(IntDir)libavutil\time.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\timecode.c"><ObjectFileName>$(IntDir)libavutil\timecode.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\timestamp.c"><ObjectFileName>$(IntDir)libavutil\timestamp.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tree.c"><ObjectFileName>$(IntDir)libavutil\tree.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\twofish.c"><ObjectFileName>$(IntDir)libavutil\twofish.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tx.c"><ObjectFileName>$(IntDir)libavutil\tx.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tx_double.c"><ObjectFileName>$(IntDir)libavutil\tx_double.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tx_float.c"><ObjectFileName>$(IntDir)libavutil\tx_float.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\tx_int32.c"><ObjectFileName>$(IntDir)libavutil\tx_int32.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\utils.c"><ObjectFileName>$(IntDir)libavutil\utils.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\video_enc_params.c"><ObjectFileName>$(IntDir)libavutil\video_enc_params.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\xga_font_data.c"><ObjectFileName>$(IntDir)libavutil\xga_font_data.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\xtea.c"><ObjectFileName>$(IntDir)libavutil\xtea.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\cpu.c"><ObjectFileName>$(IntDir)libavutil\x86\cpu.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\fixed_dsp_init.c"><ObjectFileName>$(IntDir)libavutil\x86\fixed_dsp_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\float_dsp_init.c"><ObjectFileName>$(IntDir)libavutil\x86\float_dsp_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\imgutils_init.c"><ObjectFileName>$(IntDir)libavutil\x86\imgutils_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\lls_init.c"><ObjectFileName>$(IntDir)libavutil\x86\lls_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavutil\x86\tx_float_init.c"><ObjectFileName>$(IntDir)libavutil\x86\tx_float_init.obj</ObjectFileName><PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\audioconvert.c"><ObjectFileName>$(IntDir)libswresample\audioconvert.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\dither.c"><ObjectFileName>$(IntDir)libswresample\dither.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\options.c"><ObjectFileName>$(IntDir)libswresample\options.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\rematrix.c"><ObjectFileName>$(IntDir)libswresample\rematrix.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\resample.c"><ObjectFileName>$(IntDir)libswresample\resample.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\resample_dsp.c"><ObjectFileName>$(IntDir)libswresample\resample_dsp.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\soxr_resample.c"><ObjectFileName>$(IntDir)libswresample\soxr_resample.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\swresample.c"><ObjectFileName>$(IntDir)libswresample\swresample.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\swresample_frame.c"><ObjectFileName>$(IntDir)libswresample\swresample_frame.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\x86\audio_convert_init.c"><ObjectFileName>$(IntDir)libswresample\x86\audio_convert_init.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\x86\rematrix_init.c"><ObjectFileName>$(IntDir)libswresample\x86\rematrix_init.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswresample\x86\resample_init.c"><ObjectFileName>$(IntDir)libswresample\x86\resample_init.obj</ObjectFileName></ClCompile>
-    <Nasm Include="$(FFmpegSrc)libavcodec\x86\idctdsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\idctdsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavcodec\x86\simple_idct.asm"><ObjectFileName>$(IntDir)libavcodec\x86\simple_idct.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavcodec\x86\simple_idct10.asm"><ObjectFileName>$(IntDir)libavcodec\x86\simple_idct10.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\cpuid.asm"><ObjectFileName>$(IntDir)libavutil\x86\cpuid.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\emms.asm"><ObjectFileName>$(IntDir)libavutil\x86\emms.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\fixed_dsp.asm"><ObjectFileName>$(IntDir)libavutil\x86\fixed_dsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\float_dsp.asm"><ObjectFileName>$(IntDir)libavutil\x86\float_dsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\imgutils.asm"><ObjectFileName>$(IntDir)libavutil\x86\imgutils.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\lls.asm"><ObjectFileName>$(IntDir)libavutil\x86\lls.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libavutil\x86\tx_float.asm"><ObjectFileName>$(IntDir)libavutil\x86\tx_float.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libswresample\x86\audio_convert.asm"><ObjectFileName>$(IntDir)libswresample\x86\audio_convert.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libswresample\x86\rematrix.asm"><ObjectFileName>$(IntDir)libswresample\x86\rematrix.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude></Nasm>
-    <Nasm Include="$(FFmpegSrc)libswresample\x86\resample.asm"><ObjectFileName>$(IntDir)libswresample\x86\resample.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude></Nasm>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\ac3_parser.c">
+      <ObjectFileName>$(IntDir)libavcodec\ac3_parser.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\adts_parser.c">
+      <ObjectFileName>$(IntDir)libavcodec\adts_parser.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\allcodecs.c">
+      <ObjectFileName>$(IntDir)libavcodec\allcodecs.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\avcodec.c">
+      <ObjectFileName>$(IntDir)libavcodec\avcodec.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\avdct.c">
+      <ObjectFileName>$(IntDir)libavcodec\avdct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\bitstream.c">
+      <ObjectFileName>$(IntDir)libavcodec\bitstream.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\bitstream_filters.c">
+      <ObjectFileName>$(IntDir)libavcodec\bitstream_filters.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\bsf.c">
+      <ObjectFileName>$(IntDir)libavcodec\bsf.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\codec_desc.c">
+      <ObjectFileName>$(IntDir)libavcodec\codec_desc.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\codec_par.c">
+      <ObjectFileName>$(IntDir)libavcodec\codec_par.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\decode.c">
+      <ObjectFileName>$(IntDir)libavcodec\decode.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\encode.c">
+      <ObjectFileName>$(IntDir)libavcodec\encode.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\faandct.c">
+      <ObjectFileName>$(IntDir)libavcodec\faandct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\faanidct.c">
+      <ObjectFileName>$(IntDir)libavcodec\faanidct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\fdctdsp.c">
+      <ObjectFileName>$(IntDir)libavcodec\fdctdsp.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\get_buffer.c">
+      <ObjectFileName>$(IntDir)libavcodec\get_buffer.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\idctdsp.c">
+      <ObjectFileName>$(IntDir)libavcodec\idctdsp.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\imgconvert.c">
+      <ObjectFileName>$(IntDir)libavcodec\imgconvert.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\jfdctfst.c">
+      <ObjectFileName>$(IntDir)libavcodec\jfdctfst.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\jfdctint.c">
+      <ObjectFileName>$(IntDir)libavcodec\jfdctint.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\jni.c">
+      <ObjectFileName>$(IntDir)libavcodec\jni.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\jrevdct.c">
+      <ObjectFileName>$(IntDir)libavcodec\jrevdct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\mathtables.c">
+      <ObjectFileName>$(IntDir)libavcodec\mathtables.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\options.c">
+      <ObjectFileName>$(IntDir)libavcodec\options.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\packet.c">
+      <ObjectFileName>$(IntDir)libavcodec\packet.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\parser.c">
+      <ObjectFileName>$(IntDir)libavcodec\parser.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\parsers.c">
+      <ObjectFileName>$(IntDir)libavcodec\parsers.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\profiles.c">
+      <ObjectFileName>$(IntDir)libavcodec\profiles.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread.c">
+      <ObjectFileName>$(IntDir)libavcodec\pthread.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread_frame.c">
+      <ObjectFileName>$(IntDir)libavcodec\pthread_frame.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\pthread_slice.c">
+      <ObjectFileName>$(IntDir)libavcodec\pthread_slice.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\raw.c">
+      <ObjectFileName>$(IntDir)libavcodec\raw.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\simple_idct.c">
+      <ObjectFileName>$(IntDir)libavcodec\simple_idct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\utils.c">
+      <ObjectFileName>$(IntDir)libavcodec\utils.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\constants.c">
+      <ObjectFileName>$(IntDir)libavcodec\x86\constants.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\fdctdsp_init.c">
+      <ObjectFileName>$(IntDir)libavcodec\x86\fdctdsp_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\idctdsp_init.c">
+      <ObjectFileName>$(IntDir)libavcodec\x86\idctdsp_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\af_aresample.c">
+      <ObjectFileName>$(IntDir)libavfilter\af_aresample.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\af_atempo.c">
+      <ObjectFileName>$(IntDir)libavfilter\af_atempo.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\af_biquads.c">
+      <ObjectFileName>$(IntDir)libavfilter\af_biquads.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\allfilters.c">
+      <ObjectFileName>$(IntDir)libavfilter\allfilters.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\audio.c">
+      <ObjectFileName>$(IntDir)libavfilter\audio.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\avfilter.c">
+      <ObjectFileName>$(IntDir)libavfilter\avfilter.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\avfiltergraph.c">
+      <ObjectFileName>$(IntDir)libavfilter\avfiltergraph.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\buffersink.c">
+      <ObjectFileName>$(IntDir)libavfilter\buffersink.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\buffersrc.c">
+      <ObjectFileName>$(IntDir)libavfilter\buffersrc.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\formats.c">
+      <ObjectFileName>$(IntDir)libavfilter\formats.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\framepool.c">
+      <ObjectFileName>$(IntDir)libavfilter\framepool.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\framequeue.c">
+      <ObjectFileName>$(IntDir)libavfilter\framequeue.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\graphparser.c">
+      <ObjectFileName>$(IntDir)libavfilter\graphparser.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\pthread.c">
+      <ObjectFileName>$(IntDir)libavfilter\pthread.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\video.c">
+      <ObjectFileName>$(IntDir)libavfilter\video.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\adler32.c">
+      <ObjectFileName>$(IntDir)libavutil\adler32.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\aes.c">
+      <ObjectFileName>$(IntDir)libavutil\aes.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\aes_ctr.c">
+      <ObjectFileName>$(IntDir)libavutil\aes_ctr.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\audio_fifo.c">
+      <ObjectFileName>$(IntDir)libavutil\audio_fifo.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\avsscanf.c">
+      <ObjectFileName>$(IntDir)libavutil\avsscanf.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\avstring.c">
+      <ObjectFileName>$(IntDir)libavutil\avstring.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\base64.c">
+      <ObjectFileName>$(IntDir)libavutil\base64.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\blowfish.c">
+      <ObjectFileName>$(IntDir)libavutil\blowfish.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\bprint.c">
+      <ObjectFileName>$(IntDir)libavutil\bprint.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\buffer.c">
+      <ObjectFileName>$(IntDir)libavutil\buffer.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\camellia.c">
+      <ObjectFileName>$(IntDir)libavutil\camellia.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\cast5.c">
+      <ObjectFileName>$(IntDir)libavutil\cast5.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\channel_layout.c">
+      <ObjectFileName>$(IntDir)libavutil\channel_layout.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\cpu.c">
+      <ObjectFileName>$(IntDir)libavutil\cpu.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\crc.c">
+      <ObjectFileName>$(IntDir)libavutil\crc.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\des.c">
+      <ObjectFileName>$(IntDir)libavutil\des.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\dict.c">
+      <ObjectFileName>$(IntDir)libavutil\dict.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\display.c">
+      <ObjectFileName>$(IntDir)libavutil\display.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\dovi_meta.c">
+      <ObjectFileName>$(IntDir)libavutil\dovi_meta.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\downmix_info.c">
+      <ObjectFileName>$(IntDir)libavutil\downmix_info.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\encryption_info.c">
+      <ObjectFileName>$(IntDir)libavutil\encryption_info.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\error.c">
+      <ObjectFileName>$(IntDir)libavutil\error.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\eval.c">
+      <ObjectFileName>$(IntDir)libavutil\eval.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\fifo.c">
+      <ObjectFileName>$(IntDir)libavutil\fifo.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\file.c">
+      <ObjectFileName>$(IntDir)libavutil\file.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\file_open.c">
+      <ObjectFileName>$(IntDir)libavutil\file_open.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\film_grain_params.c">
+      <ObjectFileName>$(IntDir)libavutil\film_grain_params.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\fixed_dsp.c">
+      <ObjectFileName>$(IntDir)libavutil\fixed_dsp.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\float_dsp.c">
+      <ObjectFileName>$(IntDir)libavutil\float_dsp.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\frame.c">
+      <ObjectFileName>$(IntDir)libavutil\frame.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\hash.c">
+      <ObjectFileName>$(IntDir)libavutil\hash.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\hdr_dynamic_metadata.c">
+      <ObjectFileName>$(IntDir)libavutil\hdr_dynamic_metadata.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\hmac.c">
+      <ObjectFileName>$(IntDir)libavutil\hmac.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\hwcontext.c">
+      <ObjectFileName>$(IntDir)libavutil\hwcontext.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\imgutils.c">
+      <ObjectFileName>$(IntDir)libavutil\imgutils.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\integer.c">
+      <ObjectFileName>$(IntDir)libavutil\integer.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\intmath.c">
+      <ObjectFileName>$(IntDir)libavutil\intmath.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\lfg.c">
+      <ObjectFileName>$(IntDir)libavutil\lfg.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\lls.c">
+      <ObjectFileName>$(IntDir)libavutil\lls.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\log.c">
+      <ObjectFileName>$(IntDir)libavutil\log.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\log2_tab.c">
+      <ObjectFileName>$(IntDir)libavutil\log2_tab.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\mastering_display_metadata.c">
+      <ObjectFileName>$(IntDir)libavutil\mastering_display_metadata.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\mathematics.c">
+      <ObjectFileName>$(IntDir)libavutil\mathematics.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\md5.c">
+      <ObjectFileName>$(IntDir)libavutil\md5.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\mem.c">
+      <ObjectFileName>$(IntDir)libavutil\mem.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\murmur3.c">
+      <ObjectFileName>$(IntDir)libavutil\murmur3.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\opt.c">
+      <ObjectFileName>$(IntDir)libavutil\opt.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\parseutils.c">
+      <ObjectFileName>$(IntDir)libavutil\parseutils.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\pixdesc.c">
+      <ObjectFileName>$(IntDir)libavutil\pixdesc.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\pixelutils.c">
+      <ObjectFileName>$(IntDir)libavutil\pixelutils.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\random_seed.c">
+      <ObjectFileName>$(IntDir)libavutil\random_seed.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\rational.c">
+      <ObjectFileName>$(IntDir)libavutil\rational.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\rc4.c">
+      <ObjectFileName>$(IntDir)libavutil\rc4.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\refstruct.c">
+      <ObjectFileName>$(IntDir)libavutil\refstruct.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\reverse.c">
+      <ObjectFileName>$(IntDir)libavutil\reverse.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\ripemd.c">
+      <ObjectFileName>$(IntDir)libavutil\ripemd.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\samplefmt.c">
+      <ObjectFileName>$(IntDir)libavutil\samplefmt.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\sha.c">
+      <ObjectFileName>$(IntDir)libavutil\sha.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\sha512.c">
+      <ObjectFileName>$(IntDir)libavutil\sha512.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\side_data.c">
+      <ObjectFileName>$(IntDir)libavutil\side_data.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\slicethread.c">
+      <ObjectFileName>$(IntDir)libavutil\slicethread.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\spherical.c">
+      <ObjectFileName>$(IntDir)libavutil\spherical.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\stereo3d.c">
+      <ObjectFileName>$(IntDir)libavutil\stereo3d.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tea.c">
+      <ObjectFileName>$(IntDir)libavutil\tea.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\threadmessage.c">
+      <ObjectFileName>$(IntDir)libavutil\threadmessage.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\time.c">
+      <ObjectFileName>$(IntDir)libavutil\time.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\timecode.c">
+      <ObjectFileName>$(IntDir)libavutil\timecode.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\timestamp.c">
+      <ObjectFileName>$(IntDir)libavutil\timestamp.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tree.c">
+      <ObjectFileName>$(IntDir)libavutil\tree.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\twofish.c">
+      <ObjectFileName>$(IntDir)libavutil\twofish.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tx.c">
+      <ObjectFileName>$(IntDir)libavutil\tx.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tx_double.c">
+      <ObjectFileName>$(IntDir)libavutil\tx_double.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tx_float.c">
+      <ObjectFileName>$(IntDir)libavutil\tx_float.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\tx_int32.c">
+      <ObjectFileName>$(IntDir)libavutil\tx_int32.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\utils.c">
+      <ObjectFileName>$(IntDir)libavutil\utils.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\video_enc_params.c">
+      <ObjectFileName>$(IntDir)libavutil\video_enc_params.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\xga_font_data.c">
+      <ObjectFileName>$(IntDir)libavutil\xga_font_data.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\xtea.c">
+      <ObjectFileName>$(IntDir)libavutil\xtea.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\cpu.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\cpu.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\fixed_dsp_init.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\fixed_dsp_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\float_dsp_init.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\float_dsp_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\imgutils_init.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\imgutils_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\lls_init.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\lls_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\x86\tx_float_init.c">
+      <ObjectFileName>$(IntDir)libavutil\x86\tx_float_init.obj</ObjectFileName>
+      <PreprocessorDefinitions>BUILDING_avutil;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\audioconvert.c">
+      <ObjectFileName>$(IntDir)libswresample\audioconvert.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\dither.c">
+      <ObjectFileName>$(IntDir)libswresample\dither.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\options.c">
+      <ObjectFileName>$(IntDir)libswresample\options.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\rematrix.c">
+      <ObjectFileName>$(IntDir)libswresample\rematrix.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\resample.c">
+      <ObjectFileName>$(IntDir)libswresample\resample.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\resample_dsp.c">
+      <ObjectFileName>$(IntDir)libswresample\resample_dsp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\soxr_resample.c">
+      <ObjectFileName>$(IntDir)libswresample\soxr_resample.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\swresample.c">
+      <ObjectFileName>$(IntDir)libswresample\swresample.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\swresample_frame.c">
+      <ObjectFileName>$(IntDir)libswresample\swresample_frame.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\x86\audio_convert_init.c">
+      <ObjectFileName>$(IntDir)libswresample\x86\audio_convert_init.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\x86\rematrix_init.c">
+      <ObjectFileName>$(IntDir)libswresample\x86\rematrix_init.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\x86\resample_init.c">
+      <ObjectFileName>$(IntDir)libswresample\x86\resample_init.obj</ObjectFileName>
+    </ClCompile>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\idctdsp.asm">
+      <ObjectFileName>$(IntDir)libavcodec\x86\idctdsp.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\simple_idct.asm">
+      <ObjectFileName>$(IntDir)libavcodec\x86\simple_idct.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\simple_idct10.asm">
+      <ObjectFileName>$(IntDir)libavcodec\x86\simple_idct10.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\cpuid.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\cpuid.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\emms.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\emms.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\fixed_dsp.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\fixed_dsp.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\float_dsp.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\float_dsp.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\imgutils.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\imgutils.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\lls.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\lls.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libavutil\x86\tx_float.asm">
+      <ObjectFileName>$(IntDir)libavutil\x86\tx_float.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libavutil\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libswresample\x86\audio_convert.asm">
+      <ObjectFileName>$(IntDir)libswresample\x86\audio_convert.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libswresample\x86\rematrix.asm">
+      <ObjectFileName>$(IntDir)libswresample\x86\rematrix.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude>
+    </Nasm>
+    <Nasm Include="$(FFmpegSrc)libswresample\x86\resample.asm">
+      <ObjectFileName>$(IntDir)libswresample\x86\resample.obj</ObjectFileName>
+      <ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude>
+    </Nasm>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h" /><ClInclude Include="config_components.h" /><None Include="config.asm" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="config_components.h" />
+    <None Include="config.asm" />
   </ItemGroup>
   <ItemGroup>
     <Lib Include="@(Nasm->'%(ObjectFileName)')" />
   </ItemGroup>
   <Target Name="NasmAssemble" Inputs="@(Nasm);$(FFmpegCfg)config.asm" Outputs="@(Nasm->'%(ObjectFileName)')" BeforeTargets="Lib">
-    <MakeDir Directories="@(Nasm->'%(ObjectFileName)'->DirectoryName()->Distinct())" />
+    <MakeDir Directories="@(Nasm-&gt;'%(ObjectFileName)'-&gt;DirectoryName()-&gt;Distinct())" />
     <Exec Command="nasm $(NasmFlags) -I&quot;$(FFmpegCfg.TrimEnd('\'))/&quot; -I&quot;$(FFmpegSrc.TrimEnd('\'))/&quot; -I&quot;%(Nasm.ExtraInclude)/&quot; -Pconfig.asm -o &quot;%(Nasm.ObjectFileName)&quot; &quot;%(Nasm.FullPath)&quot;" />
   </Target>
   <Target Name="ClCompileObjDirs" BeforeTargets="ClCompile">
-    <MakeDir Directories="@(ClCompile->'%(ObjectFileName)'->DirectoryName()->Distinct())" />
+    <MakeDir Directories="@(ClCompile-&gt;'%(ObjectFileName)'-&gt;DirectoryName()-&gt;Distinct())" />
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
