@@ -3199,7 +3199,7 @@ BEGIN
     IDS_MEDIAINFO_NO_INFO_AVAILABLE "No information available"
     IDS_MEDIAINFO_ANALYSIS_IN_PROGRESS "Please wait, analysis in progress..."
     IDS_ASPECT_RATIO_FMT    "AR %d:%d"
-    IDS_PPAGEADVANCED_LOGGER "Enables logging to file (requires restart).\nThis only logs a few very specific things, such as DVB scanning, subtitle search, and yt-dlp data parsing.\nDo not enable this during normal use!"
+    IDS_PPAGEADVANCED_LOGGER "Enables logging to file (requires restart).\nThis option for debugging purposes only and should not be enabled during normal use!\nLogs are saved in folder: %appdata%\\MPC-HC\nValue to set is the sum of the loggers that you want to enable:\n1: General\n2: Graph builder\n4: Subtitle search\n8: yt-dlp processing\n16: DVB scanning"
     IDS_TIMER_REMAINING_TIME "Remaining time"
     IDS_TIMER_HIGH_PRECISION "High precision"
     IDS_AFTERPLAYBACK_REWIND "After Playback: Rewind current file"
@@ -4336,6 +4336,15 @@ BEGIN
     IDS_AG_COLOR_CONTROLS   "Color Controls"
     IDC_COLOR_CONTROLS      "You can also open Color controls from the Play menu"
     IDS_REDIRECT_HUNG_INSTANCE "The first MPC-HC instance is not responding.\n\nClick Yes to close it and continue in this window. Any settings and history it has not yet saved will be lost.\n\nClick No to open a new window and leave it running."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PPAGEADVANCED_NEXT_FILE_SORT_BY_DATE "Sort files by creation time instead of file name when skipping to the next/previous file in a folder."
+    IDS_PPAGEADVANCED_HISTORY_MAX_AGE_DAYS "Automatically remove entries older than this number of days from the recent files history. Set to 0 to disable age-based cleanup."
+    IDS_PPAGEADVANCED_HISTORY_IN_APPDATA "Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart."
+    IDS_PPAGEADVANCED_HISTORY_EXCLUDE_FILTER "Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com"
+    IDS_PPAGEADVANCED_SECONDARY_SUB_VERT_POS "Vertical position for secondary subtitle. Percentage offset from top."
 END
 
 #endif    // English (United States) resources
