@@ -125,14 +125,6 @@ EXIT /B
 FOR /f "delims=" %%A IN ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -property installationPath -latest -requires Microsoft.Component.MSBuild Microsoft.VisualStudio.Component.VC.ATLMFC Microsoft.VisualStudio.Component.VC.Tools.x86.x64') DO SET "MPCHC_VS_PATH=%%A"
 EXIT /B
 
-:SubMINGWLIB
-IF NOT EXIST "lib\libmingwex-stripped.a" SET "FORCE_MINGW_UPDATE=True"
-IF NOT EXIST "lib64\libmingwex-stripped.a" SET "FORCE_MINGW_UPDATE=True"
-IF NOT EXIST "lib\libgcc.a" SET "FORCE_MINGW_UPDATE=True"
-IF NOT EXIST "lib64\ligbcc.a" SET "FORCE_MINGW_UPDATE=True"
-IF "FORCE_MINGW_UPDATE" == "True" CALL "update_mingwlib.bat" && SET "FORCE_MINGW_UPDATE=False"
-EXIT /B
-
 :SubMsg
 ECHO. & ECHO ------------------------------
 IF /I "%~1" == "ERROR" (

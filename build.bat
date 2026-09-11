@@ -62,7 +62,6 @@ FOR %%G IN (%ARG%) DO (
   IF /I "%%G" == "Silent"       SET "SILENT=True"        & SET /A VALID+=1
   IF /I "%%G" == "Nocolors"     SET "NOCOLORS=True"      & SET /A VALID+=1
   IF /I "%%G" == "Analyze"      SET "ANALYZE=True"       & SET /A VALID+=1
-  IF /I "%%G" == "MINGWLIB"     ENDLOCAL & SET "FORCE_MINGW_UPDATE=True" & CALL "%~dp0common.bat" :SubMINGWLIB & EXIT /B
 )
 
 SET "FILE_DIR=%~dp0"
@@ -378,7 +377,6 @@ IF %ERRORLEVEL% NEQ 0 EXIT /B
 
 CALL "%COMMON%" :SubDetectSevenzipPath
 CALL "%COMMON%" :SubGetVersion
-CALL "%COMMON%" :SubMINGWLIB
 
 IF NOT DEFINED SEVENZIP (
   CALL "%COMMON%" :SubMsg "WARNING" "7-Zip wasn't found, the %1 %2 package wasn't built"
