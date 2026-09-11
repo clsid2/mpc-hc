@@ -161,7 +161,7 @@ void CPPageAdvanced::InitSettings()
 
     addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_PLAYBACK));
     addBoolItem(LOOP_FOLDER_NEXT_FILE, IDS_RS_LOOP_FOLDER_NEXT_FILE, false, s.bLoopFolderOnPlayNextFile, StrRes(IDS_PPAGEADVANCED_LOOP_FOLDER_NEXT_FILE));
-    addBoolItem(NEXT_FILE_SORT_BY_DATE, IDS_RS_NEXT_FILE_SORT_BY_DATE, false, s.bNextFileInFolderSortByDate, L"Sort files by creation time instead of file name when skipping to the next/previous file in a folder.");
+    addBoolItem(NEXT_FILE_SORT_BY_DATE, IDS_RS_NEXT_FILE_SORT_BY_DATE, false, s.bNextFileInFolderSortByDate, StrRes(IDS_PPAGEADVANCED_NEXT_FILE_SORT_BY_DATE));
     addBoolItem(LOCK_NOPAUSE, IDS_RS_LOCK_NOPAUSE, false, s.bLockNoPause, StrRes(IDS_PPAGEADVANCED_LOCK_NOPAUSE));
     addBoolItem(PREVENT_DISPLAY_SLEEP, IDS_RS_PREVENT_DISPLAY_SLEEP, true, s.bPreventDisplaySleep, StrRes(IDS_PPAGEADVANCED_PREVENT_DISPLAY_SLEEP));
     addIntItem(RELOAD_AFTER_LONG_PAUSE, IDS_RS_RELOAD_AFTER_LONG_PAUSE, 0, s.iReloadAfterLongPause, std::make_pair(-1, 1440), StrRes(IDS_PPAGEADVANCED_RELOAD_AFTER_LONG_PAUSE));
@@ -177,17 +177,17 @@ void CPPageAdvanced::InitSettings()
 
     addHeaderItem(ResStr(IDS_PPAGEADVANCED_GRP_HISTORY));
     addIntItem(RECENT_FILES_NB, IDS_RS_RECENT_FILES_NUMBER, 100, s.iRecentFilesNumber, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_RECENT_FILES_NUMBER));
-    addIntItem(HISTORY_MAX_AGE_DAYS, IDS_RS_HISTORY_MAX_AGE_DAYS, 365, s.iHistoryMaxAgeDays, std::make_pair(0, 10000), L"Automatically remove entries older than this number of days from the recent files history. Set to 0 to disable age-based cleanup.");
+    addIntItem(HISTORY_MAX_AGE_DAYS, IDS_RS_HISTORY_MAX_AGE_DAYS, 365, s.iHistoryMaxAgeDays, std::make_pair(0, 10000), StrRes(IDS_PPAGEADVANCED_HISTORY_MAX_AGE_DAYS));
     addIntItem(FILE_POS_LONGER, IDS_RS_FILEPOSLONGER, 5, s.iRememberPosForLongerThan, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_FILE_POS_LONGER));
     addBoolItem(FILE_POS_AUDIO, IDS_RS_FILEPOSAUDIO, true, s.bRememberPosForAudioFiles, StrRes(IDS_PPAGEADVANCED_FILE_POS_AUDIO));
     addBoolItem(FILE_POS_PLAYLIST, IDS_RS_FILEPOS_PLAYLIST, true, s.bRememberExternalPlaylistPos, StrRes(IDS_PPAGEADVANCED_FILEPOS_PLAYLIST));
     addBoolItem(FILE_POS_TRACK_SELECTION, IDS_RS_FILEPOS_TRACK_SELECTION, true, s.bRememberTrackSelection, StrRes(IDS_PPAGEADVANCED_FILEPOS_TRACK_SELECTION));
     addBoolItem(USE_TITLE_IN_RECENT_FILE_LIST, IDS_RS_USE_TITLE_IN_RECENT_FILE_LIST, true, s.bUseTitleInRecentFileList, StrRes(IDS_PPAGEADVANCED_USE_TITLE_IN_RECENT_FILE_LIST));
-    addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, L"Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart.");
-    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, L"Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com");
+    addBoolItem(HISTORY_IN_APPDATA, IDS_RS_HISTORY_IN_APPDATA, false, s.bHistoryInAppData, StrRes(IDS_PPAGEADVANCED_HISTORY_IN_APPDATA));
+    addCStringItem(HISTORY_EXCLUDE_FILTER, IDS_RS_HISTORY_EXCLUDE_FILTER, _T(""), s.sHistoryExcludeFilter, StrRes(IDS_PPAGEADVANCED_HISTORY_EXCLUDE_FILTER));
 
     addHeaderItem(ResStr(IDS_INFOBAR_SUBTITLES));
-    addIntItem(SUB_SECONDARY_VERT_POS, L"SecondarySubVerPos", 8, s.nSecondarySubVerPos, std::make_pair(0, 95), L"Vertical position for secondary subtitle. Percentage offset from top.");
+    addIntItem(SUB_SECONDARY_VERT_POS, L"SecondarySubVerPos", 8, s.nSecondarySubVerPos, std::make_pair(0, 95), StrRes(IDS_PPAGEADVANCED_SECONDARY_SUB_VERT_POS));
     addBoolItem(ADD_LANGCODE_WHEN_SAVE_SUBTITLES, IDS_RS_ADD_LANGCODE_WHEN_SAVE_SUBTITLES, false, s.bAddLangCodeWhenSaveSubtitles, StrRes(IDS_PPAGEADVANCED_ADD_LANGCODE_WHEN_SAVE_SUBTITLES));
     addBoolItem(LIBASS_FOR_SRT, IDS_RS_LIBASS_FOR_SRT, false, s.bRenderSRTUsingLibass, StrRes(IDS_PPAGEADVANCED_LIBASS_FOR_SRT));
     addBoolItem(USE_FREETYPE, IDS_RS_USE_FREETYPE, false, s.bUseFreeType, StrRes(IDS_PPAGEADVANCED_USE_FREETYPE));
@@ -217,7 +217,7 @@ void CPPageAdvanced::InitSettings()
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     addBoolItem(CRASHREPORTER, IDS_RS_ENABLE_CRASH_REPORTER, true, s.bEnableCrashReporter, StrRes(IDS_PPAGEADVANCED_CRASHREPORTER));
 #endif
-    addIntItem(LOGGING, IDS_RS_LOGGING, 0, s.DebugLogMask, std::make_pair(0, 31), /*StrRes(IDS_PPAGEADVANCED_LOGGER)*/ L"Enables logging to file (requires restart).\nThis option for debugging purposes only and should not be enabled during normal use!\nLogs are saved in folder: %appdata%\\MPC-HC\nValue to set is the sum of the loggers that you want to enable:\n1: General\n2: Graph builder\n4: Subtitle search\n8: yt-dlp processing\n16: DVB scanning");
+    addIntItem(LOGGING, IDS_RS_LOGGING, 0, s.DebugLogMask, std::make_pair(0, 31), StrRes(IDS_PPAGEADVANCED_LOGGER));
 }
 
 std::pair<CString, bool> CPPageAdvanced::GetWidestValue(const std::shared_ptr<SettingsBase>& pItem, CDC* pDC)
