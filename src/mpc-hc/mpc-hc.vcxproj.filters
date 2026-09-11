@@ -253,6 +253,12 @@
     <ClCompile Include="PPageFileMediaInfo.cpp">
       <Filter>Property Dialogs\File Properties\Pages</Filter>
     </ClCompile>
+    <ClCompile Include="MkvMetadata.cpp">
+      <Filter>Property Dialogs\File Properties\Pages</Filter>
+    </ClCompile>
+    <ClCompile Include="PPageMkvMetadata.cpp">
+      <Filter>Property Dialogs\File Properties\Pages</Filter>
+    </ClCompile>
     <ClCompile Include="PPageFormats.cpp">
       <Filter>Property Dialogs\Player Options\Pages</Filter>
     </ClCompile>
@@ -815,6 +821,12 @@
       <Filter>Property Dialogs\File Properties\Pages</Filter>
     </ClInclude>
     <ClInclude Include="PPageFileMediaInfo.h">
+      <Filter>Property Dialogs\File Properties\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="MkvMetadata.h">
+      <Filter>Property Dialogs\File Properties\Pages</Filter>
+    </ClInclude>
+    <ClInclude Include="PPageMkvMetadata.h">
       <Filter>Property Dialogs\File Properties\Pages</Filter>
     </ClInclude>
     <ClInclude Include="PPageFormats.h">

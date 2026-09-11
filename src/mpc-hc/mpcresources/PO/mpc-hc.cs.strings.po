@@ -650,6 +650,10 @@ msgctxt "IDD_FILEMEDIAINFO"
 msgid "MediaInfo"
 msgstr "MediaInfo"
 
+msgctxt "IDD_MKVMETADATA"
+msgid "MKV Metadata"
+msgstr ""
+
 msgctxt "IDD_PPAGECAPTURE"
 msgid "Playback::Capture"
 msgstr "Přehrávání::Záznam"
@@ -5385,4 +5389,80 @@ msgstr ""
 
 msgctxt "IDS_PPAGEADVANCED_SECONDARY_SUB_VERT_POS"
 msgid "Vertical position for secondary subtitle. Percentage offset from top."
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_TITLE"
+msgid "Title"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_RELEASE_DATE"
+msgid "Release date"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_CREATORS"
+msgid "Creators"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_CAST"
+msgid "Cast"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_DIRECTOR"
+msgid "Director"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_SCREENPLAY"
+msgid "Screenplay"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_WRITER"
+msgid "Writer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_PRODUCER"
+msgid "Producer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_EXECUTIVE_PRODUCER"
+msgid "Executive producer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_DIRECTOR_OF_PHOTOGRAPHY"
+msgid "Director of photography"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_MUSIC"
+msgid "Music"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_EDITOR"
+msgid "Editor"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_ART_DIRECTOR"
+msgid "Art director"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_PRODUCTION_DESIGNER"
+msgid "Production designer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_COSTUME_DESIGNER"
+msgid "Costume designer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_SOUND_ENGINEER"
+msgid "Sound engineer"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_CASTING_DIRECTOR"
+msgid "Casting director"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_ASSISTANT_DIRECTOR"
+msgid "Assistant director"
+msgstr ""
+
+msgctxt "IDS_MKVMETADATA_LOADING"
+msgid "Loading MKV metadata..."
 msgstr ""

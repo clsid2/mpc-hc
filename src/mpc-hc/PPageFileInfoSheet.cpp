@@ -26,6 +26,85 @@
 #include "PPageFileMediaInfo.h"
 #include "CMPCTheme.h"
 
+#include <mutex>
+
+namespace {
+
+constexpr UINT_PTR TIMER_MKV_METADATA = 0x4D4B;
+
+} // namespace
+
+struct MkvMetadataTaskState {
+    CString path;
+    ULONGLONG startTime = GetTickCount64();
+    std::atomic_bool cancelled = false;
+    HANDLE workerThread = nullptr;
+    std::mutex mutex;
+    MkvMetadata metadata;
+    bool completed = false;
+
+    ~MkvMetadataTaskState()
+    {
+        if (workerThread) {
+            CloseHandle(workerThread);
+        }
+    }
+};
+
+namespace {
+
+void CancelMkvMetadataTask(const std::shared_ptr<MkvMetadataTaskState>& task)
+{
+    task->cancelled = true;
+
+    // Overlapped reads are cancelled by the reader. This additionally aborts
+    // synchronous CreateFile/GetFileSizeEx calls on the dedicated worker.
+    if (task->workerThread) {
+        CancelSynchronousIo(task->workerThread);
+    }
+}
+
+void AbortSuspendedMkvMetadataWorker(CWinThread* worker, std::shared_ptr<MkvMetadataTaskState>* parameter)
+{
+    // A failed ResumeThread leaves the native thread suspended before the
+    // entry point can take ownership of parameter. Terminating it at this
+    // point is safe: ReadMkvMetadata has not run and holds no resources.
+    if (TerminateThread(worker->m_hThread, ERROR_OPERATION_ABORTED)) {
+        WaitForSingleObject(worker->m_hThread, INFINITE);
+        delete parameter;
+        worker->Delete();
+        return;
+    }
+
+    // Keep the argument alive if Windows refuses to terminate the thread; a
+    // successful retry lets the cancelled worker release it normally.
+    if (worker->ResumeThread() == static_cast<DWORD>(-1)) {
+        ASSERT(FALSE);
+    }
+}
+
+UINT AFX_CDECL ReadMkvMetadata(LPVOID parameter)
+{
+    std::unique_ptr<std::shared_ptr<MkvMetadataTaskState>> parameterOwner(static_cast<std::shared_ptr<MkvMetadataTaskState>*>(parameter));
+    const std::shared_ptr<MkvMetadataTaskState>& task = *parameterOwner;
+    MkvMetadata metadata;
+    const bool succeeded = CMkvMetadataReader::Read(task->path, metadata, &task->cancelled, task->startTime);
+
+    if (!task->cancelled.load()) {
+        std::lock_guard<std::mutex> lock(task->mutex);
+        if (!task->cancelled.load()) {
+            if (succeeded) {
+                task->metadata = std::move(metadata);
+            }
+            task->completed = true;
+        }
+    }
+
+    return 0;
+}
+
+} // namespace
+
 
 // CPPageFileInfoSheet
 
@@ -48,15 +127,29 @@ CPPageFileInfoSheet::CPPageFileInfoSheet(CString path, CString ydlsrc, CMainFram
     if (CPPageFileMediaInfo::HasMediaInfo()) {
         AddPage(&m_mi);
     }
+
+    if (path.Right(4).CompareNoCase(L".mkv") == 0) {
+        m_mkvMetadata.SetLoading();
+        AddPage(&m_mkvMetadata);
+        m_mkvMetadataAdded = true;
+    }
 }
 
 CPPageFileInfoSheet::~CPPageFileInfoSheet()
 {
+    if (GetSafeHwnd()) {
+        KillTimer(TIMER_MKV_METADATA);
+    }
+    if (m_mkvMetadataTask) {
+        CancelMkvMetadataTask(m_mkvMetadataTask);
+        m_mkvMetadataTask.reset();
+    }
 }
 
 
 BEGIN_MESSAGE_MAP(CPPageFileInfoSheet, CMPCThemeResizablePropertySheet)
     ON_BN_CLICKED(IDC_BUTTON_MI, OnSaveAs)
+    ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CPPageFileInfoSheet message handlers
@@ -94,7 +187,96 @@ BOOL CPPageFileInfoSheet::OnInitDialog()
 
     AddAnchor(IDC_BUTTON_MI, BOTTOM_LEFT);
 
+    if (m_mkvMetadataAdded) {
+        auto task = std::make_shared<MkvMetadataTaskState>();
+        task->path = m_path;
+        m_mkvMetadataTask = task;
+
+        // The worker owns this shared_ptr copy and never touches the dialog.
+        // The UI timer safely collects the completed result on this thread.
+        auto parameter = new std::shared_ptr<MkvMetadataTaskState>(task);
+        CWinThread* worker = AfxBeginThread(ReadMkvMetadata, parameter, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+        if (!worker) {
+            delete parameter;
+            m_mkvMetadataTask.reset();
+            RemovePage(&m_mkvMetadata);
+            m_mkvMetadataAdded = false;
+        } else if (!DuplicateHandle(GetCurrentProcess(), worker->m_hThread, GetCurrentProcess(), &task->workerThread,
+                                    0, FALSE, DUPLICATE_SAME_ACCESS)) {
+            CancelMkvMetadataTask(task);
+            if (worker->ResumeThread() == static_cast<DWORD>(-1)) {
+                AbortSuspendedMkvMetadataWorker(worker, parameter);
+            }
+            m_mkvMetadataTask.reset();
+            RemovePage(&m_mkvMetadata);
+            m_mkvMetadataAdded = false;
+        } else if (worker->ResumeThread() == static_cast<DWORD>(-1)) {
+            CancelMkvMetadataTask(task);
+            AbortSuspendedMkvMetadataWorker(worker, parameter);
+            m_mkvMetadataTask.reset();
+            RemovePage(&m_mkvMetadata);
+            m_mkvMetadataAdded = false;
+        } else if (!SetTimer(TIMER_MKV_METADATA, 100, nullptr)) {
+            CancelMkvMetadataTask(m_mkvMetadataTask);
+            m_mkvMetadataTask.reset();
+            RemovePage(&m_mkvMetadata);
+            m_mkvMetadataAdded = false;
+        }
+    }
+
     return FALSE;  // return TRUE unless you set the focus to a control
+}
+
+void CPPageFileInfoSheet::OnTimer(UINT_PTR nIDEvent)
+{
+    if (nIDEvent == TIMER_MKV_METADATA) {
+        CompleteMkvMetadataTask();
+        return;
+    }
+
+    __super::OnTimer(nIDEvent);
+}
+
+void CPPageFileInfoSheet::CompleteMkvMetadataTask()
+{
+    const std::shared_ptr<MkvMetadataTaskState> task = m_mkvMetadataTask;
+    if (!task) {
+        KillTimer(TIMER_MKV_METADATA);
+        return;
+    }
+
+    if (GetTickCount64() - task->startTime >= CMkvMetadataReader::READ_TIMEOUT_MS) {
+        // CreateFile and GetFileSizeEx may block in the network redirector.
+        // The reader cannot inspect its deadline while either call is stuck,
+        // so cancel the dedicated worker from the responsive UI thread.
+        CancelMkvMetadataTask(task);
+        KillTimer(TIMER_MKV_METADATA);
+        m_mkvMetadataTask.reset();
+        if (m_mkvMetadataAdded) {
+            RemovePage(&m_mkvMetadata);
+            m_mkvMetadataAdded = false;
+        }
+        return;
+    }
+
+    MkvMetadata metadata;
+    {
+        std::lock_guard<std::mutex> lock(task->mutex);
+        if (!task->completed) {
+            return;
+        }
+        metadata = std::move(task->metadata);
+    }
+    KillTimer(TIMER_MKV_METADATA);
+    m_mkvMetadataTask.reset();
+
+    if (metadata.HasDisplayableData()) {
+        m_mkvMetadata.SetMetadata(std::move(metadata));
+    } else if (m_mkvMetadataAdded) {
+        RemovePage(&m_mkvMetadata);
+        m_mkvMetadataAdded = false;
+    }
+
 }
 
 void CPPageFileInfoSheet::OnSaveAs()

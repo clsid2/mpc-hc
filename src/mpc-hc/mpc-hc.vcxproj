@@ -279,6 +279,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="PPageFileInfoRes.cpp" />
     <ClCompile Include="PPageFileInfoSheet.cpp" />
     <ClCompile Include="PPageFileMediaInfo.cpp" />
+    <ClCompile Include="MkvMetadata.cpp" />
+    <ClCompile Include="PPageMkvMetadata.cpp" />
     <ClCompile Include="PPageFormats.cpp" />
     <ClCompile Include="PPageFullscreen.cpp" />
     <ClCompile Include="PPageInternalFilters.cpp" />
@@ -488,6 +490,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="PPageFileInfoRes.h" />
     <ClInclude Include="PPageFileInfoSheet.h" />
     <ClInclude Include="PPageFileMediaInfo.h" />
+    <ClInclude Include="MkvMetadata.h" />
+    <ClInclude Include="PPageMkvMetadata.h" />
     <ClInclude Include="PPageFormats.h" />
     <ClInclude Include="PPageFullscreen.h" />
     <ClInclude Include="PPageInternalFilters.h" />

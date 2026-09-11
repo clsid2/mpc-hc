@@ -25,12 +25,16 @@
 #include "PPageFileInfoDetails.h"
 #include "PPageFileInfoRes.h"
 #include "PPageFileMediaInfo.h"
+#include "PPageMkvMetadata.h"
 #include <afxdlgs.h>
 #include "CMPCThemePropertySheet.h"
 #include "CMPCThemeButton.h"
 #include "CMPCThemeResizablePropertySheet.h"
 
+#include <memory>
+
 class CMainFrame;
+struct MkvMetadataTaskState;
 
 // CPPageFileInfoSheet
 
@@ -43,7 +47,10 @@ private:
     CPPageFileInfoDetails m_details;
     CPPageFileInfoRes m_res;
     CPPageFileMediaInfo m_mi;
+    CPPageMkvMetadata m_mkvMetadata;
     CMPCThemeButton m_Button_MI;
+    bool m_mkvMetadataAdded = false;
+    std::shared_ptr<MkvMetadataTaskState> m_mkvMetadataTask;
 
 public:
     CPPageFileInfoSheet(CString path, CString ydlsrc, CMainFrame* pMainFrame, CWnd* pParentWnd);
@@ -53,6 +60,9 @@ public:
     CString m_path;
 protected:
     virtual BOOL OnInitDialog();
+
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    void CompleteMkvMetadataTask();
 
     DECLARE_MESSAGE_MAP()
 };
