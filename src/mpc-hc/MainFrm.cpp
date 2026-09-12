@@ -10619,7 +10619,14 @@ void CMainFrame::OnPlayFilters(UINT nID)
 {
     //ShowPPage(m_spparray[nID - ID_FILTERS_SUBITEM_START], m_hWnd);
 
-    CComPtr<IUnknown> pUnk = m_pparray[nID - ID_FILTERS_SUBITEM_START];
+    // the command id can come from outside the menu (web interface, API), and the
+    // array is only filled once the filters submenu has been built
+    size_t i = nID - ID_FILTERS_SUBITEM_START;
+    if (i >= m_pparray.GetCount()) {
+        return;
+    }
+
+    CComPtr<IUnknown> pUnk = m_pparray[i];
 
     FilterSettings(pUnk, GetModalParent());
 }
@@ -11002,6 +11009,10 @@ void CMainFrame::OnPlayVideoStreams(UINT nID)
 void CMainFrame::OnPlayFiltersStreams(UINT nID)
 {
     nID -= ID_FILTERSTREAMS_SUBITEM_START;
+    if (nID >= m_ssarray.GetCount()) {
+        // stale or injected command id (web interface, API)
+        return;
+    }
     CComPtr<IAMStreamSelect> pAMSS = m_ssarray[nID];
     UINT i = nID;
 
