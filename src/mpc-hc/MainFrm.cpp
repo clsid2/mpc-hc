@@ -5426,7 +5426,10 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
                 }
             } else {
                 fSetForegroundWindow = true;
-                m_nLastAppendSelectionIndex = 0; // the playlist gets replaced below
+                // The playlist gets replaced below and its first item starts playing. The rest of
+                // the selection is sorted in under it, so the playing item stays on top: sorting
+                // from 0 moved it into the middle and everything sorted before it never played.
+                m_nLastAppendSelectionIndex = 1;
 
                 if (GetMediaState() == State_Running) {
                     MediaControlPause(true);
