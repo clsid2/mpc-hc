@@ -433,42 +433,56 @@ REFERENCE_TIME CSubtitleInputPin::DecodeSample(const std::unique_ptr<SubtitleSam
 
         char* pData = (char*)pSample->data.data();
 
-        if (!strncmp(pData, __GAB1__, strlen(__GAB1__))) {
+        // The GAB1/GAB2 blobs carry their own tag/size fields and strings that are not
+        // necessarily terminated, so every read is checked against the sample end.
+        if (pSample->data.size() > strlen(__GAB1__) && !strncmp(pData, __GAB1__, strlen(__GAB1__))) {
             char* ptr = &pData[strlen(__GAB1__) + 1];
             char* end = &pData[pSample->data.size()];
 
-            while (ptr < end) {
+            while (ptr + 4 <= end) {
                 WORD tag = *((WORD*)(ptr));
                 ptr += 2;
                 WORD size = *((WORD*)(ptr));
                 ptr += 2;
 
+                if (size > (size_t)(end - ptr)) {
+                    break;
+                }
+
                 if (tag == __GAB1_LANGUAGE__) {
-                    pRTS->m_name = ptr;
+                    pRTS->m_name = CString(CStringA(ptr, (int)strnlen_s(ptr, size)));
                 } else if (tag == __GAB1_ENTRY__) {
-                    pRTS->Add(AToW(&ptr[8]), false, MS2RT(*(int*)ptr), MS2RT(*(int*)(ptr + 4)));
-                    bInvalidate = true;
+                    if (size >= 8) {
+                        pRTS->Add(AToW(CStringA(&ptr[8], (int)strnlen_s(&ptr[8], size - 8))), false, MS2RT(*(int*)ptr), MS2RT(*(int*)(ptr + 4)));
+                        bInvalidate = true;
+                    }
                 } else if (tag == __GAB1_LANGUAGE_UNICODE__) {
-                    pRTS->m_name = (WCHAR*)ptr;
+                    pRTS->m_name = CStringW((WCHAR*)ptr, (int)wcsnlen_s((WCHAR*)ptr, size / 2));
                 } else if (tag == __GAB1_ENTRY_UNICODE__) {
-                    pRTS->Add((WCHAR*)(ptr + 8), true, MS2RT(*(int*)ptr), MS2RT(*(int*)(ptr + 4)));
-                    bInvalidate = true;
+                    if (size >= 8) {
+                        pRTS->Add(CStringW((WCHAR*)(ptr + 8), (int)wcsnlen_s((WCHAR*)(ptr + 8), (size - 8) / 2)), true, MS2RT(*(int*)ptr), MS2RT(*(int*)(ptr + 4)));
+                        bInvalidate = true;
+                    }
                 }
 
                 ptr += size;
             }
-        } else if (!strncmp(pData, __GAB2__, strlen(__GAB2__))) {
+        } else if (pSample->data.size() > strlen(__GAB2__) && !strncmp(pData, __GAB2__, strlen(__GAB2__))) {
             char* ptr = &pData[strlen(__GAB2__) + 1];
             char* end = &pData[pSample->data.size()];
 
-            while (ptr < end) {
+            while (ptr + 6 <= end) {
                 WORD tag = *((WORD*)(ptr));
                 ptr += 2;
                 DWORD size = *((DWORD*)(ptr));
                 ptr += 4;
 
+                if (size > (size_t)(end - ptr)) {
+                    break;
+                }
+
                 if (tag == __GAB1_LANGUAGE_UNICODE__) {
-                    pRTS->m_name = (WCHAR*)ptr;
+                    pRTS->m_name = CStringW((WCHAR*)ptr, (int)wcsnlen_s((WCHAR*)ptr, size / 2));
                 } else if (tag == __GAB1_RAWTEXTSUBTITLE__) {
                     pRTS->Open((BYTE*)ptr, size, DEFAULT_CHARSET, pRTS->m_name);
                     bInvalidate = true;
