@@ -2190,6 +2190,7 @@ BOOL CMPlayerCApp::InitInstance()
         for (size_t i = 0, cnt = mf.GetCount(); i < cnt; i++) {
             m_s->fileAssoc.Register(mf[i], false, false, false);
         }
+        m_s->fileAssoc.UnregisterDropTargetServer();
 
         SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
@@ -2245,7 +2246,11 @@ BOOL CMPlayerCApp::InitInstance()
     m_mutexOneInstance.Create(nullptr, TRUE, MPC_WND_CLASS_NAME);
 
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        if ((m_s->nCLSwitches & CLSW_ADD) || !(m_s->GetAllowMultiInst() || m_s->nCLSwitches & CLSW_NEW || m_cmdln.IsEmpty())) {
+        // Started by COM to serve an Explorer verb (see ShellDropTarget.h): there is nothing
+        // to redirect, the selection arrives through IDropTarget once this instance has
+        // registered its class objects, and exiting here would fail Explorer's activation.
+        const bool bEmbedding = !!(m_s->nCLSwitches & CLSW_EMBEDDING);
+        if (!bEmbedding && ((m_s->nCLSwitches & CLSW_ADD) || !(m_s->GetAllowMultiInst() || m_s->nCLSwitches & CLSW_NEW || m_cmdln.IsEmpty()))) {
             // The first instance owns this mutex until it has created its window, so waiting
             // for it means waiting for startup to finish. Release it again straight away:
             // holding it across the send serialized every redirecting process, so one slow
@@ -2367,6 +2372,11 @@ BOOL CMPlayerCApp::InitInstance()
     }
 
     pFrame->ActivateFrame(m_nCmdShow);
+
+    // From here on Explorer can hand this instance a selection through COM. Registered
+    // before anything below pumps messages, so an instance COM started for that purpose
+    // is reachable before the first-run prompt can hold it up.
+    m_shellDropTargetServer.Register(pFrame);
 
     if (AfxGetAppSettings().HasFixedWindowSize() && IsWindows8OrGreater()) {//make adjustments for drop shadow frame
         CRect rect, frame;
@@ -2643,6 +2653,7 @@ int CMPlayerCApp::ExitInstance()
 
     MH_Uninitialize();
 
+    m_shellDropTargetServer.Revoke();
     OleUninitialize();
 
     return CWinAppEx::ExitInstance();

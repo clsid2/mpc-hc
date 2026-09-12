@@ -222,6 +222,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="FGManagerBDA.cpp" />
     <ClCompile Include="FileAssoc.cpp" />
     <ClCompile Include="DropTarget.cpp" />
+    <ClCompile Include="ShellDropTarget.cpp" />
     <ClCompile Include="FreeviewEPGDecode.cpp" />
     <ClCompile Include="GPUInfo.cpp" />
     <ClCompile Include="ImageGrayer.cpp" />
@@ -424,6 +425,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="FGManagerBDA.h" />
     <ClInclude Include="FileAssoc.h" />
     <ClInclude Include="DropTarget.h" />
+    <ClInclude Include="ShellDropTarget.h" />
     <ClInclude Include="FilterEnum.h" />
     <ClInclude Include="FloatEdit.h" />
     <ClInclude Include="FreeviewEPGDecode.h" />

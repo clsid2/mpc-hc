@@ -1334,6 +1334,7 @@ public:
 
     void        SetLoadState(MLS eState);
     MLS         GetLoadState() const;
+    void        QueueCommandLine(const CAtlList<CString>& cmdln);
     bool        IsStateLoaded();
     bool        IsStateLoadedOrLoading();
     bool        IsStateClosed();

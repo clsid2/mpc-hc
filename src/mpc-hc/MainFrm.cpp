@@ -5182,19 +5182,25 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
         cmdln.AddTail(str);
     }
 
-    // Queue the command line and return at once. Everything past this point probes the
-    // filesystem, and a path on an unreachable share blocks it for half a minute. While that
-    // ran inside this handler the window was not pumping messages, so Windows marked it as
-    // not responding and the other instances redirecting to us gave up and each opened a
-    // window of their own (#4149). The arrival time travels with the command line, so a slow
-    // open cannot make the next file of the same Explorer selection look like a new one.
+    QueueCommandLine(cmdln);
+
+    return TRUE;
+}
+
+// Queue a command line and return at once. Everything that acts on it probes the filesystem,
+// and a path on an unreachable share blocks that for half a minute. While it ran inside the
+// WM_COPYDATA handler the window was not pumping messages, so Windows marked it as not
+// responding and the other instances redirecting to us gave up and each opened a window of
+// their own (#4149). The arrival time travels with the command line, so a slow open cannot
+// make the next file of the same Explorer selection look like a new one. The Explorer drop
+// target (ShellDropTarget.cpp) comes in here too, with Explorer itself waiting on the return.
+void CMainFrame::QueueCommandLine(const CAtlList<CString>& cmdln)
+{
     m_pendingCommandLines.emplace_back();
     PendingCommandLine& pending = m_pendingCommandLines.back();
     pending.tArrived = GetTickCount64();
     pending.cmdln.AddTailList(&cmdln);
     VERIFY(PostMessage(WM_MPC_CMDLINE));
-
-    return TRUE;
 }
 
 LRESULT CMainFrame::OnCommandLineReceived(WPARAM wParam, LPARAM lParam)
