@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
-"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"PO-Revision-Date: 2026-09-12 13:45+0000\n"
 "Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Spanish (https://app.transifex.com/mpchc/teams/106126/es/)\n"
 "MIME-Version: 1.0\n"
@@ -105,15 +105,15 @@ msgstr "Aumento:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC7"
 msgid "ReplayGain:"
-msgstr ""
+msgstr "GananciaRep:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC8"
 msgid "Preamp (dB):"
-msgstr ""
+msgstr "Preamp (dB):"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK7"
 msgid "Prevent clipping"
-msgstr ""
+msgstr "Prevenir Clipping"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
 msgid "Audio time shift (ms):"
@@ -1132,7 +1132,7 @@ msgstr "Examinar…"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Renderizador de Vídeo"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1236,11 +1236,11 @@ msgstr "días"
 
 msgctxt "IDD_PPAGEMISC_IDC_STATIC"
 msgid "Color controls"
-msgstr ""
+msgstr "Controles de color"
 
 msgctxt "IDD_PPAGEMISC_IDC_COLOR_CONTROLS"
 msgid "Open"
-msgstr ""
+msgstr "Abrir"
 
 msgctxt "IDD_PPAGEMISC_IDC_STATIC"
 msgid "Settings management"
@@ -1364,7 +1364,7 @@ msgstr "Detener diag. filtros"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Común"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
@@ -1384,7 +1384,7 @@ msgstr "Reinicializar al cambiar pantalla"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Almacenar Sombreadores compilados en caché"
+msgstr "Sombreadores compilados en caché"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
@@ -1396,11 +1396,11 @@ msgstr "VMR-9 en modo mixer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Escoger Dispositivo Rederizador D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Renderizador de Sincronizado"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1412,9 +1412,7 @@ msgstr "Ajuste de frecuencia:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCDISPLAY"
 msgid "Sync display to video"
-msgstr ""
-"Sincronizar pantalla con el vídeo (requiere PowerStrip y tarjeta gráfica "
-"compatible)"
+msgstr "Sincronizar pantalla con el vídeo"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC2"
 msgid "Frequency adjustment:"
@@ -1430,11 +1428,11 @@ msgstr "columnas"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "Presentar al valor de sincronización vertical (VSync) más próximo"
+msgstr "Presentar en la VSync más próxima"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Objetivo de desfase de la sincro:"
+msgstr "Objetivo de desfase de sincronización:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1454,15 +1452,15 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr "Los cambios tendrán efecto tras cerrar y reiniciar la reproducción."
+msgstr "Los cambios tienen efecto tras cerrar y reiniciar la reproducción."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Están disponibles más ajuntes de renderizado en el menú Reproducir"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Restablecer"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1826,35 +1824,35 @@ msgstr "Cancelar"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Historial"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menú"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Eliminar seleccionadas"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Controles de color"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
-msgstr ""
+msgstr "Brillo"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
-msgstr ""
+msgstr "Contraste"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
-msgstr ""
+msgstr "Tono"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
-msgstr ""
+msgstr "Saturación"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
@@ -1862,25 +1860,27 @@ msgstr "Restablecer"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_CAPTION"
 msgid "MPC-HC"
-msgstr ""
+msgstr "MPC-HC"
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
 msgid ""
 "Opening files is taking some time. Waiting for the first MPC-HC instance to "
 "respond."
 msgstr ""
+"Abrir archivos está llevando algún tiempo. Esperando a que la primera "
+"instancia de MPC-HC responda."
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
 msgid "Please wait and do not open more files for the next 30 seconds."
-msgstr ""
+msgstr "Por favor espere y no abra más archivos en los próximos 30 segundos."
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDCANCEL"
 msgid "Open new window"
-msgstr ""
+msgstr "Abrir nueva ventana"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
@@ -1908,7 +1908,7 @@ msgstr "Mostrar marcas de capítulo en barra"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr ""
+msgstr "Tiempo en barra de búsqueda:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
@@ -2012,7 +2012,7 @@ msgstr "Control vía Windows IU (SMTC)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr ""
+msgstr "Preset Personalizado (4)"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
@@ -2024,7 +2024,7 @@ msgstr "Estado"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "Barra de desplazamiento"
+msgstr "Barra de búsqueda"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"

@@ -7,13 +7,14 @@
 # Astro_Corp, 2020
 # Oliver Hattshire <hattshire@gmail.com>, 2021
 # Alex Covarrubias, 2025
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Alex Covarrubias, 2025\n"
+"PO-Revision-Date: 2026-09-12 13:45+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Spanish (https://app.transifex.com/mpchc/teams/106126/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -159,7 +160,7 @@ msgstr "&Normal"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr ""
+msgstr "&Personalización"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
@@ -667,7 +668,7 @@ msgstr "&Filtros"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "&Controles de color"
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -683,7 +684,7 @@ msgstr "Pista de su&btítulos"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Pista de Subtítulos Secundaria"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
