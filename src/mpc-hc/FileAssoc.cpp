@@ -25,6 +25,7 @@
 #include "FileAssoc.h"
 #include "resource.h"
 #include "PathUtils.h"
+#include "ShellDropTarget.h"
 
 
 // TODO: change this along with the root key for settings and the mutex name to
@@ -63,6 +64,13 @@ void CFileAssoc::IconLib::SaveVersion() const
     AfxGetApp()->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ICON_LIB_VERSION, m_fnGetIconLibVersion());
 }
 
+static CString ClsidToString(const CLSID& clsid)
+{
+    OLECHAR buff[40] = {};
+    VERIFY(StringFromGUID2(clsid, buff, _countof(buff)));
+    return buff;
+}
+
 CFileAssoc::CFileAssoc()
     : m_iconLibPath(PathUtils::CombinePaths(PathUtils::GetProgramPath(), _T("mpciconlib.dll")))
     , m_strRegisteredAppName(_T("Media Player Classic"))
@@ -71,6 +79,8 @@ CFileAssoc::CFileAssoc()
     , m_strRegAppFileAssocKey(_T("Software\\Clients\\Media\\Media Player Classic\\Capabilities\\FileAssociations"))
     , m_strOpenCommand(_T("\"") + PathUtils::GetProgramPath(true) + _T("\" \"%1\""))
     , m_strEnqueueCommand(_T("\"") + PathUtils::GetProgramPath(true) + _T("\" /add \"%1\""))
+    , m_strPlayClsid(ClsidToString(CLSID_MPCHCDropTargetPlay))
+    , m_strEnqueueClsid(ClsidToString(CLSID_MPCHCDropTargetEnqueue))
     , m_bNoRecentDocs(false)
     , m_checkIconsAssocInactiveEvent(TRUE, TRUE) // initially set, manual reset
 {
@@ -165,6 +175,42 @@ bool CFileAssoc::RegisterApp()
     return success;
 }
 
+// A verb with a DropTarget entry makes Explorer hand a whole selection to one COM call
+// instead of running the command line once per file. The command line stays as it is: it is
+// what other launchers use and what Explorer falls back to if the activation fails.
+bool CFileAssoc::RegisterDropTargetServer()
+{
+    const CString strServer = _T("\"") + PathUtils::GetProgramPath(true) + _T("\"");
+    const struct {
+        const CString& strClsid;
+        LPCTSTR strName;
+    } classes[] = {
+        { m_strPlayClsid, _T("MPC-HC Play") },
+        { m_strEnqueueClsid, _T("MPC-HC Add to playlist") },
+    };
+
+    for (const auto& cls : classes) {
+        CRegKey key;
+        if (ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, _T("CLSID\\") + cls.strClsid)
+                || ERROR_SUCCESS != key.SetStringValue(nullptr, cls.strName)
+                || ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, _T("CLSID\\") + cls.strClsid + _T("\\LocalServer32"))
+                || ERROR_SUCCESS != key.SetStringValue(nullptr, strServer)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool CFileAssoc::UnregisterDropTargetServer()
+{
+    CRegKey key;
+    key.Attach(HKEY_CLASSES_ROOT);
+    bool success = (ERROR_SUCCESS == key.RecurseDeleteKey(_T("CLSID\\") + m_strPlayClsid));
+    success &= (ERROR_SUCCESS == key.RecurseDeleteKey(_T("CLSID\\") + m_strEnqueueClsid));
+    key.Detach();
+    return success;
+}
+
 bool CFileAssoc::Register(CString ext, CString strLabel, bool bRegister, bool bAddEnqueueContextMenu, bool bAssociatedWithIcon)
 {
     CRegKey key;
@@ -206,7 +252,9 @@ bool CFileAssoc::Register(CString ext, CString strLabel, bool bRegister, bool bA
                     || ERROR_SUCCESS != key.SetStringValue(_T("Icon"), appIcon)
                     || ERROR_SUCCESS != key.SetStringValue(_T("MultiSelectModel"), _T("Player"))
                     || ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, strProgID + _T("\\shell\\enqueue\\command"))
-                    || ERROR_SUCCESS != key.SetStringValue(nullptr, m_strEnqueueCommand)) {
+                    || ERROR_SUCCESS != key.SetStringValue(nullptr, m_strEnqueueCommand)
+                    || ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, strProgID + _T("\\shell\\enqueue\\DropTarget"))
+                    || ERROR_SUCCESS != key.SetStringValue(_T("Clsid"), m_strEnqueueClsid)) {
                 return false;
             }
         } else {
@@ -225,7 +273,10 @@ bool CFileAssoc::Register(CString ext, CString strLabel, bool bRegister, bool bA
             return false;
         }
         if (ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, strProgID + _T("\\shell\\open\\command"))
-                || ERROR_SUCCESS != key.SetStringValue(nullptr, m_strOpenCommand)) {
+                || ERROR_SUCCESS != key.SetStringValue(nullptr, m_strOpenCommand)
+                || ERROR_SUCCESS != key.Create(HKEY_CLASSES_ROOT, strProgID + _T("\\shell\\open\\DropTarget"))
+                || ERROR_SUCCESS != key.SetStringValue(_T("Clsid"), m_strPlayClsid)
+                || !RegisterDropTargetServer()) {
             return false;
         }
 
@@ -434,6 +485,9 @@ bool CFileAssoc::RegisterFolderContextMenuEntries(bool bRegister)
                 key.SetStringValue(nullptr, m_strEnqueueCommand);
                 success = true;
             }
+            if (ERROR_SUCCESS == key.Create(HKEY_CLASSES_ROOT, _T("Directory\\shell\\") PROGID _T(".enqueue\\DropTarget"))) {
+                key.SetStringValue(_T("Clsid"), m_strEnqueueClsid);
+            }
         }
 
         if (success && ERROR_SUCCESS == key.Create(HKEY_CLASSES_ROOT, _T("Directory\\shell\\") PROGID _T(".play"))) {
@@ -446,6 +500,10 @@ bool CFileAssoc::RegisterFolderContextMenuEntries(bool bRegister)
                 key.SetStringValue(nullptr, m_strOpenCommand);
                 success = true;
             }
+            if (ERROR_SUCCESS == key.Create(HKEY_CLASSES_ROOT, _T("Directory\\shell\\") PROGID _T(".play\\DropTarget"))) {
+                key.SetStringValue(_T("Clsid"), m_strPlayClsid);
+            }
+            RegisterDropTargetServer();
         }
 
     } else {

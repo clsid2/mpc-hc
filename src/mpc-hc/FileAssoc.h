@@ -79,6 +79,10 @@ public:
 
     bool RegisterApp();
 
+    // The COM classes behind the verbs' DropTarget entries, served by this executable.
+    bool RegisterDropTargetServer();
+    bool UnregisterDropTargetServer();
+
     bool Register(CString ext, CString strLabel, bool bRegister, bool bRegisterContextMenuEntries, bool bAssociatedWithIcon);
     bool IsRegistered(CString ext) const;
     bool HasEnqueueContextMenuEntry(CString strExt) const;
@@ -126,6 +130,8 @@ protected:
 
     const CString m_strOpenCommand;
     const CString m_strEnqueueCommand;
+    const CString m_strPlayClsid;
+    const CString m_strEnqueueClsid;
 
     bool m_bNoRecentDocs;
 

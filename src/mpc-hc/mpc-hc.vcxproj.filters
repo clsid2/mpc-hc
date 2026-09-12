@@ -439,6 +439,9 @@
     <ClCompile Include="DropTarget.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="ShellDropTarget.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
     <ClCompile Include="CrashReporter.cpp">
       <Filter>Crash Reporter</Filter>
     </ClCompile>
@@ -1020,6 +1023,9 @@
       <Filter>Panels</Filter>
     </ClInclude>
     <ClInclude Include="DropTarget.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellDropTarget.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">

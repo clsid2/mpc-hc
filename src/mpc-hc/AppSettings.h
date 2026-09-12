@@ -99,6 +99,7 @@ enum : UINT64 {
     CLSW_THUMBNAILS = CLSW_VOLUME << 1,
     CLSW_DVBSCAN = CLSW_THUMBNAILS << 1,
     CLSW_UNRECOGNIZEDSWITCH = CLSW_DVBSCAN << 1, // 48
+    CLSW_EMBEDDING = CLSW_UNRECOGNIZEDSWITCH << 1, // started by COM to serve an Explorer verb, see ShellDropTarget.h
 };
 
 enum MpcCaptionState {

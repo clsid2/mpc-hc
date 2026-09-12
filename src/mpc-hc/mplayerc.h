@@ -30,6 +30,7 @@
 #include "AppSettings.h"
 #include "MpcApi.h"
 #include "Profile.h"
+#include "ShellDropTarget.h"
 #include "../filters/renderer/VideoRenderers/RenderersSettings.h"
 #include "resource.h"
 
@@ -137,6 +138,7 @@ class CMPlayerCApp : public CWinAppEx
     enum class RedirectResult { Redirected, OpenNormally, ExitSilently };
 
     CAtlList<CString> m_cmdln;
+    CShellDropTargetServer m_shellDropTargetServer;
     void PreProcessCommandLine();
     bool SendCommandLine(HWND hWnd);
     HWND FindOtherInstance();
