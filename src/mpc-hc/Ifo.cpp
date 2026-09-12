@@ -97,6 +97,14 @@ CIfo::~CIfo()
     delete [] m_pBuffer;
 }
 
+// Every table offset and count below comes straight from the file, so each
+// derived pointer has to be checked against the buffer before it is used.
+bool CIfo::IsInBuffer(const void* p, size_t len) const
+{
+    const BYTE* b = static_cast<const BYTE*>(p);
+    return m_pBuffer && b >= m_pBuffer && len <= m_dwSize && b <= m_pBuffer + m_dwSize - len;
+}
+
 int CIfo::GetMiscPGCI(CIfo::ifo_hdr_t* hdr, int title, uint8_t** ptr)
 {
     pgci_sub_t* pgci_sub;
@@ -105,7 +113,15 @@ int CIfo::GetMiscPGCI(CIfo::ifo_hdr_t* hdr, int title, uint8_t** ptr)
     *ptr += IFO_HDR_LEN;
     pgci_sub = (pgci_sub_t*) *ptr + title;
 
+    if (title < 0 || !IsInBuffer(pgci_sub, sizeof(pgci_sub_t))) {
+        return -1;
+    }
+
     *ptr = (uint8_t*) hdr + be2me_32(pgci_sub->start);
+
+    if (!IsInBuffer(*ptr, PGC_SIZE)) {
+        return -1;
+    }
 
     return 0;
 }
@@ -115,6 +131,10 @@ void CIfo::RemovePgciUOPs(uint8_t* ptr)
     ifo_hdr_t* hdr = (ifo_hdr_t*) ptr;
     uint16_t num;
     int i;
+
+    if (!IsInBuffer(hdr, IFO_HDR_LEN)) {
+        return;
+    }
 
     ptr += IFO_HDR_LEN;
     num  = be2me_16(hdr->num);
@@ -155,6 +175,10 @@ CIfo::pgc_t* CIfo::GetPGCI(const int title, const ifo_hdr_t* hdr)
 
     pgci_sub = (pgci_sub_t*) ptr + title;
 
+    if (title < 0 || !IsInBuffer(hdr, IFO_HDR_LEN) || !IsInBuffer(pgci_sub, sizeof(pgci_sub_t))) {
+        return nullptr;
+    }
+
     ptr = (uint8_t*) hdr + be2me_32(pgci_sub->start);
 
     /* jdw */
@@ -162,6 +186,11 @@ CIfo::pgc_t* CIfo::GetPGCI(const int title, const ifo_hdr_t* hdr)
         return nullptr;
     }
     /* /jdw */
+
+    // hdr->len is from the file as well, so check against the buffer too
+    if (!IsInBuffer(ptr, PGC_SIZE)) {
+        return nullptr;
+    }
 
     return (pgc_t*) ptr;
 }
