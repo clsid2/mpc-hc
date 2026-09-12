@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared by the six ffmpeg DLL projects. Flags are what ffmpeg's configure chooses for the compiler in use; see README.md. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)..\common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)$(FFmpegCompiler)\nasm-$(Platform).props" />
+  <PropertyGroup Label="Configuration" Condition="'$(FFmpegCompiler)'=='clang'">
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetName>$(FFmpegDllName)</TargetName>
+    <IntDir>$(LavBin)thirdparty\msvc\$(FFmpegCompiler)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);$(FFmpegSrc)compat\atomics\win32;$(FFmpegSrc)compat\stdbit;$(ExtInclude);$(LavSrc)thirdparty\$(LavArch)\include;$(MpcRoot)src\thirdparty\zlib;$(LavMsvcDir)..\msvcInclude;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_AV_CONFIG_H;PIC;WIN32_LEAN_AND_MEAN;WINVER=0x0601;_WIN32_WINNT=0x0601;ZLIB_CONST;_FILE_OFFSET_BITS=64;_ISOC11_SOURCE;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;LIBXML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <ModuleDefinitionFile>$(FFmpegGen)lib$(ProjectName)\$(FFmpegDllName).def</ModuleDefinitionFile>
+      <ImportLibrary>$(LavBin)lib\$(ProjectName)-lav.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>$(LavBin)lib;$(MpcLib);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(FFmpegLinkDeps)%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='cl'">
+    <ClCompile>
+      <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <ClCompile>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalOptions>-utf-8 /clang:-O3 /clang:-fomit-frame-pointer /clang:-fno-math-errno /clang:-fno-signed-zeros -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-pointer-sign -Wno-switch -Wno-parentheses -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-format-zero-length -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-function -Wno-microsoft-anon-tag -Wno-ignored-attributes -Wno-unknown-warning-option %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!-- these two use "#pragma GCC target", which clang ignores -->
+  <ItemGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <ClCompile Update="$(FFmpegSrc)libavcodec\x86\hevc\intra_intrinsic.c;$(FFmpegSrc)libavcodec\x86\hevc\idct_intrinsic.c">
+      <AdditionalOptions>-mssse3 -msse4.1 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <!-- nasm: assembled by the target below; the objects are handed to the linker -->
+  <ItemGroup>
+    <Link Include="@(Nasm->'%(ObjectFileName)')" />
+  </ItemGroup>
+  <Target Name="NasmAssemble" Inputs="@(Nasm);$(FFmpegGen)config.asm" Outputs="@(Nasm->'%(ObjectFileName)')" BeforeTargets="Link">
+    <MakeDir Directories="@(Nasm->'%(ObjectFileName)'->DirectoryName()->Distinct())" />
+    <Exec Command="nasm $(NasmFlags) -I&quot;$(FFmpegGen.TrimEnd('\'))/&quot; -I&quot;$(FFmpegSrc.TrimEnd('\'))/&quot; -I&quot;%(Nasm.ExtraInclude)/&quot; -Pconfig.asm -o &quot;%(Nasm.ObjectFileName)&quot; &quot;%(Nasm.FullPath)&quot;" />
+  </Target>
+  <!-- objects keep ffmpeg's directory layout under $(IntDir) so same-named files cannot collide -->
+  <Target Name="ClCompileObjDirs" BeforeTargets="ClCompile;ResourceCompile">
+    <MakeDir Directories="@(ClCompile->'%(ObjectFileName)'->DirectoryName()->Distinct());@(ResourceCompile->'%(ResourceOutputFileName)'->DirectoryName()->Distinct())" />
+  </Target>
+  <!-- LAV's own projects read config.h and friends from bin_<plat>\thirdparty\ffmpeg (the gcc build's out-of-tree directory) -->
+  <ItemGroup>
+    <FFmpegGeneratedHeader Include="$(FFmpegGen)config.h;$(FFmpegGen)config_components.h"><SubDir></SubDir></FFmpegGeneratedHeader>
+    <FFmpegGeneratedHeader Include="$(FFmpegGen)libavutil\avconfig.h;$(FFmpegGen)libavutil\ffversion.h"><SubDir>libavutil\</SubDir></FFmpegGeneratedHeader>
+  </ItemGroup>
+  <Target Name="CopyGeneratedHeaders" BeforeTargets="ClCompile">
+    <Copy SourceFiles="@(FFmpegGeneratedHeader)" DestinationFiles="@(FFmpegGeneratedHeader->'$(LavBin)thirdparty\ffmpeg\%(SubDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

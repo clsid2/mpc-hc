@@ -49,3 +49,15 @@
 [submodule "src/thirdparty/ResizableLib/ResizableLib"]
 	path = src/thirdparty/ResizableLib/ResizableLib
 	url = https://github.com/adipose/resizablelib
+[submodule "src/thirdparty/LAVFilters/msvc/libs/dav1d/dav1d"]
+	path = src/thirdparty/LAVFilters/msvc/libs/dav1d/dav1d
+	url = https://code.videolan.org/videolan/dav1d.git
+[submodule "src/thirdparty/LAVFilters/msvc/libs/libxml2/libxml2"]
+	path = src/thirdparty/LAVFilters/msvc/libs/libxml2/libxml2
+	url = https://github.com/GNOME/libxml2.git
+[submodule "src/thirdparty/LAVFilters/msvc/libs/speex/speex"]
+	path = src/thirdparty/LAVFilters/msvc/libs/speex/speex
+	url = https://github.com/xiph/speex.git
+[submodule "src/thirdparty/LAVFilters/msvc/libs/bzip2/bzip2"]
+	path = src/thirdparty/LAVFilters/msvc/libs/bzip2/bzip2
+	url = https://sourceware.org/git/bzip2.git

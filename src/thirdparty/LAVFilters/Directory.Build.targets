@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Applies to every project under this directory, the LAV submodule's included (see msvc\README.md).
+     DSUtilLite's pre-build step (LAV's genversion.bat, needs bash) is replaced by msvc\genversion.cmd. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup Condition="'$(MSBuildProjectName)'=='DSUtilLite'">
+    <PreBuildEvent>
+      <Command>call "$(MSBuildThisFileDirectory)msvc\genversion.cmd"</Command>
+      <Message>Generating LAV version_rev.h</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+</Project>

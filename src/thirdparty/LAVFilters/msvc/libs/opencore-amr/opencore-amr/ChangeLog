@@ -1,0 +1,34 @@
+0.1.6
+ - Fixed an infinite loop when decoding some AMR-NB samples
+ - Fixed noise spikes when decoding non-voice frames for both AMR-NB and AMR-WB
+
+0.1.5
+ - Fix an autotools issue with cross compiling from the 0.1.4 release
+
+0.1.4
+ - Autotools cleanups
+ - Fixes for SID/DTX in the AMR-WB decoder, fixes for handling of bad
+   frames in both AMR-WB and AMR-NB
+
+0.1.3
+ - Adjusted libtool flags for building DLLs for windows
+ - Update to the latest upstream opencore source
+ - Updated and improved example applications
+ - Add options for enabling the arm inline assembly
+ - Add options for disabling the encoder or decoder in the amrnb library
+ - Avoid dependencies on libstdc++ if building the source as C
+ - Hide internal symbols in shared libraries
+ - Minor tweaks
+ - Remove old static makefiles and corresponding build scripts
+
+0.1.2
+ - Fixed AMR-NB encoding on 64-bit architectures
+ - Switch to using automake/autoconf/libtool
+ - Update to the latest upstream opencore source as of September 1, 2009 
+
+0.1.1
+ - Rename the libraries from libamr* to libopencore-amr*
+ - Fix a bunch of compiler warnings
+
+0.1.0
+ - Start of opencore-amr project.

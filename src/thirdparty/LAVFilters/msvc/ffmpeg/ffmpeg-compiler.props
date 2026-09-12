@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compiler for LAV's ffmpeg: clang when Visual Studio's Clang components are installed, else cl.
+     Override with /p:FFmpegCompiler=cl|clang. See README.md. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- evaluated before Microsoft.Cpp.props, so only VCTargetsPath is available here -->
+    <ClangClToolsetAvailable Condition="Exists('$(VCTargetsPath)Platforms\$(Platform)\PlatformToolsets\ClangCL') And Exists('$(VCTargetsPath)..\..\..\..\VC\Tools\Llvm\x64\bin\clang-cl.exe')">true</ClangClToolsetAvailable>
+    <FFmpegCompiler Condition="'$(FFmpegCompiler)'=='' And '$(ClangClToolsetAvailable)'=='true'">clang</FFmpegCompiler>
+    <FFmpegCompiler Condition="'$(FFmpegCompiler)'==''">cl</FFmpegCompiler>
+  </PropertyGroup>
+</Project>
