@@ -5,13 +5,14 @@
 # Hugo Simões <hugo.simoes.1984@gmail.com>, 2021
 # Filipe Mota <blackspirits@gmail.com>, 2025
 # Hugo Carvalho <hugokarvalho@hotmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-03-15 15:49:47+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>, 2026\n"
+"PO-Revision-Date: 2026-09-12 13:45+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Portuguese (Portugal) (https://app.transifex.com/mpchc/teams/106126/pt_PT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -610,7 +611,7 @@ msgstr "Ajustes"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER"
 msgid "Internal Filters::Audio Switcher"
-msgstr "Filtros internos::Alternador de áudio"
+msgstr "Filtros Internos::Alternador de áudio"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS"
 msgid "External Filters"
@@ -622,11 +623,11 @@ msgstr "Reprodução::Shaders"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
-msgstr "Player::Barra de ferramentas"
+msgstr "Reprodutor::Barra de ferramentas"
 
 msgctxt "IDD_PPAGETOOLBARLAYOUT"
 msgid "Player::Toolbar Layout"
-msgstr "Player::Esquema da barra de ferramentas"
+msgstr "Reprodutor::Esquema da barra de ferramentas"
 
 msgctxt "IDS_PPAGE_TOOLBAR_AVAIL_BUTTONS"
 msgid "Available Buttons"

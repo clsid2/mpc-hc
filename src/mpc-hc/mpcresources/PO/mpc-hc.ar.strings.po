@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the MPC-HC package.
 # Translators:
 # MPC HC <adiposegithub@gmail.com>, 2020
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2021-05-04 16:20:41+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: MPC HC <adiposegithub@gmail.com>, 2020\n"
+"PO-Revision-Date: 2026-09-12 13:45+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Arabic (https://www.transifex.com/mpchc/teams/106126/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -582,7 +583,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEPLAYBACK"
 msgid "Playback::General"
-msgstr "إعادة التشغيل::عام"
+msgstr "التشغيل::عام"
 
 msgctxt "IDD_PPAGEPLAYER"
 msgid "Player::General"
@@ -590,11 +591,11 @@ msgstr "المشغل::عام"
 
 msgctxt "IDD_PPAGEDVD"
 msgid "Playback::DVD"
-msgstr "تشغيل :: DVD"
+msgstr "التشغيل::DVD"
 
 msgctxt "IDD_PPAGESUBTITLES"
 msgid "Subtitles::General"
-msgstr "الترجمات::عام"
+msgstr "الترجمة::عام"
 
 msgctxt "IDD_PPAGEFORMATS"
 msgid "Player::Formats"
@@ -614,7 +615,7 @@ msgstr "الفلاتر الخارجية"
 
 msgctxt "IDD_PPAGESHADERS"
 msgid "Playback::Shaders"
-msgstr "إعادة تشغيل::الظلال"
+msgstr "التشغيل::الظلال"
 
 msgctxt "IDD_PPAGETOOLBAR"
 msgid "Player::Toolbar"
@@ -650,7 +651,7 @@ msgstr "التشغيل::الملتقط"
 
 msgctxt "IDD_PPAGEFULLSCREEN"
 msgid "Playback::Fullscreen"
-msgstr "تشغيل::وضع ملء الشاشة"
+msgstr "التشغيل::وضع ملء الشاشة"
 
 msgctxt "IDS_AUDIOSWITCHER"
 msgid "Audio Switcher"
@@ -781,7 +782,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEOUTPUT"
 msgid "Playback::Output"
-msgstr "المشغل::المخرجات"
+msgstr "التشغيل::المخرجات"
 
 msgctxt "IDD_PPAGEWEBSERVER"
 msgid "Player::Web Interface"
