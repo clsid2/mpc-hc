@@ -576,7 +576,8 @@ HRESULT CDVBSub::ParseClut(CGolombBuffer& gb, WORD wSegLength)
         gb.BitRead(4);  // Reserved
 
         pClut->size = 0;
-        while (gb.GetPos() < nEnd) {
+        // the segment length bounds the loop, the palette holds 256 entries at most
+        while (gb.GetPos() < nEnd && pClut->size < pClut->palette.size()) {
             nExpectedSize += 2;
             pClut->palette[pClut->size].entry_id = gb.ReadByte();
 
@@ -640,10 +641,15 @@ HRESULT CDVBSub::ParseObject(CGolombBuffer& gb, WORD wSegLength)
         gb.BitRead(1);  // reserved
 
         if (object_coding_method == 0x00) {
-            pObject->SetRLEData(gb.GetBufferPos(), wSegLength - nExpectedSize, wSegLength - nExpectedSize);
-            gb.SkipBytes(wSegLength - 3);
-
-            hr = (wSegLength >= nExpectedSize) ? S_OK : E_UNEXPECTED;
+            // check before subtracting, a short segment would otherwise wrap the size,
+            // and an object needs at least one byte of RLE data after the header
+            if (wSegLength > nExpectedSize) {
+                pObject->SetRLEData(gb.GetBufferPos(), wSegLength - nExpectedSize, wSegLength - nExpectedSize);
+                gb.SkipBytes(wSegLength - nExpectedSize);
+                hr = S_OK;
+            } else {
+                hr = E_UNEXPECTED;
+            }
         } else {
             TRACE_DVB(_T("DVB - Text subtitles are currently not supported\n"));
             m_pCurrentPage->objects.pop_back();
