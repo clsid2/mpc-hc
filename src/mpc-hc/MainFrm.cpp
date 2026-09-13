@@ -20,6 +20,7 @@
  */
 
 #include "stdafx.h"
+#include <optional>
 #include "MainFrm.h"
 #include "mplayerc.h"
 #include "version.h"
@@ -330,6 +331,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 
     ON_MESSAGE(WM_POSTOPEN, OnFilePostOpenmedia)
     ON_MESSAGE(WM_OPENFAILED, OnOpenMediaFailed)
+    ON_MESSAGE(WM_MPC_RUN_DEFERRED, OnRunDeferredActions)
     ON_MESSAGE(WM_TUNER_NEW_CHANNEL, OnHeadlessScanNewChannel)
     ON_MESSAGE(WM_TUNER_SCAN_END, OnHeadlessScanEnd)
     ON_MESSAGE(WM_DVB_EIT_DATA_READY, OnCurrentChannelInfoUpdated)
@@ -1295,10 +1297,111 @@ void CMainFrame::OnDestroy()
     __super::OnDestroy();
 }
 
+// A dialog raised inside OnTimer or OnGraphNotify runs a nested message pump,
+// and quartz.dll can pump messages inside an IMediaControl call. A close or open
+// started from inside such a pump would run underneath a holder that still has
+// the graph interfaces (OnTimer, OnGraphNotify, OpenMedia, CloseMedia, OnClose,
+// MediaControl*), and the holder would continue with released pointers when the
+// pump returns. While one of them is on the stack the requests are recorded and
+// run from the top-level pump once the outermost holder has returned.
+CMainFrame::CDeferredActionScope::CDeferredActionScope(CMainFrame& frame)
+    : m_frame(frame)
+{
+    m_frame.m_nDeferredActionDepth++;
+}
+
+CMainFrame::CDeferredActionScope::~CDeferredActionScope()
+{
+    // scope based, so an exception thrown out of the holder cannot leave the
+    // counter latched nonzero. Post from here rather than from the request: a
+    // message posted from inside the nested pump would be dispatched straight
+    // back into it. Nothing is posted once OnClose has started.
+    if (--m_frame.m_nDeferredActionDepth == 0 && ::IsWindow(m_frame.m_hWnd) && !m_frame.m_OnClose_called
+            && (!m_frame.m_deferredActions.empty() || m_frame.m_bDeferredOnClose)) {
+        m_frame.PostMessage(WM_MPC_RUN_DEFERRED);
+    }
+}
+
+LRESULT CMainFrame::OnRunDeferredActions(WPARAM wParam, LPARAM lParam)
+{
+    if (m_nDeferredActionDepth > 0) {
+        // dispatched from inside another holder's nested pump; that holder's
+        // scope exit posts again once it is done
+        return 0;
+    }
+
+    if (m_OnClose_called || AfxGetMyApp()->m_fClosingState) {
+        // the player is exiting; a deferred open would trip OpenMedia's m_OnClose_called check
+        m_bDeferredOnClose = false;
+        m_deferredActions.clear();
+        return 0;
+    }
+
+    if (m_bDeferredOnClose) {
+        // exiting anyway, so the pending opens and closes are pointless
+        m_bDeferredOnClose = false;
+        m_deferredActions.clear();
+        PostMessage(WM_CLOSE);
+        return 0;
+    }
+
+    // an action that pumps records new requests into the member; those are posted
+    // again by its own scope exit, so run from a local copy
+    std::vector<DeferredAction> actions;
+    actions.swap(m_deferredActions);
+
+    // only the last open or close is still wanted: an open closes first, and a
+    // close after an open makes that open pointless. Other entries (appends to
+    // the playlist) keep their items and run in order
+    size_t lastOpenOrClose = actions.size();
+    for (size_t i = 0; i < actions.size(); i++) {
+        if (actions[i].type != DeferredActionType::Other) {
+            lastOpenOrClose = i;
+        }
+    }
+    for (size_t i = 0; i < actions.size(); i++) {
+        if (m_bDeferredOnClose || m_OnClose_called || m_OnClose_queued) {
+            // an exit was requested, here or while running the earlier ones, so
+            // what is left is pointless. A queued close posted WM_CLOSE itself
+            break;
+        }
+        if (actions[i].type != DeferredActionType::Other && i != lastOpenOrClose) {
+            continue;
+        }
+        actions[i].run();
+    }
+
+    return 0;
+}
+
+// While a scope holder is on the stack a handler that closes the current file,
+// does something else and then opens (see CloseMediaBeforeOpen) records itself
+// here and returns; the whole sequence then runs from the top-level pump.
+// Returns true when the action was recorded.
+bool CMainFrame::DeferIfNested(DeferredActionType type, std::function<void()> action)
+{
+    if (m_nDeferredActionDepth == 0) {
+        return false;
+    }
+    m_deferredActions.push_back({ type, std::move(action) });
+    return true;
+}
+
 void CMainFrame::OnClose()
 {
     CAppSettings& s = AfxGetAppSettings();
 
+    if (m_nDeferredActionDepth > 0) {
+        // reached from inside a holder's nested pump; the exit runs once that
+        // holder has returned (see OnRunDeferredActions). Queued like a posted
+        // SC_CLOSE, so an open dispatched in between is dropped
+        m_bDeferredOnClose = true;
+        m_OnClose_queued = true;
+        return;
+    }
+
+    // below the check above: a deferred close releases nothing here, so the
+    // assert fires only when the release is really about to happen
     ASSERT(!InSendMessage());
 
     if (m_OnClose_called) {
@@ -1310,6 +1413,12 @@ void CMainFrame::OnClose()
         #endif
         return;
     }
+
+    // held in an optional so it can be released before __super::OnClose(),
+    // which deletes the frame (CFrameWnd::PostNcDestroy)
+    std::optional<CDeferredActionScope> actionScope;
+    actionScope.emplace(*this);
+
     m_OnClose_called = true;
 
     if (USE_LOGGER(s)) {
@@ -1340,7 +1449,7 @@ void CMainFrame::OnClose()
     m_wndPlaylistBar.ClearExternalPlaylistIfInvalid();
 
     if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING) {
-        CloseMedia();
+        CloseMediaInternal();
     }
 
     s.WinLircClient.DisConnect();
@@ -1379,6 +1488,7 @@ void CMainFrame::OnClose()
         FLUSH_LOGGER();
     }
 
+    actionScope.reset();
     __super::OnClose();
 }
 
@@ -2280,6 +2390,8 @@ double g_dRate = 1.0;
 
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
+    CDeferredActionScope actionScope(*this);
+
     switch (nIDEvent) {
         case TIMER_WINDOW_FULLSCREEN:
             if (AfxGetAppSettings().iFullscreenDelay > 0 && IsWindows8OrGreater()) {//DWMWA_CLOAK not supported on 7
@@ -2837,6 +2949,10 @@ LRESULT CMainFrame::OnDoOpenCurPlaylist(WPARAM wParam, LPARAM lParam)
 {
     TRACE(L"OnDoOpenCurPlaylist\n");
 
+    if (DeferIfNested(DeferredActionType::Open, [this] { OnDoOpenCurPlaylist(0, 0); })) {
+        return S_OK;
+    }
+
     MSG msg;
     while (PeekMessage(&msg, nullptr, WM_MPC_OPENCURPLAYLIST, WM_MPC_OPENCURPLAYLIST, PM_REMOVE)) {
         TRACE(L"Dropping pending OpenCurPlaylist message\n");
@@ -3171,6 +3287,8 @@ void CMainFrame::GraphEventComplete()
 
 LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
 {
+    CDeferredActionScope actionScope(*this);
+
     if (wParam != 0) {
         ASSERT(false);
         return S_OK;
@@ -5029,6 +5147,9 @@ void CMainFrame::OnFileOpenQuick()
     if (!IsStateClosedOrLoaded() || !IsWindow(m_wndPlaylistBar)) {
         return;
     }
+    if (DeferIfNested(DeferredActionType::Open, [this] { OnFileOpenQuick(); })) {
+        return;
+    }
 
     CAppSettings& s = AfxGetAppSettings();
     CString filter;
@@ -5080,6 +5201,9 @@ void CMainFrame::OnFileOpenQuick()
 void CMainFrame::OnFileOpenmedia()
 {
     if (!IsStateClosedOrLoaded() || !IsWindow(m_wndPlaylistBar) || IsD3DFullScreenMode()) {
+        return;
+    }
+    if (DeferIfNested(DeferredActionType::Open, [this] { OnFileOpenmedia(); })) {
         return;
     }
 
@@ -5261,6 +5385,14 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
     // Re-checked because this now runs later than the message that carried the command line.
     if (AfxGetMyApp()->m_fClosingState || m_bScanDlgOpened) {
         return;
+    }
+    {
+        auto pCmdln = std::make_shared<CAtlList<CString>>();
+        pCmdln->AddTailList(&cmdln);
+        // may add to the playlist rather than open, so it is never discarded
+        if (DeferIfNested(DeferredActionType::Other, [this, pCmdln, tArrived] { ProcessCommandLine(*pCmdln, tArrived); })) {
+            return;
+        }
     }
 
     CAppSettings& s = AfxGetAppSettings();
@@ -5626,6 +5758,9 @@ void CMainFrame::OnFileOpendevice()
     if (!IsStateClosedOrLoaded()) {
         return;
     }
+    if (DeferIfNested(DeferredActionType::Open, [this] { OnFileOpendevice(); })) {
+        return;
+    }
     if (!m_pAMTuner) { // no need to close if changing channel
         if (!CloseMediaBeforeOpen()) {
             return;
@@ -5659,6 +5794,9 @@ void CMainFrame::OnFileOpendevice()
 void CMainFrame::OnFileOpenOpticalDisk(UINT nID)
 {
     if (!IsStateClosedOrLoaded()) {
+        return;
+    }
+    if (DeferIfNested(DeferredActionType::Open, [this, nID] { OnFileOpenOpticalDisk(nID); })) {
         return;
     }
 
@@ -5822,6 +5960,16 @@ bool CMainFrame::IsAudioFilename(CString filename)
 
 void CMainFrame::OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect)
 {
+    {
+        auto pFiles = std::make_shared<CAtlList<CStringW>>();
+        pFiles->AddTailList(&slFiles);
+        // an append keeps its items, so it is never discarded
+        const auto type = (dropEffect & DROPEFFECT_APPEND) ? DeferredActionType::Other : DeferredActionType::Open;
+        if (DeferIfNested(type, [this, pFiles, dropEffect] { OnDropFiles(*pFiles, dropEffect); })) {
+            return;
+        }
+    }
+
     SetForegroundWindow();
 
     if (slFiles.IsEmpty()) {
@@ -12225,6 +12373,10 @@ void CMainFrame::OnFavoritesFile(UINT nID)
 
 void CMainFrame::PlayFavoriteFile(const CString& fav)
 {
+    if (DeferIfNested(DeferredActionType::Open, [this, fav] { PlayFavoriteFile(fav); })) {
+        return;
+    }
+
     CAtlList<CString> args;
     REFERENCE_TIME rtStart = 0;
     FileFavorite ff = ParseFavoriteFile(fav, args, &rtStart);
@@ -12331,6 +12483,10 @@ void CMainFrame::OnRecentFile(UINT nID)
 
 void CMainFrame::OpenRecentFileEntry(RecentFileEntry& r)
 {
+    if (DeferIfNested(DeferredActionType::Open, [this, r] { RecentFileEntry entry(r); OpenRecentFileEntry(entry); })) {
+        return;
+    }
+
     CAtlList<CString> fns;
     fns.AddHeadList(&r.fns);
 
@@ -12394,6 +12550,9 @@ void CMainFrame::OnFavoritesDVD(UINT nID)
 
 void CMainFrame::PlayFavoriteDVD(CString fav)
 {
+    if (DeferIfNested(DeferredActionType::Open, [this, fav] { PlayFavoriteDVD(fav); })) {
+        return;
+    }
     if (!CloseMediaBeforeOpen()) {
         return;
     }
@@ -12706,6 +12865,9 @@ OAFilterState CMainFrame::UpdateCachedMediaState()
 
 bool CMainFrame::MediaControlRun(bool waitforcompletion)
 {
+    // quartz.dll can pump messages (PeekMessage) inside IMediaControl calls, so a close or
+    // open dispatched there is deferred like one from OnTimer
+    CDeferredActionScope actionScope(*this);
     m_dwLastPause = 0ULL;
     if (m_pMC) {
         m_CachedFilterState = State_Running;
@@ -12725,6 +12887,7 @@ bool CMainFrame::MediaControlRun(bool waitforcompletion)
 
 bool CMainFrame::MediaControlPause(bool waitforcompletion)
 {
+    CDeferredActionScope actionScope(*this);
     m_dwLastPause = GetTickCount64();
     if (m_pMC) {
         m_CachedFilterState = State_Paused;
@@ -12744,6 +12907,7 @@ bool CMainFrame::MediaControlPause(bool waitforcompletion)
 
 bool CMainFrame::MediaControlStop(bool waitforcompletion)
 {
+    CDeferredActionScope actionScope(*this);
     m_dwLastPause = 0ULL;
     if (m_pMC) {
         m_pMC->GetState(0, &m_CachedFilterState);
@@ -12769,6 +12933,7 @@ bool CMainFrame::MediaControlStop(bool waitforcompletion)
 
 bool CMainFrame::MediaControlStopPreview()
 {
+    CDeferredActionScope actionScope(*this);
     if (m_pMC_preview) {
         OAFilterState fs = -1;
         m_pMC_preview->GetState(0, &fs);
@@ -20552,6 +20717,9 @@ void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = fa
     }
 
     if (pli.m_bYoutubeDL && (reopen || pli.m_fns.GetHead() == pli.m_ydlSourceURL && m_sydlLastProcessURL != pli.m_ydlSourceURL)) {
+        if (DeferIfNested(DeferredActionType::Open, [this, rtStart, reopen, abRepeat] { OpenCurPlaylistItem(rtStart, reopen, abRepeat); })) {
+            return;
+        }
         if (!CloseMediaBeforeOpen()) {
             return;
         }
@@ -20584,6 +20752,25 @@ void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
 {
     ASSERT(!InSendMessage());
 
+    // split from OpenMediaInternal so the direct close inside it, and the one in
+    // OnClose, can bypass the depth check that only the wrappers make
+    if (m_nDeferredActionDepth > 0) {
+        // requested from inside a scope holder (OnTimer, OnGraphNotify, another
+        // open or close, MediaControl*); run it once they have returned. The
+        // holder keeps the data until then and frees it if the request is dropped
+        auto pHeld = std::make_shared<CAutoPtr<OpenMediaData>>(pOMD);
+        m_deferredActions.push_back({ DeferredActionType::Open, [this, pHeld] {
+            CAutoPtr<OpenMediaData> p(*pHeld);
+            OpenMedia(p);
+        } });
+        return;
+    }
+    CDeferredActionScope actionScope(*this);
+    OpenMediaInternal(pOMD);
+}
+
+void CMainFrame::OpenMediaInternal(CAutoPtr<OpenMediaData> pOMD)
+{
     // Next media load: stop force-showing the status bar that an earlier error revealed. A
     // host-supplied status message keeps its own three-second reveal across this transition.
     if (!m_bKeepTempStatusBarVisibleOnMediaLoad) {
@@ -20637,7 +20824,15 @@ void CMainFrame::OpenMedia(CAutoPtr<OpenMediaData> pOMD)
     }
     m_bOpenMediaActive = true;
 
-    if (!CloseMediaBeforeOpen()) {
+    // the one place the close runs directly: the wrapper holds the scope, and the
+    // open needs the close to have finished before it continues
+    if (m_eMediaLoadState == MLS::LOADED || m_eMediaLoadState == MLS::LOADING || m_eMediaLoadState == MLS::FAILING) {
+        CloseMediaInternal(true);
+    }
+    if (m_eMediaLoadState != MLS::CLOSED || AfxGetMyApp()->m_fClosingState) {
+        PLAYER_LOG(_T("CMainFrame::OpenMedia - unexpected loadstate %d"), m_eMediaLoadState);
+        FLUSH_LOGGER();
+        ASSERT(false);
         m_bOpenMediaActive = false;
         return;
     }
@@ -20801,8 +20996,16 @@ bool CMainFrame::DisplayChange()
     return true;
 }
 
+// Closes the current file so the caller can do something else (yt-dlp, a dialog)
+// and then open. The close has to have run when this returns, so it cannot be
+// reached while a scope holder is on the stack: callers defer themselves as a
+// whole first (DeferIfNested), and a caller that gets here regardless is refused.
 bool CMainFrame::CloseMediaBeforeOpen()
 {
+    if (m_nDeferredActionDepth > 0) {
+        ASSERT(false);
+        return false;
+    }
     if (m_eMediaLoadState == MLS::LOADED || m_eMediaLoadState == MLS::LOADING || m_eMediaLoadState == MLS::FAILING) {
         CloseMedia(true);
     } else if (m_eMediaLoadState != MLS::CLOSED) {
@@ -20852,6 +21055,23 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
 
     ASSERT(!InSendMessage());
 
+    // split from CloseMediaInternal so OnClose and OpenMediaInternal, which already
+    // hold the scope, can close directly; only the wrappers check the depth
+    if (m_nDeferredActionDepth > 0) {
+        // requested from inside a scope holder (OnTimer, OnGraphNotify, another
+        // open or close, MediaControl*), through a dialog they raised or
+        // directly; run it once they have returned
+        m_deferredActions.push_back({ DeferredActionType::Close, [this, bNextIsQueued, bPendingFileDelete] {
+            CloseMedia(bNextIsQueued, bPendingFileDelete);
+        } });
+        return;
+    }
+    CDeferredActionScope actionScope(*this);
+    CloseMediaInternal(bNextIsQueued, bPendingFileDelete);
+}
+
+void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendingFileDelete/* = false*/)
+{
     auto& s = AfxGetAppSettings();
 
     bool hibernating = (m_dwLastPause == 1ULL);
@@ -23442,6 +23662,22 @@ LRESULT CMainFrame::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
+    // A message sent from another thread leaves that thread blocked in its stack
+    // while we run, so releasing the graph or the frame here is the same hazard
+    // as doing it under one of the handlers that pump. PostMessage does not get
+    // out of it on its own: a posted message dispatched by a pump running inside
+    // the sent one still reports InSendMessage, so it would come straight back
+    // in. Holding the scope defers instead, and the exit posts once the sent
+    // message has been answered. Not for the destroy messages, which come from
+    // DestroyWindow on this thread and delete the frame under us, and not for
+    // WM_POWERBROADCAST, which has to do its work before it returns and touches
+    // nothing afterwards.
+    std::optional<CDeferredActionScope> sentMessageScope;
+    if (InSendMessage() && message != WM_DESTROY && message != WM_NCDESTROY
+            && message != WM_POWERBROADCAST) {
+        sentMessageScope.emplace(*this);
+    }
+
     if (message == WM_MPC_OPENCURPLAYLIST && (m_OnClose_called || m_OnClose_queued || IsStateClosingAborting())) {
         // this can for example happen when a modal dialog is shown during media close, as that runs another message loop
         TRACE(_T("Dropped WindowProc: message 0x%x value %d\n"), message, LOWORD(wParam));
@@ -23585,14 +23821,20 @@ UINT CMainFrame::OnPowerBroadcast(UINT nPowerEvent, LPARAM nEventData)
 
     switch (nPowerEvent) {
         case PBT_APMSUSPEND:            // System is suspending operation.
-        case PBT_APMSTANDBY:
+        case PBT_APMSTANDBY: {
             TRACE(_T("OnPowerBroadcast - suspending\n"));
             bWasPausedBeforeSuspention = FALSE;   
 
             // API docs says that event must be handled (within 2 sec) before returning from this message handler
-            // So can't use PostMessage for closing file
+            // So can't use PostMessage for closing file, and a deferred close is no
+            // better: it would run after we have answered. WindowProc leaves this
+            // message alone for that reason, but a pump can still deliver it inside
+            // a handler that holds the graph. Pause instead when that happens, since
+            // it stops playback without releasing anything.
+            const bool bCanCloseDirectly = (m_nDeferredActionDepth == 0);
+
             if (GetLoadState() == MLS::LOADED) {
-                if (AfxGetAppSettings().iReloadAfterLongPause >= 0) {
+                if (bCanCloseDirectly && AfxGetAppSettings().iReloadAfterLongPause >= 0) {
                     // save position and close file
                     m_reloadFilename = lastOpenFile;
                     m_rtReloadPos = m_wndSeekBar.HasDuration() ? m_wndSeekBar.GetPos() : 0;
@@ -23600,16 +23842,17 @@ UINT CMainFrame::OnPowerBroadcast(UINT nPowerEvent, LPARAM nEventData)
                     m_iReloadAudioIdx = GetCurrentAudioTrackIdx();
                     m_iReloadSubIdx = GetCurrentSubtitleTrackIdx();
                     m_dwLastPause = 1ULL; // used as hibernation signal
-                    SendMessage(WM_COMMAND, ID_FILE_CLOSEMEDIA);
+                    OnFileCloseMedia(); // direct: a WM_COMMAND would re-enter WindowProc and defer
                 } else if (GetMediaStateDirect() == State_Running) {
                     bWasPausedBeforeSuspention = TRUE;
                     SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
                 }
-            } else if (GetLoadState() == MLS::LOADING) {
+            } else if (GetLoadState() == MLS::LOADING && bCanCloseDirectly) {
                 m_dwLastPause = 1ULL; // used as hibernation signal
-                SendMessage(WM_COMMAND, ID_FILE_CLOSEMEDIA);
+                OnFileCloseMedia(); // direct, see above
             }
             break;
+        }
         case PBT_APMRESUMESUSPEND:     // System is resuming operation
         case PBT_APMRESUMESTANDBY:
             TRACE(_T("OnPowerBroadcast - resuming\n"));
