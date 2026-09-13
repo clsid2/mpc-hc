@@ -105,6 +105,7 @@ HRESULT CDXRAllocatorPresenter::SetDevice(IDirect3DDevice9* pD3DDev)
         }
     }
 
+    bool bInvalidate = false;
     {
         // Lock before check because m_pSubPicQueue might be initialized in CSubPicAllocatorPresenterImpl::Connect
         CAutoLock cAutoLock(this);
@@ -113,9 +114,12 @@ HRESULT CDXRAllocatorPresenter::SetDevice(IDirect3DDevice9* pD3DDev)
                              ? (ISubPicQueue*)DEBUG_NEW CSubPicQueue(r.subPicQueueSettings, m_pAllocator, &hr)
                              : (ISubPicQueue*)DEBUG_NEW CSubPicQueueNoThread(r.subPicQueueSettings, m_pAllocator, &hr);
         } else {
-            this->Unlock();
-            m_pSubPicQueue->Invalidate();
+            bInvalidate = true;
         }
+    }
+    if (bInvalidate) {
+        // Invalidate outside the lock, the queue thread may need it
+        m_pSubPicQueue->Invalidate();
     }
 
     if (SUCCEEDED(hr) && m_pSubPicProvider) {
