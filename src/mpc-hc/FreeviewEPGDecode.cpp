@@ -694,6 +694,10 @@ CString DecodeFreeviewEPG(const BYTE* pBuffer, size_t uLength)
 {
     CString uncompressedString;
 
+    if (uLength < 2) {
+        return uncompressedString;
+    }
+
     if (pBuffer[1] == 1 || pBuffer[1] == 2) {
         const BYTE* table;
         if (pBuffer[1] == 1) {
@@ -703,7 +707,11 @@ CString DecodeFreeviewEPG(const BYTE* pBuffer, size_t uLength)
         }
         pBuffer += 2;
 
+        // the only exit of the decoder is a STOP symbol, so a truncated or corrupt
+        // string would otherwise read past the caller's buffer
+        const size_t uBits = (uLength - 2) * 8;
         size_t j = 0;
+        bool bTruncated = false;
 
         BYTE prevc = START, nextc;
         do {
@@ -714,11 +722,18 @@ CString DecodeFreeviewEPG(const BYTE* pBuffer, size_t uLength)
             BYTE bit;
 
             do {
+                if (j >= uBits) {
+                    bTruncated = true;
+                    break;
+                }
                 bit = (pBuffer[j >> 3] >> (7 - (j & 7))) & 1;
                 j++;
                 next_node = (BYTE*)&base[node];
                 node = next_node[bit];
             } while ((next_node[bit] & 0x80) == 0);
+            if (bTruncated) {
+                break;
+            }
 
             nextc = next_node[bit] ^ 0x80;
 
@@ -726,12 +741,22 @@ CString DecodeFreeviewEPG(const BYTE* pBuffer, size_t uLength)
                 do {
                     nextc = 0;
                     for (size_t k = 0; k < 8; k++) {
+                        if (j >= uBits) {
+                            bTruncated = true;
+                            break;
+                        }
                         bit = (pBuffer[j >> 3] >> (7 - (j & 7))) & 1;
                         nextc = (nextc << 1) | bit;
                         j++;
                     }
+                    if (bTruncated) {
+                        break;
+                    }
                     uncompressedString.AppendChar(nextc);
                 } while (nextc & 0x80);
+                if (bTruncated) {
+                    break;
+                }
             } else {
                 uncompressedString.AppendChar(nextc);
             }

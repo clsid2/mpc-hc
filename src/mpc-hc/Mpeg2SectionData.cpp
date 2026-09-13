@@ -19,6 +19,7 @@
  */
 
 #include "stdafx.h"
+#include <algorithm>
 #include "BaseClasses/streams.h"
 #include <mpeg2data.h>
 
@@ -28,11 +29,15 @@
 #include "resource.h"
 #include "Logger.h"
 
+// BitRead() returns 0 without advancing once the buffer is exhausted, so a loop
+// length that runs past the section must not be trusted: clamp it to the buffer
+// and stop at EOF, or GetPos() never reaches nLimit and the loop never ends.
 #define BeginEnumDescriptors(gb, nType, nLength)                    \
 {                                                                   \
     BYTE DescBuffer[256];                                           \
     size_t nLimit = (size_t)gb.BitRead(12) + gb.GetPos();           \
-    while (gb.GetPos() < nLimit) {                                  \
+    nLimit = std::min(nLimit, (size_t)gb.GetSize());                \
+    while (gb.GetPos() < nLimit && !gb.IsEOF()) {                   \
         MPEG2_DESCRIPTOR nType = (MPEG2_DESCRIPTOR)gb.BitRead(8);   \
         WORD nLength = (WORD)gb.BitRead(8);
 
@@ -47,7 +52,8 @@
 {                                                                   \
     BYTE DescBuffer[256];                                           \
     size_t nLimit = (size_t)gb.BitRead(bits) + gb.GetPos();         \
-    while (gb.GetPos() < nLimit) {                                  \
+    nLimit = std::min(nLimit, (size_t)gb.GetSize());                \
+    while (gb.GetPos() < nLimit && !gb.IsEOF()) {                   \
         MPEG2_DESCRIPTOR nType = (MPEG2_DESCRIPTOR)gb.BitRead(8);   \
         WORD nLength = (WORD)gb.BitRead(8);
 
@@ -376,7 +382,8 @@ HRESULT CMpeg2DataParser::ParseMGT(enum DVB_SI &vctType)
     gb.BitRead(8);
     uint16_t num_tables = gb.BitRead(16);
 
-    for (uint8_t i = 0; i < num_tables; i++) {
+    // tables_defined is 16 bit and A/65 allows up to 370, a byte counter wraps
+    for (uint16_t i = 0; i < num_tables && !gb.IsEOF(); i++) {
         uint16_t table_type = gb.BitRead(16); //table_type
         
         gb.BitRead(3);  //reserved
