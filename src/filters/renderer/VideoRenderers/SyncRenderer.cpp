@@ -484,10 +484,13 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
     }
 
     if (FAILED(m_pD3D->GetDeviceCaps(m_CurrentAdapter, D3DDEVTYPE_HAL, &m_caps))) {
-        if ((m_caps.Caps & D3DCAPS_READ_SCANLINE) == 0) {
-            _Error += L"Video card does not have scanline access. Display synchronization is not possible.\n";
-            return E_UNEXPECTED;
-        }
+        _Error += L"Can not retrieve device capabilities\n";
+        return E_UNEXPECTED;
+    }
+    // this test used to sit inside the failure branch above, so it never ran
+    if ((m_caps.Caps & D3DCAPS_READ_SCANLINE) == 0) {
+        _Error += L"Video card does not have scanline access. Display synchronization is not possible.\n";
+        return E_UNEXPECTED;
     }
 
     m_refreshRate = d3ddm.RefreshRate;
@@ -2297,22 +2300,42 @@ void CBaseAP::EstimateRefreshTimings()
 {
     if (m_pD3DDev) {
         const CRenderersData* rd = GetRenderersData();
-        D3DRASTER_STATUS rasterStatus;
-        m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+        D3DRASTER_STATUS rasterStatus = {};
+
+        // Every loop below waits for ScanLine to change. If GetRasterStatus fails, or
+        // the driver reports a constant scan line, that never happens and the graph
+        // thread spins forever, so give up after a while and keep the values the
+        // D3D display mode gave us.
+        const LONGLONG deadline = rd->GetPerfCounter() + 5000000; // 500 ms in 100 ns units
+        auto poll = [&]() {
+            return SUCCEEDED(m_pD3DDev->GetRasterStatus(0, &rasterStatus)) && rd->GetPerfCounter() < deadline;
+        };
+
+        if (!poll()) {
+            return;
+        }
         while (rasterStatus.ScanLine != 0) {
-            m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+            if (!poll()) {
+                return;
+            }
         }
         while (rasterStatus.ScanLine == 0) {
-            m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+            if (!poll()) {
+                return;
+            }
         }
-        m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+        if (!poll()) {
+            return;
+        }
         LONGLONG startTime = rd->GetPerfCounter();
         UINT startLine = rasterStatus.ScanLine;
         LONGLONG endTime = 0;
         UINT endLine = 0;
         bool done = false;
         while (!done) { // Estimate time for one scan line
-            m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+            if (!poll()) {
+                return;
+            }
             UINT line = rasterStatus.ScanLine;
             LONGLONG time = rd->GetPerfCounter();
             if (line > 0) {
@@ -2322,23 +2345,36 @@ void CBaseAP::EstimateRefreshTimings()
                 done = true;
             }
         }
+        if (endLine <= startLine) {
+            return;
+        }
         m_dDetectedScanlineTime = (endTime - startTime) / ((endLine - startLine) * 10000.0);
 
         // Estimate the display refresh rate from the vsyncs
-        m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+        if (!poll()) {
+            return;
+        }
         while (rasterStatus.ScanLine != 0) {
-            m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+            if (!poll()) {
+                return;
+            }
         }
         // Now we're at the start of a vsync
         startTime = rd->GetPerfCounter();
         UINT i;
         for (i = 1; i <= 50; i++) {
-            m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+            if (!poll()) {
+                return;
+            }
             while (rasterStatus.ScanLine == 0) {
-                m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+                if (!poll()) {
+                    return;
+                }
             }
             while (rasterStatus.ScanLine != 0) {
-                m_pD3DDev->GetRasterStatus(0, &rasterStatus);
+                if (!poll()) {
+                    return;
+                }
             }
             // Now we're at the next vsync
         }

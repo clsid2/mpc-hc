@@ -1485,8 +1485,11 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::Paint(bool bAll)
         }
 
         while (ScanLine == 0 || bInVBlank) {
-            GetVBlank(ScanLine, bInVBlank, false);
-
+            // GetVBlank() zeroes ScanLine and returns false when GetRasterStatus fails,
+            // so without this the loop never ends (the other three loops already break)
+            if (!GetVBlank(ScanLine, bInVBlank, false)) {
+                break;
+            }
         }
         m_VBlankStartMeasureTime = rd->GetPerfCounter();
         m_VBlankStartMeasure = ScanLine;
