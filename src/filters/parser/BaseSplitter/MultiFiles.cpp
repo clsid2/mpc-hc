@@ -139,11 +139,15 @@ ULONGLONG CMultiFiles::GetLength() const
 
 UINT CMultiFiles::Read(void* lpBuf, UINT nCount)
 {
-    DWORD dwRead;
+    // returns the total read across parts, not only the last part's count,
+    // so the caller can tell a complete read from a short one
+    UINT nTotal = 0;
+    DWORD dwRead = 0;
     do {
         if (!ReadFile(m_hFile, lpBuf, nCount, &dwRead, nullptr)) {
             break;
         }
+        nTotal += dwRead;
 
         if (dwRead != nCount && (m_nCurPart < 0 || (size_t)m_nCurPart < m_strFiles.GetCount() - 1)) {
             OpenPart(m_nCurPart + 1);
@@ -151,7 +155,7 @@ UINT CMultiFiles::Read(void* lpBuf, UINT nCount)
             nCount -= dwRead;
         }
     } while (nCount != dwRead && (m_nCurPart < 0 || (size_t)m_nCurPart < m_strFiles.GetCount() - 1));
-    return dwRead;
+    return nTotal;
 }
 
 void CMultiFiles::Close()

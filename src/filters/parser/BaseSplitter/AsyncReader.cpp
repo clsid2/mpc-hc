@@ -77,7 +77,9 @@ STDMETHODIMP CAsyncFileReader::SyncRead(LONGLONG llPosition, LONG lLength, BYTE*
             if ((ULONGLONG)llPosition != Seek(llPosition, begin)) {
                 return E_FAIL;
             }
-            if ((UINT)lLength < Read(pBuffer, lLength)) {
+            // a short read (bad sector, unplugged drive, dropped share) must not
+            // hand the splitter a partly filled buffer as success
+            if (Read(pBuffer, lLength) < (UINT)lLength) {
                 return E_FAIL;
             }
 
