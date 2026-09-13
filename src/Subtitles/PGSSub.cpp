@@ -383,7 +383,7 @@ void CPGSSub::UpdateTimeStamp(REFERENCE_TIME rtStop)
 
 void CPGSSub::ParsePalette(CGolombBuffer* pGBuffer, size_t nSize)  // #497
 {
-    if ((nSize - 2) % sizeof(HDMV_PALETTE) != 0) {
+    if (nSize < 2 || (nSize - 2) % sizeof(HDMV_PALETTE) != 0) {
         ASSERT(FALSE);
         return;
     }
@@ -394,7 +394,13 @@ void CPGSSub::ParsePalette(CGolombBuffer* pGBuffer, size_t nSize)  // #497
     CLUT.id = palette_id;
     CLUT.version_number = pGBuffer->ReadByte();
 
-    CLUT.size = WORD((nSize - 2) / sizeof(HDMV_PALETTE));
+    // the entry count comes from the segment length, the palette holds 256 entries at most
+    size_t nEntries = (nSize - 2) / sizeof(HDMV_PALETTE);
+    if (nEntries > CLUT.palette.size()) {
+        ASSERT(FALSE);
+        nEntries = CLUT.palette.size();
+    }
+    CLUT.size = WORD(nEntries);
 
     for (WORD i = 0; i < CLUT.size; i++) {
         CLUT.palette[i].entry_id = pGBuffer->ReadByte();

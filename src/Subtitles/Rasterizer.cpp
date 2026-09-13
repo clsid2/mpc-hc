@@ -2008,7 +2008,14 @@ void Rasterizer::FillSolidRect(SubPicDesc& spd, int x, int y, int nWidth, int nH
         ASSERT(FALSE);
         return;
 	}
+    // the bitmap subtitle decoders pass run lengths and row counts straight from the
+    // stream, so clip to the surface instead of trusting them
     ASSERT(spd.w >= x + nWidth && spd.h >= y + nHeight);
+    nWidth = std::min(nWidth, spd.w - x);
+    nHeight = std::min(nHeight, spd.h - y);
+    if (nWidth <= 0 || nHeight <= 0) {
+        return;
+    }
     BYTE* dst = (BYTE*)((DWORD*)(spd.bits + spd.pitch * y) + x);
     DrawInternal(m_bUseAVX2, dst, spd.pitch, BYTE(0x40), nWidth, nHeight, lColor);
 }
