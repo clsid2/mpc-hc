@@ -177,6 +177,7 @@ private:
 
     bool        IsVTS();
     bool        IsVMG();
+    bool        IsInBuffer(const void* p, size_t len) const;
 
     pgc_t*      GetFirstPGC();
     pgc_t*      GetPGCI(const int title, const ifo_hdr_t* hdr);
