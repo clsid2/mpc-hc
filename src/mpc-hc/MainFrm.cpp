@@ -2445,6 +2445,13 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
             }
             break;
         case TIMER_STATS: {
+            // CloseMedia pumps messages on this thread while the graph thread releases
+            // the interfaces used below, and KillTimer does not remove an already queued
+            // WM_TIMER, so bail out unless the media is fully loaded (as the position
+            // poller above already does)
+            if (GetLoadState() != MLS::LOADED) {
+                break;
+            }
             const CAppSettings& s = AfxGetAppSettings();
             if (m_wndStatsBar.IsVisible()) {
                 CString rate;
@@ -15958,10 +15965,10 @@ void CMainFrame::OpenSetupInfoBar(bool bClear /*= true*/)
 void CMainFrame::UpdateChapterInInfoBar()
 {
     CString chapter;
-    if (m_pCB) {
+    if (m_pCB && m_pMS) {
         DWORD dwChapCount = m_pCB->ChapGetCount();
         if (dwChapCount) {
-            REFERENCE_TIME rtNow;
+            REFERENCE_TIME rtNow = 0;
             m_pMS->GetCurrentPosition(&rtNow);
 
             if (m_pCB) {
