@@ -117,6 +117,8 @@ public:
 
     void EnumValueNames(const wchar_t* section, std::vector<CStringW>& valuenames);
     void EnumSectionNames(const wchar_t* section, std::vector<CStringW>& sectionnames);
+    // Top-level sections of the whole store (the roots of ReadSectionTree)
+    void EnumRootSectionNames(std::vector<CStringW>& sectionnames);
 
     bool HasEntry(const wchar_t* section, const wchar_t* entry);
 
