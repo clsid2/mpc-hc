@@ -1358,8 +1358,8 @@ bool CMPCThemeUtil::IsWindowVisibleAndRendered(CWnd* window) {
         return false;
     } else {
         CRect r;
-        HDC hdc = GetWindowDC(window->m_hWnd);
-        GetClipBox(hdc, &r);
+        CWindowDC dc(window); // released on scope exit, a raw GetWindowDC here was never released
+        GetClipBox(dc, &r);
         if (r.IsRectEmpty()) {
             return false;
         }
