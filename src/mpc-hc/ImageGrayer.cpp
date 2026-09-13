@@ -277,10 +277,22 @@ bool ImageGrayer::Colorize(const CImage& imgSrc, CImage& imgDest, COLORREF fg, C
     }
 
     if (rot90) {
-        Gdiplus::Bitmap* gdiPlusBitmap = Gdiplus::Bitmap::FromHBITMAP(imgDest.Detach(), 0);
+        // FromHBITMAP copies the pixels and does not take ownership, so the
+        // detached source bitmap and the Gdiplus object both have to be freed here
+        HBITMAP hSource = imgDest.Detach();
+        Gdiplus::Bitmap* gdiPlusBitmap = Gdiplus::Bitmap::FromHBITMAP(hSource, 0);
+        if (!gdiPlusBitmap) {
+            imgDest.Attach(hSource);
+            return false;
+        }
         gdiPlusBitmap->RotateFlip(Gdiplus::Rotate90FlipNone);
-        HBITMAP hbmp;
+        HBITMAP hbmp = nullptr;
         gdiPlusBitmap->GetHBITMAP(Gdiplus::Color::White, &hbmp);
+        delete gdiPlusBitmap;
+        DeleteObject(hSource);
+        if (!hbmp) {
+            return false;
+        }
         imgDest.Attach(hbmp);
     }
 

@@ -189,13 +189,14 @@ int DpiHelper::CalculateListCtrlItemHeight(CListCtrl* wnd) {
         nItemHeight = v;
     } else {
         TEXTMETRICW tm;
-        CDC* cdc = wnd->GetDC();
-        if (!cdc) {
+        CClientDC dc(wnd); // released on scope exit, a raw GetDC here was never released
+        if (!dc.m_hDC) {
             ASSERT(false);
             return 1;
         }
-        cdc->SelectObject(wnd->GetFont());
-        cdc->GetTextMetricsW(&tm);
+        CFont* pOldFont = dc.SelectObject(wnd->GetFont());
+        dc.GetTextMetricsW(&tm);
+        dc.SelectObject(pOldFont);
 
         nItemHeight = tm.tmHeight + 4;
         CImageList* ilist;

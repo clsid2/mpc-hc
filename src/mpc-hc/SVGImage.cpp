@@ -90,10 +90,13 @@ void GdiTransform(CImage& image, Gdiplus::RotateFlipType transform) {
     int bpp = image.GetBPP();
 
     HBITMAP hbmp = image.Detach();
-    Gdiplus::Bitmap* bmpTemp = Gdiplus::Bitmap::FromHBITMAP(hbmp, 0);
-    Gdiplus::PixelFormat pixel_format = bmpTemp->GetPixelFormat();
-    if (bpp == 32) {
-        pixel_format = PixelFormat32bppARGB;
+    Gdiplus::PixelFormat pixel_format = PixelFormat32bppARGB;
+    if (bpp != 32) {
+        // only needed to learn the pixel format, and was never deleted
+        std::unique_ptr<Gdiplus::Bitmap> bmpTemp(Gdiplus::Bitmap::FromHBITMAP(hbmp, 0));
+        if (bmpTemp) {
+            pixel_format = bmpTemp->GetPixelFormat();
+        }
     }
     image.Attach(hbmp);
 
