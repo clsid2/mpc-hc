@@ -2600,7 +2600,9 @@ void CSimpleTextSubtitle::Add(CStringW str, bool fUnicode, REFERENCE_TIME start,
         STSSegment* segmentsEnd   = segmentsStart + segmentsCount;
         STSSegment* segment = std::lower_bound(segmentsStart, segmentsEnd, start, SegmentCompStart);
 
-        if (m_subtitleType == Subtitle::VTT && start == segment->start && end == segment->end) {
+        // lower_bound returns segmentsEnd when the cue starts after every existing
+        // segment, which is the normal case for cues arriving in order
+        if (m_subtitleType == Subtitle::VTT && segment != segmentsEnd && start == segment->start && end == segment->end) {
             // ToDo: compare new sub with existing one to verify if it is really a duplicate
             //TRACE(_T("Dropping duplicate WebVTT sub (n=%d)\n"), n);
             return;
