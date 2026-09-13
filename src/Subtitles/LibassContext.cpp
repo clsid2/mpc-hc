@@ -20,9 +20,6 @@
 
 std::string ConsumeAttribute(const char** ppsz_subtitle, std::string& attribute_value) {
     const char* psz_subtitle = *ppsz_subtitle;
-    char psz_attribute_name[BUFSIZ];
-    char psz_attribute_value[BUFSIZ];
-
     while (*psz_subtitle == ' ')
         psz_subtitle++;
 
@@ -37,8 +34,7 @@ std::string ConsumeAttribute(const char** ppsz_subtitle, std::string& attribute_
     if (!*psz_subtitle || attr_len == 0)
         return std::string();
 
-    strncpy_s(psz_attribute_name, psz_subtitle - attr_len, attr_len);
-    psz_attribute_name[attr_len] = 0;
+    std::string attribute_name(psz_subtitle - attr_len, attr_len);
 
     // Skip over to the attribute value
     while (*psz_subtitle && *psz_subtitle != '=')
@@ -73,9 +69,7 @@ std::string ConsumeAttribute(const char** ppsz_subtitle, std::string& attribute_
         attr_len++;
     }
 
-    strncpy_s(psz_attribute_value, psz_subtitle - attr_len, attr_len);
-    psz_attribute_value[attr_len] = 0;
-    attribute_value.assign(psz_attribute_value);
+    attribute_value.assign(psz_subtitle - attr_len, attr_len);
 
     // Finally, skip over the final delimiter
     if (delimiter != 0 && *psz_subtitle)
@@ -83,7 +77,7 @@ std::string ConsumeAttribute(const char** ppsz_subtitle, std::string& attribute_
 
     *ppsz_subtitle = psz_subtitle;
 
-    return std::string(psz_attribute_name);
+    return attribute_name;
 }
 
 void ParseSrtLine(std::string& srtLine, const STSStyle& style) {
@@ -441,13 +435,11 @@ std::string GetTag(const char** line, bool b_closing) {
     while (isalnum(psz_subtitle[tag_size]) || psz_subtitle[tag_size] == '_')
         tag_size++;
 
-    char psz_tagname[BUFSIZ];
-    strncpy_s(psz_tagname, psz_subtitle, tag_size);
-    psz_tagname[tag_size] = 0;
+    std::string tagname(psz_subtitle, tag_size);
     psz_subtitle += tag_size;
     *line = psz_subtitle;
 
-    return std::string(psz_tagname);
+    return tagname;
 }
 
 bool IsClosed(const char* psz_subtitle, const char* psz_tagname) {
@@ -1198,9 +1190,8 @@ void LibassContext::LoadASSSample(char *data, int dataSize, REFERENCE_TIME tStar
             }
 
             if (m_assloaded) {
-                char subLineData[1024]{};
-                strncpy_s(subLineData, _countof(subLineData), data, dataSize);
-                std::string str = subLineData;
+                // the sample is not necessarily terminated, and may be longer than any fixed buffer
+                std::string str(data, strnlen_s(data, dataSize));
 
                 // This is the way i use to get a unique id for the subtitle line
                 // It will only fail in the case there is 2 or more lines with the same start timecode
