@@ -1,0 +1,86 @@
+[
+  {
+    "label": "before-uhf",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 473000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 400,
+    "waitSec": 700
+  },
+  {
+    "label": "after-uhf",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-atsc-fix.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 473000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 400,
+    "waitSec": 700
+  },
+  {
+    "label": "before-full",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 57000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 400,
+    "waitSec": 700
+  },
+  {
+    "label": "after-full",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-atsc-fix.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 57000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 400,
+    "waitSec": 700
+  },
+  {
+    "hostAction": "vhf-add"
+  },
+  {
+    "label": "before-vhf",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 57000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 600,
+    "waitSec": 900
+  },
+  {
+    "label": "after-vhf",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-atsc-fix.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0001#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99d4-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 57000,
+    "freqEnd": 695000,
+    "bandwidth": 6000,
+    "symbolRate": 0,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 600,
+    "waitSec": 900
+  },
+  {
+    "hostAction": "vhf-remove"
+  }
+]

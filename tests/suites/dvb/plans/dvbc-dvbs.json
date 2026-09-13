@@ -1,0 +1,28 @@
+[
+  {
+    "label": "dvbc-scan",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0002#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99db-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 306000,
+    "freqEnd": 322000,
+    "bandwidth": 8000,
+    "symbolRate": 6875,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 300,
+    "waitSec": 600
+  },
+  {
+    "label": "dvbs-scan",
+    "exe": "C:\\vtuner\\bin\\mpc-hc64-baseline.exe",
+    "tuner": "@device:pnp:\\\\?\\root#media#0003#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\\{0e7e99da-8a1c-11db-bda1-00123f758252}",
+    "freqStart": 10714000,
+    "freqEnd": 10774000,
+    "bandwidth": 30000,
+    "symbolRate": 27500,
+    "ignoreEncrypted": 0,
+    "clearChannels": true,
+    "timeoutSec": 300,
+    "waitSec": 600
+  }
+]
