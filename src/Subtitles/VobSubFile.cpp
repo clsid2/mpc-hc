@@ -602,7 +602,7 @@ bool CVobSubFile::ReadIdx(CString fn, int& ver)
             if (_stscanf_s(str, _T("%d"), &iLang) != 1) {
                 bError = true;
             }
-            m_nLang = (iLang < 0 && size_t(iLang) >= m_langs.size()) ? SIZE_T_ERROR : size_t(iLang);
+            m_nLang = (iLang < 0 || size_t(iLang) >= m_langs.size()) ? SIZE_T_ERROR : size_t(iLang);
         } else if (entry == _T("palette")) {
             // The assert guarantees that the shortcut we use will work as expected
             static_assert(sizeof(RGBQUAD) == 4, "Packing error");

@@ -128,6 +128,11 @@ bool CVobSubImage::Decode(BYTE* _lpData, size_t _packetSize, size_t _dataSize, i
 
     CPoint p = rect.TopLeft();
 
+    // the plane offsets come from the packet, GetPacketInfo checks them but be safe here too
+    if (nOffset[0] > nOffset[1] || nOffset[1] > _dataSize) {
+        return false;
+    }
+
     size_t end[] = { nOffset[1], _dataSize };
 
     while (nOffset[nPlane] < end[nPlane]) {
@@ -175,12 +180,20 @@ bool CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
     do {
         i = nextctrlblk;
 
+        // each control block starts with two 16 bit fields, and the next-block
+        // offset comes from the packet itself
+        if (i + 4 > packetSize) {
+            TRACE(L"Invalid VobSub packet\n");
+            rect.SetRectEmpty();
+            return false;
+        }
+
         tCurrent = 1024 * ((lpData[i] << 8) | lpData[i + 1]) / 90;
         i += 2;
         nextctrlblk = (lpData[i] << 8) | lpData[i + 1];
         i += 2;
 
-        if (nextctrlblk > packetSize || nextctrlblk < dataSize) {
+        if (nextctrlblk + 4 > packetSize || nextctrlblk < dataSize) {
             TRACE(L"Invalid VobSub packet\n");
             rect.SetRectEmpty();
             return false;
@@ -264,6 +277,13 @@ bool CVobSubImage::GetPacketInfo(const BYTE* lpData, size_t packetSize, size_t d
                     i += 2;
                     nOffset[1] = (lpData[i] << 8) + lpData[i + 1];
                     i += 2;
+                    // Decode reads the two planes from these offsets up to nOffset[1]
+                    // and dataSize, so both have to stay inside the data area
+                    if (nOffset[0] > nOffset[1] || nOffset[1] > dataSize) {
+                        TRACE(L"Invalid VobSub packet\n");
+                        rect.SetRectEmpty();
+                        return false;
+                    }
                     break;
                 case 0xff: // end of ctrlblk
                     bBreak = true;
