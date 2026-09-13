@@ -122,25 +122,40 @@ static CStringW BinaryToAP(const BYTE* pdata, unsigned nbytes)
     return out;
 }
 
+// Another process (an AV scanner, a sync client) can hold the ini for a moment.
+// Retry on a sharing violation, but not forever: the ini is read and flushed on
+// the UI thread. OpenIniWithRetry serves the read path; Flush() opens the file
+// itself (CFile, in place) with the same retry count.
+static const int INI_OPEN_RETRIES = 20; // x 100 ms
+
+static FILE* OpenIniWithRetry(const CStringW& iniPath, const wchar_t* mode)
+{
+    FILE* fp;
+    int nRetries = INI_OPEN_RETRIES;
+    do {
+        fp = _wfsopen(iniPath, mode, _SH_SECURE);
+        if (fp || (GetLastError() != ERROR_SHARING_VIOLATION) || --nRetries <= 0) {
+            break;
+        }
+        Sleep(100);
+    } while (true);
+    return fp;
+}
+
 // Open and parse an INI file (BOM-sniffing UNICODE, falling back to ANSI) into
-// a ProfileMap. Clears the map first. Returns false if the file can't be read.
+// a ProfileMap. The map is only replaced when the file was read, so a transient
+// failure keeps the settings we already have instead of emptying them (and
+// then writing the empty map back out on exit). Returns false if the file
+// can't be read.
 static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
 {
-    map.clear();
-
     if (!::PathFileExistsW(iniPath)) {
         return false;
     }
 
     FILE* fp;
     int fpStatus;
-    do { // Open the ini in UNICODE mode, retry if it is already being used by another process
-        fp = _wfsopen(iniPath, L"r, ccs=UNICODE", _SH_SECURE);
-        if (fp || (GetLastError() != ERROR_SHARING_VIOLATION)) {
-            break;
-        }
-        Sleep(100);
-    } while (true);
+    fp = OpenIniWithRetry(iniPath, L"r, ccs=UNICODE");
     if (!fp) {
         ASSERT(FALSE);
         return false;
@@ -149,13 +164,7 @@ static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
         // No BOM was consumed, assume the ini is ANSI encoded
         fpStatus = fclose(fp);
         ASSERT(fpStatus == 0);
-        do { // Reopen the ini in ANSI mode, retry if it is already being used by another process
-            fp = _wfsopen(iniPath, L"r", _SH_SECURE);
-            if (fp || (GetLastError() != ERROR_SHARING_VIOLATION)) {
-                break;
-            }
-            Sleep(100);
-        } while (true);
+        fp = OpenIniWithRetry(iniPath, L"r");
         if (!fp) {
             ASSERT(FALSE);
             return false;
@@ -164,6 +173,7 @@ static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
 
     CStdioFile file(fp);
 
+    ProfileMap newMap;
     CStringW line, section, var, val;
     while (file.ReadString(line)) {
         // Parse the ini file, this parser:
@@ -186,12 +196,14 @@ static bool ReadIniFileIntoMap(const CStringW& iniPath, ProfileMap& map)
             var = line.Mid(0, pos);
             val = line.Mid(pos + 1);
             if (!section.IsEmpty() && !var.IsEmpty()) {
-                map[section][var] = val;
+                newMap[section][var] = val;
             }
         }
     }
     fpStatus = fclose(fp);
     ASSERT(fpStatus == 0);
+
+    map.swap(newMap);
 
     return true;
 }
@@ -258,6 +270,11 @@ void CProfile::InitIni()
         return;
     }
 
+    // The first read failed: this session runs on defaults, don't keep trying
+    if (m_bIniReadFailed) {
+        return;
+    }
+
     // Don't reread the ini if the cache needs to be flushed or it was accessed recently
     const ULONGLONG tick = GetTickCount64();
     if (m_bIniFirstInit && (m_bIniNeedFlush || tick - m_IniLastAccessTick < 100u)) {
@@ -265,11 +282,24 @@ void CProfile::InitIni()
         return;
     }
 
-    m_bIniFirstInit = true;
     m_IniLastAccessTick = tick;
 
     ASSERT(!m_bIniNeedFlush);
-    ReadIniFileIntoMap(m_IniPath, m_ProfileMap);
+    // Nothing on disk yet (a store being created, or the history ini before its
+    // first flush): the map is what we have and the first flush creates the file
+    if (!::PathFileExistsW(m_IniPath)) {
+        m_bIniFirstInit = true;
+        m_IniLastAccessTick = GetTickCount64();
+        return;
+    }
+    // A re-read failing keeps the map we already have. The first read failing
+    // means we never saw the settings: run on defaults for this session and
+    // never write them back (see Flush).
+    if (ReadIniFileIntoMap(m_IniPath, m_ProfileMap)) {
+        m_bIniFirstInit = true;
+    } else if (!m_bIniFirstInit) {
+        m_bIniReadFailed = true;
+    }
 
     m_IniLastAccessTick = GetTickCount64(); // reading the file can take a long time
 }
@@ -940,6 +970,28 @@ void CProfile::EnumSectionNames(const wchar_t* section, std::vector<CStringW>& s
     }
 }
 
+void CProfile::EnumRootSectionNames(std::vector<CStringW>& sectionnames)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+
+    if (m_bRegistryMode) {
+        // an empty subkey name opens the app key itself
+        EnumSectionNames(L"", sectionnames);
+        return;
+    }
+
+    sectionnames.clear();
+    InitIni();
+    for (const auto& section : m_ProfileMap) {
+        const int pos = section.first.Find(L'\\');
+        const CStringW root = (pos == -1) ? section.first : section.first.Left(pos);
+        if (!root.IsEmpty() && (sectionnames.empty() || sectionnames.back().CompareNoCase(root) != 0)) {
+            // the map is ordered case-insensitively, so a root's sections are contiguous
+            sectionnames.emplace_back(root);
+        }
+    }
+}
+
 bool CProfile::DeleteValue(const wchar_t* section, const wchar_t* entry)
 {
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
@@ -1015,44 +1067,74 @@ void CProfile::Flush(bool bForce)
 
     std::lock_guard<std::recursive_mutex> lock(m_Mutex);
 
-    m_bIniNeedFlush = false;
+    // Never overwrite settings we could not read: this session's changes are
+    // lost, the file is not
+    if (m_bIniReadFailed) {
+        return;
+    }
 
     ASSERT(m_bIniFirstInit || bForce);
     ASSERT(!m_IniPath.IsEmpty());
 
-    FILE* fp;
-    int fpStatus;
-    do { // Open the ini, retry if it is already being used by another process
-        fp = _wfsopen(m_IniPath, L"w, ccs=UTF-8", _SH_SECURE);
-        if (fp || (GetLastError() != ERROR_SHARING_VIOLATION)) {
-            break;
+    // Build the whole file in memory first: a UTF-8 BOM, then CRLF terminated
+    // lines, byte for byte what the old text-mode "w, ccs=UTF-8" write produced.
+    CStringW text(L"; MPC-HC\r\n");
+    CStringW line;
+    for (auto it1 = m_ProfileMap.begin(); it1 != m_ProfileMap.end(); ++it1) {
+        line.Format(L"[%s]\r\n", it1->first.GetString());
+        text += line;
+        for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+            line.Format(L"%s=%s\r\n", it2->first.GetString(), it2->second.GetString());
+            text += line;
+        }
+    }
+    const int utf8Len = WideCharToMultiByte(CP_UTF8, 0, text, text.GetLength(), nullptr, 0, nullptr, nullptr);
+    CStringA data;
+    char* buf = data.GetBuffer(3 + utf8Len);
+    memcpy(buf, "\xEF\xBB\xBF", 3);
+    WideCharToMultiByte(CP_UTF8, 0, text, text.GetLength(), buf + 3, utf8Len, nullptr, nullptr);
+    data.ReleaseBuffer(3 + utf8Len);
+
+    // The old code opened the ini with "w", which truncates it at open, so on a
+    // full disk the settings were destroyed before any exception could be
+    // caught. A temp file plus rename is not possible either: the ini often has
+    // Modify permission for the user while its folder (Program Files) does not
+    // allow creating a sibling. So write in place: open without truncating,
+    // grow the file before overwriting anything, trim it afterwards.
+    CFile file;
+    CFileException ex;
+    int nRetries = INI_OPEN_RETRIES;
+    while (!file.Open(m_IniPath, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::shareExclusive | CFile::typeBinary, &ex)) {
+        if (ex.m_lOsError != ERROR_SHARING_VIOLATION || --nRetries <= 0) {
+            ASSERT(FALSE);
+            return; // the changes stay pending for the next flush
         }
         Sleep(100);
-    } while (true);
-    if (!fp) {
-        ASSERT(FALSE);
-        return;
-    }
-    CStdioFile file(fp);
-    CStringW line;
-    try {
-        file.WriteString(L"; MPC-HC\n");
-        for (auto it1 = m_ProfileMap.begin(); it1 != m_ProfileMap.end(); ++it1) {
-            line.Format(L"[%s]\n", it1->first.GetString());
-            file.WriteString(line);
-            for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-                line.Format(L"%s=%s\n", it2->first.GetString(), it2->second.GetString());
-                file.WriteString(line);
-            }
-        }
-    } catch (CFileException& e) {
-        // Fail silently if disk is full
-        UNREFERENCED_PARAMETER(e);
-        ASSERT(FALSE);
     }
 
-    fpStatus = fclose(fp);
-    ASSERT(fpStatus == 0);
+    try {
+        const ULONGLONG oldLen = file.GetLength();
+        const ULONGLONG newLen = data.GetLength();
+        if (newLen > oldLen) {
+            // Extending the file is what allocates the space, so a full disk
+            // throws here, before a single old byte has been overwritten.
+            file.SetLength(newLen);
+        }
+        file.SeekToBegin(); // SetLength may move the position
+        file.Write(data.GetString(), static_cast<UINT>(newLen));
+        if (newLen < oldLen) {
+            file.SetLength(newLen); // trim the old tail; shrinking never needs space
+        }
+        file.Close();
+        // Only a complete write clears the flag, so a failure is retried on the
+        // next flush (idle and exit) instead of being dropped.
+        m_bIniNeedFlush = false;
+    } catch (CFileException* e) {
+        // Out of space or similar; the file still holds the old settings
+        e->Delete();
+        file.Abort();
+        ASSERT(FALSE);
+    }
 }
 
 void CProfile::Clear()

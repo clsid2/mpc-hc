@@ -1108,10 +1108,23 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     m_s->GetFav(FAV_DVD, DVDsFav);
     m_s->GetFav(FAV_DEVICE, devicesFav);
 
-    // The internal filter settings (LAV Splitter/Video/Audio, audio renderer)
-    // exist only in the profile store, so snapshot them for the new location
-    ProfileMap internalFilterSettings;
-    m_Profile.ReadSectionTree(IDS_R_INTERNAL_FILTERS, internalFilterSettings);
+    // Snapshot the whole store for the new location, not only the sections we
+    // know about. Anything that lives only in the profile (the internal filter
+    // settings, PlaylistHistory, Recent Dub List, updater state, dialog
+    // geometry, ...) would otherwise be lost with the old store. MediaHistory
+    // is rewritten in full by SaveSettings(true) below and Version is set per
+    // store, so those two are skipped.
+    ProfileMap storeSnapshot;
+    {
+        std::vector<CStringW> roots;
+        m_Profile.EnumRootSectionNames(roots);
+        for (const auto& root : roots) {
+            if (root.CompareNoCase(L"Version") == 0 || root.CompareNoCase(L"MediaHistory") == 0) {
+                continue;
+            }
+            m_Profile.ReadSectionTree(root, storeSnapshot);
+        }
+    }
 
     if (useIni) {
         // Offer to leave the old registry settings in place as a backup copy
@@ -1136,8 +1149,9 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
         return false;
     }
 
-    // Restore the internal filter settings into the new store
-    m_Profile.WriteSectionTree(internalFilterSettings);
+    // Restore the snapshot into the new store; SaveSettings() below then
+    // rewrites everything it owns on top of it
+    m_Profile.WriteSectionTree(storeSnapshot);
 
     // Point the MediaHistory store at the new location before SaveSettings()
     // below re-writes the full in-memory history there in the correct format.

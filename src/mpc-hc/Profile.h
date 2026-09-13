@@ -64,6 +64,9 @@ private:
 
     ProfileMap m_ProfileMap;
     bool      m_bIniFirstInit = false;
+    // The first read failed after its retries: the session runs on defaults and
+    // Flush() refuses to overwrite a file it never read
+    bool      m_bIniReadFailed = false;
     bool      m_bIniNeedFlush = false;
     ULONGLONG m_IniLastAccessTick = 0;
 
@@ -117,6 +120,8 @@ public:
 
     void EnumValueNames(const wchar_t* section, std::vector<CStringW>& valuenames);
     void EnumSectionNames(const wchar_t* section, std::vector<CStringW>& sectionnames);
+    // Top-level sections of the whole store (the roots of ReadSectionTree)
+    void EnumRootSectionNames(std::vector<CStringW>& sectionnames);
 
     bool HasEntry(const wchar_t* section, const wchar_t* entry);
 
