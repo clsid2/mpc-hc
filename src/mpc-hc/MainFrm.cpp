@@ -6551,9 +6551,18 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
     double fontscale = width / 1280.0;
     int fontsize = (int)(fontscale * 16);
     const int infoheight = 4 * fontsize + 6 + 2 * margin;
-    int height = width * szVideoARCorrected.cy / szVideoARCorrected.cx * rows / cols + infoheight;
+    // Values the dialog accepts (width 3840, 40 rows, 1 column) on a portrait video
+    // make width * height * 4 wrap in int, so size the sheet in 64 bit and refuse
+    // anything a bitmap cannot hold.
+    const LONGLONG llHeight = (LONGLONG)width * szVideoARCorrected.cy / szVideoARCorrected.cx * rows / cols + infoheight;
+    const LONGLONG llImageSize = (LONGLONG)width * llHeight * 4;
+    if (llHeight <= 0 || llHeight > 32767 || llImageSize > INT_MAX - (LONGLONG)sizeof(BITMAPINFOHEADER)) {
+        AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
+        return;
+    }
+    int height = (int)llHeight;
 
-    int dibsize = sizeof(BITMAPINFOHEADER) + width * height * 4;
+    int dibsize = sizeof(BITMAPINFOHEADER) + (int)llImageSize;
 
     CAutoVectorPtr<BYTE> dib;
     if (!dib.Allocate(dibsize)) {
@@ -6605,16 +6614,19 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
         return;
     }
 
+    // Allocate before muting, so a failure here does not leave the player silent
+    std::unique_ptr<BYTE[]> thumb(new(std::nothrow) BYTE[szThumbnail.cx * szThumbnail.cy * 4]);
+    if (!thumb) {
+        AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
+        return;
+    }
+
     m_nVolumeBeforeFrameStepping = m_wndToolBar.Volume;
     if (m_pBA) {
         m_pBA->put_Volume(-10000);
     }
 
     // Draw the thumbnails
-    std::unique_ptr<BYTE[]> thumb(new(std::nothrow) BYTE[szThumbnail.cx * szThumbnail.cy * 4]);
-    if (!thumb) {
-        return;
-    }
 
     int pics = cols * rows;
     REFERENCE_TIME rtInterval = rtDur / (pics + 1LL);
