@@ -84,13 +84,15 @@ CSyncClock::CSyncClock(LPUNKNOWN pUnk, HRESULT* phr)
     : CBaseReferenceClock(NAME("SyncClock"), pUnk, phr)
     , adjustment(1.0)
     , bias(1.0)
-    , m_rtPrivateTime(GetTicks100ns())
+    , m_rtPrivateTime(0)
     , m_llPerfFrequency(0)
-    , m_rtPrevTime(m_rtPrivateTime)
+    , m_rtPrevTime(0)
     , m_pCurrentRefClock(0)
     , m_pPrevRefClock(0)
 {
     QueryPerformanceFrequency((LARGE_INTEGER*)&m_llPerfFrequency);
+    m_rtPrivateTime = GetTicks100ns();
+    m_rtPrevTime = m_rtPrivateTime;
 }
 
 REFERENCE_TIME CSyncClock::GetPrivateTime()
