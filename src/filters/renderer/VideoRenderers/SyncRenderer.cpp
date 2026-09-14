@@ -2751,7 +2751,6 @@ STDMETHODIMP_(bool) CSyncAP::Paint(bool bAll)
 
 STDMETHODIMP_(bool) CSyncAP::Paint(IMFSample* pMFSample)
 {
-    m_pCurrentlyDisplayedSample = pMFSample;
     pMFSample->GetUINT32(GUID_SURFACE_INDEX, (UINT32*)&m_nCurSurface);
 
     auto sampleHasCurrentGroupId = [this](IMFSample * pSample) {
@@ -4164,7 +4163,6 @@ void CSyncAP::FlushSamples()
     CAutoLock lock2(&m_SampleQueueLock);
 
     m_bPrerolled = false;
-    m_pCurrentlyDisplayedSample = nullptr;
     m_ScheduledSamples.RemoveAll();
 }
 
