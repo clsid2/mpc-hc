@@ -54,6 +54,8 @@
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
 #include <deque>
+#include <functional>
+#include <vector>
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -460,6 +462,7 @@ private:
     void AddTextPassThruFilter();
 
     int m_nLoops;
+    bool m_bKeepLoopCountOnStop = false; // set before a skip that closes the file, so OnPlayStop keeps m_nLoops
     ABRepeat abRepeat, reloadABRepeat;
     UINT m_nLastSkipDirection;
 
@@ -556,6 +559,30 @@ private:
 
     volatile LONG m_ActiveGraphNotifyEvCode = 0;
     volatile bool m_OnClose_called = false;
+
+    // OnTimer, OnGraphNotify, OpenMedia, CloseMedia, OnClose and the MediaControl*
+    // functions hold graph interfaces across a possible nested message pump (a
+    // dialog raised inside them, or quartz pumping inside an IMediaControl call).
+    // Each holds one of these; while the depth is nonzero, OpenMedia, CloseMedia,
+    // OnClose and the handlers that close before they open are recorded below and
+    // run from the top-level pump once the outermost holder has returned, instead
+    // of underneath it. See DeferIfNested and OnRunDeferredActions.
+    class CDeferredActionScope {
+        CMainFrame& m_frame;
+    public:
+        explicit CDeferredActionScope(CMainFrame& frame);
+        ~CDeferredActionScope();
+    };
+    int m_nDeferredActionDepth = 0;
+    // requests recorded while a holder is on the stack, run in arrival order by
+    // OnRunDeferredActions. A recorded OnClose discards them and exits instead
+    std::vector<std::function<void()>> m_deferredActions;
+    bool m_bDeferredOnClose = false;
+    bool DeferIfNested(std::function<void()> action);
+    // bodies of OpenMedia and CloseMedia; the public wrappers record the request
+    // while a holder is on the stack, these always run
+    void OpenMediaInternal(CAutoPtr<OpenMediaData> pOMD);
+    void CloseMediaInternal(bool bNextIsQueued = false, bool bPendingFileDelete = false);
 
     bool m_bSettingUpMenus;
     volatile bool m_bOpenMediaActive;
@@ -995,6 +1022,7 @@ public:
 
     afx_msg LRESULT OnFilePostOpenmedia(WPARAM wParam, LPARAM lparam);
     afx_msg LRESULT OnOpenMediaFailed(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to
     // it instead, because DoTunerScan sends to the HWND it was handed.
