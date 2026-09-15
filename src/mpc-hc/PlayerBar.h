@@ -57,6 +57,10 @@ public:
 
     BOOL Create(LPCTSTR lpszWindowName, CWnd* pParentWnd, UINT nID, UINT defDockBarID, CString const& strSettingName);
 
+    // hides the non-virtual CControlBar::EnableDocking to install a CPlayerBarDockContext;
+    // a call through a CControlBar*/CSizingControlBar* gets the stock context and the #4203 XOR outline back
+    void EnableDocking(DWORD dwDockStyle);
+
     virtual void ReloadTranslatableResources() PURE;
 
     virtual void LoadState(CFrameWnd* pParent);

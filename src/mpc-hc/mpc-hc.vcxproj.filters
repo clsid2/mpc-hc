@@ -205,6 +205,12 @@
     <ClCompile Include="PlayerBar.cpp">
       <Filter>Panels</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerBarDockContext.cpp">
+      <Filter>Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="DragRectWnd.cpp">
+      <Filter>Panels</Filter>
+    </ClCompile>
     <ClCompile Include="PlayerInfoBar.cpp">
       <Filter>Toolbars</Filter>
     </ClCompile>
@@ -770,6 +776,12 @@
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="PlayerBar.h">
+      <Filter>Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBarDockContext.h">
+      <Filter>Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="DragRectWnd.h">
       <Filter>Panels</Filter>
     </ClInclude>
     <ClInclude Include="PlayerInfoBar.h">

@@ -22,6 +22,7 @@
 #include "PlayerBar.h"
 #include "MainFrm.h"
 #include "mplayerc.h"
+#include "PlayerBarDockContext.h"
 
 IMPLEMENT_DYNAMIC(CPlayerBar, CSizingControlBarG)
 CPlayerBar::CPlayerBar()
@@ -64,7 +65,6 @@ void CPlayerBar::OnWindowPosChanged(WINDOWPOS* lpwndpos)
             // the panel was re-docked
             if (auto pFrame = AfxGetMainFrame()) {
                 // call MoveVideoWindow() manually because we don't receive WM_SIZE message
-                // (probably because we disable locking the desktop window on what CControlBar relies)
                 pFrame->MoveVideoWindow();
                 // let the user see what he did and don't hide the panel for a while
                 pFrame->m_controls.LockHideZone(pFrame->m_controls.GetPanelZone(this));
@@ -103,6 +103,15 @@ BOOL CPlayerBar::Create(LPCTSTR lpszWindowName, CWnd* pParentWnd, UINT nID, UINT
     m_strSettingName = strSettingName;
 
     return __super::Create(lpszWindowName, pParentWnd, nID);
+}
+
+void CPlayerBar::EnableDocking(DWORD dwDockStyle)
+{
+    // CControlBar::EnableDocking keeps a pre-existing dock context
+    if (m_pDockContext == nullptr) {
+        m_pDockContext = DEBUG_NEW CPlayerBarDockContext(this);
+    }
+    __super::EnableDocking(dwDockStyle);
 }
 
 void CPlayerBar::LoadState(CFrameWnd* pParent)

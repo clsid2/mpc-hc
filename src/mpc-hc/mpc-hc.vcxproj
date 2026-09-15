@@ -208,6 +208,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="DeinterlacerFilter.cpp" />
     <ClCompile Include="DpiAwareResizableDialog.cpp" />
     <ClCompile Include="DpiHelper.cpp" />
+    <ClCompile Include="DragRectWnd.cpp" />
     <ClCompile Include="DVBChannel.cpp" />
     <ClCompile Include="EditListEditor.cpp" />
     <ClCompile Include="EditWithButton.cpp" />
@@ -252,6 +253,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="OpenFileDlg.cpp" />
     <ClCompile Include="OSD.cpp" />
     <ClCompile Include="PlayerBar.cpp" />
+    <ClCompile Include="PlayerBarDockContext.cpp" />
     <ClCompile Include="PlayerCaptureBar.cpp" />
     <ClCompile Include="PlayerCaptureDialog.cpp" />
     <ClCompile Include="PlayerInfoBar.cpp" />
@@ -411,6 +413,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="DeinterlacerFilter.h" />
     <ClInclude Include="DpiAwareResizableDialog.h" />
     <ClInclude Include="DpiHelper.h" />
+    <ClInclude Include="DragRectWnd.h" />
     <ClInclude Include="DVBChannel.h" />
     <ClInclude Include="EditListEditor.h" />
     <ClInclude Include="EditWithButton.h" />
@@ -463,6 +466,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="OpenFileDlg.h" />
     <ClInclude Include="OSD.h" />
     <ClInclude Include="PlayerBar.h" />
+    <ClInclude Include="PlayerBarDockContext.h" />
     <ClInclude Include="PlayerCaptureBar.h" />
     <ClInclude Include="PlayerCaptureDialog.h" />
     <ClInclude Include="PlayerInfoBar.h" />

@@ -1972,8 +1972,9 @@ BOOL WINAPI Mine_LockWindowUpdate(HWND hWndLock)
 {
     // TODO: Check if needed on Windows 8+
     if (hWndLock == ::GetDesktopWindow()) {
-        // locking the desktop window with aero active locks the entire compositor,
-        // unfortunately MFC does that (when dragging CControlBar) and we want to prevent it
+        // locking the desktop window under DWM freezes the entire compositor; the
+        // remaining in-process caller is ImageList_DragEnter (playlist / edit-list
+        // row drag), panel dragging has moved to CPlayerBarDockContext
         return FALSE;
     } else {
         return Real_LockWindowUpdate(hWndLock);
