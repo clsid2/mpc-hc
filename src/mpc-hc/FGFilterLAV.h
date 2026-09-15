@@ -61,6 +61,8 @@ public:
     static CString GetFilterPath(LAVFILTER_TYPE filterType);
     static bool CheckVersion(CString filtersPath);
     static CString GetVersion(LAVFILTER_TYPE filterType = INVALID);
+    // The compiler LAV's ffmpeg DLLs were built with, as reported by the avutil DLL itself
+    static CString GetFFmpegCompiler();
 
     static CFGFilterLAV* CreateFilter(LAVFILTER_TYPE filterType, UINT64 merit = MERIT64_DO_USE, bool bAddLowMeritSuffix = false, bool bIsPreview = false);
     static CFGFilterLAV* CreateFilterPreview(LAVFILTER_TYPE filterType, UINT64 merit = MERIT64_DO_USE, bool bAddLowMeritSuffix = false);
