@@ -942,6 +942,7 @@ CMainFrame::CMainFrame()
     , delayingFullScreen(false)
     , restoringWindowRect(false)
     , mediaTypesErrorDlg(nullptr)
+    , rarEntrySelectorDlg(nullptr)
     , m_iStreamPosPollerInterval(100)
     , currentAudioLang(_T(""))
     , currentSubLang(_T(""))
@@ -14659,15 +14660,18 @@ HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, int* pEntryIndex) {
             if (file) {
                 entryName = file->filename;
             }
-        } else {
+        } else if (!m_fOpeningAborted) {
             // Show dialog to select entry
-            RarEntrySelectorDialog entrySelector(&file_list, GetModalParent());
-            if (IDOK == entrySelector.DoModal()) {
-                entryName = entrySelector.GetCurrentEntry();
+            CAutoLock lck(&lockModalDialog);
+            rarEntrySelectorDlg = DEBUG_NEW RarEntrySelectorDialog(&file_list, GetModalParent());
+            if (IDOK == rarEntrySelectorDlg->DoModal()) {
+                entryName = rarEntrySelectorDlg->GetCurrentEntry();
                 if (pEntryIndex) {
-                    *pEntryIndex = entrySelector.GetCurrentIndex();
+                    *pEntryIndex = rarEntrySelectorDlg->GetCurrentIndex();
                 }
             }
+            delete rarEntrySelectorDlg;
+            rarEntrySelectorDlg = nullptr;
         }
 
         if (entryName.GetLength() > 0) {
@@ -20990,6 +20994,13 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
         if (mediaTypesErrorDlg) {
             mediaTypesErrorDlg->SendMessage(WM_EXTERNALCLOSE, 0, 0);
             // wait till error dialog has been closed
+            CAutoLock lck(&lockModalDialog);
+        }
+
+        // close RAR entry selector dialog
+        if (rarEntrySelectorDlg) {
+            rarEntrySelectorDlg->SendMessage(WM_EXTERNALCLOSE, 0, 0);
+            // wait till dialog has been closed
             CAutoLock lck(&lockModalDialog);
         }
 

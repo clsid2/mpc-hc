@@ -61,6 +61,7 @@ void RarEntrySelectorDialog::DoDataExchange(CDataExchange* pDX) {
 
 BEGIN_MESSAGE_MAP(RarEntrySelectorDialog, CMPCThemeResizableDialog)
     ON_LBN_DBLCLK(IDC_LIST1, OnLbnDblclkList1)
+    ON_MESSAGE(WM_EXTERNALCLOSE, OnExternalClose)
 END_MESSAGE_MAP()
 
 BOOL RarEntrySelectorDialog::OnInitDialog() {
@@ -92,6 +93,11 @@ void RarEntrySelectorDialog::SetupAnchors()
     AddAnchor(IDC_LIST1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDOK, BOTTOM_RIGHT);
     AddAnchor(IDCANCEL, BOTTOM_RIGHT);
+}
+
+LRESULT RarEntrySelectorDialog::OnExternalClose(WPARAM wParam, LPARAM lParam) {
+    EndDialog(IDCANCEL);
+    return LRESULT();
 }
 
 void RarEntrySelectorDialog::OnLbnDblclkList1() {

@@ -25,6 +25,7 @@
 #include "CMPCThemeListBox.h"
 #include "resource.h"
 #include "RARFileSource/RFS.h"
+#include "MediaTypesDlg.h" // WM_EXTERNALCLOSE
 
 class RarEntrySelectorDialog : public CMPCThemeResizableDialog
 {
@@ -52,5 +53,6 @@ protected:
     DECLARE_MESSAGE_MAP()
     afx_msg virtual BOOL OnInitDialog();
     afx_msg void OnLbnDblclkList1();
+    afx_msg LRESULT OnExternalClose(WPARAM wParam, LPARAM lParam);
 
 };

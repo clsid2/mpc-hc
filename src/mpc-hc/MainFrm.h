@@ -62,6 +62,7 @@ class CFullscreenWnd;
 struct DisplayMode;
 enum MpcCaptionState;
 class CMediaTypesDlg;
+class RarEntrySelectorDialog;
 
 interface IDSMChapterBag;
 interface IGraphBuilder2;
@@ -659,6 +660,7 @@ protected:
 
     CCritSec lockModalDialog;
     CMediaTypesDlg* mediaTypesErrorDlg;
+    RarEntrySelectorDialog* rarEntrySelectorDlg;
     void ShowMediaTypesDialog();
 
     void OpenCreateGraphObject(OpenMediaData* pOMD);
