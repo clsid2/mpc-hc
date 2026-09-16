@@ -62,9 +62,12 @@ short CHdmvClipInfo::ReadShort()
 
 BYTE CHdmvClipInfo::ReadByte()
 {
-    BYTE  bVal;
-    DWORD dwRead;
+    BYTE  bVal = 0;
+    DWORD dwRead = 0;
     VERIFY(ReadFile(m_hFile, &bVal, sizeof(bVal), &dwRead, nullptr));
+    if (dwRead != sizeof(bVal)) {
+        return 0;
+    }
 
     return bVal;
 }
@@ -97,8 +100,11 @@ HRESULT CHdmvClipInfo::ReadLang(Stream& s) {
 
 void CHdmvClipInfo::ReadBuffer(BYTE* pBuff, DWORD nLen)
 {
-    DWORD dwRead;
+    DWORD dwRead = 0;
     VERIFY(ReadFile(m_hFile, pBuff, nLen, &dwRead, nullptr));
+    if (dwRead != nLen) {
+        memset(pBuff + dwRead, 0, nLen - dwRead);
+    }
 }
 
 HRESULT CHdmvClipInfo::ReadProgramInfo()
@@ -378,31 +384,31 @@ HRESULT CHdmvClipInfo::ReadSTNInfo() {
 
     Skip(5); // reserved_for_future_use
 
-    for (BYTE i = 0; i < stn.num_video; i++) {
+    for (int i = 0; i < stn.num_video; i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
     }
 
-    for (BYTE i = 0; i < stn.num_audio; i++) {
+    for (int i = 0; i < stn.num_audio; i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
     }
 
-    for (BYTE i = 0; i < (stn.num_pg + stn.num_pip_pg); i++) {
+    for (int i = 0; i < (stn.num_pg + stn.num_pip_pg); i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
     }
 
-    for (BYTE i = 0; i < stn.num_ig; i++) {
+    for (int i = 0; i < stn.num_ig; i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
     }
 
-    for (BYTE i = 0; i < stn.num_secondary_audio; i++) {
+    for (int i = 0; i < stn.num_secondary_audio; i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
@@ -418,7 +424,7 @@ HRESULT CHdmvClipInfo::ReadSTNInfo() {
         }
     }
 
-    for (BYTE i = 0; i < stn.num_secondary_video; i++) {
+    for (int i = 0; i < stn.num_secondary_video; i++) {
         if (FAILED(ReadStreamInfo())) {
             return E_FAIL;
         }
