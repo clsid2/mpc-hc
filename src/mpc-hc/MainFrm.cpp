@@ -4513,10 +4513,18 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
 
     // The device is open now, which is the one precondition DoTunerScan has.
     // Consume the switch so a later open cannot start a second scan.
-    if ((s.nCLSwitches & CLSW_DVBSCAN) && GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+    if (s.nCLSwitches & CLSW_DVBSCAN) {
         s.nCLSwitches &= ~CLSW_DVBSCAN;
-        m_bHeadlessDVBScan = true;
-        StartHeadlessDVBScan();
+        if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            m_bHeadlessDVBScan = true;
+            StartHeadlessDVBScan();
+        } else {
+            // The default device is an analog one. It opened, but there is
+            // nothing to scan and nothing else would ever close the player.
+            TRACE(_T("/dvbscan: the capture device is not a digital one, abandoning the scan\n"));
+            AfxGetMyApp()->m_nExitCode = 1;
+            PostMessage(WM_CLOSE);
+        }
     }
 
     return 0;
@@ -4540,6 +4548,7 @@ LRESULT CMainFrame::OnOpenMediaFailed(WPARAM wParam, LPARAM lParam)
     if (AfxGetAppSettings().nCLSwitches & CLSW_DVBSCAN) {
         TRACE(_T("/dvbscan: the capture device failed to open, abandoning the scan\n"));
         AfxGetAppSettings().nCLSwitches &= ~CLSW_DVBSCAN;
+        AfxGetMyApp()->m_nExitCode = 1;
         PostMessage(WM_CLOSE);
     }
 
@@ -5373,6 +5382,7 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
                 s.strAnalogVideo == L"dummy" && s.strAnalogAudio == L"dummy") {
             TRACE(_T("/dvbscan: no capture device configured, nothing to scan\n"));
             s.nCLSwitches &= ~CLSW_DVBSCAN;
+            AfxGetMyApp()->m_nExitCode = 1;
             PostMessage(WM_CLOSE);
         } else {
             // /dvbscan implies opening the capture device, because DoTunerScan

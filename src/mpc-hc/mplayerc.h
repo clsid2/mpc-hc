@@ -242,6 +242,9 @@ public:
     bool GetPlaylistSavePath(CString& path);
 
     bool m_fClosingState;
+    // Process exit code. Stays 0 except for a /dvbscan run that could not scan,
+    // which has no other way to tell its caller.
+    int m_nExitCode = 0;
     bool m_bThemeLoaded;
     CRenderersData m_Renderers;
     CString     m_strVersion;

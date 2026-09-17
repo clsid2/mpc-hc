@@ -553,6 +553,17 @@ HRESULT CFGManagerBDA::ConnectFilters(IBaseFilter* pOutFilter, IBaseFilter* pInF
     return hr;
 }
 
+// Report a failure to build the BDA graph. A headless /dvbscan has nobody to
+// dismiss a message box, and until it is dismissed the open cannot fail and the
+// player cannot close, so that run gets the TRACE/LOG lines only.
+static void BDAErrorBox(const CString& text)
+{
+    if (AfxGetAppSettings().nCLSwitches & CLSW_DVBSCAN) {
+        return;
+    }
+    MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, text, ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+}
+
 STDMETHODIMP CFGManagerBDA::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayList)
 {
     HRESULT hr;
@@ -564,14 +575,14 @@ STDMETHODIMP CFGManagerBDA::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayL
     LOG(_T("Creating BDA filters..."));
     CheckAndLogBDA(CreateKSFilterFN(&pNetwork, KSCATEGORY_BDA_NETWORK_PROVIDER, _T("Microsoft Network Provider")), _T("Network provider creation"));
     if (FAILED(hr = CreateKSFilter(&pTuner, KSCATEGORY_BDA_NETWORK_TUNER, s.strBDATuner))) {
-        MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_CREATE_TUNER), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+        BDAErrorBox(ResStr(IDS_BDA_ERROR_CREATE_TUNER));
         TRACE(_T("BDA: Network tuner creation: 0x%08x\n"), hr);
         LOG(_T("Network tuner creation: 0x%08x"), hr);
         return hr;
     }
 
     if (FAILED(hr = ConnectFilters(pNetwork, pTuner))) {
-        MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_CONNECT_TUNER), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+        BDAErrorBox(ResStr(IDS_BDA_ERROR_CONNECT_TUNER));
         TRACE(_T("BDA: Network <-> Tuner: 0x%08x\n"), hr);
         LOG(_T("Network <-> Tuner: 0x%08x"), hr);
         return hr;
@@ -579,7 +590,7 @@ STDMETHODIMP CFGManagerBDA::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayL
     m_pBDAControl = pTuner;
 
     if (FAILED(hr = SearchIBDATopology(pTuner, m_pBDAFreq))) {
-        MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, _T("IBDA_FrequencyFilter topology failed."), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+        BDAErrorBox(_T("IBDA_FrequencyFilter topology failed."));
         LOG(_T("IBDA_FrequencyFilter topology failed."));
         return hr;
     }
@@ -600,7 +611,7 @@ STDMETHODIMP CFGManagerBDA::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayL
             LOG(_T("No statistics interface on the RF node --> using the statistics from the demodulator node only."));
             m_pBDATunerStats = m_pBDADemodStats;
         } else { // if (!m_pBDATunerStats && !m_pBDADemodStats)
-            MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, _T("No statistics interface available."), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+            BDAErrorBox(_T("No statistics interface available."));
             TRACE(_T("BDA: Not statistics interface available\n"));
             LOG(_T("Not statistics interface available."));
             return E_NOINTERFACE;
@@ -619,24 +630,24 @@ STDMETHODIMP CFGManagerBDA::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayL
     }
 
     if (FAILED(hr = m_pDemux.CoCreateInstance(CLSID_MPEG2Demultiplexer, nullptr, CLSCTX_INPROC_SERVER))) {
-        MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_DEMULTIPLEXER), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+        BDAErrorBox(ResStr(IDS_BDA_ERROR_DEMULTIPLEXER));
         TRACE(_T("BDA: Microsoft demux creation: 0x%08x\n"), hr);
         return hr;
     }
     CheckNoLog(AddFilter(m_pDemux, _T("MPEG-2 Demultiplexer")));
     if (FAILED(ConnectFilters(pTuner, m_pDemux))) { // Separate receiver is required
         if (FAILED(hr = CreateKSFilter(&pReceiver, KSCATEGORY_BDA_RECEIVER_COMPONENT, s.strBDAReceiver))) {
-            MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_CREATE_RECEIVER), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+            BDAErrorBox(ResStr(IDS_BDA_ERROR_CREATE_RECEIVER));
             TRACE(_T("BDA: Receiver creation: 0x%08x\n"), hr);
             return hr;
         }
         if (FAILED(hr = ConnectFilters(pTuner, pReceiver))) {
-            MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_CONNECT_TUNER_REC), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+            BDAErrorBox(ResStr(IDS_BDA_ERROR_CONNECT_TUNER_REC));
             TRACE(_T("BDA: Tuner <-> Receiver: 0x%08x\n"), hr);
             return hr;
         }
         if (FAILED(ConnectFilters(pReceiver, m_pDemux))) {
-            MessageBox(AfxGetMyApp()->GetMainWnd()->m_hWnd, ResStr(IDS_BDA_ERROR_DEMULTIPLEXER), ResStr(IDS_BDA_ERROR), MB_ICONERROR | MB_OK);
+            BDAErrorBox(ResStr(IDS_BDA_ERROR_DEMULTIPLEXER));
             TRACE(_T("BDA: Receiver <-> Demux: 0x%08x\n"), hr);
             return hr;
         }
