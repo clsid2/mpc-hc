@@ -126,6 +126,10 @@ void CChildView::OnPaint()
 void CChildView::OnSize(UINT nType, int cx, int cy)
 {
     __super::OnSize(nType, cx, cy);
+    // bitmap OSD draws into the renderer, so it never gets its own WM_SIZE
+    if (m_pMainFrame->m_OSD.GetOSDType() == OSD_TYPE_BITMAP && m_pMainFrame->m_pVideoWnd == this) {
+        m_pMainFrame->m_OSD.OnSize(nType, cx, cy);
+    }
     if (!m_bSwitchingFullscreen) {
         m_pMainFrame->MoveVideoWindow();
     }
