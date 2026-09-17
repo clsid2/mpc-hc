@@ -19615,7 +19615,7 @@ int CMainFrame::GetCurrentAudioTrackIdx(CString *pstrName)
                 DWORD dwFlags = 0;
                 CComHeapPtr<WCHAR> pName;
                 if (SUCCEEDED(m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pName, nullptr, nullptr))) {
-                    if (dwFlags & AMSTREAMSELECTINFO_ENABLED) {
+                    if (dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
                         if(pstrName)
                             *pstrName = pName;
                         ASSERT(m_loadedAudioTrackIndex == i);
@@ -22643,7 +22643,7 @@ void CMainFrame::SendSubtitleTracksToApi()
 
                             if (subInput.pSubStream == m_pCurrentSubInput.pSubStream
                                 && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
-                                iSelected = j;
+                                iSelected = i;
                             }
 
                             if (!strSubs.IsEmpty()) {
@@ -22713,7 +22713,7 @@ void CMainFrame::SendAudioTracksToApi()
                 if (FAILED(m_pAudioSwitcherSS->Info(i, &pmt, &dwFlags, &lcid, &dwGroup, &pszName, nullptr, nullptr))) {
                     return;
                 }
-                if (dwFlags == AMSTREAMSELECTINFO_EXCLUSIVE) {
+                if (dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
                     currentStream = i;
                 }
                 CString name(pszName);
