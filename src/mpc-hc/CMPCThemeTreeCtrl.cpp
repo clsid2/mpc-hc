@@ -159,7 +159,7 @@ void CMPCThemeTreeCtrl::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
                 }
                 break;
             default:
-                pResult = CDRF_DODEFAULT;
+                *pResult = CDRF_DODEFAULT;
                 break;
         }
     } else {
