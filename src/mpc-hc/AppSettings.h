@@ -806,6 +806,7 @@ public:
         ULONG   ulBandwidth;        // kHz; 0 means use iBDABandwidth
         ULONG   ulSymbolRate;       // 0 means use iBDASymbolRate
         CString strOutputPath;      // where the JSON is written
+        bool    bSaveChannels;      // /dvbscansave: the result becomes the saved channel list
     } cmdlnDVBScan;
 
     // Internal Filters

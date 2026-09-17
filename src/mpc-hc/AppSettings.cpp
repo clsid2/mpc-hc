@@ -2729,6 +2729,7 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
     cmdlnDVBScan.ulBandwidth = 0;
     cmdlnDVBScan.ulSymbolRate = 0;
     cmdlnDVBScan.strOutputPath.Empty();
+    cmdlnDVBScan.bSaveChannels = false;
 
     POSITION pos = cmdln.GetHeadPosition();
     while (pos) {
@@ -2899,6 +2900,10 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 cmdlnDVBScan.ulBandwidth = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
             } else if (sw == _T("dvbsymbolrate") && pos) {
                 cmdlnDVBScan.ulSymbolRate = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("dvbscansave")) {
+                // Only means anything together with /dvbscan; see
+                // CMainFrame::FinishHeadlessDVBScan for what gets stored.
+                cmdlnDVBScan.bSaveChannels = true;
             } else if (sw == _T("debug")) {
                 fShowDebugInfo = true;
             } else if (sw == _T("nocrashreporter")) {
