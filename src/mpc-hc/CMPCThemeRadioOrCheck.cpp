@@ -145,20 +145,21 @@ void CMPCThemeRadioOrCheck::OnPaint()
                     rectItem.OffsetRect(0, (centerRect.Height() - rectItem.Height()) / 2);
                 }
 
+                HBRUSH hb; //same brushes OnEraseBkgnd uses; both are shared, not ours to delete
                 if (isFileDialogChild) {
-                    CMPCThemeUtil::getCtlColorFileDialog(dc.GetSafeHdc(), CTLCOLOR_BTN);
+                    hb = CMPCThemeUtil::getCtlColorFileDialog(dc.GetSafeHdc(), CTLCOLOR_BTN);
                 } else {
                     dc.SetBkColor(CMPCTheme::WindowBGColor);
+                    hb = CMPCThemeUtil::getParentDialogBGClr(this, &dc);
                 }
 
                 CRect focusRect = rectItem;
                 focusRect.InflateRect(0, 0);
-                { //clears the previous focus rect: the text is drawn transparently, and focus changes
-                  //repaint us without an erase, so nothing else wipes it
-                    HBRUSH hb = CMPCThemeUtil::getParentDialogBGClr(this, &dc);
+                { //clears the previous focus rect and text: focus changes repaint us without an erase, and
+                  //transparent antialiased text drawn over itself gets brighter each time
                     CBrush cb;
                     cb.Attach(hb);
-                    dc.FrameRect(focusRect, &cb);
+                    dc.FillRect(focusRect, &cb);
                     cb.Detach();
                 }
 
