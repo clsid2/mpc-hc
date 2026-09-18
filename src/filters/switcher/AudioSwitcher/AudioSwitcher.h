@@ -49,8 +49,6 @@ interface __declspec(uuid("CEDB2890-53AE-4231-91A3-B0AAFCD1DBDE"))
     STDMETHOD(SetReplayGain)(bool bEnable, float gain_dB) PURE;
 };
 
-class AudioStreamResampler;
-
 class __declspec(uuid("18C16B08-6497-420e-AD14-22D21C2CEAB7"))
     CAudioSwitcherFilter : public CStreamSwitcherFilter, public IAudioSwitcherFilter
 {
