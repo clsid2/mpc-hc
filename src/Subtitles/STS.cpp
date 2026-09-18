@@ -203,8 +203,13 @@ static CStringW SSAColorTag(CStringW arg, CStringW ctag = L"c") {
     DWORD val, color;
     if (g_colors.Lookup(CString(arg), val)) {
         color = (DWORD)val;
-    } else if ((color = wcstol(arg, nullptr, 16)) == 0) {
-        color = 0x00ffffff;    // default is white
+    } else {
+        LPCWSTR argStr = arg;
+        LPWSTR endptr = nullptr;
+        color = wcstol(argStr, &endptr, 16);
+        if (endptr == argStr) {
+            color = 0x00ffffff;    // default is white
+        }
     }
     CStringW tmp;
     tmp.Format(L"%02x%02x%02x", color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
@@ -719,16 +724,17 @@ static bool OpenVTT(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet) {
         if (!styleStr.IsEmpty()) {
             auto parseColor = [](std::wstring styles, std::wstring attr = L"color") {
                 //we only support color styles for now
-                std::wregex clrPat(LR"(^\s*)" + attr + LR"(\s*:\s*#?([a-zA-Z0-9]*)\s*;)"); //e.g., 0xffffff or white
-                std::wregex rgbPat(LR"(^\s*)" + attr + LR"(\s*:\s*rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)\s*;)");
+                //declaration must start at the beginning of the rule body or right after a ';', so "color" doesn't also match inside "background-color"
+                std::wregex clrPat(LR"((^|;)\s*)" + attr + LR"(\s*:\s*#?([a-zA-Z0-9]*)\s*;)"); //e.g., 0xffffff or white
+                std::wregex rgbPat(LR"((^|;)\s*)" + attr + LR"(\s*:\s*rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)\s*;)");
                 std::wsmatch match;
                 std::wstring clrStr = L"";
                 if (std::regex_search(styles, match, clrPat)) {
-                    clrStr = match[1];
+                    clrStr = match[2];
                 } else if (std::regex_search(styles, match, rgbPat)) {
-                    int r = stoi(match[1]) & 0xff;
-                    int g = stoi(match[2]) & 0xff;
-                    int b = stoi(match[3]) & 0xff;
+                    int r = stoi(match[2]) & 0xff;
+                    int g = stoi(match[3]) & 0xff;
+                    int b = stoi(match[4]) & 0xff;
                     DWORD clr = (r << 16) + (g << 8) + b;
                     std::wstringstream hexClr;
                     hexClr << std::hex << clr;
