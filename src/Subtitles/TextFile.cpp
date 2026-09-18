@@ -303,7 +303,7 @@ bool CTextFile::FillBuffer()
     if (m_posInFile == m_offset && m_offset >= 2 && m_nInBuffer > 3) {
         if (m_buffer[0] == '\xEF' && m_buffer[1] == '\xBB' && m_buffer[2] == '\xBF') {
             m_posInBuffer = 3;
-        } else if (m_buffer[0] == '\xFE' && m_buffer[1] == '\xFF' || m_buffer[0] == '\xFF' && m_buffer[1] == '\xEF') {
+        } else if (m_buffer[0] == '\xFE' && m_buffer[1] == '\xFF' || m_buffer[0] == '\xFF' && m_buffer[1] == '\xFE') {
             m_posInBuffer = 2;
         }
     }
@@ -588,10 +588,13 @@ BOOL CTextFile::ReadString(CStringW& str)
     } else if (m_encoding == UTF8) {
         ULONGLONG lineStartPos = GetPositionFastBuffered();
         bool bValid = true;
+        bool bReplacedInvalidByte = false;
         bool bLineEndFound = false;
         fEOF = false;
 
         do {
+            bValid = true;
+            bReplacedInvalidByte = false;
             int nCharsRead;
 
             for (nCharsRead = 0; m_posInBuffer < m_nInBuffer; m_posInBuffer++, nCharsRead++) {
@@ -630,6 +633,7 @@ BOOL CTextFile::ReadString(CStringW& str)
                     m_wbuffer[nCharsRead] = L'?';
                     m_posInBuffer++;
                     nCharsRead++;
+                    bReplacedInvalidByte = true;
                     break;
                 } else if (m_wbuffer[nCharsRead] == L'\n') {
                     bLineEndFound = true; // Stop at end of line
@@ -643,9 +647,7 @@ BOOL CTextFile::ReadString(CStringW& str)
                     if (!bLineEndFound && Utf8::isSingleByte(m_buffer[m_posInBuffer+1]) && ((m_buffer[m_posInBuffer+1] & 0x7f) == L'\n')) {
                         nCharsRead--; // Skip '\r'
                     } else {
-                        // Add the missing '\n'
-                        nCharsRead++;
-                        m_wbuffer[nCharsRead] = L'\n';
+                        // Lone '\r': stop at end of line, without the '\r' itself
                         bLineEndFound = true;
                         m_posInBuffer++;
                         break;
@@ -657,7 +659,10 @@ BOOL CTextFile::ReadString(CStringW& str)
                 if (nCharsRead > 0) {
                     str.Append(m_wbuffer, nCharsRead);
                 }
-                if (!bLineEndFound) {
+                // A confirmed BOM means the file is definitely UTF-8, so an invalid byte
+                // is damage to be replaced, not a signal to stop; don't treat a buffer
+                // that still has more of the line in it as a reason to end the read here.
+                if (!bLineEndFound && !(bReplacedInvalidByte && m_offset && m_posInBuffer < m_nInBuffer)) {
                     bLineEndFound = FillBuffer();
                     if (!nCharsRead) {
                         fEOF = bLineEndFound;
@@ -678,7 +683,7 @@ BOOL CTextFile::ReadString(CStringW& str)
                     fEOF = !ReadString(str);
                 }
             }
-        } while (bValid && !bLineEndFound);
+        } while ((bValid || m_offset) && !bLineEndFound);
     } else if (m_encoding == LE16) {
         bool bLineEndFound = false;
         fEOF = false;
