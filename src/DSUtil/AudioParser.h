@@ -21,8 +21,6 @@
 #pragma once
 
 #include <MMReg.h>
-#include "GolombBuffer.h"
-#include <vector>
 
 #define AC3_SYNCWORD                 0x770B
 #define AC3_SYNCWORD_LE              0x0B77
@@ -76,54 +74,6 @@ enum {
 
 
 DWORD GetDefChannelMask(WORD nChannels);
-DWORD GetVorbisChannelMask(WORD nChannels);
-
-struct audioframe_t {
-	int size;
-	int samplerate;
-	int channels;
-	int samples;
-	int param1;
-	int param2;
-
-	void Empty() {
-		memset(this, 0, sizeof(*this));
-	}
-};
-
-int CalcBitrate(const audioframe_t& audioframe);
-
-// need >= 8 bytes
-int ParseAC3IEC61937Header (const BYTE* buf);
-
-// need >= 4 bytes, param1 = bitrate, param2 = MP3 flag
-int ParseMPAHeader         (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 4 bytes
-int ParseMPEG1Header       (const BYTE* buf, MPEG1WAVEFORMAT* mpeg1wf);
 
 // need >= 4 bytes (experimental)
 int ParseMP3Header         (const BYTE* buf, MPEGLAYER3WAVEFORMAT* mp3wf);
-
-// need >= 7 bytes, param1 = bitrate
-int ParseAC3Header         (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 6 bytes, param1 = eac3 frame type
-int ParseEAC3Header        (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 12 bytes, param1 = bitdepth, param2 = TrueHD flag
-int ParseMLPHeader         (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 10 bytes, param2 = x96k extension flag
-int ParseDTSHeader         (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 40 bytes, param1 = bitdepth, param2 = profile
-int ParseDTSHDHeader       (const BYTE* buf, const int buffsize = 0, audioframe_t* audioframe = nullptr);
-
-// need >= 4 bytes, param1 = bitdepth, param2 = bytes per frame
-int ParseHdmvLPCMHeader    (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-// need >= 7 bytes, param1 = header size, param2 = MPEG-4 Audio Object Type
-int ParseADTSAACHeader     (const BYTE* buf, audioframe_t* audioframe = nullptr);
-
-bool ParseAACLatmHeader    (const BYTE* buf, int len, int& samplerate, int& channels, std::vector<BYTE>& extra);

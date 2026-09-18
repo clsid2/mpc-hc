@@ -53,6 +53,7 @@ private:
 
 /////////////////////
 
+#if 0 // unused, kept for future use
 struct WICCodecInfo_t {
     GUID containerFormat;
     std::wstring name;
@@ -63,14 +64,17 @@ struct WICCodecInfo_t {
 HRESULT WicGetCodecs(std::vector<WICCodecInfo_t>& codecs, bool bEncoder);
 
 HRESULT WicCheckComponent(const GUID guid);
+#endif
 
 HRESULT WicLoadImage(IWICBitmap** ppBitmap, const bool pma, const std::wstring_view filename);
 HRESULT WicLoadImage(IWICBitmap** ppBitmap, const bool pma, BYTE* input, const size_t size);
 HRESULT WicLoadImage(IWICBitmap** ppBitmap, const bool pma, IStream* pIStream);
 
-HRESULT WicCreateHBitmap(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource);
 HRESULT WicCreateDibSecton(HBITMAP& hBitmap, BYTE** ppData, BITMAPINFO& bminfo, IWICBitmapSource* pBitmapSource);
 HRESULT WicCreateDibSecton(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource);
+
+#if 0 // unused, kept for future use
+HRESULT WicCreateHBitmap(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource);
 
 HRESULT WicCreateBitmap(IWICBitmap** ppBitmap, IWICBitmapSource* pBitmapSource);
 HRESULT WicCreateBitmapScaled(IWICBitmap** ppBitmap, UINT width, UINT height, IWICBitmapSource* pBitmapSource);
@@ -83,3 +87,4 @@ HRESULT WicSaveImage(
     const std::wstring_view filename,
     BYTE* output, size_t& outLen
 );
+#endif

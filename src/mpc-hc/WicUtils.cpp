@@ -43,6 +43,8 @@ IWICImagingFactory* CWICImagingFactory::GetFactory() const
 
 /////////////////////
 
+#if 0 // unused, kept for future use
+
 enum ColorSystem_t {
     CS_YUV,
     CS_RGB,
@@ -174,6 +176,8 @@ HRESULT WicCheckComponent(const GUID guid)
 
     return hr;
 }
+
+#endif
 
 #if 0
 // Workaround when IWICImagingFactory::CreateDecoderFromStream fails with WINCODEC_ERR_PROPERTYUNEXPECTEDTYPE error for some JPEGs.
@@ -335,6 +339,7 @@ HRESULT WicLoadImage(IWICBitmap** ppBitmap, const bool pma, IStream* pIStream)
     return hr;
 }
 
+#if 0 // unused, kept for future use
 HRESULT WicCreateHBitmap(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource)
 {
     if (hBitmap != nullptr || !pBitmapSource) {
@@ -365,6 +370,7 @@ HRESULT WicCreateHBitmap(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource)
 
     return hr;
 }
+#endif
 
 HRESULT WicCreateDibSecton(HBITMAP& hBitmap, BYTE** ppData, BITMAPINFO& bminfo, IWICBitmapSource* pBitmapSource)
 {
@@ -399,6 +405,7 @@ HRESULT WicCreateDibSecton(HBITMAP& hBitmap, IWICBitmapSource* pBitmapSource)
     return WicCreateDibSecton(hBitmap, &pData, bminfo, pBitmapSource);
 }
 
+#if 0 // unused, kept for future use
 HRESULT WicCreateBitmap(IWICBitmap** ppBitmap, IWICBitmapSource* pBitmapSource)
 {
     IWICImagingFactory* pWICFactory = CWICImagingFactory::GetInstance().GetFactory();
@@ -580,3 +587,4 @@ HRESULT WicSaveImage(
 
     return hr;
 }
+#endif
