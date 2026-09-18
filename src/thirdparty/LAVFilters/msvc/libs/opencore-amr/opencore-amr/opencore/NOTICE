@@ -1,0 +1,269 @@
+/* ------------------------------------------------------------------
+ * Copyright (C) 2009 PacketVideo
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ * -------------------------------------------------------------------
+ */
+
+Portions of the PacketVideo supplied code contain contributions which may be
+covered by the following copyright statements:
+
+
+/*     -------------------------------------------------------------------       *
+ *                    MPEG-4 Simple Profile Video Decoder
+ *     -------------------------------------------------------------------       *
+ *
+ * This software module was originally developed and/or edited by
+ *
+ *   Paulo Nunes (IST / ACTS-MoMuSyS)
+ *   Robert Danielsen (Telenor / ACTS-MoMuSyS)
+ *   Luis Ducla-Soares (IST / ACTS-MoMuSys).
+ *   Cor Quist (KPN / ACTS-MoMuSys).
+ *   Minhua Zhou (HHI / ACTS-MoMuSys).
+ *
+ * in the course of development of the MPEG-4 Video (ISO/IEC 14496-2) standard.
+ * This software module is an implementation of a part of one or more MPEG-4
+ * Video (ISO/IEC 14496-2) tools as specified by the MPEG-4 Video (ISO/IEC
+ * 14496-2) standard.
+ *
+ * ISO/IEC gives users of the MPEG-4 Video (ISO/IEC 14496-2) standard free
+ * license to this software module or modifications thereof for use in hardware
+ * or software products claiming conformance to the MPEG-4 Video (ISO/IEC
+ * 14496-2) standard.
+ *
+ * Those intending to use this software module in hardware or software products
+ * are advised that its use may infringe existing patents. The original
+ * developer of this software module and his/her company, the subsequent
+ * editors and their companies, and ISO/IEC have no liability for use of this
+ * software module or modifications thereof in an implementation. Copyright is
+ * not released for non MPEG-4 Video (ISO/IEC 14496-2) Standard conforming
+ * products.
+ *
+ * ACTS-MoMuSys partners retain full right to use the code for his/her own
+ * purpose, assign or donate the code to a third party and to inhibit third
+ * parties from using the code for non MPEG-4 Video (ISO/IEC 14496-2) Standard
+ * conforming products. This copyright notice must be included in all copies or
+ * derivative works.
+ *
+ * Copyright (c) 1996, 1997
+ *
+ *****************************************************************************/
+
+
+
+/****************************************************************************
+
+SC 29 Software Copyright Licencing Disclaimer:
+
+This software module was originally developed by
+  Coding Technologies
+
+and edited by
+  -
+
+in the course of development of the ISO/IEC 13818-7 and ISO/IEC 14496-3 
+standards for reference purposes and its performance may not have been 
+optimized. This software module is an implementation of one or more tools as 
+specified by the ISO/IEC 13818-7 and ISO/IEC 14496-3 standards.
+ISO/IEC gives users free license to this software module or modifications 
+thereof for use in products claiming conformance to audiovisual and 
+image-coding related ITU Recommendations and/or ISO/IEC International 
+Standards. ISO/IEC gives users the same free license to this software module or 
+modifications thereof for research purposes and further ISO/IEC standardisation.
+Those intending to use this software module in products are advised that its 
+use may infringe existing patents. ISO/IEC have no liability for use of this 
+software module or modifications thereof. Copyright is not released for 
+products that do not conform to audiovisual and image-coding related ITU 
+Recommendations and/or ISO/IEC International Standards.
+The original developer retains full right to modify and use the code for its 
+own purpose, assign or donate the code to a third party and to inhibit third 
+parties from using the code for products that do not conform to audiovisual and 
+image-coding related ITU Recommendations and/or ISO/IEC International Standards.
+This copyright notice must be included in all copies or derivative works.
+Copyright (c) ISO/IEC 2003.
+
+*******************************************************************************/
+
+
+/**************************************************************************
+
+This software module was originally developed by
+
+Mikko Suonio (Nokia)
+
+in the course of development of the MPEG-2 NBC/MPEG-4 Audio standard
+ISO/IEC 13818-7, 14496-1,2 and 3. This software module is an
+implementation of a part of one or more MPEG-2 NBC/MPEG-4 Audio tools
+as specified by the MPEG-2 NBC/MPEG-4 Audio standard. ISO/IEC gives
+users of the MPEG-2 NBC/MPEG-4 Audio standards free license to this
+software module or modifications thereof for use in hardware or
+software products claiming conformance to the MPEG-2 NBC/ MPEG-4 Audio
+standards. Those intending to use this software module in hardware or
+software products are advised that this use may infringe existing
+patents. The original developer of this software module and his/her
+company, the subsequent editors and their companies, and ISO/IEC have
+no liability for use of this software module or modifications thereof
+in an implementation. Copyright is not released for non MPEG-2
+NBC/MPEG-4 Audio conforming products. The original developer retains
+full right to use the code for his/her own purpose, assign or donate
+the code to a third party and to inhibit third party from using the
+code for non MPEG-2 NBC/MPEG-4 Audio conforming products. This
+copyright notice must be included in all copies or derivative works.
+
+Copyright (c) 1997.
+
+***************************************************************************/
+
+
+/**************************************************************************
+
+This software module was originally developed by
+Nokia in the course of development of the MPEG-2 AAC/MPEG-4 
+Audio standard ISO/IEC13818-7, 14496-1, 2 and 3.
+This software module is an implementation of a part
+of one or more MPEG-2 AAC/MPEG-4 Audio tools as specified by the
+MPEG-2 aac/MPEG-4 Audio standard. ISO/IEC  gives users of the
+MPEG-2aac/MPEG-4 Audio standards free license to this software module
+or modifications thereof for use in hardware or software products
+claiming conformance to the MPEG-2 aac/MPEG-4 Audio  standards. Those
+intending to use this software module in hardware or software products
+are advised that this use may infringe existing patents. The original
+developer of this software module, the subsequent
+editors and their companies, and ISO/IEC have no liability for use of
+this software module or modifications thereof in an
+implementation. Copyright is not released for non MPEG-2 aac/MPEG-4
+Audio conforming products. The original developer retains full right to
+use the code for the developer's own purpose, assign or donate the code to a
+third party and to inhibit third party from using the code for non
+MPEG-2 aac/MPEG-4 Audio conforming products. This copyright notice
+must be included in all copies or derivative works.
+Copyright (c)1997.  
+
+***************************************************************************/
+
+
+------------------------------------------------------------------------------
+
+MPEG-2 NBC Audio Decoder
+   "This software module was originally developed by AT&T, Dolby
+   Laboratories, Fraunhofer Gesellschaft IIS in the course of development
+   of the MPEG-2 NBC/MPEG-4 Audio standard ISO/IEC 13818-7, 14496-1,2 and
+   3. This software module is an implementation of a part of one or more
+   MPEG-2 NBC/MPEG-4 Audio tools as specified by the MPEG-2 NBC/MPEG-4
+   Audio standard. ISO/IEC gives users of the MPEG-2 NBC/MPEG-4 Audio
+   standards free license to this software module or modifications thereof
+   for use in hardware or software products claiming conformance to the
+   MPEG-2 NBC/MPEG-4 Audio  standards. Those intending to use this software
+   module in hardware or software products are advised that this use may
+   infringe existing patents. The original developer of this software
+   module and his/her company, the subsequent editors and their companies,
+   and ISO/IEC have no liability for use of this software module or
+   modifications thereof in an implementation. Copyright is not released
+   for non MPEG-2 NBC/MPEG-4 Audio conforming products.The original
+   developer retains full right to use the code for his/her own purpose,
+   assign or donate the code to a third party and to inhibit third party
+   from using the code for non MPEG-2 NBC/MPEG-4 Audio conforming products.
+   This copyright notice must be included in all copies or derivative
+   works." 
+   Copyright(c)1996.
+
+------------------------------------------------------------------------------
+
+
+/*
+ * snprintf.c - a portable implementation of snprintf
+ *
+ * AUTHOR
+ *   Mark Martinec <mark.martinec@ijs.si>, April 1999.
+ *
+ *   Copyright 1999, Mark Martinec. All rights reserved.
+ *
+ * TERMS AND CONDITIONS
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the "Frontier Artistic License" which comes
+ *   with this Kit.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *   See the Frontier Artistic License for more details.
+ *
+ *
+ */
+
+The "Frontier Artistic License" may be found at
+ http://www.spinwardstars.com/frontier/fal.html
+
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Copyright (c) 2005 The Khronos Group Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+/*---------------------------------------------------------------------------*/
+
+/**@@@+++@@@@****************************************************************** 
+** 
+** Microsoft Windows Media 
+** Copyright (C) Microsoft Corporation. All rights reserved. 
+** 
+***@@@---@@@@****************************************************************** 
+*/ 
+
+
+-------------------------------------------------------------------------------
+Portions of this file are derived from the following 3GPP standard:
+ 
+    3GPP TS 26.073
+    ANSI-C code for the Adaptive Multi-Rate (AMR) speech codec
+    Available from http://www.3gpp.org
+ 
+(C) 2004, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TTA, TTC)
+Permission to distribute, modify and use this file under the standard license
+terms listed above has been obtained from the copyright holder.
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+Portions of this file are derived from the following 3GPP standard:
+ 
+    3GPP TS 26.173
+    ANSI-C code for the Adaptive Multi-Rate - Wideband (AMR-WB) speech codec
+    Available from http://www.3gpp.org
+ 
+(C) 2007, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TTA, TTC)
+Permission to distribute, modify and use this file under the standard license
+terms listed above has been obtained from the copyright holder.
+-------------------------------------------------------------------------------
+

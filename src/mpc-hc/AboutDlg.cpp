@@ -267,7 +267,12 @@ void CAboutDlg::OnCopyToClipboard()
     info += _T("    LAV Splitter:       ") + CFGFilterLAV::GetVersion(CFGFilterLAV::SPLITTER) + _T("\r\n");
     info += _T("    LAV Video:          ") + CFGFilterLAV::GetVersion(CFGFilterLAV::VIDEO_DECODER) + _T("\r\n");
     info += _T("    LAV Audio:          ") + CFGFilterLAV::GetVersion(CFGFilterLAV::AUDIO_DECODER) + _T("\r\n");
-    info += _T("    FFmpeg compiler:    ") + VersionInfo::GetGCCVersion() + _T("\r\n\r\n");
+    // what the LAV DLLs say about themselves; the build-time GCC probe only adds the version number for GCC builds
+    CString ffmpegCompiler = CFGFilterLAV::GetFFmpegCompiler();
+    if (ffmpegCompiler.IsEmpty() || (ffmpegCompiler.Find(_T("GCC")) >= 0 && !VersionInfo::GetGCCVersion().IsEmpty())) {
+        ffmpegCompiler = VersionInfo::GetGCCVersion();
+    }
+    info += _T("    FFmpeg compiler:    ") + ffmpegCompiler + _T("\r\n\r\n");
 #endif
     info += _T("Operating system:\r\n");
     info += _T("    Name:               ") + m_OSName + _T("\r\n");

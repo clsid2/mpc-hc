@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Imported after Microsoft.Cpp.props: link with link.exe under clang too (lld-link cannot read MPC-HC's /GL zlib.lib). -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(FFmpegCompiler)'=='clang'">
+    <LinkToolExe>link.exe</LinkToolExe>
+    <UseLldLink>false</UseLldLink>
+  </PropertyGroup>
+</Project>

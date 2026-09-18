@@ -1,0 +1,9 @@
+
+THIS IS NOT A GRANT OF PATENT RIGHTS.
+
+Google makes no representation or warranty that the codecs for which
+source code is made available hereunder are unencumbered by
+third-party patents.  Those intending to use this source code in
+hardware or software products are advised that implementations of
+these codecs, including in open source software or shareware, may
+require patent licenses from the relevant patent holders.
