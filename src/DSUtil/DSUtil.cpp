@@ -1546,61 +1546,6 @@ CStringA UTF16To8(LPCWSTR utf16)
     return str;
 }
 
-CStringW UTF8ToStringW(const char* S)
-{
-    CStringW str;
-    if (S == nullptr) {
-        return str;
-    }
-
-    // Don't use MultiByteToWideChar(), some characters are not well decoded
-    const unsigned char* Z = (const unsigned char*)S;
-    while (*Z) { //0 is end
-        //1 byte
-        if (*Z < 0x80) {
-            str += (wchar_t)(*Z);
-            Z++;
-        }
-        //2 bytes
-        else if ((*Z & 0xE0) == 0xC0) {
-            if ((*(Z + 1) & 0xC0) == 0x80) {
-                str += (wchar_t)((((wchar_t)(*Z & 0x1F)) << 6) | (*(Z + 1) & 0x3F));
-                Z += 2;
-            } else {
-                str.Empty();
-                return str; //Bad character
-            }
-        }
-        //3 bytes
-        else if ((*Z & 0xF0) == 0xE0) {
-            if ((*(Z + 1) & 0xC0) == 0x80 && (*(Z + 2) & 0xC0) == 0x80) {
-                str += (wchar_t)((((wchar_t)(*Z & 0x0F)) << 12) | ((*(Z + 1) & 0x3F) << 6) | (*(Z + 2) & 0x3F));
-                Z += 3;
-            } else {
-                str.Empty();
-                return str; //Bad character
-            }
-        }
-        //4 bytes
-        else if ((*Z & 0xF8) == 0xF0) {
-            if ((*(Z + 1) & 0xC0) == 0x80 && (*(Z + 2) & 0xC0) == 0x80 && (*(Z + 3) & 0xC0) == 0x80) {
-                UINT32 cp = ((*Z & 0x07) << 18) | ((*(Z + 1) & 0x3F) << 12) | ((*(Z + 2) & 0x3F) << 6) | (*(Z + 3) & 0x3F);
-                cp -= 0x10000; // encode as a surrogate pair, one wchar_t cannot hold a codepoint above U+FFFF
-                str += (wchar_t)(0xD800 + (cp >> 10));
-                str += (wchar_t)(0xDC00 + (cp & 0x3FF));
-                Z += 4;
-            } else {
-                str.Empty();
-                return str; //Bad character
-            }
-        } else {
-            str.Empty();
-            return str; //Bad character
-        }
-    }
-    return str;
-}
-
 CStringW LocalToStringW(const char* S)
 {
     CStringW str;
