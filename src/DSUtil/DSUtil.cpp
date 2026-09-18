@@ -1584,7 +1584,10 @@ CStringW UTF8ToStringW(const char* S)
         //4 bytes
         else if ((*Z & 0xF8) == 0xF0) {
             if ((*(Z + 1) & 0xC0) == 0x80 && (*(Z + 2) & 0xC0) == 0x80 && (*(Z + 3) & 0xC0) == 0x80) {
-                str += (wchar_t)((((wchar_t)(*Z & 0x0F)) << 18) | ((*(Z + 1) & 0x3F) << 12) || ((*(Z + 2) & 0x3F) << 6) | (*(Z + 3) & 0x3F));
+                UINT32 cp = (((UINT32)(*Z & 0x07)) << 18) | (((UINT32)(*(Z + 1) & 0x3F)) << 12) | (((UINT32)(*(Z + 2) & 0x3F)) << 6) | (*(Z + 3) & 0x3F);
+                cp -= 0x10000; // encode as a surrogate pair, one wchar_t cannot hold a codepoint above U+FFFF
+                str += (wchar_t)(0xD800 + (cp >> 10));
+                str += (wchar_t)(0xDC00 + (cp & 0x3FF));
                 Z += 4;
             } else {
                 str.Empty();
