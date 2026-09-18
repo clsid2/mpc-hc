@@ -446,7 +446,7 @@ void CPPageFormats::OnBnClickedResetExtensionsList()
         UpdateMediaCategoryState(iItem);
         UpdateData(FALSE);
 
-        SetModified();
+        OnFilesAssocModified();
     }
 }
 
@@ -470,7 +470,7 @@ void CPPageFormats::OnBnClickedSetExtensionsList()
         UpdateMediaCategoryState(iItem);
         UpdateData(FALSE);
 
-        SetModified();
+        OnFilesAssocModified();
     }
 }
 
