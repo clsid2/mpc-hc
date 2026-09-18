@@ -411,9 +411,15 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
 
 bool CPlayerToolBar::IsValidButtonLayout(const std::vector<int>& buttons, int layoutRevision) {
     // Revision 0: [leftsep, <3 skipped>, ...movable..., dummysep, volume] — min 5 entries
-    // Revision 1+: [leftsep, ...movable..., dummysep, volume]             — min 6 entries
+    // Revision 1+: [leftsep, ...movable..., dummysep, volume]             — min 3 entries
+    //              (the movable part may be empty, the user can remove every button)
     if (layoutRevision == 0 && buttons.size() < 5) return false;
-    if (layoutRevision >= 1 && buttons.size() < 6) return false;
+    if (layoutRevision >= 1) {
+        if (buttons.size() < 3) return false;
+        if (buttons.front() != ID_LEFTSEPARATOR) return false;
+        if (buttons[buttons.size() - 2] != ID_DUMMYSEPARATOR) return false;
+        if (buttons.back() != ID_VOLUME_MUTE) return false;
+    }
 
     // For revision 0, play/pause/stop are always prepended and must not appear in the saved sequence.
     // Seed the duplicate-check set with them so they count as already-seen.
