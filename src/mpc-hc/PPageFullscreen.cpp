@@ -111,11 +111,12 @@ void CPPageFullscreen::ModesUpdate()
         return strDisplayMode;
     };
     m_CurrentDisplayModeString = formatStringFromDisplayMode(currentDisplayMode);
-    for (const auto& dm : m_displayModes) {
+    for (size_t i = 0; i < m_displayModes.size(); i++) {
+        const auto& dm = m_displayModes[i];
         m_displayModesString.AddTail(formatStringFromDisplayMode(dm));
 
         if (currentDisplayMode == dm) {
-            m_nCurrentDisplayModeIndex = m_displayModes.size() - 1;
+            m_nCurrentDisplayModeIndex = i;
         }
     }
 
