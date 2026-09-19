@@ -1174,6 +1174,11 @@ void CPlayerSeekBar::OnCaptureChanged(CWnd* pWnd)
     // popup menu takes capture), so only run the drag-end cleanup when we were actually dragging.
     if (m_bDraggingThumb) {
         m_bDraggingThumb = false;
+        pauseAfterFirstScroll = false;
+        if (pausedForScrolling) {
+            pausedForScrolling = false;
+            m_pMainFrame->MediaControlRun();
+        }
         if (!pWnd) {
             // HACK: windowed (not renderless) video renderers may not produce WM_MOUSEMOVE message here
             m_pMainFrame->UpdateControlState(CMainFrame::UPDATE_CHILDVIEW_CURSOR_HACK);
