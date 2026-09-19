@@ -15351,9 +15351,9 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
             else if (str.Left(5) == _T("INDEX")) {
                 CT2CA tmp(str.Mid(6));
                 const char* tmp2(tmp);
-                int i1(0), m(0), s(0), ms(0);
-                sscanf_s(tmp2, "%d %d:%d:%d", &i1, &m, &s, &ms);
-                if (i1 != 0) track.time = 10000i64 * ((m * 60 + s) * 1000 + ms);
+                int i1(0), m(0), s(0), ff(0);
+                sscanf_s(tmp2, "%d %d:%d:%d", &i1, &m, &s, &ff);
+                if (i1 != 0) track.time = 10000i64 * ((m * 60 + s) * 1000 + ff * 1000 / 75);
             }
         }
     }
