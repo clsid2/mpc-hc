@@ -365,7 +365,7 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
                 int32_t maxpeak = 0;
                 if (wfe->wBitsPerSample == 8) {
                     for (size_t i = 0; i < samples; i++) {
-                        int32_t peak = (int8_t)(pDataOut[i] ^ 0x80);
+                        int32_t peak = std::abs((int8_t)(pDataOut[i] ^ 0x80));
                         if (peak > maxpeak) {
                             maxpeak = peak;
                         }
@@ -373,7 +373,7 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
                     sample_max = (double)maxpeak / INT8_MAX;
                 } else if (wfe->wBitsPerSample == 16) {
                     for (size_t i = 0; i < samples; i++) {
-                        int32_t peak = ((int16_t*)pDataOut)[i];
+                        int32_t peak = std::abs(((int16_t*)pDataOut)[i]);
                         if (peak > maxpeak) {
                             maxpeak = peak;
                         }
@@ -386,17 +386,18 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
                         p[1] = pDataOut[i * 3];
                         p[2] = pDataOut[i * 3 + 1];
                         p[3] = pDataOut[i * 3 + 2];
-                        peak = peak;
-                        if (peak > maxpeak) {
-                            maxpeak = peak;
+                        int32_t mag = peak == INT32_MIN ? INT32_MAX : std::abs(peak);
+                        if (mag > maxpeak) {
+                            maxpeak = mag;
                         }
                     }
                     sample_max = (double)maxpeak / INT32_MAX;
                 } else if (wfe->wBitsPerSample == 32) {
                     for (size_t i = 0; i < samples; i++) {
                         int32_t peak = ((int32_t*)pDataOut)[i];
-                        if (peak > maxpeak) {
-                            maxpeak = peak;
+                        int32_t mag = peak == INT32_MIN ? INT32_MAX : std::abs(peak);
+                        if (mag > maxpeak) {
+                            maxpeak = mag;
                         }
                     }
                     sample_max = (double)maxpeak / INT32_MAX;
@@ -404,14 +405,14 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
             } else if (fFloat) {
                 if (wfe->wBitsPerSample == 32) {
                     for (size_t i = 0; i < samples; i++) {
-                        double sample = ((float*)pDataOut)[i];
+                        double sample = fabs(((float*)pDataOut)[i]);
                         if (sample > sample_max) {
                             sample_max = sample;
                         }
                     }
                 } else if (wfe->wBitsPerSample == 64) {
                     for (size_t i = 0; i < samples; i++) {
-                        double sample = ((double*)pDataOut)[i];
+                        double sample = fabs(((double*)pDataOut)[i]);
                         if (sample > sample_max) {
                             sample_max = sample;
                         }
