@@ -4513,10 +4513,18 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
 
     // The device is open now, which is the one precondition DoTunerScan has.
     // Consume the switch so a later open cannot start a second scan.
-    if ((s.nCLSwitches & CLSW_DVBSCAN) && GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+    if (s.nCLSwitches & CLSW_DVBSCAN) {
         s.nCLSwitches &= ~CLSW_DVBSCAN;
-        m_bHeadlessDVBScan = true;
-        StartHeadlessDVBScan();
+        if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            m_bHeadlessDVBScan = true;
+            StartHeadlessDVBScan();
+        } else {
+            // The default device is an analog one. It opened, but there is
+            // nothing to scan and nothing else would ever close the player.
+            TRACE(_T("/dvbscan: the capture device is not a digital one, abandoning the scan\n"));
+            AfxGetMyApp()->m_nExitCode = 1;
+            PostMessage(WM_CLOSE);
+        }
     }
 
     return 0;
@@ -4540,6 +4548,7 @@ LRESULT CMainFrame::OnOpenMediaFailed(WPARAM wParam, LPARAM lParam)
     if (AfxGetAppSettings().nCLSwitches & CLSW_DVBSCAN) {
         TRACE(_T("/dvbscan: the capture device failed to open, abandoning the scan\n"));
         AfxGetAppSettings().nCLSwitches &= ~CLSW_DVBSCAN;
+        AfxGetMyApp()->m_nExitCode = 1;
         PostMessage(WM_CLOSE);
     }
 
@@ -5373,6 +5382,7 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
                 s.strAnalogVideo == L"dummy" && s.strAnalogAudio == L"dummy") {
             TRACE(_T("/dvbscan: no capture device configured, nothing to scan\n"));
             s.nCLSwitches &= ~CLSW_DVBSCAN;
+            AfxGetMyApp()->m_nExitCode = 1;
             PostMessage(WM_CLOSE);
         } else {
             // /dvbscan implies opening the capture device, because DoTunerScan
@@ -21481,7 +21491,7 @@ LRESULT CMainFrame::OnHeadlessScanEnd(WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::FinishHeadlessDVBScan()
 {
-    const CAppSettings& s = AfxGetAppSettings();
+    CAppSettings& s = AfxGetAppSettings();
 
     // The serializer the web interface uses, not a second copy of it: whatever
     // /dvb/channels.json would say about these channels, this file says too.
@@ -21508,6 +21518,20 @@ void CMainFrame::FinishHeadlessDVBScan()
         // empty scan from an unwritable path.
         TRACE(_T("/dvbscan: could not write the result to '%s'\n"),
               s.cmdlnDVBScan.strOutputPath.GetString());
+    }
+
+    // /dvbscansave: the scan result becomes the saved channel list, so that a
+    // following /device run has something to tune. It replaces the list rather
+    // than merging into it the way CTunerScanDlg::OnBnClickedSave does, because
+    // a headless run should give the same result whatever was saved before. The
+    // pref numbers are already 0..n-1 in scan order, and the first channel is
+    // made the last watched one, which is the one /device tunes. An empty scan
+    // leaves the saved list alone. Nothing points into the old list here:
+    // StartTunerScan reset the DVB state. The profile itself is written by
+    // SaveSettings on the way out, like every other setting.
+    if (s.cmdlnDVBScan.bSaveChannels && !m_headlessDVBScanChannels.empty()) {
+        s.m_DVBChannels = m_headlessDVBScanChannels;
+        s.nDVBLastChannel = s.m_DVBChannels.front().GetPrefNumber();
     }
 
     m_bHeadlessDVBScan = false;

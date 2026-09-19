@@ -2671,7 +2671,8 @@ int CMPlayerCApp::ExitInstance()
     m_shellDropTargetServer.Revoke();
     OleUninitialize();
 
-    return CWinAppEx::ExitInstance();
+    const int nRet = CWinAppEx::ExitInstance();
+    return m_nExitCode ? m_nExitCode : nRet;
 }
 
 BOOL CMPlayerCApp::SaveAllModified()
