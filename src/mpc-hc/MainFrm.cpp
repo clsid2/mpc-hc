@@ -18673,7 +18673,7 @@ void CMainFrame::OnStreamSelect(bool bForward, DWORD dwSelGroup)
 
         size_t count = streams.size();
         if (count && currentSel != SIZE_MAX) {
-            size_t requested = (bForward ? currentSel + 1 : currentSel - 1) % count;
+            size_t requested = (bForward ? currentSel + 1 : currentSel + count - 1) % count;
             DWORD id;
             int trackindex;
             LCID lcid = 0;
