@@ -444,7 +444,7 @@ bool CUSFSubtitles::ConvertToSTS(CSimpleTextSubtitle& sts)
 
         // TODO: apply effects as {\t(..)} after usf's standard clearly defines them
 
-        sts.Add(t->str, true, t->start, t->stop, WToT(t->style), _T(""), _T(""), marginRect);
+        sts.Add(t->str, true, MS2RT(t->start), MS2RT(t->stop), WToT(t->style), _T(""), _T(""), marginRect);
     }
 
     return true;
