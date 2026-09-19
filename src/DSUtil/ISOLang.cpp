@@ -564,6 +564,9 @@ CString ISOLang::ISO6391ToLanguage(LPCSTR code)
     strncpy_s(tmp, code, 2);
     tmp[2] = 0;
     _strlwr_s(tmp);
+    if (tmp[0] == 0) {
+        return _T("");
+    }
     for (size_t i = 0, cnt = _countof(s_isolangs); i < cnt; i++) {
         if (!strcmp(s_isolangs[i].iso6391, tmp)) {
             return CString(CStringA(s_isolangs[i].name));
@@ -677,6 +680,9 @@ LCID ISOLang::ISO6391ToLcid(LPCSTR code)
     strncpy_s(tmp, code, 2);
     tmp[2] = 0;
     _strlwr_s(tmp);
+    if (tmp[0] == 0) {
+        return 0;
+    }
     for (size_t i = 0, cnt = _countof(s_isolangs); i < cnt; i++) {
         if (!strcmp(s_isolangs[i].iso6391, tmp)) {
             return s_isolangs[i].lcid;
@@ -709,6 +715,9 @@ BOOL ISOLang::IsISO6391(LPCSTR code)
     strncpy_s(tmp, code, 2);
     tmp[2] = 0;
     _strlwr_s(tmp);
+    if (tmp[0] == 0) {
+        return false;
+    }
     for (size_t i = 0, cnt = _countof(s_isolangs); i < cnt; i++) {
         if (!strcmp(s_isolangs[i].iso6391, tmp)) {
             return true;
@@ -738,6 +747,9 @@ CStringA ISOLang::ISO6391To6392(LPCSTR code)
     strncpy_s(tmp, code, 2);
     tmp[2] = 0;
     _strlwr_s(tmp);
+    if (tmp[0] == 0) {
+        return "";
+    }
     for (size_t i = 0, cnt = _countof(s_isolangs); i < cnt; i++) {
         if (!strcmp(s_isolangs[i].iso6391, tmp)) {
             return CStringA(s_isolangs[i].iso6392);
@@ -784,6 +796,9 @@ ISOLang ISOLang::ISO6391ToISOLang(LPCSTR code)
     strncpy_s(tmp, code, 2);
     tmp[2] = 0;
     _strlwr_s(tmp);
+    if (tmp[0] == 0) {
+        return ISOLang();
+    }
     for (size_t i = 0, cnt = _countof(s_isolangs); i < cnt; i++) {
         if (!strcmp(s_isolangs[i].iso6391, tmp)) {
             return s_isolangs[i];
