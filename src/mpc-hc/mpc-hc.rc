@@ -4345,6 +4345,7 @@ BEGIN
     IDS_PPAGEADVANCED_HISTORY_IN_APPDATA "Store the history file and the saved playlist in %APPDATA%\\MPC-HC instead of the player folder, when settings are stored in an INI file. This also happens automatically when the player folder is not writable. Requires restart."
     IDS_PPAGEADVANCED_HISTORY_EXCLUDE_FILTER "Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com"
     IDS_PPAGEADVANCED_SECONDARY_SUB_VERT_POS "Vertical position for secondary subtitle. Percentage offset from top."
+    IDS_AUDIO_BOOST_WARNING "WARNING: Boosting audio volume can in some situations have a negative effect on audio quality due to overflow.\n\nThere are two better and safer methods for increasing volume:\n1) Enabling mixing in the internal audio decoder settings.\nInternal Filters > Audio Decoder > Mixing\nThis is recommended if you have stereo speakers or headphones.\nTo increase loudness of voices, set center mix level to 1.0 in the mixing settings.\n2) Enable Normalize"
 END
 
 #endif    // English (United States) resources
