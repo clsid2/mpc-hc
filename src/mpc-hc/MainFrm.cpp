@@ -15353,7 +15353,8 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
                 const char* tmp2(tmp);
                 int i1(0), m(0), s(0), ff(0);
                 sscanf_s(tmp2, "%d %d:%d:%d", &i1, &m, &s, &ff);
-                if (i1 != 0) track.time = 10000i64 * ((m * 60 + s) * 1000 + ff * 1000 / 75);
+                // ff is frames at 75 per second, so 75 or more can only come from a writer that emitted milliseconds
+                if (i1 != 0) track.time = 10000i64 * ((m * 60 + s) * 1000 + (ff >= 75 ? ff : ff * 1000 / 75));
             }
         }
     }
