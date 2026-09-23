@@ -5577,13 +5577,18 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
                     m_nLastAppendSelectionIndex = (int)m_wndPlaylistBar.GetCount();
                 }
 
-                POSITION pos2 = sl.GetHeadPosition();
-                while (pos2) {
-                    CString fn = sl.GetNext(pos2);
-                    if (!CanSendToYoutubeDL(fn) || !ProcessYoutubeDLURL(fn, true)) {
-                        CAtlList<CString> sl2;
-                        sl2.AddHead(fn);
-                        m_wndPlaylistBar.Append(sl2, false, &s.slSubs);
+                if (!fMulti && sl.GetCount() > 1) {
+                    // video + dub, appended as one entry like the open path below (#4224)
+                    m_wndPlaylistBar.Append(sl, false, &s.slSubs);
+                } else {
+                    POSITION pos2 = sl.GetHeadPosition();
+                    while (pos2) {
+                        CString fn = sl.GetNext(pos2);
+                        if (!CanSendToYoutubeDL(fn) || !ProcessYoutubeDLURL(fn, true)) {
+                            CAtlList<CString> sl2;
+                            sl2.AddHead(fn);
+                            m_wndPlaylistBar.Append(sl2, false, &s.slSubs);
+                        }
                     }
                 }
 
