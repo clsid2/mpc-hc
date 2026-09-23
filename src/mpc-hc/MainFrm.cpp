@@ -4677,6 +4677,15 @@ LRESULT CMainFrame::OnOpenMediaFailed(WPARAM wParam, LPARAM lParam)
         PostMessage(WM_CLOSE);
     }
 
+    // OnFilePostOpenmedia is what sends the exit after the thumbnails are saved,
+    // and it never runs when the open fails. Report why and quit rather than sit
+    // idle with the reason on the status bar nobody is looking at.
+    if (AfxGetAppSettings().nCLSwitches & CLSW_THUMBNAILS) {
+        AfxGetAppSettings().nCLSwitches &= ~CLSW_THUMBNAILS;
+        AfxGetMyApp()->ReportCmdLineError(m_closingmsg);
+        PostMessage(WM_CLOSE);
+    }
+
     m_lastOMD.Free();
     m_lastOMD.Attach((OpenMediaData*)lParam);
     if (!m_lastOMD->title) {
@@ -6688,10 +6697,10 @@ void CMainFrame::SaveImage(LPCWSTR fn, bool displayed, bool includeSubtitles) {
     }
 }
 
-void CMainFrame::SaveThumbnails(LPCTSTR fn)
+bool CMainFrame::SaveThumbnails(LPCTSTR fn)
 {
     if (!m_pMC || !m_pMS || GetPlaybackMode() != PM_FILE /*&& GetPlaybackMode() != PM_DVD*/) {
-        return;
+        return false;
     }
 
     REFERENCE_TIME rtPos = GetPos();
@@ -6699,7 +6708,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
 
     if (rtDur <= 0) {
         AfxMessageBox(IDS_THUMBNAILS_NO_DURATION, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
 
     OAFilterState filterState = UpdateCachedMediaState();
@@ -6727,7 +6736,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
 
     if (szVideo.cx <= 0 || szVideo.cy <= 0) {
         AfxMessageBox(IDS_THUMBNAILS_NO_FRAME_SIZE, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
 
     // with the overlay mixer IBasicVideo2 won't tell the new AR when changed dynamically
@@ -6755,7 +6764,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
     const LONGLONG llImageSize = (LONGLONG)width * llHeight * 4;
     if (llHeight <= 0 || llHeight > 32767 || llImageSize > INT_MAX - (LONGLONG)sizeof(BITMAPINFOHEADER)) {
         AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
     int height = (int)llHeight;
 
@@ -6764,7 +6773,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
     CAutoVectorPtr<BYTE> dib;
     if (!dib.Allocate(dibsize)) {
         AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
 
     BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)(BYTE*)dib;
@@ -6808,14 +6817,14 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
     // Ensure the thumbnails aren't ridiculously small so that the time indication can at least fit
     if (szThumbnail.cx < 60 || szThumbnail.cy < 20) {
         AfxMessageBox(IDS_THUMBNAIL_TOO_SMALL, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
 
     // Allocate before muting, so a failure here does not leave the player silent
     std::unique_ptr<BYTE[]> thumb(new(std::nothrow) BYTE[szThumbnail.cx * szThumbnail.cy * 4]);
     if (!thumb) {
         AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
-        return;
+        return false;
     }
 
     m_nVolumeBeforeFrameStepping = m_wndToolBar.Volume;
@@ -6844,7 +6853,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
                 m_pBA->put_Volume(m_nVolumeBeforeFrameStepping);
             }
             AfxMessageBox(IDS_FRAME_STEP_ERROR_RENDERER, MB_ICONEXCLAMATION | MB_OK, 0);
-            return;
+            return false;
         }
 
         bool abortloop = false;
@@ -6914,7 +6923,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
             if (m_pBA) {
                 m_pBA->put_Volume(m_nVolumeBeforeFrameStepping);
             }
-            return;
+            return false;
         }
 
         BITMAPINFO* bi = (BITMAPINFO*)pData;
@@ -6927,7 +6936,7 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
             if (m_pBA) {
                 m_pBA->put_Volume(m_nVolumeBeforeFrameStepping);
             }
-            return;
+            return false;
         }
 
         int sw = bi->bmiHeader.biWidth;
@@ -7038,6 +7047,8 @@ void CMainFrame::SaveThumbnails(LPCTSTR fn)
     }
 
     m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_OSD_THUMBS_SAVED), 3000);
+
+    return true;
 }
 
 CString CMainFrame::MakeSnapshotFileName(BOOL thumbnails)
@@ -7255,6 +7266,7 @@ void CMainFrame::OnCmdLineSaveThumbnails()
 
     CPlaylistItem pli;
     if (!m_wndPlaylistBar.GetCur(pli, true)) {
+        AfxGetMyApp()->ReportCmdLineError(_T("no file to take thumbnails of"));
         return;
     }
 
@@ -7267,9 +7279,20 @@ void CMainFrame::OnCmdLineSaveThumbnails()
     s.iThumbWidth = std::clamp(s.iThumbWidth, 256, 3840);
 
     CString path = (LPCTSTR)psrc;
+    if (path.IsEmpty() || psrc.IsRelative()) {
+        // CPath::Combine hands back an unusable destination two ways, neither of
+        // them an error it reports. It is bound by MAX_PATH, so the result is
+        // empty when the combined path would be longer (issue #4233); and when
+        // the file name arrived without a directory the result is the bare file
+        // name, which SaveDIB would write into the program folder rather than
+        // beside the video, with nothing to say it went astray.
+        AfxGetMyApp()->ReportCmdLineError(_T("thumbnail output path could not be resolved"));
+        return;
+    }
 
-    SaveThumbnails(path);
-
+    if (!SaveThumbnails(path)) {
+        AfxGetMyApp()->m_nExitCode = 1;
+    }
 }
 
 void CMainFrame::OnFileSaveThumbnails()
@@ -20721,6 +20744,13 @@ bool CMainFrame::CanPreviewUse() {
 void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = false */, ABRepeat abRepeat /* = ABRepeat() */)
 {
     if (IsPlaylistEmpty()) {
+        // Nothing was opened, so there is no failure to report either. A
+        // headless run has to be told that it is over.
+        if (AfxGetAppSettings().nCLSwitches & CLSW_THUMBNAILS) {
+            AfxGetAppSettings().nCLSwitches &= ~CLSW_THUMBNAILS;
+            AfxGetMyApp()->ReportCmdLineError(_T("nothing to open"));
+            PostMessage(WM_CLOSE);
+        }
         return;
     }
 

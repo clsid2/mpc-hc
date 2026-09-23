@@ -139,6 +139,10 @@ class CMPlayerCApp : public CWinAppEx
     enum class RedirectResult { Redirected, OpenNormally, ExitSilently };
 
     CAtlList<CString> m_cmdln;
+    // Latched from the switches once they are parsed, rather than read from
+    // them on demand: the switch itself is consumed by the code paths that act
+    // on it, and the run stays headless after that, right through the exit.
+    bool m_bHeadlessCmdLine = false;
     CShellDropTargetServer m_shellDropTargetServer;
     void PreProcessCommandLine();
     bool SendCommandLine(HWND hWnd);
@@ -164,6 +168,13 @@ public:
     ~CMPlayerCApp();
 
     int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt);
+
+    // True for the whole run of a command line mode that has nobody in front of
+    // it (currently /thumbnails). Such a run must report failures to its caller
+    // instead of raising a modal that will never be dismissed.
+    bool IsHeadlessCmdLine() const;
+    // Write a line to stderr and fail the run (see m_nExitCode).
+    void ReportCmdLineError(LPCTSTR msg);
 
     EventRouter m_eventd;
 
@@ -243,8 +254,9 @@ public:
     bool GetPlaylistSavePath(CString& path);
 
     bool m_fClosingState;
-    // Process exit code. Stays 0 except for a /dvbscan run that could not scan,
-    // which has no other way to tell its caller.
+    // Process exit code. Stays 0 except for the headless command line modes
+    // (/dvbscan, /thumbnails), which have no other way to tell their caller
+    // that the job did not get done.
     int m_nExitCode = 0;
     bool m_bThemeLoaded;
     CRenderersData m_Renderers;

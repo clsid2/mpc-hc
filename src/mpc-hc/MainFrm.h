@@ -540,7 +540,9 @@ private:
     CString MakeSnapshotFileName(BOOL thumbnails);
     BOOL IsRendererCompatibleWithSaveImage();
     void SaveImage(LPCTSTR fn, bool displayed, bool includeSubtitles);
-    void SaveThumbnails(LPCTSTR fn);
+    // False when no sheet was written, including the failures that report
+    // nothing at all. A headless /thumbnails run exits non-zero on it.
+    bool SaveThumbnails(LPCTSTR fn);
 
     //
 
