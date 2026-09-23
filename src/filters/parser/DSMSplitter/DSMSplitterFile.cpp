@@ -156,6 +156,14 @@ bool CDSMSplitterFile::Sync(UINT64& syncpos, dsmp_t& type, UINT64& len, __int64 
     type = (dsmp_t)BitRead(5);
     len = BitRead(((int)BitRead(3) + 1) << 3);
 
+    // A chunk can never be longer than what's left in the file. This bound only holds for a
+    // random-access source (always true for anything mpc-hc itself builds this splitter on);
+    // for a hypothetical growing/streaming source it would be conservative, rejecting a chunk
+    // that simply hasn't arrived yet rather than crashing on a bogus length.
+    if ((__int64)len > GetRemaining()) {
+        return false;
+    }
+
     return true;
 }
 
@@ -201,7 +209,10 @@ bool CDSMSplitterFile::Read(__int64 len, Packet* p, bool fData)
     }
 
     if (fData) {
-        p->SetCount((INT_PTR)len - (2 + iTimeStamp + iDuration));
+        INT_PTR sz = (INT_PTR)len - (2 + iTimeStamp + iDuration);
+        if (sz < 0 || !p->SetCount(sz)) {
+            return false;
+        }
         ByteRead(p->GetData(), p->GetCount());
     }
 
@@ -214,6 +225,11 @@ bool CDSMSplitterFile::Read(__int64 len, CAtlArray<SyncPoint>& sps)
     sps.RemoveAll();
 
     while (len > 0) {
+        if (GetRemaining() <= 0) {
+            sps.RemoveAll();
+            return false;
+        }
+
         bool fSign = !!BitRead(1);
         int iTimeStamp = (int)BitRead(3);
         int iFilePos = (int)BitRead(3);
@@ -264,7 +280,13 @@ bool CDSMSplitterFile::Read(__int64 len, IDSMResourceBagImpl& res)
         return false;    // TODO
     }
 
-    r.data.SetCount((size_t)len);
+    if (len < 0) {
+        return false;
+    }
+
+    if (!r.data.SetCount((size_t)len)) {
+        return false;
+    }
     ByteRead(r.data.GetData(), r.data.GetCount());
 
     res += r;
@@ -277,6 +299,10 @@ bool CDSMSplitterFile::Read(__int64 len, IDSMChapterBagImpl& chap)
     CDSMChapter c(0, L"");
 
     while (len > 0) {
+        if (GetRemaining() <= 0) {
+            return false;
+        }
+
         bool fSign = !!BitRead(1);
         int iTimeStamp = (int)BitRead(3);
         BitRead(4); // reserved
