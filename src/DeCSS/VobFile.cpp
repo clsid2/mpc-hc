@@ -423,7 +423,7 @@ short CVobFile::ReadShort()
 
 BYTE CVobFile::ReadByte()
 {
-    BYTE bVal;
+    BYTE bVal = 0;
     m_ifoFile.Read(&bVal, sizeof(bVal));
     return bVal;
 }
@@ -453,24 +453,60 @@ bool CVobFile::GetTitleInfo(LPCTSTR fn, ULONG nTitleNum, ULONG& VTSN, ULONG& TTN
         return false;
     }
 
-    char hdr[IFO_HEADER_SIZE + 1];
-    ifoFile.Read(hdr, IFO_HEADER_SIZE);
-    hdr[IFO_HEADER_SIZE] = '\0';
-    if (strcmp(hdr, VIDEO_TS_HEADER)) {
+    if (nTitleNum < 1) {
+        ifoFile.Close();
         return false;
     }
 
-    ifoFile.Seek(0xC4, CFile::begin);
-    DWORD TT_SRPTPosition; // Read a 32-bit unsigned big-endian integer
-    ifoFile.Read(&TT_SRPTPosition, sizeof(TT_SRPTPosition));
-    TT_SRPTPosition = _byteswap_ulong(TT_SRPTPosition);
-    TT_SRPTPosition *= 2048;
-    ifoFile.Seek(TT_SRPTPosition + 8 + (nTitleNum - 1) * 12 + 6, CFile::begin);
-    BYTE tmp;
-    ifoFile.Read(&tmp, sizeof(tmp));
-    VTSN = tmp;
-    ifoFile.Read(&tmp, sizeof(tmp));
-    TTN = tmp;
+    try {
+        char hdr[IFO_HEADER_SIZE + 1];
+        if (ifoFile.Read(hdr, IFO_HEADER_SIZE) != IFO_HEADER_SIZE) {
+            ifoFile.Close();
+            return false;
+        }
+        hdr[IFO_HEADER_SIZE] = '\0';
+        if (strcmp(hdr, VIDEO_TS_HEADER)) {
+            ifoFile.Close();
+            return false;
+        }
+
+        ifoFile.Seek(0xC4, CFile::begin);
+        DWORD TT_SRPTPosition = 0; // Read a 32-bit unsigned big-endian integer
+        if (ifoFile.Read(&TT_SRPTPosition, sizeof(TT_SRPTPosition)) != sizeof(TT_SRPTPosition)) {
+            ifoFile.Close();
+            return false;
+        }
+        TT_SRPTPosition = _byteswap_ulong(TT_SRPTPosition);
+        TT_SRPTPosition *= 2048;
+
+        // Validate the seek target (and the two bytes read from it) against the file's actual
+        // length before seeking. Do the comparison in a wider type so the check itself can't be
+        // fooled by wraparound; the DWORD *= 2048 above is inherent to the on-disk format's
+        // 32-bit sector address and is left as-is.
+        unsigned __int64 seekTarget = (unsigned __int64)TT_SRPTPosition + 8 + (unsigned __int64)(nTitleNum - 1) * 12 + 6;
+        if (seekTarget + 2 > (unsigned __int64)ifoFile.GetLength()) {
+            ifoFile.Close();
+            return false;
+        }
+        ifoFile.Seek((LONGLONG)seekTarget, CFile::begin);
+
+        BYTE tmp = 0;
+        if (ifoFile.Read(&tmp, sizeof(tmp)) != sizeof(tmp)) {
+            ifoFile.Close();
+            return false;
+        }
+        VTSN = tmp;
+
+        tmp = 0;
+        if (ifoFile.Read(&tmp, sizeof(tmp)) != sizeof(tmp)) {
+            ifoFile.Close();
+            return false;
+        }
+        TTN = tmp;
+    } catch (...) {
+        ifoFile.Close();
+        return false;
+    }
 
     ifoFile.Close();
 
