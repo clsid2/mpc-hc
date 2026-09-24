@@ -193,7 +193,7 @@ namespace PathUtils
         if (pbRelative) {
             *pbRelative = !!rel;
         }
-        return cp;
+        return rel ? CString(cp) : CString(path);
     }
 
     bool IsRelative(LPCTSTR path)
