@@ -6308,6 +6308,10 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
 {
     CPath path(fn);
 
+    // GDI+ refuses to write to a path at or beyond MAX_PATH unless it carries the long path prefix
+    CString target(fn);
+    ExtendMaxPathLengthIfNeeded(target, true);
+
     int w, h, dstpitch;
     BYTE* p = ConvertDIBTo24bppRGB(pData, size, w, h, dstpitch);
     if (!p) {
@@ -6369,7 +6373,7 @@ void CMainFrame::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
             }
         }
 
-        Gdiplus::Status s = bm->Save(fn, &encoderClsid, pEncoderParameters);
+        Gdiplus::Status s = bm->Save(target, &encoderClsid, pEncoderParameters);
 
         // All GDI+ objects must be destroyed before GdiplusShutdown is called
         delete bm;
@@ -7173,7 +7177,7 @@ void CMainFrame::OnFileSaveImage()
 
     CPath psrc;
     if (!s.strSnapshotPath.IsEmpty() && PathUtils::IsDir(s.strSnapshotPath)) {
-        psrc.Combine(s.strSnapshotPath.GetString(), MakeSnapshotFileName(FALSE));
+        psrc = CPath(PathUtils::CombinePaths(s.strSnapshotPath, MakeSnapshotFileName(FALSE)));
     } else {
         psrc = CPath(MakeSnapshotFileName(FALSE));        
     }
@@ -7272,7 +7276,7 @@ void CMainFrame::OnCmdLineSaveThumbnails()
 
     CPath psrc(m_wndPlaylistBar.GetCurFileName(true));
     psrc.RemoveFileSpec();
-    psrc.Combine(psrc, MakeSnapshotFileName(TRUE));
+    psrc = CPath(PathUtils::CombinePaths(psrc, MakeSnapshotFileName(TRUE)));
 
     s.iThumbRows = std::clamp(s.iThumbRows, 1, 40);
     s.iThumbCols = std::clamp(s.iThumbCols, 1, 16);
@@ -7304,8 +7308,7 @@ void CMainFrame::OnFileSaveThumbnails()
         return;
     }
 
-    CPath psrc(s.strSnapshotPath);
-    psrc.Combine(s.strSnapshotPath, MakeSnapshotFileName(TRUE));
+    CPath psrc(PathUtils::CombinePaths(s.strSnapshotPath, MakeSnapshotFileName(TRUE)));
 
     CSaveThumbnailsDialog fd(s.nJpegQuality, s.iThumbRows, s.iThumbCols, s.iThumbWidth, s.strSnapshotExt, (LPCTSTR)psrc,
                              _T("BMP - Windows Bitmap (*.bmp)|*.bmp|JPG - JPEG Image (*.jpg)|*.jpg|PNG - Portable Network Graphics (*.png)|*.png||"), GetModalParent());

@@ -111,7 +111,44 @@ namespace PathUtils
     {
         CPath cp;
         cp.Combine(dir, path);
-        return cp;
+        if (!cp.m_strPath.IsEmpty()) {
+            return cp;
+        }
+
+        // CPath::Combine is limited to MAX_PATH and silently yields an empty string past it,
+        // so a long destination was simply lost. Rebuild it here following the rules PathCombine
+        // applies. Relative segments ("." and "..") are deliberately not canonicalized: this only
+        // runs beyond MAX_PATH, where the alternative is no path at all, and the callers that get
+        // there are joining a directory to a file name rather than walking a relative path.
+        CString dirStr(dir), pathStr(path);
+
+        if (pathStr.IsEmpty()) {
+            return dirStr;
+        }
+        if (dirStr.IsEmpty()) {
+            return pathStr;
+        }
+
+        // already absolute: drive qualified, UNC, or long path prefixed
+        if ((pathStr.GetLength() >= 2 && pathStr[1] == _T(':')) || pathStr.Left(2) == _T("\\\\")) {
+            return pathStr;
+        }
+
+        if (pathStr[0] == _T('\\') || pathStr[0] == _T('/')) {
+            // rooted without a drive, so it belongs on the drive of the directory
+            int driveOffset = (dirStr.Left(4) == _T("\\\\?\\")) ? 4 : 0;
+            if (dirStr.GetLength() >= driveOffset + 2 && dirStr[driveOffset + 1] == _T(':')) {
+                return dirStr.Left(driveOffset + 2) + pathStr;
+            }
+            // no drive to anchor it to (a UNC or relative directory), take it as it is
+            return pathStr;
+        }
+
+        TCHAR last = dirStr[dirStr.GetLength() - 1];
+        if (last == _T('\\') || last == _T('/')) {
+            return dirStr + pathStr;
+        }
+        return dirStr + _T('\\') + pathStr;
     }
 
     CString FilterInvalidCharsFromFileName(LPCTSTR fn, TCHAR replacementChar /*= _T('_')*/)
