@@ -27,14 +27,27 @@ This is required for building the translation DLL files.
     `C:\Program Files\Python38\Scripts\pip install --upgrade polib`
 
 
-## Part C: Preparing the MSYS and GCC environment (optional)
+## Part C: Preparing the MSYS and GCC environment (optional, GCC toolchain only)
 
-This is required for building LAV Filters, which is used as the internal codecs by MPC-HC.
+LAV Filters, which MPC-HC uses as its internal codecs, are built with Visual Studio alone:
+their ffmpeg and the libraries it depends on have MSBuild projects under
+**`src\thirdparty\LAVFilters\msvc`** (see the README there). Besides Visual Studio you only
+need NASM (Part E). Nothing in this part is required for that. Optionally, install the Visual
+Studio components "C++ Clang Compiler for Windows" and "MSBuild support for LLVM (clang-cl)
+toolset": when present, ffmpeg is compiled with clang, which is about 10% faster at software
+H.264 decoding than the cl build (it can compile ffmpeg's inline assembly, cl cannot).
 
-You can skip compilation of LAV Filters by selecting the "Release Lite"/"Debug Lite" build configuration
-in the MPC-HC project file. This can be useful for making quick builds during development. The resulting
-binary will be missing the internal filter functionality. So don't use this configuration for actual
-releases.
+This part is only needed if you want to build ffmpeg with MinGW-w64 GCC instead, the way
+LAV Filters upstream does. When a MinGW-w64 gcc is configured (Part F) the build uses it
+by default; without one it uses the MSVC projects. `SET "MPCHC_LAV_TOOLCHAIN=MSVC"` (or
+`GCC`) in **build.user.bat**, or the `MSVC`/`GCC` switch of `build_lavfilters.bat`,
+overrides that. Maintainers also need a POSIX shell with GNU make when regenerating the
+MSVC projects after a LAV Filters update; the msvc README explains that.
+
+You can skip compilation of LAV Filters altogether by selecting the "Release Lite"/"Debug Lite"
+build configuration in the MPC-HC project file. This can be useful for making quick builds during
+development. The resulting binary will be missing the internal filter functionality. So don't use
+this configuration for actual releases.
 
 1. Download MSYS2 from <http://www.msys2.org/>.
    If you are using a 64-bit Operating System, which you should be, get the 64-bit version.
@@ -72,7 +85,8 @@ Create a file named **build.user.bat** in the source code folder of MPC-HC (see 
 
 ```bat
 @ECHO OFF
-REM [Required for LAVFilters] MSYS2/MinGW paths:
+REM [Optional, GCC toolchain for LAVFilters only] MSYS2/MinGW paths, and make jobs (default 4):
+SET "MPCHC_LAV_JOBS=4"
 SET "MPCHC_MSYS=C:\MSYS64"
 SET "MPCHC_MINGW32=C:\MSYS64\mingw64"
 SET "MPCHC_MINGW64=C:\MSYS64\mingw64"
