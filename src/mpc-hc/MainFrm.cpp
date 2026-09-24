@@ -7284,12 +7284,11 @@ void CMainFrame::OnCmdLineSaveThumbnails()
 
     CString path = (LPCTSTR)psrc;
     if (path.IsEmpty() || psrc.IsRelative()) {
-        // CPath::Combine hands back an unusable destination two ways, neither of
-        // them an error it reports. It is bound by MAX_PATH, so the result is
-        // empty when the combined path would be longer (issue #4233); and when
-        // the file name arrived without a directory the result is the bare file
-        // name, which SaveDIB would write into the program folder rather than
-        // beside the video, with nothing to say it went astray.
+        // Combine hands back an unusable destination two ways, neither of them an
+        // error it reports. The result is empty when it refuses a path it cannot
+        // resolve safely; and when the file name arrived without a directory the
+        // result is the bare file name, which SaveDIB would write into the program
+        // folder rather than beside the video, with nothing to say it went astray.
         AfxGetMyApp()->ReportCmdLineError(_T("thumbnail output path could not be resolved"));
         return;
     }
