@@ -66,6 +66,7 @@ namespace PathUtils
     CString Unquote(LPCTSTR path);
     CString StripPathOrUrl(LPCTSTR path);
     bool IsInDir(LPCTSTR path, LPCTSTR dir);
+    bool IsStrictlyInDir(LPCTSTR path, LPCTSTR dir);
     CString ToRelative(LPCTSTR dir, const LPCTSTR path, bool* pbRelative = nullptr);
     bool IsRelative(LPCTSTR path);
     bool Exists(LPCTSTR path);

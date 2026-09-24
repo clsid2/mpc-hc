@@ -285,7 +285,8 @@ bool CWebServer::ToLocalPath(CString& path, CString& redir)
             }
         }
 
-        if (_tcslen(p) > _tcslen(m_webroot) && p.FileExists()) {
+        // only a path inside the webroot, never the webroot itself
+        if (PathUtils::IsStrictlyInDir(p, m_webroot) && p.FileExists()) {
             path = (LPCTSTR)p;
             return true;
         }

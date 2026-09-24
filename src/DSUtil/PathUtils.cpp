@@ -174,6 +174,18 @@ namespace PathUtils
         return !!CPath(path).IsPrefix(dir);
     }
 
+    // True only for a path below dir, never dir itself. Both must be canonical and in the same
+    // form; they are compared as text, case-insensitively, with no length limit.
+    bool IsStrictlyInDir(LPCTSTR path, LPCTSTR dir)
+    {
+        CString d(dir);
+        d.TrimRight(_T('\\'));
+        const CString p(path);
+        const int len = d.GetLength();
+        return len > 0 && p.GetLength() > len + 1 && p[len] == _T('\\') && p[len + 1] != _T('\\')
+               && CompareStringOrdinal(p, len, d, len, TRUE) == CSTR_EQUAL;
+    }
+
     CString ToRelative(LPCTSTR dir, const LPCTSTR path, bool* pbRelative/* = nullptr*/)
     {
         CPath cp;
