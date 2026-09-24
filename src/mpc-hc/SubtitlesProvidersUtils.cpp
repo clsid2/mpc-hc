@@ -605,7 +605,7 @@ std::string SubtitlesProvidersUtils::StringGenerateUniqueKey()
 {
     TCHAR strFileName[MAX_PATH];
     GetModuleFileName(nullptr, strFileName, MAX_PATH);
-    CPath p(strFileName);
+    CLongPath p(strFileName);
     p.StripToRoot();
 
     std::vector<BYTE> buffer(16);

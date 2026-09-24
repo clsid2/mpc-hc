@@ -30,7 +30,7 @@ namespace PathUtils
 {
     CString BaseName(LPCTSTR path)
     {
-        CPath cp(path);
+        CLongPath cp(path);
         cp.RemoveBackslash();
         cp.StripPath();
         return cp;
@@ -38,7 +38,7 @@ namespace PathUtils
 
     CString DirName(LPCTSTR path)
     {
-        CPath cp(path);
+        CLongPath cp(path);
         cp.RemoveBackslash();
         cp.RemoveFileSpec();
         return cp;
@@ -46,7 +46,7 @@ namespace PathUtils
 
     CString FileName(LPCTSTR path)
     {
-        CPath cp(path);
+        CLongPath cp(path);
         cp.StripPath();
         cp.RemoveExtension();
         cp.RemoveBackslash();
@@ -55,7 +55,7 @@ namespace PathUtils
 
     CString FileExt(LPCTSTR path)
     {
-        return CPath(path).GetExtension();
+        return CLongPath(path).GetExtension();
     }
 
     CString StripExtensionAndRarVolumeSuffix(LPCTSTR path)
@@ -171,7 +171,7 @@ namespace PathUtils
 
     bool IsInDir(LPCTSTR path, LPCTSTR dir)
     {
-        return !!CPath(path).IsPrefix(dir);
+        return !!CLongPath(path).IsPrefix(dir);
     }
 
     // True only for a path below dir, never dir itself. Both must be canonical and in the same
@@ -188,7 +188,7 @@ namespace PathUtils
 
     CString ToRelative(LPCTSTR dir, const LPCTSTR path, bool* pbRelative/* = nullptr*/)
     {
-        CPath cp;
+        CLongPath cp;
         BOOL rel = cp.RelativePathTo(dir, FILE_ATTRIBUTE_DIRECTORY, path, 0);
         if (pbRelative) {
             *pbRelative = !!rel;
@@ -198,7 +198,7 @@ namespace PathUtils
 
     bool IsRelative(LPCTSTR path)
     {
-        return !!CPath(path).IsRelative();
+        return !!CLongPath(path).IsRelative();
     }
 
     bool Exists(LPCTSTR path)

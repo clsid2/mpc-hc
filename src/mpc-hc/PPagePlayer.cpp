@@ -190,10 +190,10 @@ void CPPagePlayer::OnUpdateSaveToIni(CCmdUI* pCmdUI)
     ULONGLONG dwTick = GetTickCount64();
     // run this check no often than once per second
     if (dwTick - m_dwCheckIniLastTick >= 1000ULL) {
-        CPath iniPath = AfxGetMyApp()->GetIniPath();
+        CLongPath iniPath = AfxGetMyApp()->GetIniPath();
         HANDLE hFile = CreateFile(iniPath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
         if (hFile == INVALID_HANDLE_VALUE) {
-            CPath iniDirPath(iniPath);
+            CLongPath iniDirPath(iniPath);
             VERIFY(iniDirPath.RemoveFileSpec());
             HANDLE hDir = CreateFile(iniDirPath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
             // gray-out "save to .ini" option when we don't have writing permissions in the target directory

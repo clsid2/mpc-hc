@@ -77,7 +77,7 @@ public:
     CString GetStatusTimer() const;
     CString GetStatusMessage() const;
 
-    CString PreparePathStatusMessage(CPath path);
+    CString PreparePathStatusMessage(CLongPath path);
 
     void ShowTimer(bool fShow);
 

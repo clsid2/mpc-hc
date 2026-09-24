@@ -263,7 +263,7 @@ void CPlayerStatusBar::SetStatusMessage(CString str)
     }
 }
 
-CString CPlayerStatusBar::PreparePathStatusMessage(CPath path)
+CString CPlayerStatusBar::PreparePathStatusMessage(CLongPath path)
 {
     if (CDC* pDC = m_status.GetDC()) {
         CRect r;

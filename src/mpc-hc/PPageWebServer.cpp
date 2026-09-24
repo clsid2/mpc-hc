@@ -225,7 +225,7 @@ void CPPageWebServer::OnBnClickedButton1()
 {
     CString dir = GetCurWebRoot();
     if (PickDir(dir)) {
-        CPath path;
+        CLongPath path;
         if (path.RelativePathTo(PathUtils::GetProgramPath(), FILE_ATTRIBUTE_DIRECTORY, dir, FILE_ATTRIBUTE_DIRECTORY)) {
             dir = (LPCTSTR)path;
         }

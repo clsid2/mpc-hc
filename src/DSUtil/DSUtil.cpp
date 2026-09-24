@@ -854,10 +854,10 @@ CString GetDriveLabel(TCHAR drive)
     CString path;
     path.Format(_T("%c:\\"), drive);
 
-    return GetDriveLabel(CPath(path));
+    return GetDriveLabel(CLongPath(path));
 }
 
-CString GetDriveLabel(CPath path)
+CString GetDriveLabel(CLongPath path)
 {
     CString label;
     path.StripToRoot();
@@ -1440,7 +1440,7 @@ CString MakeFullPath(LPCTSTR path)
         if (full[1] != '\\') {
             CString fn;
             fn.ReleaseBuffer(GetModuleFileName(AfxGetInstanceHandle(), fn.GetBuffer(MAX_PATH), MAX_PATH));
-            CPath p(fn);
+            CLongPath p(fn);
             p.StripToRoot();
             full = CString(p) + full.Mid(1);
         }

@@ -179,7 +179,7 @@ bool CPixelShaderCache::LoadCache(const CString& FileName, const CString& FilePa
         return false;
     }
 
-    CPath path(FileName);
+    CLongPath path(FileName);
     path.RemoveExtension();
     uint64_t hash = _tcstoui64(path, NULL, 10);
     CFile file;

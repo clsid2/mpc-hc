@@ -545,7 +545,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
                 m_pMainFrame->SendMessage(WM_COPYDATA, (WPARAM)nullptr, (LPARAM)&cds);
             }
 
-            CPath p(path);
+            CLongPath p(path);
             p.RemoveFileSpec();
             path = (LPCTSTR)p;
         }
@@ -553,7 +553,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
         path = m_pMainFrame->m_wndPlaylistBar.GetCurFileName();
 
         if (!PathUtils::IsURL(path) && CFileGetStatus(path, fs) && !(fs.m_attribute & CFile::directory)) {
-            CPath p(path);
+            CLongPath p(path);
             p.RemoveFileSpec();
             path = (LPCTSTR)p;
         }
@@ -680,7 +680,7 @@ bool CWebClientSocket::OnControls(CStringA& hdr, CStringA& body, CStringA& mime)
     CString dir;
 
     if (!path.IsEmpty() && !PathUtils::IsURL(path)) {
-        CPath p(path);
+        CLongPath p(path);
         p.RemoveFileSpec();
         dir = (LPCTSTR)p;
     }
@@ -736,7 +736,7 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     CString strName;
 
     if (!path.IsEmpty() && !PathUtils::IsURL(path)) {
-        CPath p(path);
+        CLongPath p(path);
         p.RemoveFileSpec();
         dir = (LPCTSTR)p;
     }
@@ -797,7 +797,7 @@ bool CWebClientSocket::OnStatus(CStringA& hdr, CStringA& body, CStringA& mime)
     CString title;
     m_pMainFrame->GetWindowText(title);
 
-    CPath file(m_pMainFrame->m_wndPlaylistBar.GetCurFileName());
+    CLongPath file(m_pMainFrame->m_wndPlaylistBar.GetCurFileName());
 
     CString status;
     OAFilterState fs = m_pMainFrame->GetMediaState();
@@ -1456,7 +1456,7 @@ bool CWebClientSocket::OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mim
     if (PathUtils::IsURL(path)) {
         path.Empty();
     } else if (!path.IsEmpty() && CFileGetStatus(path, fs) && !(fs.m_attribute & CFile::directory)) {
-        CPath p(path);
+        CLongPath p(path);
         p.RemoveFileSpec();
         path = (LPCTSTR)p;
     }

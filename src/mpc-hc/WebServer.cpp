@@ -45,13 +45,13 @@ CWebServer::CWebServer(CMainFrame* pMainFrame, int nPort)
     // InitInstance, long after CMainFrame::OnCreate had already started the server.
     Init();
 
-    m_webroot = CPath(PathUtils::GetProgramPath());
+    m_webroot = CLongPath(PathUtils::GetProgramPath());
     const CAppSettings& s = AfxGetAppSettings();
 
     CString WebRoot = s.strWebRoot;
     WebRoot.Replace('/', '\\');
     WebRoot.Trim();
-    CPath p(WebRoot);
+    CLongPath p(WebRoot);
     if (WebRoot.Find(_T(":\\")) < 0 && WebRoot.Find(_T("\\\\")) < 0) {
         m_webroot.Append(WebRoot);
     } else {
@@ -60,7 +60,7 @@ CWebServer::CWebServer(CMainFrame* pMainFrame, int nPort)
     m_webroot.Canonicalize();
     m_webroot.MakePretty();
     if (!m_webroot.IsDirectory()) {
-        m_webroot = CPath();
+        m_webroot = CLongPath();
     }
 
     CAtlList<CString> sl;
@@ -344,7 +344,7 @@ void CWebServer::OnRequest(CWebClientSocket* pClient, CStringA& hdr, CStringA& b
 {
     const CAppSettings& s = AfxGetAppSettings();
 
-    CPath p(AToT(pClient->m_path));
+    CLongPath p(AToT(pClient->m_path));
     CStringA ext = p.GetExtension().MakeLower();
     CStringA mime;
     if (ext.IsEmpty()) {
@@ -574,12 +574,12 @@ bool CWebServer::CallCGI(CWebClientSocket* pClient, CStringA& hdr, CStringA& bod
     if (!ToLocalPath(path, redir)) {
         return false;
     }
-    CString ext = CPath(path).GetExtension().MakeLower();
-    CPath dir(path);
+    CString ext = CLongPath(path).GetExtension().MakeLower();
+    CLongPath dir(path);
     dir.RemoveFileSpec();
 
     CString cgi;
-    if (!m_cgi.Lookup(ext, cgi) || !CPath(cgi).FileExists()) {
+    if (!m_cgi.Lookup(ext, cgi) || !CLongPath(cgi).FileExists()) {
         return false;
     }
 

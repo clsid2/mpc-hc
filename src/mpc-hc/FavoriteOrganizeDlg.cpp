@@ -602,7 +602,7 @@ void CFavoriteOrganizeDlg::OnLvnGetInfoTipList(NMHDR* pNMHDR, LRESULT* pResult)
     ExplodeEsc(m_sl[m_tab.GetCurSel()].GetAt((POSITION)m_list.GetItemData(pGetInfoTip->iItem)), args, _T(';'));
     CString path = args.RemoveTail();
     // Relative to drive value is always third. If less args are available that means it is not included.
-    int rootLength = (args.GetCount() == 3 && args.RemoveTail() != _T("0")) ? CPath(path).SkipRoot() : 0;
+    int rootLength = (args.GetCount() == 3 && args.RemoveTail() != _T("0")) ? CLongPath(path).SkipRoot() : 0;
 
     StringCchCopyW(pGetInfoTip->pszText, pGetInfoTip->cchTextMax, path.Mid(rootLength));
 

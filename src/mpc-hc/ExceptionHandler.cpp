@@ -144,7 +144,7 @@ CString GetStackTrace(LPEXCEPTION_POINTERS exp)
             if (hModule) {
                 wchar_t mfn[MAX_PATH] = {};
                 if (GetModuleFileNameW(hModule, mfn, MAX_PATH)) {
-                    CPath file = mfn;
+                    CLongPath file = mfn;
                     file.StripPath();
                     CString moduleName = file.m_strPath;
                     moduleName.MakeLower();

@@ -361,7 +361,7 @@ CString GetContentType(CString fn, CAtlList<CString>* redir)
         }
     }
 
-    CString ext = CPath(fn).GetExtension().MakeLower();
+    CString ext = CLongPath(fn).GetExtension().MakeLower();
     int p = ext.FindOneOf(_T("?#"));
     if (p > 0) {
         ext = ext.Left(p);
@@ -1084,7 +1084,7 @@ CStringW CMPlayerCApp::ResolveHistoryIniPath()
     if (!GetAppDataPath(appDataDir)) {
         return programPath;
     }
-    CPath historyFileName(programPath);
+    CLongPath historyFileName(programPath);
     historyFileName.StripPath(); // filename incl. extension (PathUtils::FileName drops the extension)
     const CStringW appDataPath = PathUtils::CombinePaths(appDataDir, historyFileName);
 

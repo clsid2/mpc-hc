@@ -454,7 +454,7 @@ HRESULT CHdmvClipInfo::ReadSTNInfo() {
 
 HRESULT CHdmvClipInfo::ReadPlaylist(CString strPlaylistFile, REFERENCE_TIME& rtDuration, HdmvPlaylist& Playlist)
 {
-    CPath Path(strPlaylistFile);
+    CLongPath Path(strPlaylistFile);
     rtDuration = 0;
 
     // Get BDMV folder
@@ -581,7 +581,7 @@ HRESULT CHdmvClipInfo::ReadPlaylist(CString strPlaylistFile, REFERENCE_TIME& rtD
 
 HRESULT CHdmvClipInfo::ReadChapters(CString strPlaylistFile, CAtlList<CHdmvClipInfo::PlaylistItem>& PlaylistItems, CAtlList<PlaylistChapter>& Chapters)
 {
-    CPath Path(strPlaylistFile);
+    CLongPath Path(strPlaylistFile);
 
     // Get BDMV folder
     Path.RemoveFileSpec();
