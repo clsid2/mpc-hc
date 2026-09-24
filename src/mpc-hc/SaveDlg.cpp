@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "mplayerc.h"
 #include "SaveDlg.h"
+#include "PathUtils.h"
 #include "../filters/Filters.h"
 #include "CMPCTheme.h"
 #include "CMPCThemeUtil.h"
@@ -114,7 +115,7 @@ BOOL CSaveDlg::OnInitDialog()
         if (FAILED(hr) || !(pReader = pUnk) || FAILED(pReader->Load(fnw, nullptr))) {
             pReader.Release();
         } else {
-            CPath pout(m_out);
+            CLongPath pout(m_out);
             if (pout.RenameExtension(_T(".ifo"))) {
                 CopyFile(m_in, pout, FALSE);
             } else {

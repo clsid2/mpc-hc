@@ -567,7 +567,7 @@ static CString CombinePath(CString base, CString fn, bool base_is_url)
     return base + fn;
 }
 
-static CString CombinePath(CPath p, CString fn)
+static CString CombinePath(CLongPath p, CString fn)
 {
     if (PathUtils::IsFullFilePath(fn)) {
         return fn;
@@ -621,7 +621,7 @@ bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
         }
     }
     else {
-        CPath basefilepath(cuefn);
+        CLongPath basefilepath(cuefn);
         basefilepath.RemoveFileSpec();
         basefilepath.AddBackslash();
         base = basefilepath.m_strPath;
@@ -773,7 +773,7 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn, bool* lav_fallback) {
         }
     }
     else {
-        CPath basefilepath(fn);
+        CLongPath basefilepath(fn);
         basefilepath.RemoveFileSpec();
         basefilepath.AddBackslash();
         base = basefilepath.m_strPath;
@@ -874,7 +874,7 @@ bool CPlayerPlaylistBar::ParseMPCPlayList(CString fn)
         return false;
     }
 
-    CPath base(fn);
+    CLongPath base(fn);
     base.RemoveFileSpec();
 
     while (f.ReadString(str)) {
@@ -1797,7 +1797,7 @@ void CPlayerPlaylistBar::LoadPlaylist(LPCTSTR filename)
     m_list.SetRedraw(FALSE);
 
     if (AfxGetMyApp()->GetPlaylistSavePath(base)) {
-        CPath p;
+        CLongPath p;
         p.Combine(base, _T("default.mpcpl"));
 
         if (p.FileExists()) {
@@ -1830,7 +1830,7 @@ void CPlayerPlaylistBar::SavePlaylist(bool can_delay /* = false*/)
     CString base;
 
     if (AfxGetMyApp()->GetPlaylistSavePath(base)) {
-        CPath p;
+        CLongPath p;
         p.Combine(base, _T("default.mpcpl"));
 
         if (AfxGetAppSettings().bRememberPlaylistItems) {
@@ -2713,7 +2713,7 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                 }
             }
 
-            CPath path(fd.GetPathName());
+            CLongPath path(fd.GetPathName());
 
             switch (idx) {
                 case 1:

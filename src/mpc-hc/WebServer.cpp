@@ -261,7 +261,7 @@ bool CWebServer::ToLocalPath(CString& path, CString& redir)
         str.Replace('/', '\\');
         str.TrimLeft('\\');
 
-        CPath p;
+        CLongPath p;
         p.Combine(m_webroot, str);
         p.Canonicalize();
 
@@ -271,7 +271,7 @@ bool CWebServer::ToLocalPath(CString& path, CString& redir)
             POSITION pos = sl.GetHeadPosition();
             while (pos) {
                 str = sl.GetNext(pos);
-                CPath p2 = p;
+                CLongPath p2 = p;
                 p2.Append(str);
                 if (p2.FileExists()) {
                     p = p2;

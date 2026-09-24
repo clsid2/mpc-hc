@@ -156,7 +156,7 @@ CString CPPageWebServer::GetCurWebRoot()
     GetDlgItem(IDC_EDIT2)->GetWindowText(WebRoot);
     WebRoot.Replace('/', '\\');
 
-    CPath path;
+    CLongPath path;
     path.Combine(PathUtils::GetProgramPath(), WebRoot);
     return path.IsDirectory() ? (LPCTSTR)path : _T("");
 }

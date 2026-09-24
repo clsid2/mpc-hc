@@ -310,7 +310,7 @@ static bool FindRedir(const CString& fn, CAtlList<CString>& fns, const std::vect
             }
 
             if (fn2.Find(_T(":")) < 0 && fn2.Find(_T("\\\\")) != 0 && fn2.Find(_T("//")) != 0) {
-                CPath p;
+                CLongPath p;
                 p.Combine(dir, fn2);
                 fn2 = (LPCTSTR)p;
             }
@@ -1154,7 +1154,7 @@ bool CMPlayerCApp::GetAppDataPath(CString& path)
     if (FAILED(hr)) {
         return false;
     }
-    CPath p;
+    CLongPath p;
     p.Combine(path, _T("MPC-HC"));
     path = (LPCTSTR)p;
 
@@ -2214,7 +2214,7 @@ BOOL CMPlayerCApp::InitInstance()
         // Remove the current playlist if it exists
         CString strSavePath;
         if (GetPlaylistSavePath(strSavePath)) {
-            CPath playlistPath;
+            CLongPath playlistPath;
             playlistPath.Combine(strSavePath, _T("default.mpcpl"));
 
             if (playlistPath.FileExists()) {

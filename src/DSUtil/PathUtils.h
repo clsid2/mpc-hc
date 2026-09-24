@@ -20,6 +20,37 @@
 
 #pragma once
 
+#include <atlpath.h>
+
+// CPath builds the result of these methods in a MAX_PATH buffer around a Shlwapi call, so past
+// MAX_PATH they fail, and the void ones do it silently: Combine and Canonicalize leave an empty
+// path, AddBackslash does nothing. While the result fits, the CPath method runs unchanged; only
+// a result that would not fit is built here instead. The methods are not virtual, so this only
+// applies to calls made through a CLongPath, never through a CPath reference, pointer or copy.
+//
+// RelativePathTo is left to CPath. A long path fails it visibly, since it returns FALSE, and a
+// faithful reimplementation of PathRelativePathTo is more than its two callers justify.
+class CLongPath : public CPath
+{
+public:
+    CLongPath() = default;
+    CLongPath(LPCTSTR pszPath) : CPath(pszPath) {}
+    CLongPath(const CPath& path) : CPath(path) {}
+
+    // CPath::operator+= would reach CPath::Append
+    CLongPath& operator+=(LPCTSTR pszMore) {
+        Append(pszMore);
+        return *this;
+    }
+
+    void AddBackslash();
+    BOOL AddExtension(LPCTSTR pszExtension);
+    BOOL Append(LPCTSTR pszMore);
+    void Canonicalize();
+    void Combine(LPCTSTR pszDir, LPCTSTR pszFile);
+    BOOL RenameExtension(LPCTSTR pszExtension);
+};
+
 namespace PathUtils
 {
     CString BaseName(LPCTSTR path);

@@ -286,7 +286,7 @@ HRESULT SubtitlesInfo::GetFileInfo(const std::string& sFileName /*= std::string(
                 fileSize = file.GetLength();
             }
             {
-                CPath p(_filePath);
+                CLongPath p(_filePath);
                 CFile file;
                 CFileException fileException;
                 if (p.RenameExtension(_T(".nfo")) && file.Open(p, CFile::modeRead | CFile::osSequentialScan | CFile::shareDenyNone | CFile::typeBinary, &fileException)) {

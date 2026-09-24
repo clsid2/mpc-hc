@@ -5429,7 +5429,7 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
     while (pos) {
         CString fullpath = MakeFullPath(s.slFilters.GetNext(pos));
 
-        CPath tmp(fullpath);
+        CLongPath tmp(fullpath);
         tmp.RemoveFileSpec();
         tmp.AddBackslash();
         CString path = tmp;
@@ -6138,7 +6138,7 @@ void CMainFrame::OnFileSaveAs()
         return;
     }
 
-    CPath p(out);
+    CLongPath p(out);
     if (!ext.IsEmpty()) {
         p.AddExtension(ext);
     }
@@ -7175,9 +7175,9 @@ void CMainFrame::OnFileSaveImage()
         return;
     }
 
-    CPath psrc;
+    CLongPath psrc;
     if (!s.strSnapshotPath.IsEmpty() && PathUtils::IsDir(s.strSnapshotPath)) {
-        psrc = CPath(PathUtils::CombinePaths(s.strSnapshotPath, MakeSnapshotFileName(FALSE)));
+        psrc.Combine(s.strSnapshotPath.GetString(), MakeSnapshotFileName(FALSE));
     } else {
         psrc = CPath(MakeSnapshotFileName(FALSE));        
     }
@@ -7209,7 +7209,7 @@ void CMainFrame::OnFileSaveImage()
         s.strSnapshotExt = _T(".png");
     }
 
-    CPath pdst(fd.GetPathName());
+    CLongPath pdst(fd.GetPathName());
     CString ext(pdst.GetExtension().MakeLower());
     if (ext != s.strSnapshotExt) {
         if (ext == _T(".bmp") || ext == _T(".jpg") || ext == _T(".png")) {
@@ -7274,9 +7274,9 @@ void CMainFrame::OnCmdLineSaveThumbnails()
         return;
     }
 
-    CPath psrc(m_wndPlaylistBar.GetCurFileName(true));
+    CLongPath psrc(m_wndPlaylistBar.GetCurFileName(true));
     psrc.RemoveFileSpec();
-    psrc = CPath(PathUtils::CombinePaths(psrc, MakeSnapshotFileName(TRUE)));
+    psrc.Combine(psrc, MakeSnapshotFileName(TRUE));
 
     s.iThumbRows = std::clamp(s.iThumbRows, 1, 40);
     s.iThumbCols = std::clamp(s.iThumbCols, 1, 16);
@@ -7308,7 +7308,8 @@ void CMainFrame::OnFileSaveThumbnails()
         return;
     }
 
-    CPath psrc(PathUtils::CombinePaths(s.strSnapshotPath, MakeSnapshotFileName(TRUE)));
+    CLongPath psrc(s.strSnapshotPath);
+    psrc.Combine(s.strSnapshotPath, MakeSnapshotFileName(TRUE));
 
     CSaveThumbnailsDialog fd(s.nJpegQuality, s.iThumbRows, s.iThumbCols, s.iThumbWidth, s.strSnapshotExt, (LPCTSTR)psrc,
                              _T("BMP - Windows Bitmap (*.bmp)|*.bmp|JPG - JPEG Image (*.jpg)|*.jpg|PNG - Portable Network Graphics (*.png)|*.png||"), GetModalParent());
@@ -7339,7 +7340,7 @@ void CMainFrame::OnFileSaveThumbnails()
     s.iThumbCols = std::clamp(fd.m_cols, 1, 16);
     s.iThumbWidth = std::clamp(fd.m_width, 256, 3840);
 
-    CPath pdst(fd.GetPathName());
+    CLongPath pdst(fd.GetPathName());
     CString ext(pdst.GetExtension().MakeLower());
     if (ext != s.strSnapshotExt) {
         if (ext == _T(".bmp") || ext == _T(".jpg") || ext == _T(".png")) {
@@ -7348,7 +7349,6 @@ void CMainFrame::OnFileSaveThumbnails()
             ext += s.strSnapshotExt;
         }
         if (!pdst.RenameExtension(ext)) {
-            // ToDo: write helper functions for renaming that support long paths
             ASSERT(false);
             return;
         }
@@ -7478,9 +7478,9 @@ void CMainFrame::SubtitlesSave(const TCHAR* directory, bool silent)
         CPath suggestedPath(suggestedFileName);
         int pos = suggestedPath.FindFileName();
         CString fileName = suggestedPath.m_strPath.Mid(pos);
-        CPath dirPath(directory);
+        CLongPath dirPath(directory);
         if (dirPath.IsRelative()) {
-            dirPath = CPath(suggestedPath.m_strPath.Left(pos)) += dirPath;
+            dirPath = CLongPath(suggestedPath.m_strPath.Left(pos)) += dirPath;
         }
         if (EnsureDirectory(dirPath)) {
             suggestedFileName = CString(dirPath += fileName);
@@ -15329,7 +15329,7 @@ void CMainFrame::SetupExternalChapters()
         return;
     }
 
-    CPath cp(fn);
+    CLongPath cp(fn);
     if (!cp.RenameExtension(_T(".xchp")) || !cp.FileExists()) {
         return;
     }
@@ -15508,7 +15508,7 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
         }
     }
     else {
-        CPath basefilepath(cuefn);
+        CLongPath basefilepath(cuefn);
         basefilepath.RemoveFileSpec();
         basefilepath.AddBackslash();
         base = basefilepath.m_strPath;

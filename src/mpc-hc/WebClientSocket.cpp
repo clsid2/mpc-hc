@@ -565,7 +565,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
 
     if (!path.IsEmpty() && CFileGetStatus(path, fs) && (fs.m_attribute & CFile::directory)
             || path.Find(_T("\\")) == 0) { // FIXME
-        CPath p(path);
+        CLongPath p(path);
         p.Canonicalize();
         p.MakePretty();
         p.AddBackslash();
@@ -593,7 +593,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
         CString parent;
 
         if (path.GetLength() > 3) {
-            CPath p(path + "..");
+            CLongPath p(path + "..");
             p.Canonicalize();
             p.AddBackslash();
             parent = (LPCTSTR)p;
@@ -1463,7 +1463,7 @@ bool CWebClientSocket::OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mim
 
     if (!path.IsEmpty() && CFileGetStatus(path, fs) && (fs.m_attribute & CFile::directory)
             || path.Find(_T("\\")) == 0) { // FIXME
-        CPath p(path);
+        CLongPath p(path);
         p.Canonicalize();
         p.MakePretty();
         p.AddBackslash();
@@ -1487,7 +1487,7 @@ bool CWebClientSocket::OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mim
     } else {
         // at the root of a drive there is nothing to go up to but the drive list
         if (path.GetLength() > 3) {
-            CPath p(path + "..");
+            CLongPath p(path + "..");
             p.Canonicalize();
             p.AddBackslash();
             parent = JSONString((LPCTSTR)p);

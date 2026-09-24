@@ -24,6 +24,7 @@
 #include <afxsock.h>
 #include <atlcoll.h>
 #include <atlpath.h>
+#include "PathUtils.h"
 
 #define UTF8(str)     UTF16To8(TToW(str))
 #define UTF8Arg(str)  UrlEncode(UTF8(str))
@@ -52,7 +53,7 @@ class CWebServer
     static CAtlStringMap<RequestHandler, CStringA> m_internalpages;
     static CAtlStringMap<UINT, CStringA> m_downloads;
     static CAtlStringMap<CStringA, CStringA> m_mimes;
-    CPath m_webroot;
+    CLongPath m_webroot;
 
     CAtlStringMap<> m_cgi;
     bool CallCGI(CWebClientSocket* pClient, CStringA& hdr, CStringA& body, CStringA& mime);

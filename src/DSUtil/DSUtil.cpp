@@ -25,6 +25,7 @@
 #include "winddk/devioctl.h"
 #include "winddk/ntddcdrm.h"
 #include "DSUtil.h"
+#include "PathUtils.h"
 #include "Mpeg2Def.h"
 #include <emmintrin.h>
 #include <d3d9.h>
@@ -1446,13 +1447,13 @@ CString MakeFullPath(LPCTSTR path)
     } else if (full.Find(_T(":\\")) < 0) {
         CString fn;
         fn.ReleaseBuffer(GetModuleFileName(AfxGetInstanceHandle(), fn.GetBuffer(MAX_PATH), MAX_PATH));
-        CPath p(fn);
+        CLongPath p(fn);
         p.RemoveFileSpec();
         p.AddBackslash();
         full = CString(p) + full;
     }
 
-    CPath c(full);
+    CLongPath c(full);
     c.Canonicalize();
     return CString(c);
 }

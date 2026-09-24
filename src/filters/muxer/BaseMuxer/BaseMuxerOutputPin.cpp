@@ -29,6 +29,7 @@
 
 #include "moreuuids.h"
 #include "../DSUtil/ISOLang.h"
+#include "../DSUtil/PathUtils.h"
 
 //
 // CBaseMuxerOutputPin
@@ -447,7 +448,7 @@ void CBaseMuxerRawOutputPin::MuxFooter(const CMediaType& mt)
         if (CComQIPtr<IFileSinkFilter> pFSF = GetFilterFromPin(GetConnected())) {
             WCHAR* fn = nullptr;
             if (SUCCEEDED(pFSF->GetCurFile(&fn, nullptr))) {
-                CPathW p(fn);
+                CLongPath p(fn);
                 p.RenameExtension(L".idx");
                 CoTaskMemFree(fn);
 
