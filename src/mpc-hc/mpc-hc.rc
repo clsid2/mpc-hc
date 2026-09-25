@@ -4135,7 +4135,7 @@ BEGIN
     IDS_OSD_AUTOCOPY_SUBTITLE_ON "Auto-Copy Subtitle to Clipboard: On"
     IDS_OSD_AUTOCOPY_SUBTITLE_OFF "Auto-Copy Subtitle to Clipboard: Off"
     IDS_SUBTITLES_SECONDARY_BAD_FORMAT "This subtitle format cannot be used as a secondary subtitle track. Only simple text formats such as SRT are supported."
-    IDS_CMD_DVBSCAN         "/dvbscan start-stop\tScan the default digital capture device from start to stop (kHz)\n\t\twithout the scan dialog, then exit"
+    IDS_CMD_DVBSCAN         "/dvbscan N-M\tScan the default digital capture device from N to M (kHz)\n\t\twithout the scan dialog, then exit"
     IDS_CMD_DVBSCANOUT      "/dvbscanout ""file""\tWrite the channels found by /dvbscan to ""file"" as JSON"
     IDS_CMD_DVBBANDWIDTH    "/dvbbandwidth N\tOverride the saved bandwidth (kHz) used by /dvbscan"
     IDS_CMD_DVBSYMBOLRATE   "/dvbsymbolrate N\tOverride the saved symbol rate used by /dvbscan"
