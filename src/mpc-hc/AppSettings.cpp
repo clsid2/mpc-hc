@@ -1711,7 +1711,12 @@ void CAppSettings::LoadSettings()
 
     UpdateRenderersData(false);
 
-    strAudioRendererDisplayName = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIORENDERERTYPE);
+    // Default to the MPC Audio Renderer for new installations. It performs pitch-preserving
+    // time-stretching (ffmpeg "atempo") when the playback rate differs from 1.0, while the
+    // previous default ("System Default", the plain Windows audio renderer) simply plays the
+    // samples faster, which raises the pitch ("chipmunk" effect) and sounds distorted above 1x.
+    // An explicitly saved choice (including "System Default") is still honored.
+    strAudioRendererDisplayName = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIORENDERERTYPE, AUDRNDT_MPC);
     fAutoloadAudio = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOLOADAUDIO, TRUE);
     strSubtitlesLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESLANGORDER);
     strAudiosLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIOSLANGORDER);
