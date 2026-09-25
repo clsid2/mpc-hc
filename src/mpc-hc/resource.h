@@ -1808,6 +1808,9 @@
 #define IDS_SUBTITLES_SECONDARY_BAD_FORMAT 57658
 #define IDS_CMD_DVBSCAN                 57659
 #define IDS_CMD_DVBSCANSAVE             57660
+#define IDS_CMD_DVBSCANOUT              57661
+#define IDS_CMD_DVBBANDWIDTH            57662
+#define IDS_CMD_DVBSYMBOLRATE           57663
 // MPC Audio Renderer
 #define IDS_FILTER_RESET_SETTINGS       57700
 #define IDS_ARS_WASAPI_MODE             57701
