@@ -21,6 +21,7 @@
 #pragma once
 
 #include <afxwin.h>
+#include <vector>
 #include "CMPCThemeResizableDialog.h"
 #include "resource.h"
 
@@ -30,6 +31,9 @@ private:
     CStatic m_icon;
     CString m_cmdLine;
     CString m_text;
+    std::vector<CString> m_switchNames;
+
+    void ApplySwitchColumnTabStop();
 
 public:
     CmdLineHelpDlg(const CString& cmdLine = _T(""));
@@ -43,6 +47,7 @@ public:
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     afx_msg virtual BOOL OnInitDialog();
+    afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
     DECLARE_MESSAGE_MAP()
 };
