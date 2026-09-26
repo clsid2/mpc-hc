@@ -1226,82 +1226,120 @@ CPoint CMPCThemeUtil::GetClientRectOffset(CWnd* window) {
     return offset;
 }
 
+namespace {
+    struct DynamicWidgetRow {
+        CWnd* leftW;
+        CWnd* rightW;
+        CMPCThemeUtil::WidgetPairType lType;
+        CMPCThemeUtil::WidgetPairType rType;
+        CRect l, r;
+        LONG leftWantsRight, rightWantsLeft;
+    };
+
+    bool MeasureDynamicWidgetRow(CWnd* window, int leftWidget, int rightWidget, DpiHelper& dpiWindow, DynamicWidgetRow& row) {
+        CWnd* leftW = window->GetDlgItem(leftWidget);
+        CWnd* rightW = window->GetDlgItem(rightWidget);
+        if (!leftW || !rightW || !IsWindow(leftW->m_hWnd) || !IsWindow(rightW->m_hWnd)) {
+            return false;
+        }
+        row.leftW = leftW;
+        row.rightW = rightW;
+
+        // Always auto-detect left widget type
+        LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
+        DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
+
+        if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
+            row.lType = CMPCThemeUtil::WidgetPairCheckBox;
+        } else { //we only support checkbox or text on the left, just assume it's text now
+            row.lType = CMPCThemeUtil::WidgetPairText;
+        }
+
+        // Always auto-detect right widget type
+        TCHAR windowClass[MAX_PATH];
+        ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
+
+        if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
+            row.rType = CMPCThemeUtil::WidgetPairCombo;
+        } else { //we only support combo or edit on the right, just assume it's edit now
+            row.rType = CMPCThemeUtil::WidgetPairEdit;
+        }
+
+        leftW->GetWindowRect(row.l);
+        leftW->GetOwner()->ScreenToClient(row.l);
+        rightW->GetWindowRect(row.r);
+        rightW->GetOwner()->ScreenToClient(row.r);
+        row.leftWantsRight = row.l.right;
+        row.rightWantsLeft = row.r.left;
+        {
+            CDC* lpDC = leftW->GetDC();
+            CFont* pFont = leftW->GetFont();
+            int left = row.l.left;
+            if (row.lType == CMPCThemeUtil::WidgetPairCheckBox) {
+                left += dpiWindow.GetSystemMetricsDPI(SM_CXMENUCHECK) + 2;
+            }
+
+            CFont* pOldFont = lpDC->SelectObject(pFont);
+            TEXTMETRIC tm;
+            lpDC->GetTextMetricsW(&tm);
+
+            CString str;
+            leftW->GetWindowTextW(str);
+            CSize szText = lpDC->GetTextExtent(str);
+            lpDC->SelectObject(pOldFont);
+
+            row.leftWantsRight = left + szText.cx + tm.tmAveCharWidth;
+            leftW->ReleaseDC(lpDC);
+        }
+
+        if (row.rType == CMPCThemeUtil::WidgetPairCombo) {
+            //int wantWidth = (int)::SendMessage(rightW->m_hWnd, CB_GETDROPPEDWIDTH, 0, 0);
+            CComboBox* cb = DYNAMIC_DOWNCAST(CComboBox, rightW);
+            if (cb) {
+                int wantWidth = CorrectComboListWidth(*cb);
+                if (wantWidth != CB_ERR) {
+                    row.rightWantsLeft = row.r.right - wantWidth - GetSystemMetrics(SM_CXVSCROLL);
+                }
+            }
+        }
+        return true;
+    }
+}
+
 void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int rightWidget, bool allowShrinkRight) {
+    AdjustDynamicWidgetGroup(window, { { leftWidget, rightWidget } }, allowShrinkRight);
+}
+
+//rows sharing a column are sized together, so the widest label or widest combo list moves the whole column
+//and one row cannot cross the resize threshold alone (#4076)
+void CMPCThemeUtil::AdjustDynamicWidgetGroup(CWnd* window, std::initializer_list<std::pair<int, int>> pairs, bool allowShrinkRight) {
     if (window && IsWindow(window->m_hWnd)) {
         DpiHelper dpiWindow;
         dpiWindow.Override(window->GetSafeHwnd());
         LONG dynamicSpace = dpiWindow.ScaleX(5);
 
-        CWnd* leftW = window->GetDlgItem(leftWidget);
-        CWnd* rightW = window->GetDlgItem(rightWidget);
-
-        // Always auto-detect left widget type
-        WidgetPairType lType;
-        LRESULT lRes = leftW->SendMessage(WM_GETDLGCODE, 0, 0);
-        DWORD buttonType = (leftW->GetStyle() & BS_TYPEMASK);
-
-        if (DLGC_BUTTON == (lRes & DLGC_BUTTON) && (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX)) {
-            lType = WidgetPairCheckBox;
-        } else { //we only support checkbox or text on the left, just assume it's text now
-            lType = WidgetPairText;
+        std::vector<DynamicWidgetRow> rows;
+        for (const auto& pair : pairs) {
+            DynamicWidgetRow row;
+            if (MeasureDynamicWidgetRow(window, pair.first, pair.second, dpiWindow, row)) {
+                rows.push_back(row);
+            }
+        }
+        if (rows.empty()) {
+            return;
         }
 
-        // Always auto-detect right widget type
-        WidgetPairType rType;
-        TCHAR windowClass[MAX_PATH];
-        ::GetClassName(rightW->GetSafeHwnd(), windowClass, _countof(windowClass));
-
-        if (0 == _tcsicmp(windowClass, WC_COMBOBOX)) {
-            rType = WidgetPairCombo;
-        } else { //we only support combo or edit on the right, just assume it's edit now
-            rType = WidgetPairEdit;
+        LONG leftWantsRight = rows[0].leftWantsRight, rightWantsLeft = rows[0].rightWantsLeft;
+        for (const auto& row : rows) {
+            leftWantsRight = std::max(leftWantsRight, row.leftWantsRight);
+            rightWantsLeft = std::min(rightWantsLeft, row.rightWantsLeft);
         }
 
-        if (leftW && rightW && IsWindow(leftW->m_hWnd) && IsWindow(rightW->m_hWnd)) {
-            CRect l, r;
-            LONG leftWantsRight, rightWantsLeft;
-
-            leftW->GetWindowRect(l);
-            leftW->GetOwner()->ScreenToClient(l);
-            rightW->GetWindowRect(r);
-            rightW->GetOwner()->ScreenToClient(r);
-            CDC* lpDC = leftW->GetDC();
-            CFont* pFont = leftW->GetFont();
-            leftWantsRight = l.right;
-            rightWantsLeft = r.left;
-            {
-                int left = l.left;
-                if (lType == WidgetPairCheckBox) {
-                    left += dpiWindow.GetSystemMetricsDPI(SM_CXMENUCHECK) + 2;
-                }
-
-                CFont* pOldFont = lpDC->SelectObject(pFont);
-                TEXTMETRIC tm;
-                lpDC->GetTextMetricsW(&tm);
-
-                CString str;
-                leftW->GetWindowTextW(str);
-                CSize szText = lpDC->GetTextExtent(str);
-                lpDC->SelectObject(pOldFont);
-
-                leftWantsRight = left + szText.cx + tm.tmAveCharWidth;
-                leftW->ReleaseDC(lpDC);
-            }
-
-            {
-                if (rType == WidgetPairCombo) {
-                    //int wantWidth = (int)::SendMessage(rightW->m_hWnd, CB_GETDROPPEDWIDTH, 0, 0);
-                    CComboBox *cb = DYNAMIC_DOWNCAST(CComboBox, rightW);
-                    if (cb) {
-                        int wantWidth = CorrectComboListWidth(*cb);
-                        if (wantWidth != CB_ERR) {
-                            rightWantsLeft = r.right - wantWidth - GetSystemMetrics(SM_CXVSCROLL);
-                        }
-                    }
-                }
-            }
+        for (auto& row : rows) {
+            CRect& l = row.l;
+            CRect& r = row.r;
             CRect cl = l, cr = r;
-            if (lType == WidgetPairText && DT_RIGHT == (leftW->GetStyle() & DT_RIGHT)) //right aligned text not supported, as the right edge is fixed
+            if (row.lType == WidgetPairText && DT_RIGHT == (row.leftW->GetStyle() & DT_RIGHT)) //right aligned text not supported, as the right edge is fixed
             {
                 //do nothing
             } else if (allowShrinkRight) {
@@ -1327,19 +1365,19 @@ void CMPCThemeUtil::AdjustDynamicWidgetPair(CWnd* window, int leftWidget, int ri
                 //this minimizes noticeable layout changes
                 r.left = std::min(rightWantsLeft, std::max(l.right + dynamicSpace, r.left));
             }
-            if ((lType == WidgetPairText || lType == WidgetPairCheckBox) && (rType == WidgetPairCombo || rType == WidgetPairEdit)) {
+            if ((row.lType == WidgetPairText || row.lType == WidgetPairCheckBox) && (row.rType == WidgetPairCombo || row.rType == WidgetPairEdit)) {
                 l.top = r.top;
                 l.bottom += r.Height() - l.Height();
-                if (lType == WidgetPairText) {
-                    leftW->ModifyStyle(0, SS_CENTERIMAGE);
+                if (row.lType == WidgetPairText) {
+                    row.leftW->ModifyStyle(0, SS_CENTERIMAGE);
                 }
             }
 
             if (l != cl) {
-                leftW->MoveWindow(l);
+                row.leftW->MoveWindow(l);
             }
             if (r != cr) {
-                rightW->MoveWindow(r);
+                row.rightW->MoveWindow(r);
             }
         }
     }

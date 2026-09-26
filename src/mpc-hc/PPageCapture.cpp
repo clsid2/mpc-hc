@@ -724,7 +724,5 @@ void CPPageCapture::SaveFoundDevices()
 }
 
 void CPPageCapture::AdjustDynamicWidgets() {
-    AdjustDynamicWidgetPair(this, IDC_STATIC1, IDC_COMBO1);
-    AdjustDynamicWidgetPair(this, IDC_STATIC2, IDC_COMBO2);
-    AdjustDynamicWidgetPair(this, IDC_STATIC3, IDC_COMBO9);
+    AdjustDynamicWidgetGroup(this, { { IDC_STATIC1, IDC_COMBO1 }, { IDC_STATIC2, IDC_COMBO2 }, { IDC_STATIC3, IDC_COMBO9 } });
 }
