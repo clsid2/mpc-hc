@@ -56,6 +56,10 @@ struct CueTrackMeta {
     REFERENCE_TIME time = 0;
 };
 
+// Extract the file name from the FILE line of a cue sheet. Returns false when the
+// line is malformed, or when its type describes raw disc image data we cannot play.
+bool ParseCUEFileLine(CString str, CString& filename);
+
 class CPlayerPlaylistBar : public CMPCThemePlayerBar, public CDropClient
 {
     DECLARE_DYNAMIC(CPlayerPlaylistBar)

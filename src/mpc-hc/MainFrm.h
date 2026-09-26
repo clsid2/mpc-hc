@@ -710,7 +710,7 @@ protected:
     void OpenSetupVideo();
     void OpenSetupAudio();
     void OpenSetupInfoBar(bool bClear = true);
-    void UpdateChapterInInfoBar();
+    bool UpdateChapterInInfoBar(bool bRecalcLayout = true);
     void OpenSetupStatsBar();
     void CheckSelectedAudioStream();
     void CheckSelectedVideoStream();

@@ -596,6 +596,42 @@ bool CPlayerPlaylistBar::ParseBDMVPlayList(CString fn)
     return !m_pl.IsEmpty();
 }
 
+bool ParseCUEFileLine(CString str, CString& filename)
+{
+    if (str.Left(4) != _T("FILE")) {
+        return false;
+    }
+    str = str.Mid(4);
+    str.Trim();
+
+    // the type is the last token on the line, the rest is the file name
+    CString type;
+    if (!str.IsEmpty() && str[0] == _T('"')) {
+        int q = str.Find(_T('"'), 1);
+        if (q < 0) {
+            return false;
+        }
+        filename = str.Mid(1, q - 1);
+        type = str.Mid(q + 1);
+    } else {
+        int p = std::max(str.ReverseFind(_T(' ')), str.ReverseFind(_T('\t')));
+        if (p < 0) {
+            return false;
+        }
+        filename = str.Left(p);
+        filename.Trim();
+        type = str.Mid(p + 1);
+    }
+
+    type.Trim();
+    type.MakeUpper();
+    if (type.IsEmpty() || type == _T("BINARY") || type == _T("MOTOROLA")) {
+        return false;
+    }
+
+    return !filename.IsEmpty();
+}
+
 bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
     CString str;
     std::vector<int> idx;
@@ -645,13 +681,8 @@ bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
             performer = str.Mid(10).Trim(_T("\""));
         }
         else if (str.Left(4) == _T("FILE")) {
-            if (str.Right(4) == _T("WAVE") || str.Right(3) == _T("MP3") || str.Right(4) == _T("FLAC") || str.Right(4) == _T("AIFF")) {
-                CString file_entry;
-                if (str.Right(3) == _T("MP3")) {
-                    file_entry = str.Mid(5, str.GetLength() - 9).Trim(_T("\""));
-                } else {
-                    file_entry = str.Mid(5, str.GetLength() - 10).Trim(_T("\""));
-                }
+            CString file_entry;
+            if (ParseCUEFileLine(str, file_entry)) {
                 if (file_entry != lastfile) {
                     CPlaylistItem pli;
                     lastfile = file_entry;
@@ -707,11 +738,36 @@ bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
     POSITION p = pl.GetHeadPosition();
     while (p) {
         CPlaylistItem pli = pl.GetNext(p);
-        if (performer.IsEmpty()) {
+        fileid++;
+
+        // when a file holds a single track its title is not exposed as a chapter,
+        // so it is used for the label instead of the album title
+        CueTrackMeta singletrack;
+        int trackcount = 0;
+        POSITION tp = trackl.GetHeadPosition();
+        while (tp) {
+            const CueTrackMeta& c = trackl.GetNext(tp);
+            if (c.fileID == pli.m_cue_index) {
+                singletrack = c;
+                trackcount++;
+            }
+        }
+
+        if (trackcount == 1 && !singletrack.title.IsEmpty()) {
+            pli.m_label = singletrack.title;
+            if (!singletrack.performer.IsEmpty()) {
+                pli.m_label += _T(" - ") + singletrack.performer;
+            } else if (!performer.IsEmpty()) {
+                pli.m_label += _T(" - ") + performer;
+            }
+            if (filecount > 1) {
+                pli.m_label.AppendFormat(L" [%d/%d]", fileid, filecount);
+            }
+        } else if (performer.IsEmpty()) {
             if (!title.IsEmpty()) {
                 pli.m_label = title;
                 if (filecount > 1) {
-                    pli.m_label.AppendFormat(L" [%d/%d]", ++fileid, filecount);
+                    pli.m_label.AppendFormat(L" [%d/%d]", fileid, filecount);
                 }
             }
         } else {
@@ -721,7 +777,7 @@ bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
                 pli.m_label = title + _T(" - ") + performer;
             }
             if (filecount > 1) {
-                pli.m_label.AppendFormat(L" [%d/%d]", ++fileid, filecount);
+                pli.m_label.AppendFormat(L" [%d/%d]", fileid, filecount);
             }
         }
         if (!cover.IsEmpty()) pli.m_cover = cover;

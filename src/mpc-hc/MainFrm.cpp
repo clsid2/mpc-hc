@@ -15529,13 +15529,8 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
             performer = str.Mid(10).Trim(_T("\""));
         }
         else if (str.Left(4) == _T("FILE")) {
-            if (str.Right(4) == _T("WAVE") || str.Right(3) == _T("MP3") || str.Right(4) == _T("FLAC") || str.Right(4) == _T("AIFF")) {
-                CString file_entry;
-                if (str.Right(3) == _T("MP3")) {
-                    file_entry = str.Mid(5, str.GetLength() - 9).Trim(_T("\""));
-                } else {
-                    file_entry = str.Mid(5, str.GetLength() - 10).Trim(_T("\""));
-                }
+            CString file_entry;
+            if (ParseCUEFileLine(str, file_entry)) {
                 if (file_entry != lastfile) {
                     cue_index++;
                     lastfile = file_entry;
@@ -15575,26 +15570,35 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
         trackl.AddTail(track);
     }
 
-    if (trackl.GetCount() >= 1) {
-        POSITION p = trackl.GetHeadPosition();
-        bool b(true);
-        do {
-            if (p == trackl.GetTailPosition()) b = false;
-            CueTrackMeta c(trackl.GetNext(p));
-            if (cue_index == 0 || (cue_index > 0 && c.fileID == pli.m_cue_index)) {
-                CString label;
-                if (!c.title.IsEmpty()) {
-                    label = c.title;
-                    if (!c.performer.IsEmpty()) {
-                        label += (_T(" - ") + c.performer);
-                    }
-                    else if (!performer.IsEmpty()) {
-                        label += (_T(" - ") + performer);
-                    }
+    // when the file holds a single track (the whole album) there is nothing to chapter
+    int chapcount = 0;
+    POSITION p = trackl.GetHeadPosition();
+    while (p) {
+        const CueTrackMeta& c = trackl.GetNext(p);
+        if (cue_index == 0 || (cue_index > 0 && c.fileID == pli.m_cue_index)) {
+            chapcount++;
+        }
+    }
+    if (chapcount < 2) {
+        return;
+    }
+
+    p = trackl.GetHeadPosition();
+    while (p) {
+        const CueTrackMeta& c = trackl.GetNext(p);
+        if (cue_index == 0 || (cue_index > 0 && c.fileID == pli.m_cue_index)) {
+            CString label;
+            if (!c.title.IsEmpty()) {
+                label = c.title;
+                if (!c.performer.IsEmpty()) {
+                    label += (_T(" - ") + c.performer);
                 }
-                m_pCB->ChapAppend(c.time, label);
+                else if (!performer.IsEmpty()) {
+                    label += (_T(" - ") + performer);
+                }
             }
-        } while (b);
+            m_pCB->ChapAppend(c.time, label);
+        }
     }
 }
 
@@ -16181,7 +16185,7 @@ void CMainFrame::OpenSetupInfoBar(bool bClear /*= true*/)
         }
 
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_TITLE), title);
-        UpdateChapterInInfoBar();
+        bRecalcLayout |= UpdateChapterInInfoBar(false);
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_AUTHOR), author);
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_COPYRIGHT), copyright);
         bRecalcLayout |= m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_RATING), rating);
@@ -16200,7 +16204,7 @@ void CMainFrame::OpenSetupInfoBar(bool bClear /*= true*/)
     }
 }
 
-void CMainFrame::UpdateChapterInInfoBar()
+bool CMainFrame::UpdateChapterInInfoBar(bool bRecalcLayout /*= true*/)
 {
     CString chapter;
     if (m_pCB && m_pMS) {
@@ -16220,9 +16224,11 @@ void CMainFrame::UpdateChapterInInfoBar()
             }
         }
     }
-    if (m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_CHAPTER), chapter)) {
+    bool bChanged = m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_CHAPTER), chapter);
+    if (bChanged && bRecalcLayout) {
         RecalcLayout();
     }
+    return bChanged;
 }
 
 void CMainFrame::OpenSetupStatsBar()
