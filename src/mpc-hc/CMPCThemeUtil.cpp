@@ -1298,7 +1298,10 @@ namespace {
             if (cb) {
                 int wantWidth = CorrectComboListWidth(*cb);
                 if (wantWidth != CB_ERR) {
-                    row.rightWantsLeft = row.r.right - wantWidth - GetSystemMetrics(SM_CXVSCROLL);
+                    //the list width already reserves a scrollbar when the list scrolls, which is as wide as the closed
+                    //combo's drop-down button; reserve the button only when the list width did not
+                    bool listScrolls = cb->GetCount() > cb->GetMinVisible() || (cb->GetStyle() & CBS_DISABLENOSCROLL);
+                    row.rightWantsLeft = row.r.right - wantWidth - (listScrolls ? 0 : GetSystemMetrics(SM_CXVSCROLL));
                 }
             }
         }
