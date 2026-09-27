@@ -213,30 +213,42 @@ BOOL CMPCThemeMenu::AppendMenu(UINT nFlags, UINT_PTR nIDNewItem, LPCTSTR lpszNew
 void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
 {
     if (AppIsThemeLoaded()) {
-        MENUINFO oldInfo = { sizeof(MENUINFO) };
-        oldInfo.fMask = MIM_STYLE;
-        GetMenuInfo(&oldInfo);
+        //with native menus only the menubar is drawn by us--popups are left to windows
+        bool ownerDraw = isMenubar || AppNeedsThemedMenus();
 
-        MENUINFO MenuInfo = { 0 };
-        MenuInfo.cbSize = sizeof(MENUINFO);
-        MenuInfo.fMask = MIM_BACKGROUND | MIM_STYLE | MIM_APPLYTOSUBMENUS;
-        MenuInfo.dwStyle = oldInfo.dwStyle;
-        if (!bgBrush) {
-            bgBrush = ::CreateSolidBrush(CMPCTheme::MenuBGColor);
+        if (ownerDraw) {
+            MENUINFO oldInfo = { sizeof(MENUINFO) };
+            oldInfo.fMask = MIM_STYLE;
+            GetMenuInfo(&oldInfo);
+
+            MENUINFO MenuInfo = { 0 };
+            MenuInfo.cbSize = sizeof(MENUINFO);
+            MenuInfo.fMask = MIM_BACKGROUND | MIM_STYLE;
+            if (AppNeedsThemedMenus()) {
+                MenuInfo.fMask |= MIM_APPLYTOSUBMENUS;
+            }
+            MenuInfo.dwStyle = oldInfo.dwStyle;
+            if (!bgBrush) {
+                bgBrush = ::CreateSolidBrush(CMPCTheme::MenuBGColor);
+            }
+            if (!bgMenubarBrush) {
+                bgMenubarBrush = ::CreateSolidBrush(CMPCTheme::MenubarBGColor);
+            }
+            if (isMenubar) {
+                MenuInfo.hbrBack = bgMenubarBrush;
+            } else {
+                MenuInfo.hbrBack = bgBrush;
+            }
+            SetMenuInfo(&MenuInfo);
         }
-        if (!bgMenubarBrush) {
-            bgMenubarBrush = ::CreateSolidBrush(CMPCTheme::MenubarBGColor);
-        }
-        if (isMenubar) {
-            MenuInfo.hbrBack = bgMenubarBrush;
-        } else {
-            MenuInfo.hbrBack = bgBrush;
-        }
-        SetMenuInfo(&MenuInfo);
 
         int iMaxItems = GetMenuItemCount();
         for (int i = 0; i < iMaxItems; i++) {
             cleanupItem(i, MF_BYPOSITION);
+            if (!ownerDraw) {
+                fulfillThemeReqsSubMenu(i);
+                continue;
+            }
             CString nameHolder;
             MenuObject* pObject = DEBUG_NEW MenuObject;
             allocatedItems.push_back(pObject);
@@ -274,25 +286,35 @@ void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
             mInfo.dwItemData = (ULONG_PTR)pObject;
             CMenu::SetMenuItemInfo(i, &mInfo, true);
 
-            CMenu* t = GetSubMenu(i);
-            if (nullptr != t) {
-                CMPCThemeMenu* pSubMenu;
-                pSubMenu = DYNAMIC_DOWNCAST(CMPCThemeMenu, t);
-                if (!pSubMenu) {
-                    pSubMenu = DEBUG_NEW CMPCThemeMenu;
-                    pSubMenu->setOSMenu(isOSMenu);
-                    allocatedMenus.push_back(pSubMenu);
-                    pSubMenu->Attach(t->Detach());
-                }
-                pSubMenu->fulfillThemeReqs();
-            }
+            fulfillThemeReqsSubMenu(i);
         }
+    }
+}
+
+void CMPCThemeMenu::fulfillThemeReqsSubMenu(UINT nPos)
+{
+    CMenu* t = GetSubMenu(nPos);
+    if (nullptr != t) {
+        CMPCThemeMenu* pSubMenu;
+        pSubMenu = DYNAMIC_DOWNCAST(CMPCThemeMenu, t);
+        if (!pSubMenu) {
+            pSubMenu = DEBUG_NEW CMPCThemeMenu;
+            pSubMenu->setOSMenu(isOSMenu);
+            allocatedMenus.push_back(pSubMenu);
+            pSubMenu->Attach(t->Detach());
+        }
+        pSubMenu->fulfillThemeReqs();
     }
 }
 
 void CMPCThemeMenu::fulfillThemeReqsItem(UINT i, bool byCommand, bool isMenuBar)
 {
-    if (AppIsThemeLoaded()) {
+    if (AppIsThemeLoaded() && !isMenuBar && !AppNeedsThemedMenus()) {
+        UINT nPos = i;
+        if (findID(nPos, byCommand) != (UINT)-1) {
+            fulfillThemeReqsSubMenu(nPos);
+        }
+    } else if (AppIsThemeLoaded()) {
         MENUITEMINFO tInfo = { sizeof(MENUITEMINFO) };
         tInfo.fMask = MIIM_DATA | MIIM_FTYPE;
         GetMenuItemInfo(i, &tInfo, !byCommand);
@@ -330,18 +352,7 @@ void CMPCThemeMenu::fulfillThemeReqsItem(UINT i, bool byCommand, bool isMenuBar)
             mInfo.dwItemData = (ULONG_PTR)pObject;
             CMenu::SetMenuItemInfo(nPos, &mInfo, true);
 
-            CMenu* t = GetSubMenu(nPos);
-            if (nullptr != t) {
-                CMPCThemeMenu* pSubMenu;
-                pSubMenu = DYNAMIC_DOWNCAST(CMPCThemeMenu, t);
-                if (!pSubMenu) {
-                    pSubMenu = DEBUG_NEW CMPCThemeMenu;
-                    pSubMenu->setOSMenu(isOSMenu);
-                    allocatedMenus.push_back(pSubMenu);
-                    pSubMenu->Attach(t->Detach());
-                }
-                pSubMenu->fulfillThemeReqs();
-            }
+            fulfillThemeReqsSubMenu(nPos);
         }
     }
 }
@@ -595,6 +606,8 @@ void CMPCThemeMenu::updateItem(CCmdUI* pCmdUI)
         VERIFY(cm->GetMenuItemInfo(pCmdUI->m_nID, &mInfo));
 
         MenuObject* menuObject = (MenuObject*)mInfo.dwItemData;
-        cm->GetMenuString(pCmdUI->m_nID, menuObject->m_strCaption, MF_BYCOMMAND);
+        if (menuObject) {
+            cm->GetMenuString(pCmdUI->m_nID, menuObject->m_strCaption, MF_BYCOMMAND);
+        }
     }
 }

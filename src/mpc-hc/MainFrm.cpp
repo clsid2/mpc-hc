@@ -4014,7 +4014,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         return;
     }
 
-    if (!AppIsThemeLoaded()) { //themed menus draw accelerators already, no need to append
+    if (!AppNeedsThemedMenus()) { //themed menus draw accelerators already, no need to append
         for (UINT i = 0; i < uiMenuCount; ++i) {
             UINT nID = pPopupMenu->GetMenuItemID(i);
             //the dynamically named items not listed here (filters, shader presets, favorite discs, optical drives)

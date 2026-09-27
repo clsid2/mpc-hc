@@ -109,7 +109,7 @@ void CMPCThemeEdit::SetCompWindowPos(HIMC himc, UINT start) {
 }
 
 LRESULT CMPCThemeEdit::OnContextMenu(WPARAM wParam, LPARAM lParam) {
-    if (AppIsThemeLoaded()) {
+    if (AppNeedsThemedMenus()) {
         if (GetFocus() != this) {
             SetFocus();
         }

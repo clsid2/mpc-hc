@@ -124,6 +124,7 @@
 #define IDS_RS_REDIRECT_OPEN_TO_APPEND_THRESHOLD _T("RedirectOpenToAppendThreshold")
 #define IDS_RS_FULLSCREEN_SEPARATE_CONTROLS _T("FullscreenSeparateControls")
 #define IDS_RS_ALWAYS_USE_SHORT_MENU        _T("AlwaysUseShortMenu")
+#define IDS_RS_WIN11_NATIVE_MENUS           _T("Win11NativeMenus")
 #define IDS_RS_STILL_VIDEO_DURATION         _T("StillVideoDuration")
 #define IDS_RS_MOUSE_LEFTUP_DELAY           _T("MouseLeftUpDelay")
 #define IDS_RS_USE_FREETYPE                 _T("UseFreetype")

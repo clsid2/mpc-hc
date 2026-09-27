@@ -656,6 +656,7 @@ CMPlayerCApp::CMPlayerCApp()
     , m_bDelayingIdle(false)
     , m_fClosingState(false)
     , m_bThemeLoaded(false)
+    , m_bNativeMenus(false)
 {
     m_strVersion = FileVersionInfo::GetFileVersionStr(PathUtils::GetProgramPath(true));
 
@@ -2380,6 +2381,7 @@ BOOL CMPlayerCApp::InitInstance()
     m_s->MigrateSettings(); // migrate old settings
     m_s->LoadSettings();    // read settings
     m_s->UpdateSettings();  // update settings
+    CMPCThemeUtil::applyNativeMenuMode();
 
     #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     if (m_s->bEnableCrashReporter) {

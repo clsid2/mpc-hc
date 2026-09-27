@@ -21,6 +21,7 @@ public:
 
     void fulfillThemeReqs(bool menubar = false);
     void fulfillThemeReqsItem(UINT i, bool byCommand = false, bool isMenuBar = false);
+    void fulfillThemeReqsSubMenu(UINT nPos);
     static void fulfillThemeReqsItem(CMenu* parent, UINT i, bool byCommand = false);
     static UINT getPosFromID(CMenu* parent, UINT nID);
     static CMPCThemeMenu* getParentMenu(UINT itemID);

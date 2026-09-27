@@ -114,6 +114,7 @@ public:
     static void drawParentDialogBGClr(CWnd* wnd, CDC* pDC, CRect r, bool fill = true);
     static void fulfillThemeReqs(CProgressCtrl* ctl);
     static void enableWindows10DarkFrame(CWnd* window);
+    static void applyNativeMenuMode();
     static void AdjustDynamicWidgetPair(CWnd* window, int left, int right, bool allowShrinkRight = false);
     static void AdjustDynamicWidgetGroup(CWnd* window, std::initializer_list<std::pair<int, int>> pairs, bool allowShrinkRight = false);
     static void UpdateAnalogCaptureDeviceSlider(CScrollBar* pScrollBar);

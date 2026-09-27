@@ -1172,6 +1172,27 @@ void CMPCThemeUtil::enableWindows10DarkFrame(CWnd* window)
     }
 }
 
+void CMPCThemeUtil::applyNativeMenuMode()
+{
+    if (!static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus) {
+        return;
+    }
+    //undocumented uxtheme exports. native menus are only offered on windows 11, where these ordinals are stable
+    enum PreferredAppMode { Default, AllowDark, ForceDark, ForceLight };
+    typedef PreferredAppMode(WINAPI* pfnSetPreferredAppMode)(PreferredAppMode);
+    typedef void (WINAPI* pfnFlushMenuThemes)();
+    HMODULE hUxtheme = GetModuleHandleW(L"uxtheme.dll");
+    if (hUxtheme) {
+        pfnSetPreferredAppMode setPreferredAppMode = (pfnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
+        pfnFlushMenuThemes flushMenuThemes = (pfnFlushMenuThemes)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(136));
+        if (setPreferredAppMode && flushMenuThemes) {
+            //force rather than allow, so menus follow the player theme even when it differs from the os
+            setPreferredAppMode(CMPCTheme::EffectiveThemeMode() == CMPCTheme::ModernThemeMode::DARK ? ForceDark : ForceLight);
+            flushMenuThemes();
+        }
+    }
+}
+
 int CALLBACK PropSheetCallBackRTL(HWND hWnd, UINT message, LPARAM lParam) {
     switch (message) {
     case PSCB_PRECREATE:
