@@ -17831,7 +17831,7 @@ void CMainFrame::LoadDynamicMenus() {
 
 void CMainFrame::SetupOpenCDSubMenu()
 {
-    CMenu& subMenu = m_openCDsMenu;
+    CMPCThemeMenu& subMenu = m_openCDsMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -18054,7 +18054,7 @@ void CMainFrame::SetupFiltersSubMenu()
 
 void CMainFrame::SetupAudioSubMenu()
 {
-    CMenu& subMenu = m_audiosMenu;
+    CMPCThemeMenu& subMenu = m_audiosMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -18171,7 +18171,7 @@ void CMainFrame::SetupAudioSubMenu()
 
 void CMainFrame::SetupSubtitlesSubMenu()
 {
-    CMenu& subMenu = m_subtitlesMenu;
+    CMPCThemeMenu& subMenu = m_subtitlesMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -18463,7 +18463,7 @@ SubtitleInput* CMainFrame::GetSecondarySubtitleInput(int idx)
 
 void CMainFrame::SetupSecondarySubtitleSubMenu()
 {
-    CMenu& subMenu = m_subtitlesSecondaryMenu;
+    CMPCThemeMenu& subMenu = m_subtitlesSecondaryMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -18517,7 +18517,7 @@ void CMainFrame::SetupSecondarySubtitleSubMenu()
 
 void CMainFrame::SetupVideoStreamsSubMenu()
 {
-    CMenu& subMenu = m_videoStreamsMenu;
+    CMPCThemeMenu& subMenu = m_videoStreamsMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -18971,7 +18971,7 @@ void CMainFrame::SetupRecentFilesSubMenu()
     }
     recentFilesMenuFromMRUSequence = MRU.listModifySequence;
 
-    CMenu& subMenu = m_recentFilesMenu;
+    CMPCThemeMenu& subMenu = m_recentFilesMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
    
@@ -19032,7 +19032,7 @@ void CMainFrame::SetupRecentFilesSubMenu()
 
 void CMainFrame::SetupFavoritesSubMenu()
 {
-    CMenu& subMenu = m_favoritesMenu;
+    CMPCThemeMenu& subMenu = m_favoritesMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
@@ -19145,7 +19145,7 @@ bool CMainFrame::SetupShadersSubMenu()
 {
     const auto& s = AfxGetAppSettings();
 
-    CMenu& subMenu = m_shadersMenu;
+    CMPCThemeMenu& subMenu = m_shadersMenu;
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 

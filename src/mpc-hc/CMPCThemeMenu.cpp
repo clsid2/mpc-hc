@@ -236,6 +236,7 @@ void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
 
         int iMaxItems = GetMenuItemCount();
         for (int i = 0; i < iMaxItems; i++) {
+            cleanupItem(i, MF_BYPOSITION);
             CString nameHolder;
             MenuObject* pObject = DEBUG_NEW MenuObject;
             allocatedItems.push_back(pObject);
