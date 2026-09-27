@@ -4908,7 +4908,7 @@ void CMainFrame::ToolbarContextMenu(int iItem, int nIndex, CRect buttonRect) {
     
 
     if (subMenu) {
-        if (AppNeedsThemedControls()) {
+        if (AppIsThemeLoaded()) {
             subMenu->fulfillThemeReqs();
         }
         m_bTBDropdownActive = true;

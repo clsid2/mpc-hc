@@ -257,7 +257,7 @@ void CPlayerNavigationDialog::OnContextMenu(CWnd* pWnd, CPoint point)
     }
     m.AppendMenu(MF_STRING | (channelCount > 0 ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)), M_REMOVE_ALL, ResStr(IDS_NAVIGATION_REMOVE_ALL));
 
-    if (AppNeedsThemedControls()) {
+    if (AppIsThemeLoaded()) {
         m.fulfillThemeReqs();
     }
     //this dialog is the menu owner, which bypasses CPlayerBar::OnEnterMenuLoop,

@@ -1082,7 +1082,7 @@ void CPlayerSubresyncBar::OnRclickList(NMHDR* pNMHDR, LRESULT* pResult)
         CPoint p = lpnmlv->ptAction;
         ::MapWindowPoints(pNMHDR->hwndFrom, HWND_DESKTOP, &p, 1);
 
-        if (AppNeedsThemedControls()) {
+        if (AppIsThemeLoaded()) {
             m.fulfillThemeReqs();
         }
         SetHasActivePopup(true);

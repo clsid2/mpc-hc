@@ -326,7 +326,7 @@ void CWinHotkeyCtrl::OnContextMenu(CWnd*, CPoint pt)
     menu.AppendMenu(MF_STRING, 1, ResStr(IDS_APPLY));
     menu.AppendMenu(MF_STRING, 2, ResStr(IDS_CLEAR));
     menu.AppendMenu(MF_STRING, 3, ResStr(IDS_CANCEL));
-    if (AppNeedsThemedControls()) {
+    if (AppIsThemeLoaded()) {
         menu.fulfillThemeReqs();
     }
 
