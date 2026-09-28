@@ -158,6 +158,13 @@ public:
     //Windows 11 style only: fill of a checked check box or radio, and the glyph drawn on it
     static COLORREF CheckboxCheckedColor;
     static COLORREF CheckboxGlyphColor;
+    //Windows 11 style only: the round slider thumb and its outline
+    static COLORREF SliderThumbColor;
+    static COLORREF SliderThumbBorderColor;
+    //the statistics and status bars: black everywhere except the Windows 11 light style
+    static COLORREF InfoBarBGColor;
+    static COLORREF InfoBarTextColor;
+    static COLORREF InfoBarBorderColor;
 
     static const int GroupBoxTextIndent;
 
@@ -172,10 +179,10 @@ public:
     static wchar_t* const uiSymbolFont;
 
 
-    static const COLORREF ComboboxArrowColor;
-    static const COLORREF ComboboxArrowColorDisabled;
+    static COLORREF ComboboxArrowColor;
+    static COLORREF ComboboxArrowColorDisabled;
 
-    static const COLORREF HeaderCtrlSortArrowColor;
+    static COLORREF HeaderCtrlSortArrowColor;
 
     static const BYTE CheckBits[14];
     static const int CheckWidth;

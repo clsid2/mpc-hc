@@ -14,6 +14,7 @@ protected:
     CBrush bgBrush;
     bool m_bDrag, m_bHover, lockToZero;
     CMPCThemeToolTipCtrl themedToolTip;
+    void drawFluentPart(LPNMCUSTOMDRAW pNMCD);
 public:
     afx_msg void OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult);
     void invalidateThumb();

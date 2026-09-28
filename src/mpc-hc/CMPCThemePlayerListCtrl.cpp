@@ -30,7 +30,7 @@ void CMPCThemePlayerListCtrl::PreSubclassWindow()
     if (!AppNeedsThemedControls()) {
         EnableToolTips(TRUE);
     } else {
-        if (CMPCThemeUtil::canUseWin10DarkTheme()) {
+        if (CMPCThemeUtil::canUseExplorerTheme()) {
             //SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
         } else {
             SetWindowTheme(GetSafeHwnd(), L"", NULL);

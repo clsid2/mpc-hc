@@ -30,11 +30,7 @@ BOOL CMPCThemeTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 void CMPCThemeTreeCtrl::fulfillThemeReqs()
 {
     if (AppNeedsThemedControls()) {
-        if (CMPCThemeUtil::canUseWin10DarkTheme()) {
-            SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
-        } else {
-            SetWindowTheme(GetSafeHwnd(), L"", NULL);
-        }
+        SetWindowTheme(GetSafeHwnd(), CMPCThemeUtil::explorerThemeName(), NULL);
         SetExtendedStyle(TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER); //necessary to prevent significant flicker
 
         SetLineColor(CMPCTheme::TreeCtrlLineColor);
@@ -133,7 +129,7 @@ void CMPCThemeTreeCtrl::OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult)
                 isHot = 0 != (pNMCD->uItemState & CDIS_HOT);
 
                 //regular theme is a bit ugly but better than Explorer theme. we clear the focus states to control the highlight ourselves
-                if (!CMPCThemeUtil::canUseWin10DarkTheme()) {
+                if (!CMPCThemeUtil::canUseExplorerTheme()) {
                     pNMCD->uItemState &= ~(CDIS_FOCUS | CDIS_HOT | CDIS_SELECTED);
                 }
 

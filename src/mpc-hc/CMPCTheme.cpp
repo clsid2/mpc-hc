@@ -74,8 +74,10 @@ namespace FluentLight {
     constexpr DWORD SubtleFillColorTertiary = 0x06000000;
     constexpr DWORD ControlAltFillColorSecondary = 0x06000000;
     constexpr DWORD ControlAltFillColorTertiary = 0x0F000000;
+    constexpr DWORD ControlAltFillColorQuarternary = 0x18000000;
     constexpr DWORD ControlStrokeColorDefault = 0x0F000000;
     constexpr DWORD ControlStrokeColorSecondary = 0x29000000;
+    constexpr DWORD ControlSolidFillColorDefault = 0xFFFFFFFF;
     constexpr DWORD ControlStrokeColorOnAccentSecondary = 0x66000000;
     constexpr DWORD CardStrokeColorDefault = 0x0F000000;
     constexpr DWORD ControlStrongStrokeColorDefault = 0x72000000;
@@ -90,6 +92,7 @@ namespace FluentLight {
     constexpr DWORD SolidBackgroundFillColorTertiary = 0xFFF9F9F9;
     constexpr DWORD SolidBackgroundFillColorBaseAlt = 0xFFDADADA;
     constexpr DWORD SystemFillColorCritical = 0xFFC42B1C;
+    constexpr DWORD SystemFillColorCriticalBackground = 0xFFFDE7E9;
 }
 
 const int CMPCTheme::GroupBoxTextIndent = 8;
@@ -241,6 +244,11 @@ COLORREF CMPCTheme::PlaylistSelectedColor;
 COLORREF CMPCTheme::PlaylistIndicatorColor;
 COLORREF CMPCTheme::CheckboxCheckedColor;
 COLORREF CMPCTheme::CheckboxGlyphColor;
+COLORREF CMPCTheme::SliderThumbColor;
+COLORREF CMPCTheme::SliderThumbBorderColor;
+COLORREF CMPCTheme::InfoBarBGColor = RGB(0, 0, 0);
+COLORREF CMPCTheme::InfoBarTextColor = RGB(255, 255, 255);
+COLORREF CMPCTheme::InfoBarBorderColor = RGB(0, 0, 0);
 
 wchar_t* const CMPCTheme::uiTextFont = L"Segoe UI";
 wchar_t* const CMPCTheme::uiStaticTextFont = L"Segoe UI Semilight";
@@ -266,10 +274,11 @@ const BYTE CMPCTheme::GripperBitsV[8] = {
     0x00, 0x00,
 };
 
-const COLORREF CMPCTheme::ComboboxArrowColor = RGB(200, 200, 200);
-const COLORREF CMPCTheme::ComboboxArrowColorDisabled = RGB(100, 100, 100);
+//the Windows 10 palette draws these arrows in dark mode only; the Windows 11 light palette sets its own
+COLORREF CMPCTheme::ComboboxArrowColor = RGB(200, 200, 200);
+COLORREF CMPCTheme::ComboboxArrowColorDisabled = RGB(100, 100, 100);
 
-const COLORREF CMPCTheme::HeaderCtrlSortArrowColor = RGB(200, 200, 200);
+COLORREF CMPCTheme::HeaderCtrlSortArrowColor = RGB(200, 200, 200);
 
 
 const BYTE CMPCTheme::CheckBits[14] = {
@@ -582,6 +591,9 @@ CMPCTheme::ModernThemeStyle CMPCTheme::EffectiveThemeStyle() {
 
 void CMPCTheme::InitializeColors() {
     isWindows11Style = EffectiveThemeStyle() == ModernThemeStyle::WINDOWS11;
+    InfoBarBGColor = RGB(0, 0, 0);
+    InfoBarTextColor = RGB(255, 255, 255);
+    InfoBarBorderColor = RGB(0, 0, 0);
     if (isWindows11Style) {
         InitializeWindows11Colors();
     } else {
@@ -895,6 +907,8 @@ void CMPCTheme::InitializeWindows11Colors() {
         ImageDisabledColor = Flatten(TextFillColorDisabled, WindowBGColor);
 
         SliderChannelColor = Flatten(ControlStrongFillColorDefault, WindowBGColor);
+        SliderThumbColor = Opaque(ControlSolidFillColorDefault); //fluent slider thumb: a solid disc with an accent dot
+        SliderThumbBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor);
 
         EditBorderColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
 
@@ -950,6 +964,7 @@ void CMPCTheme::InitializeWindows11Colors() {
         W10DarkThemeWindowBorderColor = Flatten(SurfaceStrokeColorDefault, base);
     } else {
         using namespace FluentLight;
+        drawThemedControls = true;
 
         const COLORREF base = Opaque(SolidBackgroundFillColorBase);
         const COLORREF layer = Flatten(LayerFillColorDefault, base); //content surfaces sit one layer above the base
@@ -961,6 +976,7 @@ void CMPCTheme::InitializeWindows11Colors() {
 
         ContentBGColor = layer;
         PlaylistSelectedColor = Flatten(SubtleFillColorSecondary, ContentBGColor); //list selection is neutral, the accent goes on an indicator
+        ContentSelectedColor = Opaque(SolidBackgroundFillColorBaseAlt); //neutral selection as in explorer; the light solid fill is white, so the alternate base is the nearest solid neutral
         PlayerBGColor = layer; //player bars share the content layer so the seekbar stays flush with the toolbar
 
         MenuSelectedColor = Flatten(SubtleFillColorSecondary, MenuBGColor); //darker than the menu, unlike the Windows 10 palette
@@ -970,7 +986,7 @@ void CMPCTheme::InitializeWindows11Colors() {
         MainMenuBorderColor = Flatten(SurfaceStrokeColorFlyout, MenuBGColor);
 
         TextFGColor = Flatten(TextFillColorPrimary, base);
-        PropPageCaptionFGColor = Opaque(TextOnAccentFillColorPrimary); //the caption gradient starts at the accent selection colour
+        PropPageCaptionFGColor = TextFGColor; //the caption gradient starts at the neutral selection colour
         TextFGColorFade = Flatten(TextFillColorSecondary, base);
         ContentTextDisabledFGColorFade = Flatten(TextFillColorDisabled, ContentBGColor);
         ContentTextDisabledFGColorFade2 = Flatten(ControlStrongStrokeColorDisabled, ContentBGColor); //even more faded: no fainter text token, the disabled strong stroke is the nearest role
@@ -1019,47 +1035,55 @@ void CMPCTheme::InitializeWindows11Colors() {
         ImageDisabledColor = Flatten(TextFillColorDisabled, WindowBGColor);
 
         SliderChannelColor = Flatten(ControlStrongFillColorDefault, WindowBGColor);
+        SliderThumbColor = Opaque(ControlSolidFillColorDefault); //fluent slider thumb: a solid disc with an accent dot
+        SliderThumbBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor);
 
         EditBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor); //text boxes have the stronger bottom stroke
 
-        TreeCtrlLineColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        TreeCtrlHoverColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        TreeCtrlFocusColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        //a black strip under light toolbars looks out of place in windows 11, so the statistics and status bars join the player bars
+        InfoBarBGColor = PlayerBGColor;
+        InfoBarTextColor = TextFGColor;
+        InfoBarBorderColor = Flatten(DividerStrokeColorDefault, PlayerBGColor);
 
-        CheckColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        TreeCtrlLineColor = Flatten(ControlStrongStrokeColorDisabled, ContentBGColor); //tree connector lines: a de-emphasised strong stroke
+        TreeCtrlHoverColor = Flatten(SubtleFillColorSecondary, ContentBGColor);
+        TreeCtrlFocusColor = Opaque(SolidBackgroundFillColorBaseAlt); //selection, as ContentSelectedColor
+
+        CheckColor = TextFGColor; //only read by the Windows 10 check box images; the Windows 11 style draws its own with CheckboxGlyphColor
 
         ColumnHeaderHotColor = Flatten(SubtleFillColorSecondary, ContentBGColor);
 
-        StaticEtchedColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        StaticEtchedColor = Flatten(DividerStrokeColorDefault, WindowBGColor);
 
-        ListCtrlDisabledBGColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        ListCtrlGridColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        ListCtrlErrorColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        HeaderCtrlGridColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        AudioSwitcherGridColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        ListCtrlDisabledBGColor = Opaque(SolidBackgroundFillColorSecondary); //the light disabled fill is near white and vanishes over the layer, so a disabled list drops to the secondary surface
+        ListCtrlGridColor = Flatten(DividerStrokeColorDefault, ContentBGColor);
+        ListCtrlErrorColor = Opaque(SystemFillColorCriticalBackground); //drawn behind text, so the critical background rather than the critical fill
+        HeaderCtrlGridColor = Flatten(DividerStrokeColorDefault, ContentBGColor);
+        AudioSwitcherGridColor = Flatten(DividerStrokeColorDefault, ContentBGColor);
 
         TabCtrlBorderColor = Flatten(DividerStrokeColorDefault, WindowBGColor);
         TabCtrlInactiveColor = Flatten(ControlFillColorDefault, WindowBGColor);
 
         StatusBarBGColor = Opaque(SolidBackgroundFillColorSecondary);
-        StatusBarSeparatorColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        StatusBarSeparatorColor = Flatten(DividerStrokeColorDefault, StatusBarBGColor);
 
         ProgressBarBGColor = Flatten(ControlStrongStrokeColorDefault, WindowBGColor); //progress track
 
-        SubresyncFadeText1 = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        SubresyncFadeText2 = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        SubresyncActiveFadeText = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        SubresyncHLColor1 = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        SubresyncHLColor2 = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        SubresyncGridSepColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-
-        ActivePlayListItemColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        ActivePlayListItemHLColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
-        StaticLinkColor = RGB(255, 0, 0); //not implemented for light theme, default windows controls used
+        SubresyncFadeText1 = Flatten(TextFillColorTertiary, ContentBGColor);
+        SubresyncFadeText2 = Flatten(TextFillColorDisabled, ContentBGColor);
+        SubresyncActiveFadeText = Flatten(TextFillColorSecondary, ContentBGColor);
+        SubresyncHLColor1 = Flatten(ControlStrongFillColorDisabled, ContentBGColor); //modified rows: a dimmed strong fill
+        SubresyncHLColor2 = Flatten(ControlAltFillColorQuarternary, ContentBGColor); //adjusted rows: the light control fills are near white and vanish over the layer, so the strongest alt fill stands in
+        SubresyncGridSepColor = Flatten(ControlStrongStrokeColorDefault, ContentBGColor);
 
         SeekbarCurrentPositionColor = RGB(38, 160, 218); //seekbar keeps its Windows 10 colours for now; following the accent is deferred (2026-09-27)
         SeekbarChapterColor = RGB(100, 100, 100); //seekbar keeps its Windows 10 colours for now; following the accent is deferred (2026-09-27)
         SeekbarABColor = RGB(242, 13, 13); //seekbar keeps its Windows 10 colours for now; following the accent is deferred (2026-09-27)
+
+        //mode independent in the Windows 10 palette, which draws these controls in dark mode only
+        ComboboxArrowColor = Flatten(TextFillColorSecondary, ButtonFillColor);
+        ComboboxArrowColorDisabled = Flatten(TextFillColorDisabled, ButtonFillColor);
+        HeaderCtrlSortArrowColor = Flatten(TextFillColorSecondary, ContentBGColor);
 
         //mode independent in the Windows 10 palette; the titlebar and file dialog slots are only drawn in dark mode
         CloseHoverColor = Opaque(SystemFillColorCritical); //windows 11 uses the same close red in both modes
@@ -1205,11 +1229,9 @@ void CMPCTheme::ApplyAccentColors() {
     } else {
         //WinUI light: AccentFillColorDefault = AccentDark1, AccentTextFillColorPrimary = AccentDark2
         HighLightColor = AccentDark1;
-        ContentSelectedColor = AccentDark1; //the light selection is the accent, drawn with white text
         ButtonBorderInnerFocusedColor = EnsureContrast(AccentDark1, WindowBGColor, 3.0);
         CheckboxBorderHoverColor = EnsureContrast(AccentDark1, WindowBGColor, 3.0);
         ProgressBarColor = AccentDark1;
-        //StaticLinkColor is not implemented for light theme; it is set below but only read by the dark static link
     }
     //accent text and the playlist indicator use the most vivid shade that reads, rather than WinUI's fixed shade;
     //the playlist is drawn from the palette in the Windows 11 style, light included

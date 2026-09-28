@@ -1141,15 +1141,29 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
     drawCheckBoxInternal(checkState, isHover, useSystemSize, rectCheck, pDC, isRadio, &cache[resourceID].image, cache[resourceID].size);
 }
 
+//themed controls in dark mode on an os with the dark explorer theme: such windows get DarkMode_Explorer and the dark frame
 bool CMPCThemeUtil::canUseWin10DarkTheme()
 {
-    if (AppNeedsThemedControls()) {
+    if (AppNeedsThemedControls() && CMPCTheme::EffectiveThemeMode() == CMPCTheme::ModernThemeMode::DARK) {
         //        return false; //FIXME.  return false to test behavior for OS < Win10 1809
         RTL_OSVERSIONINFOW osvi = GetRealOSVersion();
-        bool ret = (osvi.dwMajorVersion = 10 && osvi.dwMajorVersion >= 0 && osvi.dwBuildNumber >= 17763); //dark theme first available in win 10 1809
+        bool ret = (osvi.dwMajorVersion >= 10 && osvi.dwBuildNumber >= 17763); //dark theme first available in win 10 1809
         return ret;
     }
     return false;
+}
+
+//the explorer visual style for the controls the theme dresses but does not fully draw (tree, list box, combo list, edit):
+//the dark one where canUseWin10DarkTheme, the light one where the light palette draws the controls (Windows 11 style),
+//and none where the controls are drawn without a visual style
+bool CMPCThemeUtil::canUseExplorerTheme()
+{
+    return canUseWin10DarkTheme() || (AppNeedsThemedControls() && CMPCTheme::EffectiveThemeMode() == CMPCTheme::ModernThemeMode::LIGHT);
+}
+
+LPCWSTR CMPCThemeUtil::explorerThemeName()
+{
+    return canUseWin10DarkTheme() ? L"DarkMode_Explorer" : canUseExplorerTheme() ? L"Explorer" : L"";
 }
 
 bool CMPCThemeUtil::IsBasicMode()

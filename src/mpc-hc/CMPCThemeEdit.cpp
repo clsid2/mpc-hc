@@ -316,11 +316,7 @@ void CMPCThemeEdit::PreSubclassWindow()
         GetClientRect(r);
         r.DeflateRect(2, 2); //some default padding for those spaceless fonts
         SetRect(r);
-        if (CMPCThemeUtil::canUseWin10DarkTheme()) {
-            SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
-        } else {
-            SetWindowTheme(GetSafeHwnd(), L"", NULL);
-        }
+        SetWindowTheme(GetSafeHwnd(), CMPCThemeUtil::explorerThemeName(), NULL);
     } else {
         __super::PreSubclassWindow();
     }

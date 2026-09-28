@@ -60,10 +60,10 @@ CMPCThemeComboBox::~CMPCThemeComboBox()
 void CMPCThemeComboBox::themeControls()
 {
     if (AppNeedsThemedControls()) {
-        if (CMPCThemeUtil::canUseWin10DarkTheme() && !hasThemedControls) {
+        if (CMPCThemeUtil::canUseExplorerTheme() && !hasThemedControls) {
             COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
             if (GetComboBoxInfo(&info)) {
-                SetWindowTheme(info.hwndList, L"DarkMode_Explorer", NULL);
+                SetWindowTheme(info.hwndList, CMPCThemeUtil::explorerThemeName(), NULL);
                 DWORD dropdownType = GetStyle() & 3;
                 if (CBS_DROPDOWN == dropdownType || CBS_SIMPLE == dropdownType) {
                     cbEdit.SubclassWindow(info.hwndItem);

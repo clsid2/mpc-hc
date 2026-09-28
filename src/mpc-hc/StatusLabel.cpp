@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "mplayerc.h"
 #include "StatusLabel.h"
+#include "CMPCTheme.h"
 #include "WinAPIUtils.h"
 
 // CStatusLabel
@@ -76,8 +77,8 @@ void CStatusLabel::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
     CDC dc;
     dc.Attach(lpDrawItemStruct->hDC);
-    dc.SetTextColor(0xffffff);
-    dc.SetBkColor(0);
+    dc.SetTextColor(CMPCTheme::InfoBarTextColor);
+    dc.SetBkColor(CMPCTheme::InfoBarBGColor);
     CFont* old = dc.SelectObject(&m_font);
     const UINT style = DT_SINGLELINE | DT_NOPREFIX | (m_fAddEllipses ? DT_END_ELLIPSIS : 0);
     CRect textRect(clientRect);
@@ -88,7 +89,7 @@ void CStatusLabel::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
     textRect.MoveToY((clientRect.Height() - textRect.Height()) / 2);
     dc.DrawText(str, textRect, style);
     dc.ExcludeClipRect(textRect);
-    dc.FillSolidRect(clientRect, 0);
+    dc.FillSolidRect(clientRect, CMPCTheme::InfoBarBGColor);
     dc.SelectObject(&old);
     dc.Detach();
 }

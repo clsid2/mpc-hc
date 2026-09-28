@@ -274,14 +274,14 @@ BOOL CPlayerInfoBar::OnEraseBkgnd(CDC* pDC)
     }
 
     if (AppIsThemeLoaded()) {
-        pDC->FillSolidRect(&r, CMPCTheme::NoBorderColor);
+        pDC->FillSolidRect(&r, CMPCTheme::InfoBarBorderColor);
     } else {
         pDC->Draw3dRect(&r, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
     }
 
     r.DeflateRect(1, 1);
 
-    pDC->FillSolidRect(&r, 0);
+    pDC->FillSolidRect(&r, CMPCTheme::InfoBarBGColor);
 
     return TRUE;
 }

@@ -92,11 +92,7 @@ void CMPCThemeListBox::PreSubclassWindow()
 {
     CListBox::PreSubclassWindow();
     if (AppNeedsThemedControls()) {
-        if (CMPCThemeUtil::canUseWin10DarkTheme()) {
-            SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
-        } else {
-            SetWindowTheme(GetSafeHwnd(), L"", NULL);
-        }
+        SetWindowTheme(GetSafeHwnd(), CMPCThemeUtil::explorerThemeName(), NULL);
         if (nullptr == themedToolTip.m_hWnd) {
             themedToolTip.Create(this, TTS_ALWAYSTIP);
         }

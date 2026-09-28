@@ -457,7 +457,7 @@ void CPlayerStatusBar::OnPaint()
     }
 
     if (AppIsThemeLoaded()) {
-        dc.FillSolidRect(&r, CMPCTheme::NoBorderColor);
+        dc.FillSolidRect(&r, CMPCTheme::InfoBarBorderColor);
         CRect top(r.left, r.top, r.right, r.top + 1);
         dc.FillSolidRect(&top, CMPCTheme::WindowBGColor);
     } else {
@@ -466,7 +466,7 @@ void CPlayerStatusBar::OnPaint()
 
     r.DeflateRect(1, 1);
 
-    dc.FillSolidRect(&r, 0);
+    dc.FillSolidRect(&r, CMPCTheme::InfoBarBGColor);
 
     // Only draw the audio-channel bitmap when Relayout actually reserves room for it (Audio Info off).
     // When Audio Info is on, no space is reserved and the time control overlaps this area; drawing the
@@ -544,7 +544,8 @@ HBRUSH CPlayerStatusBar::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     HBRUSH hbr = CDialogBar::OnCtlColor(pDC, pWnd, nCtlColor);
 
     if (*pWnd == m_type) {
-        hbr = GetStockBrush(BLACK_BRUSH);
+        pDC->SetDCBrushColor(CMPCTheme::InfoBarBGColor);
+        hbr = (HBRUSH)GetStockObject(DC_BRUSH);
     }
 
     // TODO:  Return a different brush if the default is not desired
