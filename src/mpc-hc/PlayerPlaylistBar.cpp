@@ -2641,8 +2641,11 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     }
     m.AppendMenu(styleListNotEmpty, M_SAVEAS, ResStr(IDS_PLAYLIST_SAVEAS));
     m.AppendMenu(MF_SEPARATOR);
+    //the submenus are plain menus: m themes them when they are appended and owns what that allocates. a local
+    //CMPCThemeMenu would free its item data here while m still shows the items, which crashed once the freed
+    //addresses were reused
     {
-        CMPCThemeMenu sortMenu;
+        CMenu sortMenu;
         sortMenu.CreatePopupMenu();
         UINT styleListNotEmptyPopup = MF_POPUP | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
         sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYNAME, ResStr(IDS_PLAYLIST_SORTBYLABEL));
@@ -2662,7 +2665,7 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     m.AppendMenu(MF_SEPARATOR);
     {
         const UINT dockBarID = GetParent()->GetDlgCtrlID();
-        CMPCThemeMenu positionMenu;
+        CMenu positionMenu;
         positionMenu.CreatePopupMenu();
         positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_LEFT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_LEFT, ResStr(IDS_PLAYLIST_POSITION_LEFT));
         positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_TOP ? MF_CHECKED : MF_UNCHECKED), M_POSITION_TOP, ResStr(IDS_PLAYLIST_POSITION_TOP));
