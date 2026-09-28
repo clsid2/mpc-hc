@@ -2461,13 +2461,21 @@ void CAppSettings::LoadSettings()
         }
     }
 
-    if (bMPCTheme) {
+    // a contrast theme brings its own colours, which the modern palette cannot follow;
+    // step aside for the session and let the classic path draw with the system colours
+    HIGHCONTRAST hc = { sizeof(hc) };
+    bool bHighContrast = SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) && (hc.dwFlags & HCF_HIGHCONTRASTON);
+    bool bThemeLoaded = bMPCTheme && !bHighContrast;
+    if (bHighContrast) {
+        bWindows10DarkThemeActive = false; //also stops the dark file dialog workaround, which runs even without the theme
+    }
+    if (bThemeLoaded) {
         CMPCTheme::InitializeColors();
     }
     // GUI theme can be used now
-    static_cast<CMPlayerCApp*>(AfxGetApp())->m_bThemeLoaded = bMPCTheme;
+    static_cast<CMPlayerCApp*>(AfxGetApp())->m_bThemeLoaded = bThemeLoaded;
     // like the theme itself, native menus are fixed for the session
-    static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus = bMPCTheme && bWin11NativeMenus && IsWindowsVersionOrGreaterBuild(10, 0, 22000);
+    static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus = bThemeLoaded && bWin11NativeMenus && IsWindowsVersionOrGreaterBuild(10, 0, 22000);
 
     if (fLaunchfullscreen && slFiles.GetCount() > 0) {
         nCLSwitches |= CLSW_FULLSCREEN;

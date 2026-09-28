@@ -158,7 +158,7 @@ void CPreView::OnPaint() {
     mdc.SetBkMode(TRANSPARENT);
 
     COLORREF bg;
-    if (AfxGetAppSettings().bMPCTheme) {
+    if (AppIsThemeLoaded()) {
         bg = CMPCTheme::CMPCTheme::MenuBGColor;
         m_crText = CMPCTheme::TextFGColor;
     } else {

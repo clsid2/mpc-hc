@@ -36,7 +36,7 @@ CVolumeCtrl::CVolumeCtrl(bool fSelfDrawn)
     : m_fSelfDrawn(fSelfDrawn)
     , m_bDrag(false)
     , m_bHover(false)
-    , modernStyle(AfxGetAppSettings().bMPCTheme)
+    , modernStyle(AppIsThemeLoaded())
     , showPercentage(AfxGetAppSettings().bShowVolumePercentage)
 {
 }
