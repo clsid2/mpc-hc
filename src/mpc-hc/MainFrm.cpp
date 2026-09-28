@@ -25050,6 +25050,11 @@ bool CMainFrame::DownloadWithYoutubeDL(CString url, CString filename)
 void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
     __super::OnSettingChange(uFlags, lpszSection);
+    if (lpszSection && 0 == _tcscmp(lpszSection, _T("ImmersiveColorSet")) && AppIsThemeLoaded() && CMPCTheme::EffectiveThemeStyle() == CMPCTheme::ModernThemeStyle::WINDOWS11) {
+        //the accent colour changed; only the Windows 11 style follows it
+        CMPCTheme::ApplyAccentColors();
+        RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
+    }
     if (SPI_SETNONCLIENTMETRICS == uFlags) {
         CMPCThemeUtil::GetMetrics(true);
         CMPCThemeMenu::clearDimensions();

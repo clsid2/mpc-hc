@@ -865,6 +865,7 @@ public:
     int             iModernSeekbarHeight;
 
     CMPCTheme::ModernThemeMode eModernThemeMode;
+    int             iModernThemeStyle;
 
     int             iFullscreenDelay;
 

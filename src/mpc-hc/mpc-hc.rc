@@ -4351,6 +4351,10 @@ BEGIN
     IDS_PPAGEADVANCED_HISTORY_EXCLUDE_FILTER "Semicolon separated list of substrings. Files and URLs whose full path contains any of them are not added to the recent files list, the resume position history, or the Windows recent documents list.\nExample: private;C:\\Videos\\Temp;youtube.com"
     IDS_PPAGEADVANCED_SECONDARY_SUB_VERT_POS "Vertical position for secondary subtitle. Percentage offset from top."
     IDS_PPAGEADVANCED_WIN11_NATIVE_MENUS "Use native Windows 11 menus instead of the modern theme's own menus. The menu bar stays themed. Requires restart."
+    IDS_PPAGEADVANCED_MODERN_THEME_STYLE "Which Windows version the modern theme's colors are based on. Requires restart."
+    IDS_MODERN_THEME_STYLE_FOLLOW_OS "Follow Windows version"
+    IDS_MODERN_THEME_STYLE_WINDOWS10 "Windows 10"
+    IDS_MODERN_THEME_STYLE_WINDOWS11 "Windows 11"
     IDS_AUDIO_BOOST_WARNING "WARNING: Boosting audio volume can in some situations have a negative effect on audio quality due to overflow.\n\nThere are two better and safer methods for increasing volume:\n1) Enabling mixing in the internal audio decoder settings.\nInternal Filters > Audio Decoder > Mixing\nThis is recommended if you have stereo speakers or headphones.\nTo increase loudness of voices, set center mix level to 1.0 in the mixing settings.\n2) Enable Normalize"
 END
 

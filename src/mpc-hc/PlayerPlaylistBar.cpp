@@ -48,7 +48,8 @@ END_MESSAGE_MAP()
 
 void CPlaylistListFrame::OnNcPaint()
 {
-    if (AppNeedsThemedControls()) {
+    bool win11Style = AppIsThemeLoaded() && CMPCTheme::isWindows11Style;
+    if (AppNeedsThemedControls() || win11Style) {
         CWindowDC dc(this);
         CRect wr;
         GetWindowRect(&wr);
@@ -58,8 +59,10 @@ void CPlaylistListFrame::OnNcPaint()
         clip.DeflateRect(clientOffset.x, clientOffset.x);
         dc.ExcludeClipRect(clip);
         dc.FillSolidRect(wr, CMPCTheme::ContentBGColor);
-        CBrush brush(CMPCTheme::WindowBorderColorLight);
-        dc.FrameRect(wr, &brush);
+        if (!win11Style) { //windows 11 panes don't frame their lists
+            CBrush brush(CMPCTheme::WindowBorderColorLight);
+            dc.FrameRect(wr, &brush);
+        }
     } else {
         __super::OnNcPaint();
     }
@@ -135,6 +138,9 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
         CRect(0, 0, 100, 100), &m_listFrame, IDC_PLAYLIST);
 
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    if (AppIsThemeLoaded() && CMPCTheme::isWindows11Style) {
+        m_list.SetBkColor(CMPCTheme::ContentBGColor); //the area below the items, which light mode leaves to the native list
+    }
 
     // The column titles don't have to be translated since they aren't displayed anyway
     m_list.InsertColumn(COL_NAME, _T("Name"), LVCFMT_LEFT);
@@ -2202,7 +2208,10 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
 
     COLORREF bgColor, contentBGColor;
 
-    if (AppNeedsThemedControls()) {
+    //the windows 11 style draws the playlist from the palette in light mode as well
+    bool win11Style = AppIsThemeLoaded() && CMPCTheme::isWindows11Style;
+    bool themedList = AppNeedsThemedControls() || win11Style;
+    if (themedList) {
         contentBGColor = CMPCTheme::ContentBGColor;
     } else {
         contentBGColor = GetSysColor(COLOR_WINDOW);
@@ -2213,7 +2222,24 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
     inlineEditXpos = numWidth.cx - 2; //magic number 2 for accounting for border/padding of inline edit.  works at all dpi except 168, where it's off by 1px (shrug)
     seqRect.right = fileRect.left;
 
-    if (itemSelected) {
+    int numOffset = 0;
+    if (win11Style) {
+        //fluent list selection: a neutral fill across the whole row, with an accent indicator at the left edge
+        numOffset = m_pMainFrame->m_dpi.ScaleX(4);
+        bgColor = itemSelected ? CMPCTheme::PlaylistSelectedColor : contentBGColor;
+        FillRect(pDC->m_hDC, rcItem, CBrush(bgColor));
+        if (itemSelected) {
+            int pillWidth = m_pMainFrame->m_dpi.ScaleX(3);
+            int pillHeight = rcItem.Height() / 2;
+            CRect pill(CPoint(rcItem.left + m_pMainFrame->m_dpi.ScaleX(2), rcItem.top + (rcItem.Height() - pillHeight) / 2), CSize(pillWidth, pillHeight));
+            CBrush pillBrush(CMPCTheme::PlaylistIndicatorColor);
+            CBrush* oldBrush = pDC->SelectObject(&pillBrush);
+            CPen* oldPen = (CPen*)pDC->SelectStockObject(NULL_PEN);
+            pDC->RoundRect(pill, CPoint(pillWidth, pillWidth));
+            pDC->SelectObject(oldPen);
+            pDC->SelectObject(oldBrush);
+        }
+    } else if (itemSelected) {
         if (AppNeedsThemedControls()) {
             bgColor = CMPCTheme::ContentSelectedColor;
         } else {
@@ -2229,7 +2255,7 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
 
     COLORREF textColor, sequenceColor;
 
-    if (AppNeedsThemedControls()) {
+    if (themedList) {
         if (pli.m_fInvalid) {
             textColor = CMPCTheme::ContentTextDisabledFGColorFade2;
             sequenceColor = textColor;
@@ -2282,8 +2308,8 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
     } else {
         pDC->SetTextColor(sequenceColor);
     }
-    pDC->SetBkColor(contentBGColor);
-    pDC->TextOut(rcItem.left + dpi3, (rcItem.top + rcItem.bottom - filesize.cy) / 2, num);
+    pDC->SetBkColor(win11Style ? bgColor : contentBGColor);
+    pDC->TextOut(rcItem.left + dpi3 + numOffset, (rcItem.top + rcItem.bottom - filesize.cy) / 2, num);
 
 
     pDC->RestoreDC(oldDC);

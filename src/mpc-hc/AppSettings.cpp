@@ -196,6 +196,7 @@ CAppSettings::CAppSettings()
     , bWindows10AccentColorsEnabled(false)
     , iModernSeekbarHeight(DEF_MODERN_SEEKBAR_HEIGHT)
     , eModernThemeMode(CMPCTheme::ModernThemeMode::WINDOWSDEFAULT)
+    , iModernThemeStyle(static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWSDEFAULT))
     , iFullscreenDelay(MIN_FULLSCREEN_DELAY)
     , iVerticalAlignVideo(verticalAlignVideoType::ALIGN_MIDDLE)
     , nJumpDistS(DEFAULT_JUMPDISTANCE_1)
@@ -1079,6 +1080,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MPCTHEME, bMPCTheme);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNSEEKBARHEIGHT, iModernSeekbarHeight);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNTHEMEMODE, static_cast<int>(eModernThemeMode));
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNTHEMESTYLE, iModernThemeStyle);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FULLSCREEN_DELAY, iFullscreenDelay);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_VERTICALALIGNVIDEO, static_cast<int>(iVerticalAlignVideo));
 
@@ -1968,6 +1970,10 @@ void CAppSettings::LoadSettings()
     }
 
     eModernThemeMode = static_cast<CMPCTheme::ModernThemeMode>(pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNTHEMEMODE, static_cast<int>(CMPCTheme::ModernThemeMode::WINDOWSDEFAULT)));
+    iModernThemeStyle = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNTHEMESTYLE, static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWSDEFAULT));
+    if (iModernThemeStyle < static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWSDEFAULT) || iModernThemeStyle > static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWS11)) {
+        iModernThemeStyle = static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWSDEFAULT);
+    }
 
     iFullscreenDelay = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FULLSCREEN_DELAY, MIN_FULLSCREEN_DELAY);
     if (iFullscreenDelay < MIN_FULLSCREEN_DELAY || iFullscreenDelay > MAX_FULLSCREEN_DELAY) {

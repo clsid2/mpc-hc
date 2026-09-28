@@ -9,6 +9,12 @@ public:
         WINDOWSDEFAULT
     };
 
+    enum class ModernThemeStyle {
+        WINDOWSDEFAULT, //follow the windows version
+        WINDOWS10,
+        WINDOWS11
+    };
+
     static COLORREF MenuBGColor;
     static COLORREF MenubarBGColor;
     static COLORREF WindowBGColor;  //used in explorer for left nav
@@ -137,6 +143,19 @@ public:
     static COLORREF SeekbarChapterColor;
     static COLORREF SeekbarABColor;
 
+    //accent shades reported by Windows, see ReadAccentColors; used by the Windows 11 style only
+    static COLORREF AccentDark3;
+    static COLORREF AccentDark2;
+    static COLORREF AccentDark1;
+    static COLORREF Accent;
+    static COLORREF AccentLight1;
+    static COLORREF AccentLight2;
+    static COLORREF AccentLight3;
+
+    //Windows 11 style only: the playlist's selected row (neutral) and its accent indicator
+    static COLORREF PlaylistSelectedColor;
+    static COLORREF PlaylistIndicatorColor;
+
     static const int GroupBoxTextIndent;
 
 
@@ -190,8 +209,15 @@ public:
 
 
     static bool drawThemedControls;
+    static bool isWindows11Style; //set by InitializeColors, so drawing code can test it cheaply
 
     static CMPCTheme::ModernThemeMode EffectiveThemeMode();
+    static CMPCTheme::ModernThemeStyle EffectiveThemeStyle();
 
     static void InitializeColors();
+    static void InitializeWindows10Colors();
+    static void InitializeWindows11Colors();
+    static void ReadAccentColors();
+    static void ApplyAccentColors();
+    static COLORREF EnsureContrast(COLORREF fg, COLORREF bg, double minRatio);
 };

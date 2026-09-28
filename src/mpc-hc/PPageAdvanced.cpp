@@ -158,6 +158,9 @@ void CPPageAdvanced::InitSettings()
     if (IsWindowsVersionOrGreaterBuild(10, 0, 22000)) { //native menus are windows 11 only
         addBoolItem(WIN11_NATIVE_MENUS, IDS_RS_WIN11_NATIVE_MENUS, false, s.bWin11NativeMenus, StrRes(IDS_PPAGEADVANCED_WIN11_NATIVE_MENUS));
     }
+    addComboItem(MODERN_THEME_STYLE, IDS_RS_MODERNTHEMESTYLE, static_cast<int>(CMPCTheme::ModernThemeStyle::WINDOWSDEFAULT), s.iModernThemeStyle,
+        { StrRes(IDS_MODERN_THEME_STYLE_FOLLOW_OS), StrRes(IDS_MODERN_THEME_STYLE_WINDOWS10), StrRes(IDS_MODERN_THEME_STYLE_WINDOWS11) },
+        StrRes(IDS_PPAGEADVANCED_MODERN_THEME_STYLE));
     addIntItem(MOUSE_LEFTUP_DELAY, IDS_RS_MOUSE_LEFTUP_DELAY, 0, s.iMouseLeftUpDelay, std::make_pair(0, 1000), StrRes(IDS_PPAGEADVANCED_MOUSE_LEFTUP_DELAY));
     addIntItem(COVER_SIZE_LIMIT, IDS_RS_COVER_ART_SIZE_LIMIT, 600, s.nCoverArtSizeLimit, std::make_pair(0, INT_MAX), StrRes(IDS_PPAGEADVANCED_COVER_SIZE_LIMIT));
     addBoolItem(OPEN_REC_PANEL_WHEN_OPENING_DEVICE, IDS_RS_OPEN_REC_PANEL_WHEN_OPENING_DEVICE, true, s.bOpenRecPanelWhenOpeningDevice, StrRes(IDS_PPAGEADVANCED_OPEN_REC_PANEL_WHEN_OPENING_DEVICE));
