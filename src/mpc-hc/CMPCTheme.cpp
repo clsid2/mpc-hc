@@ -239,6 +239,8 @@ COLORREF CMPCTheme::AccentLight2;
 COLORREF CMPCTheme::AccentLight3;
 COLORREF CMPCTheme::PlaylistSelectedColor;
 COLORREF CMPCTheme::PlaylistIndicatorColor;
+COLORREF CMPCTheme::CheckboxCheckedColor;
+COLORREF CMPCTheme::CheckboxGlyphColor;
 
 wchar_t* const CMPCTheme::uiTextFont = L"Segoe UI";
 wchar_t* const CMPCTheme::uiStaticTextFont = L"Segoe UI Semilight";
@@ -869,14 +871,14 @@ void CMPCTheme::InitializeWindows11Colors() {
         InlineEditBorderColor = Opaque(FocusStrokeColorOuter);
         TooltipBorderColor = Flatten(SurfaceStrokeColorDefault, MenuBGColor); //tooltips are filled with MenuBGColor
 
-        GroupBoxBorderColor = Flatten(DividerStrokeColorDefault, WindowBGColor);
+        GroupBoxBorderColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
 
         PlayerButtonHotColor = Flatten(SubtleFillColorSecondary, PlayerBGColor);
         PlayerButtonCheckedColor = Opaque(SolidBackgroundFillColorBaseAlt); //checked toolbar button: sunken onto the alternate base surface
         PlayerButtonClickedColor = Flatten(SubtleFillColorTertiary, PlayerBGColor);
         PlayerButtonBorderColor = Flatten(ControlStrokeColorDefault, PlayerBGColor);
 
-        ButtonBorderOuterColor = Flatten(ControlStrokeColorSecondary, WindowBGColor);
+        ButtonBorderOuterColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
         ButtonBorderInnerColor = Flatten(ControlStrokeColorDefault, WindowBGColor);
         ButtonBorderSelectedKBFocusColor = Opaque(FocusStrokeColorOuter);
         ButtonBorderHoverKBFocusColor = Opaque(FocusStrokeColorOuter);
@@ -894,7 +896,7 @@ void CMPCTheme::InitializeWindows11Colors() {
 
         SliderChannelColor = Flatten(ControlStrongFillColorDefault, WindowBGColor);
 
-        EditBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor); //text boxes have the stronger bottom stroke
+        EditBorderColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
 
         TreeCtrlLineColor = Flatten(ControlStrongStrokeColorDisabled, ContentBGColor); //tree connector lines: a de-emphasised strong stroke
         TreeCtrlHoverColor = Flatten(SubtleFillColorSecondary, ContentBGColor);
@@ -1215,4 +1217,9 @@ void CMPCTheme::ApplyAccentColors() {
     ActivePlayListItemHLColor = VividAccent(shades, count, PlaylistSelectedColor, 4.5);
     StaticLinkColor = VividAccent(shades, count, WindowBGColor, 4.5);
     PlaylistIndicatorColor = VividAccent(shades, count, PlaylistSelectedColor, 3.0);
+    //checked check boxes and radios: the accent fill, with whichever of black and white reads better on it
+    //(WinUI fixes the glyph to black on dark, which vanishes on a dark accent)
+    CheckboxCheckedColor = VividAccent(shades, count, WindowBGColor, 3.0);
+    const double lf = RelativeLuminance(CheckboxCheckedColor);
+    CheckboxGlyphColor = (lf + 0.05) / 0.05 >= 1.05 / (lf + 0.05) ? RGB(0, 0, 0) : RGB(255, 255, 255);
 }

@@ -155,6 +155,9 @@ public:
     //Windows 11 style only: the playlist's selected row (neutral) and its accent indicator
     static COLORREF PlaylistSelectedColor;
     static COLORREF PlaylistIndicatorColor;
+    //Windows 11 style only: fill of a checked check box or radio, and the glyph drawn on it
+    static COLORREF CheckboxCheckedColor;
+    static COLORREF CheckboxGlyphColor;
 
     static const int GroupBoxTextIndent;
 
