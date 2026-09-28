@@ -63,8 +63,9 @@ releases.
 
 ## PART E: NASM
 
-1. Download NASM from <https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip>
-2. Put nasm.exe in a folder that is included in %PATH%. For example **`C:\Windows`**.
+Nothing to install. If no nasm.exe is found on %PATH%, the first build downloads NASM 2.16.03 from
+<https://www.nasm.us/> into **`bin\tools\nasm`** (checksum verified) and uses it from there. To use
+your own copy instead, put nasm.exe in a folder that is included in %PATH%, or set `NasmPath` for MSBuild.
 
 ## Part F: Config file with paths
 

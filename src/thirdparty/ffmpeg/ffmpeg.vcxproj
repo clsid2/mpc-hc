@@ -32,6 +32,7 @@
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\..\nasm.props" />
   <PropertyGroup>
     <!-- source tree = LAV's ffmpeg fork; config = this directory (config.h/config.asm/lists, kept by configure_ffmpeg-min.sh) -->
     <!-- *Root properties may be overridden on the command line (no trailing slash needed); the derived ones always end in a backslash -->
@@ -719,7 +720,7 @@
   </ItemGroup>
   <Target Name="NasmAssemble" Inputs="@(Nasm);$(FFmpegCfg)config.asm" Outputs="@(Nasm->'%(ObjectFileName)')" BeforeTargets="Lib">
     <MakeDir Directories="@(Nasm-&gt;'%(ObjectFileName)'-&gt;DirectoryName()-&gt;Distinct())" />
-    <Exec Command="nasm $(NasmFlags) -I&quot;$(FFmpegCfg.TrimEnd('\'))/&quot; -I&quot;$(FFmpegSrc.TrimEnd('\'))/&quot; -I&quot;%(Nasm.ExtraInclude)/&quot; -Pconfig.asm -o &quot;%(Nasm.ObjectFileName)&quot; &quot;%(Nasm.FullPath)&quot;" />
+    <Exec Command="&quot;$(NasmExe)&quot; $(NasmFlags) -I&quot;$(FFmpegCfg.TrimEnd('\'))/&quot; -I&quot;$(FFmpegSrc.TrimEnd('\'))/&quot; -I&quot;%(Nasm.ExtraInclude)/&quot; -Pconfig.asm -o &quot;%(Nasm.ObjectFileName)&quot; &quot;%(Nasm.FullPath)&quot;" />
   </Target>
   <Target Name="ClCompileObjDirs" BeforeTargets="ClCompile">
     <MakeDir Directories="@(ClCompile-&gt;'%(ObjectFileName)'-&gt;DirectoryName()-&gt;Distinct())" />
