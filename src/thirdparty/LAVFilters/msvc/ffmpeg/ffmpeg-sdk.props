@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Answers that depend on the Windows SDK in use, not on the machine that ran configure.
+     Imported after Microsoft.Cpp.props, where WindowsSdkDir and TargetPlatformVersion are resolved. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FFmpegDxvaHeader>$(WindowsSdkDir)Include\$(TargetPlatformVersion)\um\dxva.h</FFmpegDxvaHeader>
+    <!-- DXVA_PicParams_HEVC_RangeExt arrived in SDK 10.0.22621; configure's probe is replaced by looking in the header that will be compiled against -->
+    <FFmpegHevcRangeExt Condition="Exists('$(FFmpegDxvaHeader)') And $([System.IO.File]::ReadAllText('$(FFmpegDxvaHeader)').Contains('DXVA_PicParams_HEVC_RangeExt'))">1</FFmpegHevcRangeExt>
+    <FFmpegHevcRangeExt Condition="'$(FFmpegHevcRangeExt)'==''">0</FFmpegHevcRangeExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>HAVE_DXVA_PICPARAMS_HEVC_RANGEEXT=$(FFmpegHevcRangeExt);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

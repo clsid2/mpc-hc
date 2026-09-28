@@ -30,7 +30,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='cl'">
     <ClCompile>
-      <AdditionalOptions>-Zo -GS- -options:strict -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalOptions>-Zo -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">

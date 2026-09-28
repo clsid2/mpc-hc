@@ -33,9 +33,11 @@ echo "   $(wc -l < "$B/map-c.txt") C, $(wc -l < "$B/map-asm.txt") asm, $(wc -l <
 X86ASMFLAGS=$(sed -n 's|^X86ASMFLAGS=||p' "$B/ffbuild/config.mak")
 
 G="$O/generated/$PLAT"; rm -rf "$G"; for l in $LIBS; do mkdir -p "$G/lib$l"; done; mkdir -p "$G/libswscale/x86"
-# FFMPEG_CONFIGURATION would otherwise embed the maintainer's absolute paths
-sed -E "s/ ?-(I|LIBPATH:)[^ ']+//g" "$B/config.h" > "$G/config.h"
-cp "$B"/config_components.h "$B"/config.asm "$B"/config_components.asm "$G/"
+# FFMPEG_CONFIGURATION would otherwise embed the maintainer's absolute paths, and
+# HAVE_DXVA_PICPARAMS_HEVC_RANGEEXT depends on the SDK version: ffmpeg.props sets it per build
+sed -E "s/ ?-(I|LIBPATH:)[^ ']+//g; /^#define HAVE_DXVA_PICPARAMS_HEVC_RANGEEXT /d" "$B/config.h" > "$G/config.h"
+cp "$B"/config_components.h "$B"/config_components.asm "$G/"
+sed "/^%define HAVE_DXVA_PICPARAMS_HEVC_RANGEEXT /d" "$B/config.asm" > "$G/config.asm"
 cp "$B"/libavutil/avconfig.h "$B"/libavutil/ffversion.h "$G/libavutil/"
 cp "$B"/libavcodec/*_list.c "$G/libavcodec/"; cp "$B"/libavformat/*_list.c "$G/libavformat/"; cp "$B"/libavfilter/*_list.c "$G/libavfilter/"
 [ -f "$B/libswscale/x86/uops_macros.gen.asm" ] && cp "$B/libswscale/x86/uops_macros.gen.asm" "$G/libswscale/x86/"
