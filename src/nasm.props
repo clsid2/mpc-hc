@@ -5,11 +5,16 @@
     <NASMBeforeTargets>Midl</NASMBeforeTargets>
     <NASMAfterTargets>CustomBuild</NASMAfterTargets>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- nasm.exe from NasmPath if given, otherwise build\nasm.cmd, which uses bin\tools\nasm, then PATH, and downloads NASM when neither has it -->
+    <NasmExe Condition="'$(NasmPath)' != ''">$(NasmPath)nasm.exe</NasmExe>
+    <NasmExe Condition="'$(NasmExe)' == ''">$(MSBuildThisFileDirectory)..\build\nasm.cmd</NasmExe>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <NASM>
       <ObjectFileName>$(IntDir)%(FileName).obj</ObjectFileName>
-      <CommandLineTemplate Condition="'$(Platform)' == 'Win32'">"$(NasmPath)nasm.exe" -Xvc -f win32 [AllOptions] [AdditionalOptions] "%(FullPath)"</CommandLineTemplate>
-      <CommandLineTemplate Condition="'$(Platform)' == 'x64'">"$(NasmPath)nasm.exe" -Xvc -f win64 [AllOptions] [AdditionalOptions] "%(FullPath)"</CommandLineTemplate>
+      <CommandLineTemplate Condition="'$(Platform)' == 'Win32'">"$(NasmExe)" -Xvc -f win32 [AllOptions] [AdditionalOptions] "%(FullPath)"</CommandLineTemplate>
+      <CommandLineTemplate Condition="'$(Platform)' == 'x64'">"$(NasmExe)" -Xvc -f win64 [AllOptions] [AdditionalOptions] "%(FullPath)"</CommandLineTemplate>
       <CommandLineTemplate Condition="'$(Platform)' != 'Win32' and '$(Platform)' != 'x64'">echo NASM not supported on this platform
 exit 1</CommandLineTemplate>
       <ExecutionDescription>%(Identity)</ExecutionDescription>
