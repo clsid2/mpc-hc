@@ -126,6 +126,7 @@ void CMPCThemeSliderCtrl::drawFluentPart(LPNMCUSTOMDRAW pNMCD)
     dc.Attach(pNMCD->hdc);
     Gdiplus::Graphics gfx(dc.m_hDC);
     gfx.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias8x8);
+    gfx.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf); //pixel edges on whole coordinates, as the thumb and channel rects are
     auto gdip = [](COLORREF c) { return Gdiplus::Color(GetRValue(c), GetGValue(c), GetBValue(c)); };
     const bool vert = TBS_VERT == (GetStyle() & TBS_VERT);
 

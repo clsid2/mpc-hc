@@ -103,8 +103,8 @@ public:
     static void MapDialogRectMessageFont(CDialog* wnd, CRect& r);
     static const std::vector<CMPCTheme::pathPoint> getIconPathByDPI(CMPCThemeTitleBarControlButton* button);
     static const std::vector<CMPCTheme::pathPoint> getIconPathByDPI(CWnd* wnd, WPARAM buttonType);
-    static void drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size);
-    static void drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio = false, UINT resourceID = 0);
+    static void drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size, bool isDisabled = false);
+    static void drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio = false, UINT resourceID = 0, bool isDisabled = false);
     static void drawGripper(CWnd* window, CWnd* dpiRefWnd, CRect rectGripper, CDC* pDC, bool rot90);
     static void drawToolbarHideButton(CDC* pDC, CWnd* window, CRect iconRect, std::vector<CMPCTheme::pathPoint> icon, double dpiScaling, bool antiAlias, bool hover);
     static bool canUseWin10DarkTheme();

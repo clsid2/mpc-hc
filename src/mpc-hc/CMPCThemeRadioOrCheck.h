@@ -26,6 +26,7 @@ protected:
     afx_msg void OnMouseLeave();
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     void checkHover(UINT nFlags, CPoint point, bool invalidate = true);
+    void drawBackground(CDC* pDC);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 public:
     afx_msg void OnPaint();

@@ -990,7 +990,7 @@ inline void FastFrameRect(CDC* pDC, const CRect& rect, COLORREF color) {
 
 //windows 11 style: a fluent check box or radio, drawn instead of the windows 10 images, which exist because windows 10
 //had no clean way to draw dark ones. it keeps the image's size for this dpi, so the gap to the label is unchanged
-static void drawFluentCheckOrRadio(UINT checkState, bool isHover, CRect rect, CDC* pDC, bool isRadio, int size) {
+static void drawFluentCheckOrRadio(UINT checkState, bool isHover, CRect rect, CDC* pDC, bool isRadio, int size, bool isDisabled) {
     const int side = (std::min)({ size > 0 ? size : INT_MAX, rect.Width(), rect.Height() });
     CRect box(CPoint(rect.left, rect.top + (rect.Height() - side) / 2), CSize(side, side));
 
@@ -1005,12 +1005,23 @@ static void drawFluentCheckOrRadio(UINT checkState, bool isHover, CRect rect, CD
     auto gdip = [](COLORREF c) { return Gdiplus::Color(GetRValue(c), GetGValue(c), GetBValue(c)); };
     Gdiplus::Graphics gfx(pDC->m_hDC);
     gfx.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias8x8);
+    gfx.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf); //pixel edges on whole coordinates, or the stroke straddles two rows and the bottom one is cut
 
     const Gdiplus::REAL x = (Gdiplus::REAL)box.left, y = (Gdiplus::REAL)box.top, d = (Gdiplus::REAL)side;
     const Gdiplus::REAL half = 0.5f, inner = d - 1.0f; //1px stroke centred on the pixel grid
-    Gdiplus::SolidBrush fill(gdip(on ? CMPCTheme::CheckboxCheckedColor : isHover ? CMPCTheme::CheckboxBGHoverColor : CMPCTheme::CheckboxBGColor));
-    Gdiplus::Pen border(gdip(on ? CMPCTheme::CheckboxCheckedColor : isHover ? CMPCTheme::CheckboxBorderHoverColor : CMPCTheme::CheckboxBorderColor), 1.0f);
-    Gdiplus::Pen glyph(gdip(CMPCTheme::CheckboxGlyphColor), (std::max)(1.3f, d * 0.11f));
+    COLORREF fillClr, borderClr, glyphClr;
+    if (isDisabled) {
+        fillClr = on ? CMPCTheme::CheckboxDisabledCheckedColor : CMPCTheme::WindowBGColor;
+        borderClr = on ? CMPCTheme::CheckboxDisabledCheckedColor : CMPCTheme::CheckboxDisabledBorderColor;
+        glyphClr = CMPCTheme::CheckboxDisabledGlyphColor;
+    } else {
+        fillClr = on ? CMPCTheme::CheckboxCheckedColor : isHover ? CMPCTheme::CheckboxBGHoverColor : CMPCTheme::CheckboxBGColor;
+        borderClr = on ? CMPCTheme::CheckboxCheckedColor : isHover ? CMPCTheme::CheckboxBorderHoverColor : CMPCTheme::CheckboxBorderColor;
+        glyphClr = CMPCTheme::CheckboxGlyphColor;
+    }
+    Gdiplus::SolidBrush fill(gdip(fillClr));
+    Gdiplus::Pen border(gdip(borderClr), 1.0f);
+    Gdiplus::Pen glyph(gdip(glyphClr), (std::max)(1.3f, d * 0.11f));
     glyph.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
     glyph.SetLineJoin(Gdiplus::LineJoinRound);
 
@@ -1018,7 +1029,7 @@ static void drawFluentCheckOrRadio(UINT checkState, bool isHover, CRect rect, CD
         gfx.FillEllipse(&fill, x + half, y + half, inner, inner);
         gfx.DrawEllipse(&border, x + half, y + half, inner, inner);
         if (on) {
-            Gdiplus::SolidBrush dot(gdip(CMPCTheme::CheckboxGlyphColor));
+            Gdiplus::SolidBrush dot(gdip(glyphClr));
             const Gdiplus::REAL dd = d * 0.42f;
             gfx.FillEllipse(&dot, x + (d - dd) / 2, y + (d - dd) / 2, dd, dd);
         }
@@ -1042,9 +1053,9 @@ static void drawFluentCheckOrRadio(UINT checkState, bool isHover, CRect rect, CD
     }
 }
 
-void CMPCThemeUtil::drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size) {
+void CMPCThemeUtil::drawCheckBoxInternal(UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio, CPngImage* image, int size, bool isDisabled) {
     if (CMPCTheme::isWindows11Style) {
-        drawFluentCheckOrRadio(checkState, isHover, rectCheck, pDC, isRadio, size);
+        drawFluentCheckOrRadio(checkState, isHover, rectCheck, pDC, isRadio, size, isDisabled);
         return;
     }
     COLORREF borderClr, bgClr;
@@ -1119,7 +1130,7 @@ void CMPCThemeUtil::drawCheckBoxInternal(UINT checkState, bool isHover, bool use
     pDC->SetTextColor(oldTextClr);
 }
 
-void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio /*= false*/, UINT resourceID /*= 0*/) {
+void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bool useSystemSize, CRect rectCheck, CDC* pDC, bool isRadio /*= false*/, UINT resourceID /*= 0*/, bool isDisabled /*= false*/) {
     struct ImageCache {
         CPngImage image;
         int size;
@@ -1138,7 +1149,7 @@ void CMPCThemeUtil::drawCheckBox(CWnd* window, UINT checkState, bool isHover, bo
         newCache.size = bm.bmHeight;
     }
 
-    drawCheckBoxInternal(checkState, isHover, useSystemSize, rectCheck, pDC, isRadio, &cache[resourceID].image, cache[resourceID].size);
+    drawCheckBoxInternal(checkState, isHover, useSystemSize, rectCheck, pDC, isRadio, &cache[resourceID].image, cache[resourceID].size, isDisabled);
 }
 
 //themed controls in dark mode on an os with the dark explorer theme: such windows get DarkMode_Explorer and the dark frame

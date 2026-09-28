@@ -46,6 +46,8 @@ namespace FluentDark {
     constexpr DWORD CardStrokeColorDefault = 0x19000000;
     constexpr DWORD ControlStrongStrokeColorDefault = 0x8BFFFFFF;
     constexpr DWORD ControlStrongStrokeColorDisabled = 0x28FFFFFF;
+    constexpr DWORD AccentFillColorDisabled = 0x28FFFFFF;
+    constexpr DWORD TextOnAccentFillColorDisabled = 0x87FFFFFF;
     constexpr DWORD SurfaceStrokeColorDefault = 0x66757575;
     constexpr DWORD SurfaceStrokeColorFlyout = 0x33000000;
     constexpr DWORD DividerStrokeColorDefault = 0x15FFFFFF;
@@ -82,6 +84,8 @@ namespace FluentLight {
     constexpr DWORD CardStrokeColorDefault = 0x0F000000;
     constexpr DWORD ControlStrongStrokeColorDefault = 0x72000000;
     constexpr DWORD ControlStrongStrokeColorDisabled = 0x37000000;
+    constexpr DWORD AccentFillColorDisabled = 0x37000000;
+    constexpr DWORD TextOnAccentFillColorDisabled = 0xFFFFFFFF;
     constexpr DWORD SurfaceStrokeColorDefault = 0x66757575;
     constexpr DWORD SurfaceStrokeColorFlyout = 0x0F000000;
     constexpr DWORD DividerStrokeColorDefault = 0x0F000000;
@@ -244,6 +248,9 @@ COLORREF CMPCTheme::PlaylistSelectedColor;
 COLORREF CMPCTheme::PlaylistIndicatorColor;
 COLORREF CMPCTheme::CheckboxCheckedColor;
 COLORREF CMPCTheme::CheckboxGlyphColor;
+COLORREF CMPCTheme::CheckboxDisabledBorderColor;
+COLORREF CMPCTheme::CheckboxDisabledCheckedColor;
+COLORREF CMPCTheme::CheckboxDisabledGlyphColor;
 COLORREF CMPCTheme::SliderThumbColor;
 COLORREF CMPCTheme::SliderThumbBorderColor;
 COLORREF CMPCTheme::InfoBarBGColor = RGB(0, 0, 0);
@@ -837,6 +844,9 @@ void CMPCTheme::InitializeWindows11Colors() {
     if (EffectiveThemeMode() == ModernThemeMode::DARK) {
         using namespace FluentDark;
         drawThemedControls = true;
+        //not a fluent token: fluent's control strokes nearly vanish without mica behind them, and even the surface stroke
+        //left buttons, combo boxes and text boxes hard to make out, so their frames use this
+        constexpr DWORD ControlStrokeColorVisible = 0x40FFFFFF;
 
         const COLORREF base = Opaque(SolidBackgroundFillColorBase);
         const COLORREF layer = Flatten(LayerFillColorDefault, base); //content surfaces sit one layer above the base
@@ -890,7 +900,7 @@ void CMPCTheme::InitializeWindows11Colors() {
         PlayerButtonClickedColor = Flatten(SubtleFillColorTertiary, PlayerBGColor);
         PlayerButtonBorderColor = Flatten(ControlStrokeColorDefault, PlayerBGColor);
 
-        ButtonBorderOuterColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
+        ButtonBorderOuterColor = Flatten(ControlStrokeColorVisible, WindowBGColor);
         ButtonBorderInnerColor = Flatten(ControlStrokeColorDefault, WindowBGColor);
         ButtonBorderSelectedKBFocusColor = Opaque(FocusStrokeColorOuter);
         ButtonBorderHoverKBFocusColor = Opaque(FocusStrokeColorOuter);
@@ -903,6 +913,9 @@ void CMPCTheme::InitializeWindows11Colors() {
         CheckboxBorderColor = Flatten(ControlStrongStrokeColorDefault, WindowBGColor);
         CheckboxBGColor = Flatten(ControlAltFillColorSecondary, WindowBGColor);
         CheckboxBGHoverColor = Flatten(ControlAltFillColorTertiary, WindowBGColor);
+        CheckboxDisabledBorderColor = Flatten(ControlStrongStrokeColorDisabled, WindowBGColor);
+        CheckboxDisabledCheckedColor = Flatten(AccentFillColorDisabled, WindowBGColor); //fluent greys out the accent fill
+        CheckboxDisabledGlyphColor = Flatten(TextOnAccentFillColorDisabled, CheckboxDisabledCheckedColor);
 
         ImageDisabledColor = Flatten(TextFillColorDisabled, WindowBGColor);
 
@@ -910,7 +923,7 @@ void CMPCTheme::InitializeWindows11Colors() {
         SliderThumbColor = Opaque(ControlSolidFillColorDefault); //fluent slider thumb: a solid disc with an accent dot
         SliderThumbBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor);
 
-        EditBorderColor = Flatten(SurfaceStrokeColorDefault, WindowBGColor); //a notch stronger than fluent's own stroke, which nearly vanishes without mica behind it
+        EditBorderColor = Flatten(ControlStrokeColorVisible, WindowBGColor);
 
         TreeCtrlLineColor = Flatten(ControlStrongStrokeColorDisabled, ContentBGColor); //tree connector lines: a de-emphasised strong stroke
         TreeCtrlHoverColor = Flatten(SubtleFillColorSecondary, ContentBGColor);
@@ -1031,6 +1044,9 @@ void CMPCTheme::InitializeWindows11Colors() {
         CheckboxBorderColor = Flatten(ControlStrongStrokeColorDefault, WindowBGColor);
         CheckboxBGColor = Flatten(ControlAltFillColorSecondary, WindowBGColor);
         CheckboxBGHoverColor = Flatten(ControlAltFillColorTertiary, WindowBGColor);
+        CheckboxDisabledBorderColor = Flatten(ControlStrongStrokeColorDisabled, WindowBGColor);
+        CheckboxDisabledCheckedColor = Flatten(AccentFillColorDisabled, WindowBGColor); //fluent greys out the accent fill
+        CheckboxDisabledGlyphColor = Flatten(TextOnAccentFillColorDisabled, CheckboxDisabledCheckedColor);
 
         ImageDisabledColor = Flatten(TextFillColorDisabled, WindowBGColor);
 

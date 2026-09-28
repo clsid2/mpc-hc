@@ -158,6 +158,10 @@ public:
     //Windows 11 style only: fill of a checked check box or radio, and the glyph drawn on it
     static COLORREF CheckboxCheckedColor;
     static COLORREF CheckboxGlyphColor;
+    //Windows 11 style only: a disabled check box or radio
+    static COLORREF CheckboxDisabledBorderColor;
+    static COLORREF CheckboxDisabledCheckedColor;
+    static COLORREF CheckboxDisabledGlyphColor;
     //Windows 11 style only: the round slider thumb and its outline
     static COLORREF SliderThumbColor;
     static COLORREF SliderThumbBorderColor;

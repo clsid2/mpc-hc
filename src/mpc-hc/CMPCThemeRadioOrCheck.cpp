@@ -55,7 +55,11 @@ void CMPCThemeRadioOrCheck::OnPaint()
     if (AppNeedsThemedControls()) {
         DWORD buttonStyle = GetWindowLongPtr(GetSafeHwnd(), GWL_STYLE);
 
-        CPaintDC dc(this);
+        //painted off screen in one pass: erasing first and then drawing made the box flash on every hover change
+        CPaintDC paintDC(this);
+        CMemDC memDC(paintDC, this);
+        CDC& dc = memDC.GetDC();
+        drawBackground(&dc);
         CRect   rectItem;
         GetClientRect(rectItem);
 
@@ -106,11 +110,11 @@ void CMPCThemeRadioOrCheck::OnPaint()
             rectCheck.bottom = rectCheck.top + cbHeight;
 
             if (buttonType == checkType) {
-                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc);
+                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc, false, 0, isDisabled);
             } else if (buttonType == threeStateType) {
-                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc);
+                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc, false, 0, isDisabled);
             } else if (buttonType == radioType) {
-                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc, true);
+                CMPCThemeUtil::drawCheckBox(GetParent(), checkState, isHover, true, rectCheck, &dc, true, 0, isDisabled);
             }
 
             if (!sTitle.IsEmpty()) {
@@ -265,7 +269,14 @@ BOOL CMPCThemeRadioOrCheck::OnEraseBkgnd(CDC* pDC)
     if (!AppNeedsThemedControls() && !isFileDialogChild) { //must match the OnPaint condition; this class is also used as a dialog member in classic mode
         return __super::OnEraseBkgnd(pDC);
     }
+    if (!AppNeedsThemedControls()) {
+        drawBackground(pDC);
+    } //otherwise OnPaint draws the background itself
+    return TRUE;
+}
 
+void CMPCThemeRadioOrCheck::drawBackground(CDC* pDC)
+{
     CRect r;
     GetClientRect(r);
     if (isFileDialogChild) {
@@ -274,7 +285,6 @@ BOOL CMPCThemeRadioOrCheck::OnEraseBkgnd(CDC* pDC)
     } else {
         CMPCThemeUtil::drawParentDialogBGClr(this, pDC, r);
     }
-    return TRUE;
 }
 
 
