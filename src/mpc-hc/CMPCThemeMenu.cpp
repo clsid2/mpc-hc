@@ -23,6 +23,7 @@ int CMPCThemeMenu::separatorPadding;
 int CMPCThemeMenu::separatorHeight;
 int CMPCThemeMenu::postTextSpacing;
 int CMPCThemeMenu::accelSpacing;
+int CMPCThemeMenu::hoverInsetX, CMPCThemeMenu::hoverInsetY, CMPCThemeMenu::hoverRadius;
 CCritSec CMPCThemeMenu::resourceLock;
 std::mutex CMPCThemeMenu::submenuMutex;
 
@@ -71,6 +72,9 @@ void CMPCThemeMenu::initDimensions()
         separatorHeight = dpi.ScaleX(7);
         postTextSpacing = dpi.ScaleX(20);
         accelSpacing = dpi.ScaleX(30);
+        hoverInsetX = dpi.ScaleX(5); //windows 11 insets the hover about 5px from the popup edge and rounds it by 4px, measured at 100%
+        hoverInsetY = dpi.ScaleY(2);
+        hoverRadius = dpi.ScaleX(4);
         {
             CAutoLock cAutoLock(&resourceLock);
             if (font.m_hObject) {
@@ -491,7 +495,25 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
             CFont* pOldFont = pDC->GetCurrentFont();
             pDC->SelectObject(&font);
             if ((lpDrawItemStruct->itemState & (ODS_SELECTED | ODS_HOTLIGHT)) && (lpDrawItemStruct->itemAction & (ODA_SELECT | ODA_DRAWENTIRE))) {
-                pDC->FillSolidRect(&rectM, TextSelectColor);
+                if (CMPCTheme::isWindows11Style && !menuObject->isMenubar) {
+                    //windows 11 style: the hover is an inset rounded pill rather than the full row
+                    Gdiplus::Graphics gfx(pDC->m_hDC);
+                    gfx.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias8x8);
+                    gfx.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
+                    const Gdiplus::REAL l = (Gdiplus::REAL)(rectM.left + hoverInsetX), t = (Gdiplus::REAL)(rectM.top + hoverInsetY);
+                    const Gdiplus::REAL w = (Gdiplus::REAL)(rectM.Width() - 2 * hoverInsetX), h = (Gdiplus::REAL)(rectM.Height() - 2 * hoverInsetY);
+                    const Gdiplus::REAL e = (Gdiplus::REAL)(2 * hoverRadius);
+                    Gdiplus::GraphicsPath path;
+                    path.AddArc(l, t, e, e, 180, 90);
+                    path.AddArc(l + w - e, t, e, e, 270, 90);
+                    path.AddArc(l + w - e, t + h - e, e, e, 0, 90);
+                    path.AddArc(l, t + h - e, e, e, 90, 90);
+                    path.CloseFigure();
+                    Gdiplus::SolidBrush brush(Gdiplus::Color(GetRValue(TextSelectColor), GetGValue(TextSelectColor), GetBValue(TextSelectColor)));
+                    gfx.FillPath(&brush, &path);
+                } else {
+                    pDC->FillSolidRect(&rectM, TextSelectColor);
+                }
             }
             CString left, right;
             GetStrings(menuObject, left, right);

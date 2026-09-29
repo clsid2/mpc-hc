@@ -56,6 +56,7 @@ protected:
     static int separatorHeight;
     static int postTextSpacing;
     static int accelSpacing;
+    static int hoverInsetX, hoverInsetY, hoverRadius; //windows 11 style hover pill
     static HBRUSH bgBrush, bgMenubarBrush;
     static CFont font, symbolFont, bulletFont, checkFont;
     static CCritSec resourceLock;
