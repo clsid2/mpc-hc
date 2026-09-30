@@ -169,7 +169,9 @@ void CMPCThemeSliderCtrl::drawFluentPart(LPNMCUSTOMDRAW pNMCD)
             gfx.FillPath(&brush, &path);
         };
         capsule(from, to, CMPCTheme::SliderChannelColor);
-        if (!vert) { //the value side, as windows 11 fills it; vertical sliders here run either way, so they keep a plain rail
+        //the value side, as windows 11 fills it. vertical sliders here run either way, and the centre origin ones (balance, colour
+        //controls) would read as half full, so both keep a plain rail, which is how a fluent slider looks at its minimum anyway
+        if (!vert && !lockToZero) {
             capsule(from, value, CMPCTheme::CheckboxCheckedColor);
         }
     } else {
