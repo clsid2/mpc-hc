@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"PO-Revision-Date: 2026-09-30 21:28+0000\n"
 "Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -144,7 +144,7 @@ msgstr "导航(&V)"
 
 msgctxt "POPUP"
 msgid "&Presets..."
-msgstr "预设视图(&P)..."
+msgstr "预设布局(&P)..."
 
 msgctxt "ID_VIEW_PRESETS_MINIMAL"
 msgid "&Minimal"
@@ -684,7 +684,7 @@ msgstr "字幕轨(&B)"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr "副字幕轨道"
+msgstr "副字幕"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
@@ -692,7 +692,7 @@ msgstr "视频轨(&O)"
 
 msgctxt "POPUP"
 msgid "&Volume"
-msgstr "音量(&V)"
+msgstr "音量调节(&V)"
 
 msgctxt "ID_VOLUME_UP"
 msgid "&Up"
@@ -708,7 +708,7 @@ msgstr "静音(&M)"
 
 msgctxt "POPUP"
 msgid "Af&ter Playback"
-msgstr "回放结束后(&T)"
+msgstr "播放结束后(&T)"
 
 msgctxt "ID_AFTERPLAYBACK_DONOTHING"
 msgid "Do no&thing"
@@ -796,7 +796,7 @@ msgstr "帮助(&H)"
 
 msgctxt "ID_HELP_HOMEPAGE"
 msgid "&Home Page"
-msgstr "主页(&H)"
+msgstr "网站主页(&H)"
 
 msgctxt "ID_HELP_CHECKFORUPDATE"
 msgid "Check for &updates"
@@ -812,7 +812,7 @@ msgstr "下载工具栏图像(&T)"
 
 msgctxt "ID_HELP_DONATE"
 msgid "&Donate"
-msgstr "捐献(&D)"
+msgstr "捐赠(&D)"
 
 msgctxt "ID_HELP_ABOUT"
 msgid "&About..."
