@@ -335,6 +335,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "Тәрәзә зурлыгын хәтерләү"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "Pan & Scan зумын хәтерләү"

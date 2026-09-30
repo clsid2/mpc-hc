@@ -341,6 +341,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "Recorda la mida de la finestra"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "Recorda el darrer zoom de reenquadrament"

@@ -344,6 +344,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "Recordar tamaño de la ventana"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "Recordar zoom del reencuadre (Pan && Scan)"

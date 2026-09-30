@@ -338,6 +338,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "Gogoratu azken leiho neurria"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "Gogoratu azken &Pan-eta-Scan Zooma"

@@ -332,6 +332,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "記住上次的視窗大小"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "記住上次的平移掃描縮放"

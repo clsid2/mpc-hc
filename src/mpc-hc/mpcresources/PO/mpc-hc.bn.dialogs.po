@@ -337,6 +337,10 @@ msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
 msgstr "উইন্ডোর সর্বশেষ সাইজ স্মৃতিতে সংরক্ষণ"
 
+msgctxt "IDD_PPAGEPLAYER_IDC_SIDECAR_POS"
+msgid "Resume from sidecar file"
+msgstr ""
+
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
 msgstr "সর্বশেষ প্যান-অ্যান্ড-স্ক্যান জূম স্মৃতিতে সংরক্ষণ"
