@@ -121,6 +121,8 @@ BOOL CAboutDlg::OnInitDialog()
                 m_OSName = _T("Windows 11");
             } else if (osVersion.dwBuildNumber == 28000) {
                 m_OSName = _T("Windows 11 (Build 26H1)");
+            } else if (osVersion.dwBuildNumber == 26300) {
+                m_OSName = _T("Windows 11 (Build 26H2)");
             } else if (osVersion.dwBuildNumber == 26200) {
                 m_OSName = _T("Windows 11 (Build 25H2)");
             } else if (osVersion.dwBuildNumber == 26100) {
