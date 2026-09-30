@@ -61,23 +61,29 @@ BOOL CPlayerStatusBar::Create(CWnd* pParentWnd)
 
     // Should never be RTLed
     ModifyStyleEx(WS_EX_LAYOUTRTL, WS_EX_NOINHERITLAYOUT);
-    if (AppIsThemeLoaded()) {
-        themedToolTip.Create(this, TTS_NOPREFIX | TTS_ALWAYSTIP);
-        themedToolTip.SetDelayTime(TTDT_INITIAL, 0);
-        themedToolTip.SetDelayTime(TTDT_AUTOPOP, 2500);
-        themedToolTip.SetDelayTime(TTDT_RESHOW, 0);
-        themedToolTip.AddTool(&m_time, IDS_TOOLTIP_REMAINING_TIME);
-        themedToolTip.AddTool(&m_status);
-    } else {
-        m_tooltip.Create(this, TTS_NOPREFIX | TTS_ALWAYSTIP);
-        m_tooltip.SetDelayTime(TTDT_INITIAL, 0);
-        m_tooltip.SetDelayTime(TTDT_AUTOPOP, 2500);
-        m_tooltip.SetDelayTime(TTDT_RESHOW, 0);
-        m_tooltip.AddTool(&m_time, IDS_TOOLTIP_REMAINING_TIME);
-        m_tooltip.AddTool(&m_status);
-    }
+    CreateToolTip();
 
     return ret;
+}
+
+void CPlayerStatusBar::CreateToolTip()
+{
+    CToolTipCtrl& tip = AppIsThemeLoaded() ? themedToolTip : m_tooltip;
+    tip.Create(this, TTS_NOPREFIX | TTS_ALWAYSTIP);
+    tip.SetDelayTime(TTDT_INITIAL, 0);
+    tip.SetDelayTime(TTDT_AUTOPOP, 2500);
+    tip.SetDelayTime(TTDT_RESHOW, 0);
+    tip.AddTool(&m_time, IDS_TOOLTIP_REMAINING_TIME);
+    tip.AddTool(&m_status);
+}
+
+//the tooltip is the one made for the theme, so swap it
+LRESULT CPlayerStatusBar::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    themedToolTip.DestroyWindow();
+    m_tooltip.DestroyWindow();
+    CreateToolTip();
+    return 0;
 }
 
 BOOL CPlayerStatusBar::PreCreateWindow(CREATESTRUCT& cs)
@@ -405,6 +411,7 @@ BEGIN_MESSAGE_MAP(CPlayerStatusBar, CDialogBar)
     ON_WM_CTLCOLOR()
     ON_WM_CONTEXTMENU()
     ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNotify)
+    ON_MPCTHEMECHANGED()
 END_MESSAGE_MAP()
 
 

@@ -343,6 +343,52 @@ void CPlayerToolBar::LoadToolbarImage(bool tbArtChanged /* = false */)
     }
 }
 
+//the images carry the palette, the volume control's size follows the theme, and the tooltip is the one made for it
+//the toolbar only tells its tooltip about buttons inserted after the tooltip was attached, so the
+//ones already in place get registered here; the toolbar keeps their rectangles current from then on
+void CPlayerToolBar::RegisterThemedToolTipTools()
+{
+    CToolBarCtrl& tb = GetToolBarCtrl();
+    for (int i = 0; i < tb.GetButtonCount(); i++) {
+        TBBUTTON button;
+        if (!tb.GetButton(i, &button) || (button.fsStyle & BTNS_SEP)) {
+            continue;
+        }
+        CRect r;
+        tb.GetItemRect(i, r);
+        TOOLINFO ti = { sizeof(TOOLINFO) };
+        ti.hwnd = m_hWnd;
+        ti.uId = button.idCommand;
+        if (themedToolTip.SendMessage(TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+            continue; //already known to the tooltip
+        }
+        ti.uFlags = TTF_SUBCLASS;
+        ti.rect = r;
+        ti.lpszText = LPSTR_TEXTCALLBACK;
+        themedToolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+    }
+}
+
+LRESULT CPlayerToolBar::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    CToolBarCtrl& tb = GetToolBarCtrl();
+    if (AppIsThemeLoaded()) {
+        EnableToolTips(FALSE);
+        if (nullptr == themedToolTip.m_hWnd) {
+            themedToolTip.Create(this, TTS_ALWAYSTIP);
+        }
+        tb.SetToolTips(&themedToolTip);
+        RegisterThemedToolTipTools();
+    } else {
+        tb.SetToolTips(nullptr);
+        themedToolTip.DestroyWindow();
+        tb.EnableToolTips();
+    }
+    LoadToolbarImage(true);
+    ArrangeControls();
+    return 0;
+}
+
 TBBUTTON CPlayerToolBar::GetStandardButton(int cmdid) {
     auto& svgInfo = supportedSvgButtons[cmdid];
     TBBUTTON button = { 0 };
@@ -402,6 +448,7 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     if (AppIsThemeLoaded()) {
         themedToolTip.Create(this, TTS_ALWAYSTIP);
         tb.SetToolTips(&themedToolTip);
+        RegisterThemedToolTipTools();
     } else {
         tb.EnableToolTips();
     }
@@ -726,6 +773,7 @@ BEGIN_MESSAGE_MAP(CPlayerToolBar, CToolBar)
     ON_WM_RBUTTONDOWN()
     ON_WM_SETCURSOR()
     ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNotify)
+    ON_MPCTHEMECHANGED()
     ON_WM_LBUTTONUP()
     ON_WM_RBUTTONUP()
     ON_NOTIFY_REFLECT(TBN_QUERYDELETE, &CPlayerToolBar::OnTbnQueryDelete)

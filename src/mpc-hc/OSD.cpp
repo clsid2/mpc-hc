@@ -56,6 +56,15 @@ COSD::COSD(CMainFrame* pMainFrame)
         m_pWndInsertAfter = &wndTop;
     }
 
+    SetThemeColors();
+
+    ZeroMemory(&m_BitmapInfo, sizeof(m_BitmapInfo));
+}
+
+//picks the palette for the theme; called again when the theme changes
+void COSD::SetThemeColors()
+{
+    CAutoLock lock(&m_Lock);
 
     m_colors[OSD_TRANSPARENT] = RGB(0, 0, 0);
     if (AppIsThemeLoaded()) {
@@ -80,6 +89,14 @@ COSD::COSD(CMainFrame* pMainFrame)
         m_colors[OSD_DEBUGCLR] = RGB(128, 136, 144);
     }
 
+    m_penBorder.DeleteObject();
+    m_brushCursor.DeleteObject();
+    m_brushBack.DeleteObject();
+    m_brushBar.DeleteObject();
+    m_brushBar2.DeleteObject();
+    m_brushChapter.DeleteObject();
+    m_debugBrushBack.DeleteObject();
+    m_debugPenBorder.DeleteObject();
     m_penBorder.CreatePen(PS_SOLID, 1, m_colors[OSD_BORDER]);
     m_brushCursor.CreateSolidBrush(m_colors[OSD_CURSOR]);
     m_brushBack.CreateSolidBrush(m_colors[OSD_BACKGROUND]);
@@ -88,8 +105,6 @@ COSD::COSD(CMainFrame* pMainFrame)
     m_brushChapter.CreateSolidBrush(m_colors[OSD_CURSOR]);
     m_debugBrushBack.CreateSolidBrush(m_colors[OSD_DEBUGCLR]);
     m_debugPenBorder.CreatePen(PS_SOLID, 1, m_colors[OSD_BORDER]);
-
-    ZeroMemory(&m_BitmapInfo, sizeof(m_BitmapInfo));
 }
 
 COSD::~COSD()

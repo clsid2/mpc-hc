@@ -1945,25 +1945,7 @@ void CAppSettings::LoadSettings()
     bAutoUploadSubtitles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOUPLOADSUBTITLES, FALSE);
     bPreferHearingImpairedSubtitles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PREFERHEARINGIMPAIREDSUBTITLES, FALSE);
     bMPCTheme = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MPCTHEME, TRUE);
-    if (IsWindows10OrGreater()) {
-        CRegKey key;
-        if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), KEY_READ)) {
-            DWORD useTheme = (DWORD)-1;
-            if (ERROR_SUCCESS == key.QueryDWORDValue(_T("AppsUseLightTheme"), useTheme)) {
-                if (0 == useTheme) {
-                    bWindows10DarkThemeActive = true;
-                }
-            }
-        }
-        if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\DWM"), KEY_READ)) {
-            DWORD useColorPrevalence = (DWORD)-1;
-            if (ERROR_SUCCESS == key.QueryDWORDValue(_T("ColorPrevalence"), useColorPrevalence)) {
-                if (1 == useColorPrevalence) {
-                    bWindows10AccentColorsEnabled = true;
-                }
-            }
-        }
-    }
+    ReadWindowsColorSettings();
     iModernSeekbarHeight = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MODERNSEEKBARHEIGHT, DEF_MODERN_SEEKBAR_HEIGHT);
     if (iModernSeekbarHeight < MIN_MODERN_SEEKBAR_HEIGHT || iModernSeekbarHeight > MAX_MODERN_SEEKBAR_HEIGHT) {
         iModernSeekbarHeight = DEF_MODERN_SEEKBAR_HEIGHT;
@@ -2467,8 +2449,46 @@ void CAppSettings::LoadSettings()
         }
     }
 
+    UpdateThemeState();
+
+    if (fLaunchfullscreen && slFiles.GetCount() > 0) {
+        nCLSwitches |= CLSW_FULLSCREEN;
+    }
+
+    bInitialized = true;
+}
+
+void CAppSettings::ReadWindowsColorSettings()
+{
+    bWindows10DarkThemeActive = false;
+    bWindows10AccentColorsEnabled = false;
+    if (IsWindows10OrGreater()) {
+        CRegKey key;
+        if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), KEY_READ)) {
+            DWORD useTheme = (DWORD)-1;
+            if (ERROR_SUCCESS == key.QueryDWORDValue(_T("AppsUseLightTheme"), useTheme)) {
+                if (0 == useTheme) {
+                    bWindows10DarkThemeActive = true;
+                }
+            }
+        }
+        if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\DWM"), KEY_READ)) {
+            DWORD useColorPrevalence = (DWORD)-1;
+            if (ERROR_SUCCESS == key.QueryDWORDValue(_T("ColorPrevalence"), useColorPrevalence)) {
+                if (1 == useColorPrevalence) {
+                    bWindows10AccentColorsEnabled = true;
+                }
+            }
+        }
+    }
+}
+
+// works out whether the modern theme is drawn and with which palette; runs at startup and again
+// whenever a theme setting or the windows colour settings change, so all of it must be safe to redo
+void CAppSettings::UpdateThemeState()
+{
     // a contrast theme brings its own colours, which the modern palette cannot follow;
-    // step aside for the session and let the classic path draw with the system colours
+    // step aside while one is on and let the classic path draw with the system colours
     HIGHCONTRAST hc = { sizeof(hc) };
     bool bHighContrast = SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) && (hc.dwFlags & HCF_HIGHCONTRASTON);
     bool bThemeLoaded = bMPCTheme && !bHighContrast;
@@ -2480,14 +2500,7 @@ void CAppSettings::LoadSettings()
     }
     // GUI theme can be used now
     static_cast<CMPlayerCApp*>(AfxGetApp())->m_bThemeLoaded = bThemeLoaded;
-    // like the theme itself, native menus are fixed for the session
     static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus = bThemeLoaded && bWin11NativeMenus && IsWindowsVersionOrGreaterBuild(10, 0, 22000);
-
-    if (fLaunchfullscreen && slFiles.GetCount() > 0) {
-        nCLSwitches |= CLSW_FULLSCREEN;
-    }
-
-    bInitialized = true;
 }
 
 bool CAppSettings::GetAllowMultiInst() const

@@ -110,12 +110,17 @@ public:
     static bool canUseWin10DarkTheme();
     static bool canUseExplorerTheme();
     static LPCWSTR explorerThemeName();
+    static void applyExplorerTheme(HWND hWnd);
     static bool IsBasicMode(); // Returns true if DWM composition is disabled (classic/basic mode)
     static UINT defaultLogo();
     static HBRUSH getParentDialogBGClr(CWnd* wnd, CDC* pDC);
     static void drawParentDialogBGClr(CWnd* wnd, CDC* pDC, CRect r, bool fill = true);
     static void fulfillThemeReqs(CProgressCtrl* ctl);
     static void enableWindows10DarkFrame(CWnd* window);
+    static void refreshWindows10DarkFrame(HWND hWnd);
+    static const UINT WM_MPCTHEMECHANGED;
+    static void resetThemeCaches();
+    static void broadcastThemeChange();
     static void applyNativeMenuMode();
     static void AdjustDynamicWidgetPair(CWnd* window, int left, int right, bool allowShrinkRight = false);
     static void AdjustDynamicWidgetGroup(CWnd* window, std::initializer_list<std::pair<int, int>> pairs, bool allowShrinkRight = false);
@@ -140,5 +145,8 @@ public:
         RadioHoverSet = 3
     };
 };
+
+//for the message map of a window that sets itself up again after a theme change
+#define ON_MPCTHEMECHANGED() ON_REGISTERED_MESSAGE(CMPCThemeUtil::WM_MPCTHEMECHANGED, OnMPCThemeChanged)
 
 

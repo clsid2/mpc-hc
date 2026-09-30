@@ -80,13 +80,13 @@ class CPPageSheet : public TreePropSheet::CTreePropSheet, public CMPCThemeUtil
 
 public:
     enum {
-        APPLY_LANGUAGE_CHANGE = 100, // 100 is a magic number than won't collide with WinAPI constants
+        APPLY_UI_CHANGE = 100, // the language or theme changed; 100 is a magic number than won't collide with WinAPI constants
         RESET_SETTINGS
     };
     CPtrArray& getPages() { return m_pages; };
 private:
     bool m_bLockPage;
-    bool m_bLanguageChanged;
+    bool m_bRebuildNeeded;
     bool initialized;
     bool changingDPI;
     CFont dpiButtonFont, dpiTabFont;

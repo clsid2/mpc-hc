@@ -36,6 +36,7 @@ public:
     CMPCThemeMenu* GetSubMenu(int nPos);
     static void updateItem(CCmdUI* pCmdUI);
     static void clearDimensions() { hasDimensions = false; };
+    static void resetBrushes();
     void setOSMenu(bool isOSMenu) { this->isOSMenu = isOSMenu; };
 protected:
     static std::map<UINT, CMPCThemeMenu*> subMenuIDs;

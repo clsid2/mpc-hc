@@ -666,6 +666,7 @@ protected:
     bool m_bFirstPlay;
     bool m_bOpeningInAutochangedMonitorMode;
     bool m_bPausedForAutochangeMonitorMode;
+    bool m_bThemeChangePending;
     bool restoringWindowRect;
 
     bool m_fAudioOnly;
@@ -1454,6 +1455,7 @@ protected:
     void ClearArtFromViews();
 
     void UpdateUILanguage();
+    void ApplyThemeChange();
 
     bool PerformFlipRotate();
 

@@ -18,6 +18,7 @@ public:
     DECLARE_MESSAGE_MAP()
     afx_msg void OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+    afx_msg LRESULT OnMPCThemeChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnNcPaint();
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);

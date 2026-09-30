@@ -296,6 +296,7 @@ private:
 
 protected:
     CMPCThemePlayerListCtrl m_list;
+    EventClient m_eventc;
 
     virtual void DoDataExchange(CDataExchange* pDX) override;
     virtual BOOL OnInitDialog() override;

@@ -47,6 +47,7 @@ void CMPCThemePlayerListCtrl::PreSubclassWindow()
 IMPLEMENT_DYNAMIC(CMPCThemePlayerListCtrl, CListCtrl)
 
 BEGIN_MESSAGE_MAP(CMPCThemePlayerListCtrl, CListCtrl)
+    ON_MPCTHEMECHANGED()
     ON_WM_PAINT()
     ON_WM_NCPAINT()
     ON_WM_CREATE()
@@ -412,6 +413,26 @@ int CMPCThemePlayerListCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
         subclassHeader();
     }
 
+    return 0;
+}
+
+//owners that want a background of their own set it again when they get this message, which comes to them after their children
+LRESULT CMPCThemePlayerListCtrl::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    if (AppNeedsThemedControls()) {
+        SetWindowTheme(GetSafeHwnd(), CMPCThemeUtil::canUseExplorerTheme() ? nullptr : L"", nullptr);
+        if (nullptr == lvsToolTip.m_hWnd) {
+            CToolTipCtrl* t = GetToolTips();
+            if (nullptr != t) {
+                lvsToolTip.SubclassWindow(t->m_hWnd);
+            }
+        }
+        subclassHeader();
+        SetBkColor(CMPCTheme::ContentBGColor);
+    } else {
+        SetWindowTheme(GetSafeHwnd(), nullptr, nullptr);
+        SetBkColor(GetSysColor(COLOR_WINDOW));
+    }
     return 0;
 }
 

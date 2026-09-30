@@ -24,6 +24,7 @@ public:
     void EnsureVisible(int index);
     DECLARE_MESSAGE_MAP()
     afx_msg void OnNcPaint();
+    afx_msg LRESULT OnMPCThemeChanged(WPARAM wParam, LPARAM lParam);
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnSize(UINT nType, int cx, int cy);

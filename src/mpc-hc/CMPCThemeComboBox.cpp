@@ -8,6 +8,7 @@
 IMPLEMENT_DYNAMIC(CMPCThemeComboBox, CComboBox)
 
 BEGIN_MESSAGE_MAP(CMPCThemeComboBox, CComboBox)
+    ON_MPCTHEMECHANGED()
     ON_WM_PAINT()
     ON_WM_SETFOCUS()
     ON_WM_MOUSEMOVE()
@@ -78,6 +79,20 @@ void CMPCThemeComboBox::themeControls()
 void CMPCThemeComboBox::PreSubclassWindow()
 {
     themeControls();
+}
+
+LRESULT CMPCThemeComboBox::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    if (hasThemedControls) {
+        COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+        if (GetComboBoxInfo(&info)) {
+            bool explorerTheme = AppNeedsThemedControls() && CMPCThemeUtil::canUseExplorerTheme();
+            SetWindowTheme(info.hwndList, explorerTheme ? CMPCThemeUtil::explorerThemeName() : nullptr, NULL);
+        }
+    } else {
+        themeControls();
+    }
+    return 0;
 }
 
 

@@ -19,6 +19,7 @@ CMPCThemeEdit::~CMPCThemeEdit()
 
 IMPLEMENT_DYNAMIC(CMPCThemeEdit, CEdit)
 BEGIN_MESSAGE_MAP(CMPCThemeEdit, CEdit)
+    ON_MPCTHEMECHANGED()
     ON_WM_NCPAINT()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(WMU_RESIZESUPPORT, ResizeSupport)
@@ -323,6 +324,12 @@ void CMPCThemeEdit::PreSubclassWindow()
 }
 
 
+
+LRESULT CMPCThemeEdit::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    CMPCThemeUtil::applyExplorerTheme(GetSafeHwnd());
+    return 0;
+}
 
 void CMPCThemeEdit::OnNcPaint()
 {

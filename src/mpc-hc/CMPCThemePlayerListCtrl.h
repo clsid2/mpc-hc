@@ -53,6 +53,7 @@ public:
 
     DECLARE_MESSAGE_MAP()
     afx_msg void OnPaint();
+    afx_msg LRESULT OnMPCThemeChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnNcPaint();
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);

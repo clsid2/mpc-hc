@@ -14,11 +14,15 @@
 #include "Translations.h"
 #include "ImageGrayer.h"
 #include "CMPCThemePropPageButton.h"
+#include "CMPCThemeMenu.h"
+#include "CMPCThemePropPageFrame.h"
 #include <dwmapi.h>
 #undef SubclassWindow
 
 using DLGTEMPLATEEX = _DialogSplitHelper::DLGTEMPLATEEX;
 using DLGITEMTEMPLATEEX = _DialogSplitHelper::DLGITEMTEMPLATEEX;
+
+const UINT CMPCThemeUtil::WM_MPCTHEMECHANGED = RegisterWindowMessage(_T("MPC-HC Theme Changed"));
 
 CBrush CMPCThemeUtil::contentBrush;
 CBrush CMPCThemeUtil::windowBrush;
@@ -1177,6 +1181,13 @@ LPCWSTR CMPCThemeUtil::explorerThemeName()
     return canUseWin10DarkTheme() ? L"DarkMode_Explorer" : canUseExplorerTheme() ? L"Explorer" : L"";
 }
 
+//the explorer style where the theme dresses the control, otherwise the default style back
+//(nullptr restores the default, where L"" would turn visual styles off)
+void CMPCThemeUtil::applyExplorerTheme(HWND hWnd)
+{
+    SetWindowTheme(hWnd, AppNeedsThemedControls() ? explorerThemeName() : nullptr, nullptr);
+}
+
 bool CMPCThemeUtil::IsBasicMode()
 {
     // Returns true if DWM composition is disabled (Windows 7 basic mode, not classic)
@@ -1255,9 +1266,88 @@ void CMPCThemeUtil::enableWindows10DarkFrame(CWnd* window)
     }
 }
 
+//unlike enableWindows10DarkFrame, this also turns the dark frame off, for windows that outlive a theme change
+void CMPCThemeUtil::refreshWindows10DarkFrame(HWND hWnd)
+{
+    RTL_OSVERSIONINFOW osvi = GetRealOSVersion();
+    if (osvi.dwMajorVersion < 10 || osvi.dwBuildNumber < 17763) {
+        return;
+    }
+    HMODULE hUser = GetModuleHandleA("user32.dll");
+    if (hUser) {
+        pfnSetWindowCompositionAttribute setWindowCompositionAttribute = (pfnSetWindowCompositionAttribute)GetProcAddress(hUser, "SetWindowCompositionAttribute");
+        if (setWindowCompositionAttribute) {
+            BOOL dark = canUseWin10DarkTheme();
+            WINDOWCOMPOSITIONATTRIBDATA data;
+            data.Attrib = WCA_USEDARKMODECOLORS;
+            data.pvData = &dark;
+            data.cbData = sizeof(dark);
+            setWindowCompositionAttribute(hWnd, &data);
+            //the attribute alone leaves a caption that was already dark as it is; dwm needs telling too
+            const DWORD DWMWA_USE_IMMERSIVE_DARK_MODE_19 = 19, DWMWA_USE_IMMERSIVE_DARK_MODE_20 = 20; //the value moved in windows 10 20h1
+            if (FAILED(DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_20, &dark, sizeof(dark)))) {
+                DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_19, &dark, sizeof(dark));
+            }
+            ::SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            //the caption is only repainted in the new colours on an activation change, so fake one;
+            //straight to DefWindowProc, as mfc keeps its own track of activation
+            BOOL active = ::GetForegroundWindow() == hWnd;
+            ::DefWindowProc(hWnd, WM_NCACTIVATE, !active, 0);
+            ::DefWindowProc(hWnd, WM_NCACTIVATE, active, 0);
+        }
+    }
+}
+
+//brushes created from the palette on first use; drop them so the next use picks up the new colours
+void CMPCThemeUtil::resetThemeCaches()
+{
+    contentBrush.DeleteObject();
+    windowBrush.DeleteObject();
+    controlAreaBrush.DeleteObject();
+    W10DarkThemeFileDialogInjectedBGBrush.DeleteObject();
+    if (AppIsThemeLoaded()) {
+        initHelperObjects();
+    }
+    CMPCThemeMenu::resetBrushes();
+    CMPCThemePropPageFrame::resetBrush();
+}
+
+static BOOL CALLBACK collectWindowProc(HWND hWnd, LPARAM lParam)
+{
+    reinterpret_cast<std::vector<HWND>*>(lParam)->push_back(hWnd);
+    return TRUE;
+}
+
+//tells every window of the ui thread that the theme changed, so the ones that set themselves up once at
+//creation (visual styles, colours handed to common controls, subclassed children) can do it again.
+//children hear it before their parents, so a parent can still override what a child picked for itself
+void CMPCThemeUtil::broadcastThemeChange()
+{
+    std::vector<HWND> topLevel;
+    ::EnumThreadWindows(GetCurrentThreadId(), collectWindowProc, (LPARAM)&topLevel);
+    for (HWND hWnd : topLevel) {
+        if (!::IsWindow(hWnd)) {
+            continue;
+        }
+        std::vector<HWND> windows = { hWnd };
+        ::EnumChildWindows(hWnd, collectWindowProc, (LPARAM)&windows); //parents come before their children
+        for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
+            if (::IsWindow(*it)) {
+                ::SendMessage(*it, WM_MPCTHEMECHANGED, 0, 0);
+            }
+        }
+        if (WS_CAPTION == (::GetWindowLong(hWnd, GWL_STYLE) & WS_CAPTION)) {
+            refreshWindows10DarkFrame(hWnd);
+        }
+        ::RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+    }
+}
+
 void CMPCThemeUtil::applyNativeMenuMode()
 {
-    if (!static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus) {
+    static bool applied = false;
+    bool nativeMenus = static_cast<CMPlayerCApp*>(AfxGetApp())->m_bNativeMenus;
+    if (!nativeMenus && !applied) {
         return;
     }
     //undocumented uxtheme exports. native menus are only offered on windows 11, where these ordinals are stable
@@ -1269,9 +1359,14 @@ void CMPCThemeUtil::applyNativeMenuMode()
         pfnSetPreferredAppMode setPreferredAppMode = (pfnSetPreferredAppMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
         pfnFlushMenuThemes flushMenuThemes = (pfnFlushMenuThemes)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(136));
         if (setPreferredAppMode && flushMenuThemes) {
-            //force rather than allow, so menus follow the player theme even when it differs from the os
-            setPreferredAppMode(CMPCTheme::EffectiveThemeMode() == CMPCTheme::ModernThemeMode::DARK ? ForceDark : ForceLight);
+            if (nativeMenus) {
+                //force rather than allow, so menus follow the player theme even when it differs from the os
+                setPreferredAppMode(CMPCTheme::EffectiveThemeMode() == CMPCTheme::ModernThemeMode::DARK ? ForceDark : ForceLight);
+            } else { //turned off since, so hand the menus back to the os
+                setPreferredAppMode(Default);
+            }
             flushMenuThemes();
+            applied = nativeMenus;
         }
     }
 }

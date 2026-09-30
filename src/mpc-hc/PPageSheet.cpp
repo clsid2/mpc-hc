@@ -35,7 +35,7 @@ IMPLEMENT_DYNAMIC(CPPageSheet, CTreePropSheet)
 CPPageSheet::CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd, UINT idPage)
     : CTreePropSheet(pszCaption, pParentWnd, 0)
     , m_bLockPage(false)
-    , m_bLanguageChanged(false)
+    , m_bRebuildNeeded(false)
     , m_audioswitcher(pFG)
     , initialized(false)
     , isDummySheet(false)
@@ -43,6 +43,7 @@ CPPageSheet::CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd
 {
     EventRouter::EventSelection receives;
     receives.insert(MpcEvent::CHANGING_UI_LANGUAGE);
+    receives.insert(MpcEvent::CHANGING_THEME);
     GetEventd().Connect(m_eventc, receives, std::bind(&CPPageSheet::EventCallback, this, std::placeholders::_1));
 
     SetTreeWidth(216);
@@ -102,7 +103,7 @@ CPPageSheet::CPPageSheet(LPCTSTR pszCaption, IFilterGraph* pFG, CWnd* pParentWnd
 //dummy constructor for calculating DPI changes.  do not use except internally!
 CPPageSheet::CPPageSheet() : CTreePropSheet(_T("Dummy"), nullptr, 0)
     , m_bLockPage(false)
-    , m_bLanguageChanged(false)
+    , m_bRebuildNeeded(false)
     , m_audioswitcher(nullptr)
     , initialized(false)
     , isDummySheet(true)
@@ -132,7 +133,8 @@ void CPPageSheet::EventCallback(MpcEvent ev)
 {
     switch (ev) {
         case MpcEvent::CHANGING_UI_LANGUAGE:
-            m_bLanguageChanged = true;
+        case MpcEvent::CHANGING_THEME:
+            m_bRebuildNeeded = true;
             break;
         default:
             ASSERT(FALSE);
@@ -198,10 +200,11 @@ void CPPageSheet::OnApply()
     // Execute the default actions first
     Default();
 
-    // If the language was changed, we quit the dialog and inform the caller about it
-    if (m_bLanguageChanged) {
-        m_bLanguageChanged = false;
-        EndDialog(APPLY_LANGUAGE_CHANGE);
+    // If the language or the theme was changed, we quit the dialog and inform the caller about it,
+    // so it can be rebuilt with the new one
+    if (m_bRebuildNeeded) {
+        m_bRebuildNeeded = false;
+        EndDialog(APPLY_UI_CHANGE);
     }
 }
 
