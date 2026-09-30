@@ -656,6 +656,7 @@
       <Filter>MPCTheme</Filter>
     </ClCompile>
     <ClCompile Include="GPUInfo.cpp" />
+    <ClCompile Include="SidecarResume.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppSettings.h">
@@ -1258,6 +1259,7 @@
       <Filter>MPCTheme</Filter>
     </ClInclude>
     <ClInclude Include="GPUInfo.h" />
+    <ClInclude Include="SidecarResume.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ani.avi">

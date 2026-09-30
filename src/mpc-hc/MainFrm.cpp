@@ -47,6 +47,7 @@
 #include "OpenDirHelper.h"
 #include "OpenDlg.h"
 #include "TunerScanDlg.h"
+#include "SidecarResume.h"
 
 #include "ComPropertySheet.h"
 #include "PPageAccelTbl.h"
@@ -2426,6 +2427,9 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                             auto* pMRU = &AfxGetAppSettings().MRU;
                             if (m_bRememberFilePos && !m_fEndOfStream) {
                                 pMRU->UpdateCurrentFilePosition(rtNow);
+                                if (AfxGetAppSettings().bResumeFromSidecar && !lastOpenFile.IsEmpty()) {
+                                    SaveSidecarPosition(lastOpenFile, rtNow);
+                                }
                             }
 
                             // Casimir666 : autosave subtitle sync after play
@@ -17125,13 +17129,22 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
             }
 
             auto* pMRU = &AfxGetAppSettings().MRU;
-            if (pMRU->rfe_array.GetCount()) {
-                if (!rtPos && m_bRememberFilePos) {
-                    rtPos = pMRU->GetCurrentFilePosition();
-                    if (rtPos >= rtDur || rtDur - rtPos < 50000000LL) {
-                        rtPos = 0;
+            if (!rtPos && m_bRememberFilePos) {
+                if (s.bResumeFromSidecar) {
+                    REFERENCE_TIME rtSidecarPos = 0;
+                    if (LoadSidecarPosition(fn, rtSidecarPos)) {
+                        rtPos = rtSidecarPos;
                     }
                 }
+                if (!rtPos && pMRU->rfe_array.GetCount()) {
+                    rtPos = pMRU->GetCurrentFilePosition();
+                }
+                if (rtPos >= rtDur || rtDur - rtPos < 50000000LL) {
+                    rtPos = 0;
+                }
+            }
+
+            if (pMRU->rfe_array.GetCount()) {
                 if (!abRepeat && s.fKeepHistory && s.fRememberFilePos) {
                     abRepeat = pMRU->GetCurrentABRepeat();
                 }
@@ -21210,6 +21223,9 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                     }
                 }
                 s.MRU.UpdateCurrentFilePosition(rtNow, true);
+                if (s.bResumeFromSidecar && GetPlaybackMode() == PM_FILE && !lastOpenFile.IsEmpty()) {
+                    SaveSidecarPosition(lastOpenFile, rtNow, true);
+                }
             } else if (GetPlaybackMode() == PM_DVD && m_pDVDI) {
                 DVD_DOMAIN DVDDomain;
                 if (SUCCEEDED(m_pDVDI->GetCurrentDomain(&DVDDomain))) {

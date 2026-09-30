@@ -244,15 +244,16 @@ BEGIN
     CONTROL         "Disable ""Open Disc"" menu",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,50,192,8
     CONTROL         "Process priority above normal",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,65,192,8
     CONTROL         "Enable cover-art support",IDC_CHECK14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,80,192,8
-    GROUPBOX        "History",IDC_STATIC,149,155,200,124
+    GROUPBOX        "History",IDC_STATIC,149,155,200,128
     CONTROL         "Keep history of recently opened files",IDC_CHECK1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,169,192,8
-    CONTROL         "Remember last playlist",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,185,192,8
-    CONTROL         "Remember File position",IDC_FILE_POS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,200,192,8
-    CONTROL         "Remember DVD position",IDC_DVD_POS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,216,192,8
-    CONTROL         "Remember last window position",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,232,192,8
-    CONTROL         "Remember last window size",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,247,192,8
-    CONTROL         "Remember last Pan && Scan Zoom",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,263,192,8
+    CONTROL         "Remember last playlist",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,183,192,8
+    CONTROL         "Remember File position",IDC_FILE_POS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,197,192,8
+    CONTROL         "Remember DVD position",IDC_DVD_POS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,211,192,8
+    CONTROL         "Remember last window position",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,225,192,8
+    CONTROL         "Remember last window size",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,239,192,8
+    CONTROL         "Resume from sidecar file",IDC_SIDECAR_POS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,253,192,8
+    CONTROL         "Remember last Pan && Scan Zoom",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,267,192,8
 END
 
 IDD_PPAGEDVD DIALOGEX 0, 0, 355, 289

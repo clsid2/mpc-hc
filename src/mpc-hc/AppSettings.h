@@ -618,6 +618,7 @@ public:
     CRecentFileAndURLList MRUDub;
     bool            fRememberDVDPos;
     bool            fRememberFilePos;
+    bool            bResumeFromSidecar;
     int             iRememberPosForLongerThan;
     bool            bRememberPosForAudioFiles;
     bool            bRememberExternalPlaylistPos;

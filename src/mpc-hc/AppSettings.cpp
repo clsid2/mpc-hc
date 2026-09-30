@@ -78,6 +78,7 @@ CAppSettings::CAppSettings()
     , MRUDub(0, _T("Recent Dub List"), _T("Dub%d"), 20)
     , fRememberDVDPos(false)
     , fRememberFilePos(false)
+    , bResumeFromSidecar(false)
     , iRememberPosForLongerThan(5)
     , bRememberPosForAudioFiles(true)
     , bRememberExternalPlaylistPos(true)
@@ -1211,6 +1212,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
 
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DVDPOS, fRememberDVDPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, fRememberFilePos);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_RESUME_FROM_SIDECAR, bResumeFromSidecar);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSLONGER, iRememberPosForLongerThan);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSAUDIO, bRememberPosForAudioFiles);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS_PLAYLIST, bRememberExternalPlaylistPos);
@@ -2287,6 +2289,7 @@ void CAppSettings::LoadSettings()
 
     // playback positions for last played files
     fRememberFilePos = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, FALSE);
+    bResumeFromSidecar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_RESUME_FROM_SIDECAR, FALSE);
     iRememberPosForLongerThan = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSLONGER, 5);
     bRememberPosForAudioFiles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSAUDIO, TRUE);
     if (iRememberPosForLongerThan < 0) {

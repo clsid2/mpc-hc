@@ -705,6 +705,7 @@
 #define IDC_RESET                       22004
 #define IDC_DVD_POS                     22005
 #define IDC_FILE_POS                    22006
+#define IDC_SIDECAR_POS                 22007
 #define IDC_EVR_BUFFERS                 22010
 #define IDC_VERSION                     22011
 #define IDC_SHOW_OSD                    22013

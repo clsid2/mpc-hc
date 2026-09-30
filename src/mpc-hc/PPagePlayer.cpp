@@ -72,6 +72,7 @@ void CPPagePlayer::DoDataExchange(CDataExchange* pDX)
     DDX_Check(pDX, IDC_CHECK9, m_priority);
     DDX_Check(pDX, IDC_DVD_POS, m_fRememberDVDPos);
     DDX_Check(pDX, IDC_FILE_POS, m_fRememberFilePos);
+    DDX_Check(pDX, IDC_SIDECAR_POS, m_bResumeFromSidecar);
     DDX_Check(pDX, IDC_CHECK2, m_bRememberPlaylistItems);
     DDX_Check(pDX, IDC_CHECK14, m_bEnableCoverArt);
 }
@@ -80,6 +81,7 @@ BEGIN_MESSAGE_MAP(CPPagePlayer, CMPCThemePPageBase)
     ON_UPDATE_COMMAND_UI(IDC_CHECK13, OnUpdateCheck13)
     ON_UPDATE_COMMAND_UI(IDC_DVD_POS, OnUpdatePos)
     ON_UPDATE_COMMAND_UI(IDC_FILE_POS, OnUpdatePos)
+    ON_UPDATE_COMMAND_UI(IDC_SIDECAR_POS, OnUpdatePos)
     ON_UPDATE_COMMAND_UI(IDC_CHECK8, OnUpdateSaveToIni)
 END_MESSAGE_MAP()
 
@@ -107,6 +109,7 @@ BOOL CPPagePlayer::OnInitDialog()
     m_priority = s.dwPriority != NORMAL_PRIORITY_CLASS;
     m_fRememberDVDPos = s.fRememberDVDPos;
     m_fRememberFilePos = s.fRememberFilePos;
+    m_bResumeFromSidecar = s.bResumeFromSidecar;
     m_bRememberPlaylistItems = s.bRememberPlaylistItems;
     m_bEnableCoverArt = s.bEnableCoverArt;
 
@@ -114,6 +117,7 @@ BOOL CPPagePlayer::OnInitDialog()
     UpdateData(FALSE);
 
     GetDlgItem(IDC_FILE_POS)->EnableWindow(s.fKeepHistory);
+    GetDlgItem(IDC_SIDECAR_POS)->EnableWindow(s.fKeepHistory);
     GetDlgItem(IDC_DVD_POS)->EnableWindow(s.fKeepHistory);
 
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -138,6 +142,7 @@ BOOL CPPagePlayer::OnApply()
     s.dwPriority = m_priority ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS;
     s.fRememberDVDPos = !!m_fRememberDVDPos;
     s.fRememberFilePos = !!m_fRememberFilePos;
+    s.bResumeFromSidecar = !!m_bResumeFromSidecar;
     s.bRememberPlaylistItems = !!m_bRememberPlaylistItems;
     s.bEnableCoverArt = !!m_bEnableCoverArt;
 
@@ -166,6 +171,7 @@ BOOL CPPagePlayer::OnApply()
     ::SetPriorityClass(::GetCurrentProcess(), s.dwPriority);
 
     GetDlgItem(IDC_FILE_POS)->EnableWindow(s.fKeepHistory);
+    GetDlgItem(IDC_SIDECAR_POS)->EnableWindow(s.fKeepHistory);
     GetDlgItem(IDC_DVD_POS)->EnableWindow(s.fKeepHistory);
 
     return __super::OnApply();

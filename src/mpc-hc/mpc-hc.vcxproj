@@ -314,6 +314,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="ShockwaveGraph.cpp" />
     <ClCompile Include="MediaTransControls.cpp" />
+    <ClCompile Include="SidecarResume.cpp" />
     <ClCompile Include="STB_Image.cpp" />
     <ClCompile Include="SVGImage.cpp" />
     <ClCompile Include="Translations.cpp" />
@@ -524,6 +525,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="SaveTextFileDialog.h" />
     <ClInclude Include="SaveThumbnailsDialog.h" />
     <ClInclude Include="SelectMediaType.h" />
+    <ClInclude Include="SidecarResume.h" />
     <ClInclude Include="SMTC2Compat.h" />
     <ClInclude Include="SettingsDefines.h" />
     <ClInclude Include="Shaders.h" />

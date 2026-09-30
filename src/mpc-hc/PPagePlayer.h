@@ -50,6 +50,7 @@ public:
     BOOL m_priority;
     BOOL m_fRememberDVDPos;
     BOOL m_fRememberFilePos;
+    BOOL m_bResumeFromSidecar;
     BOOL m_bRememberPlaylistItems;
     BOOL m_bEnableCoverArt;
 
