@@ -11042,9 +11042,14 @@ bool CMainFrame::IsValidSubtitleStream(int i) {
     return false;
 }
 
-// Called from GraphThread
+// Can be called from GraphThread
 void CMainFrame::OnPlayAudio(UINT nID)
 {
+    if (!IsStateLoadedOrLoading()) {
+        ASSERT(false);
+        return;
+    }
+
     int i = (int)nID - ID_AUDIO_SUBITEM_START;
 
     DWORD cStreams = 0;
