@@ -1115,6 +1115,8 @@ public:
     static std::multimap<CStringW, CStringW> LoadHistoryHashes(CStringW section, CStringW dateField);
     static void     PurgeExpiredHash(CStringW section, CStringW hash);
     void            LoadSettings();
+    void            ReadWindowsColorSettings();
+    void            UpdateThemeState();
     void            SaveExternalFilters() {
         if (bInitialized) {
             SaveExternalFilters(m_filters);

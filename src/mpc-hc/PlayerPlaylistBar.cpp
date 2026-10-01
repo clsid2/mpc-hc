@@ -138,9 +138,7 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
         CRect(0, 0, 100, 100), &m_listFrame, IDC_PLAYLIST);
 
     m_list.SetExtendedStyle(m_list.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
-    if (AppIsThemeLoaded() && CMPCTheme::isWindows11Style) {
-        m_list.SetBkColor(CMPCTheme::ContentBGColor); //the area below the items, which light mode leaves to the native list
-    }
+    SetListBkColor();
 
     // The column titles don't have to be translated since they aren't displayed anyway
     m_list.InsertColumn(COL_NAME, _T("Name"), LVCFMT_LEFT);
@@ -1923,7 +1921,22 @@ void CPlayerPlaylistBar::SavePlaylist(bool can_delay /* = false*/)
     }
 }
 
+void CPlayerPlaylistBar::SetListBkColor()
+{
+    if (AppIsThemeLoaded() && CMPCTheme::isWindows11Style) {
+        m_list.SetBkColor(CMPCTheme::ContentBGColor); //the area below the items, which light mode leaves to the native list
+    }
+}
+
+//comes after the list has picked its own background, so this can still override it
+LRESULT CPlayerPlaylistBar::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    SetListBkColor();
+    return 0;
+}
+
 BEGIN_MESSAGE_MAP(CPlayerPlaylistBar, CMPCThemePlayerBar)
+    ON_MPCTHEMECHANGED()
     ON_WM_DESTROY()
     ON_WM_SIZE()
     ON_NOTIFY(LVN_KEYDOWN, IDC_PLAYLIST, OnLvnKeyDown)

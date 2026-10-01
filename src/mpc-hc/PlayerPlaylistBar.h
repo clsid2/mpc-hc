@@ -215,6 +215,8 @@ protected:
 
 public:
     afx_msg void OnDestroy();
+    void SetListBkColor();
+    afx_msg LRESULT OnMPCThemeChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnLvnKeyDown(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnNMDblclkList(NMHDR* pNMHDR, LRESULT* pResult);

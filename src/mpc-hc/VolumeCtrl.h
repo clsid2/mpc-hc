@@ -54,6 +54,7 @@ protected:
 public:
     afx_msg BOOL OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnNMCustomdraw(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg LRESULT OnMPCThemeChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void HScroll(UINT nSBCode, UINT nPos);

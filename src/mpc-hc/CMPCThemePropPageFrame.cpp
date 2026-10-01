@@ -16,6 +16,13 @@ CMPCThemePropPageFrame::CMPCThemePropPageFrame() : CPropPageFrameDefault()
 }
 
 
+//an options dialog can be up when the windows colours change, so swap the brush rather than leave it empty
+void CMPCThemePropPageFrame::resetBrush()
+{
+    mpcThemeBorderBrush.DeleteObject();
+    mpcThemeBorderBrush.CreateSolidBrush(CMPCTheme::WindowBorderColorLight);
+}
+
 CMPCThemePropPageFrame::~CMPCThemePropPageFrame()
 {
 }

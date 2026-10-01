@@ -214,6 +214,18 @@ BOOL CMPCThemeMenu::AppendMenu(UINT nFlags, UINT_PTR nIDNewItem, LPCTSTR lpszNew
     return ret;
 }
 
+void CMPCThemeMenu::resetBrushes()
+{
+    if (bgBrush) {
+        ::DeleteObject(bgBrush);
+        bgBrush = 0;
+    }
+    if (bgMenubarBrush) {
+        ::DeleteObject(bgMenubarBrush);
+        bgMenubarBrush = 0;
+    }
+}
+
 void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
 {
     if (AppIsThemeLoaded()) {

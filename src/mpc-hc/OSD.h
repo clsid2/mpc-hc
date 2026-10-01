@@ -154,6 +154,7 @@ public:
     ~COSD();
 
     HRESULT Create(CWnd* pWnd);
+    void SetThemeColors();
 
     void Start(CWnd* pWnd, CComPtr<IVMRMixerBitmap9> pVMB, CComPtr<IMFVideoMixerBitmap> pMFVMB, bool bShowSeekBar);
     void Start(CWnd* pWnd, IMadVRTextOsd* pMVTO);

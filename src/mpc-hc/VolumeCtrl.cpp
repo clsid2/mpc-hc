@@ -45,6 +45,19 @@ CVolumeCtrl::~CVolumeCtrl()
 {
 }
 
+LRESULT CVolumeCtrl::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    modernStyle = AppIsThemeLoaded();
+    CToolTipCtrl* pTip = GetToolTips();
+    if (modernStyle && nullptr != pTip && nullptr == themedToolTip.m_hWnd) {
+        themedToolTip.SubclassWindow(pTip->m_hWnd);
+    } else if (!modernStyle && nullptr != themedToolTip.m_hWnd) {
+        themedToolTip.UnsubclassWindow();
+    }
+    Invalidate();
+    return 0;
+}
+
 bool CVolumeCtrl::Create(CWnd* pParentWnd)
 {
     DWORD tooltipStyle = showPercentage && AppIsThemeLoaded() ? 0 : TBS_TOOLTIPS;
@@ -98,6 +111,7 @@ void CVolumeCtrl::DecreaseVolume()
 }
 
 BEGIN_MESSAGE_MAP(CVolumeCtrl, CSliderCtrl)
+    ON_MPCTHEMECHANGED()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnNMCustomdraw)
     ON_WM_LBUTTONDOWN()
     ON_WM_SETFOCUS()

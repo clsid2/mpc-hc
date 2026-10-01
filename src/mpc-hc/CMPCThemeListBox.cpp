@@ -17,6 +17,7 @@ CMPCThemeListBox::~CMPCThemeListBox()
 }
 
 BEGIN_MESSAGE_MAP(CMPCThemeListBox, CListBox)
+    ON_MPCTHEMECHANGED()
     ON_WM_NCPAINT()
     ON_WM_MOUSEWHEEL()
     ON_WM_MOUSEMOVE()
@@ -97,6 +98,15 @@ void CMPCThemeListBox::PreSubclassWindow()
             themedToolTip.Create(this, TTS_ALWAYSTIP);
         }
     }
+}
+
+LRESULT CMPCThemeListBox::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    CMPCThemeUtil::applyExplorerTheme(GetSafeHwnd());
+    if (AppNeedsThemedControls() && nullptr == themedToolTip.m_hWnd) {
+        themedToolTip.Create(this, TTS_ALWAYSTIP);
+    }
+    return 0;
 }
 
 

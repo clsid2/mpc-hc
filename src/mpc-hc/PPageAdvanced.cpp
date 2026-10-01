@@ -33,6 +33,7 @@ IMPLEMENT_DYNAMIC(CPPageAdvanced, CMPCThemePPageBase)
 CPPageAdvanced::CPPageAdvanced()
     : CMPCThemePPageBase(IDD, IDD)
 {
+    GetEventd().Connect(m_eventc, { MpcEvent::CHANGING_THEME });
 }
 
 void CPPageAdvanced::DoDataExchange(CDataExchange* pDX)
@@ -313,6 +314,8 @@ BOOL CPPageAdvanced::OnApply()
 {
     auto& s = AfxGetAppSettings();
     int oldHistoryMaxAgeDays = s.iHistoryMaxAgeDays;
+    int oldModernThemeStyle = s.iModernThemeStyle;
+    bool oldWin11NativeMenus = s.bWin11NativeMenus;
 
     for (int i = 0; i < m_list.GetItemCount(); i++) {
         if (IsHeaderRow(i)) {
@@ -326,6 +329,9 @@ BOOL CPPageAdvanced::OnApply()
     if (s.iHistoryMaxAgeDays != oldHistoryMaxAgeDays && s.iHistoryMaxAgeDays > 0) {
         s.MRU.rfe_last_added = 0; // force reload so the new age limit is applied immediately
         s.MRU.ReadMediaHistory();
+    }
+    if (s.iModernThemeStyle != oldModernThemeStyle || s.bWin11NativeMenus != oldWin11NativeMenus) {
+        m_eventc.FireEvent(MpcEvent::CHANGING_THEME);
     }
 
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER

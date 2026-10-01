@@ -40,7 +40,15 @@ void CMPCThemeResizableDialog::fulfillThemeReqs()
 BEGIN_MESSAGE_MAP(CMPCThemeResizableDialog, CDpiAwareResizableDialog)
     ON_WM_CTLCOLOR()
     ON_WM_SIZE()
+    ON_MPCTHEMECHANGED()
 END_MESSAGE_MAP()
+
+//a dialog that outlives a theme change, such as the one inside a panel, dresses the controls it skipped when it was made
+LRESULT CMPCThemeResizableDialog::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
+{
+    fulfillThemeReqs();
+    return 0;
+}
 
 HBRUSH CMPCThemeResizableDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {

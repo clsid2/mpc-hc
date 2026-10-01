@@ -65,6 +65,7 @@ CPPageTheme::CPPageTheme()
 {
     EventRouter::EventSelection fires;
     fires.insert(MpcEvent::CHANGING_UI_LANGUAGE);
+    fires.insert(MpcEvent::CHANGING_THEME);
     GetEventd().Connect(m_eventc, fires);
 }
 
@@ -270,9 +271,15 @@ BOOL CPPageTheme::OnApply()
 
     CAppSettings& s = AfxGetAppSettings();
 
+    bool themeChanged = s.bMPCTheme != !!m_bUseModernTheme
+                        || s.iModernSeekbarHeight != m_iModernSeekbarHeight
+                        || s.eModernThemeMode != static_cast<CMPCTheme::ModernThemeMode>(m_iThemeMode);
     s.bMPCTheme = !!m_bUseModernTheme;
     s.iModernSeekbarHeight = m_iModernSeekbarHeight;
     s.eModernThemeMode = static_cast<CMPCTheme::ModernThemeMode>(m_iThemeMode);
+    if (themeChanged) {
+        m_eventc.FireEvent(MpcEvent::CHANGING_THEME);
+    }
 
     int iLangSel = m_langsComboBox.GetCurSel();
     if (iLangSel != CB_ERR) {

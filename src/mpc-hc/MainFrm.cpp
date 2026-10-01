@@ -823,6 +823,9 @@ void CMainFrame::EventCallback(MpcEvent ev)
         case MpcEvent::CHANGING_UI_LANGUAGE:
             UpdateUILanguage();
             break;
+        case MpcEvent::CHANGING_THEME:
+            m_bThemeChangePending = true; //applied once the options dialog is down, so it comes back up in the new theme
+            break;
         case MpcEvent::STREAM_POS_UPDATE_REQUEST:
             OnTimer(TIMER_STREAMPOSPOLLER);
             OnTimer(TIMER_STREAMPOSPOLLER2);
@@ -881,6 +884,7 @@ CMainFrame::CMainFrame()
     , m_bFirstPlay(false)
     , m_bOpeningInAutochangedMonitorMode(false)
     , m_bPausedForAutochangeMonitorMode(false)
+    , m_bThemeChangePending(false)
     , m_fAudioOnly(true)
     , m_iDVDDomain(DVD_DOMAIN_Stop)
     , m_iDVDTitle(0)
@@ -974,6 +978,7 @@ CMainFrame::CMainFrame()
     receives.insert(MpcEvent::DISPLAY_MODE_AUTOCHANGING);
     receives.insert(MpcEvent::DISPLAY_MODE_AUTOCHANGED);
     receives.insert(MpcEvent::CHANGING_UI_LANGUAGE);
+    receives.insert(MpcEvent::CHANGING_THEME);
     receives.insert(MpcEvent::STREAM_POS_UPDATE_REQUEST);
     EventRouter::EventSelection fires;
     fires.insert(MpcEvent::SWITCHING_TO_FULLSCREEN);
@@ -20680,7 +20685,11 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
         CPPageSheet options(ResStr(IDS_OPTIONS_CAPTION), m_pGB, GetModalParent(), idPage);
         iRes = options.DoModal();
         idPage = 0; // If we are to show the dialog again, always show the latest page
-    } while (iRes == CPPageSheet::APPLY_LANGUAGE_CHANGE); // check if we exited the dialog so that the language change can be applied
+        if (m_bThemeChangePending) {
+            m_bThemeChangePending = false;
+            ApplyThemeChange();
+        }
+    } while (iRes == CPPageSheet::APPLY_UI_CHANGE); // check if we exited the dialog so that the language or theme change can be applied
 
     switch (iRes) {
         case CPPageSheet::RESET_SETTINGS:
@@ -20690,7 +20699,7 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
             ShellExecute(nullptr, _T("open"), PathUtils::GetProgramPath(true), _T("/reset"), nullptr, SW_SHOWNORMAL);
             break;
         default:
-            ASSERT(iRes != CPPageSheet::APPLY_LANGUAGE_CHANGE);
+            ASSERT(iRes != CPPageSheet::APPLY_UI_CHANGE);
             break;
     }
 }
@@ -24260,6 +24269,27 @@ void CMainFrame::UpdateUILanguage()
     }
 }
 
+// brings a new theme, or new windows colours for the theme to follow, to everything already on screen
+void CMainFrame::ApplyThemeChange()
+{
+    AfxGetAppSettings().UpdateThemeState();
+    CMPCThemeUtil::resetThemeCaches();
+    CMPCThemeUtil::applyNativeMenuMode();
+    CMPCThemeMenu::clearDimensions();
+
+    UpdateUILanguage(); // rebuilds the menus and the info bars, and recreates the modeless dialogs, all for the new theme
+    m_OSD.SetThemeColors();
+    if (!m_wndView.IsCustomImgLoaded()) {
+        ClearArtFromViews(); // the default logo depends on the theme
+    }
+
+    CMPCThemeUtil::refreshWindows10DarkFrame(m_hWnd); // also when the caption is hidden, so it is right when it returns
+    CMPCThemeUtil::broadcastThemeChange();
+
+    RecalcLayout();
+    RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+}
+
 bool CMainFrame::OpenBD(CString Path)
 {
     CHdmvClipInfo ClipInfo;
@@ -25050,10 +25080,21 @@ bool CMainFrame::DownloadWithYoutubeDL(CString url, CString filename)
 void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
     __super::OnSettingChange(uFlags, lpszSection);
-    if (lpszSection && 0 == _tcscmp(lpszSection, _T("ImmersiveColorSet")) && AppIsThemeLoaded() && CMPCTheme::EffectiveThemeStyle() == CMPCTheme::ModernThemeStyle::WINDOWS11) {
-        //the accent colour changed; only the Windows 11 style follows it
-        CMPCTheme::ApplyAccentColors();
-        RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
+    if (SPI_SETHIGHCONTRAST == uFlags) {
+        ApplyThemeChange(); //the modern theme steps aside while a contrast theme is on
+    } else if (lpszSection && 0 == _tcscmp(lpszSection, _T("ImmersiveColorSet"))) {
+        CAppSettings& s = AfxGetAppSettings();
+        bool wasDark = s.bWindows10DarkThemeActive;
+        s.ReadWindowsColorSettings();
+        if (!AppIsThemeLoaded()) {
+            s.UpdateThemeState(); //nothing on screen follows the windows colours, but a contrast theme still clears the dark flag
+        } else if (s.bWindows10DarkThemeActive != wasDark && s.eModernThemeMode == CMPCTheme::ModernThemeMode::WINDOWSDEFAULT) {
+            ApplyThemeChange(); //windows switched between light and dark, which the default theme mode follows
+        } else if (CMPCTheme::EffectiveThemeStyle() == CMPCTheme::ModernThemeStyle::WINDOWS11) {
+            //the accent colour changed; only the Windows 11 style follows it
+            CMPCTheme::ApplyAccentColors();
+            RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
+        }
     }
     if (SPI_SETNONCLIENTMETRICS == uFlags) {
         CMPCThemeUtil::GetMetrics(true);
