@@ -58,6 +58,3 @@
 [submodule "src/thirdparty/LAVFilters/msvc/libs/speex/speex"]
 	path = src/thirdparty/LAVFilters/msvc/libs/speex/speex
 	url = https://github.com/xiph/speex.git
-[submodule "src/thirdparty/LAVFilters/msvc/libs/bzip2/bzip2"]
-	path = src/thirdparty/LAVFilters/msvc/libs/bzip2/bzip2
-	url = https://sourceware.org/git/bzip2.git

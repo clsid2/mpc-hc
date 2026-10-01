@@ -70,7 +70,7 @@ FOR %%P IN (%PLATFORMS%) DO (
   SET "MSYS2_ARG_CONV_EXCL="
   ECHO ===== %%P: MPC-HC zlib and the external libraries
   MSBuild.exe "%ROOT_DIR%\src\thirdparty\zlib\zlib.vcxproj" /nologo /v:m /m /p:Configuration=Release;Platform=%%P "/p:SolutionDir=%ROOT_DIR%\\" || GOTO Failed
-  FOR %%L IN (bzip2\bzip2 speex\speex opencore-amr\opencore-amrnb opencore-amr\opencore-amrwb libxml2\libxml2 dav1d\dav1d) DO (
+  FOR %%L IN (speex\speex opencore-amr\opencore-amrnb opencore-amr\opencore-amrwb libxml2\libxml2 dav1d\dav1d) DO (
     MSBuild.exe "%REGEN_DIR%..\libs\%%L.vcxproj" /nologo /v:m /m /p:Configuration=Release;Platform=%%P || GOTO Failed
   )
   ECHO ===== %%P: ffmpeg configure, make, project generation with cl

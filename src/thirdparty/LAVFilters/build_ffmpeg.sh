@@ -99,7 +99,6 @@ configure() {
   if [ "${COMPILER}" == "GCC" ]; then
     OPTIONS="${OPTIONS}             \
     --disable-debug                 \
-    --enable-bzlib                  \
     --enable-gnutls                 \
     --enable-gmp                    \
     --enable-libdav1d               \

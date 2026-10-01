@@ -1,6 +1,6 @@
 #!/bin/bash
 # gen-libs.sh - (re)generate the MSBuild projects for the external libraries that
-# LAV Filters' ffmpeg links against: bzip2, speex, opencore-amr, libxml2, dav1d.
+# LAV Filters' ffmpeg links against: speex, opencore-amr, libxml2, dav1d.
 #
 # Maintainer-time only (Git for Windows' bash is enough). Rerun after bumping one
 # of the library submodules; the hand-maintained parts are the source lists below,
@@ -61,10 +61,6 @@ nasm_item()  { # <file> <include dirs relative to project, forward slashes>
   local f=$1; shift; local incs=""; for i in "$@"; do incs="$incs -I&quot;\$(ProjectDir)$(w "$i")/&quot;"; done
   local ob; ob=$(echo "${f%.*}" | sed 's|[/.]|_|g')
   echo "    <CustomBuild Include=\"$(w "$f")\"><Command>nasm -f \$(NasmFormat)$incs -o &quot;\$(IntDir)${ob}_asm.obj&quot; &quot;%(FullPath)&quot;</Command><Outputs>\$(IntDir)${ob}_asm.obj</Outputs><Message>Assembling %(Filename).asm</Message></CustomBuild>"; }
-
-############ bzip2 (sources: bzip2/Makefile, library objects only)
-T=$(mktemp); for f in blocksort huffman crctable randtable compress decompress bzlib; do cl_item "bzip2/$f.c"; done > "$T"
-emit bzip2 bzip2 bz2 "" "" "" "$T"
 
 ############ speex (sources: libspeex/Makefile.am, floating point + smallft)
 mkdir -p "$L/speex/include/speex"
