@@ -94,7 +94,7 @@ for lib in $LIBS; do
   case $lib in
     swresample|swscale) refs="avutil";;
     avcodec)  refs="avutil swresample ../libs/dav1d/dav1d ../libs/speex/speex ../libs/opencore-amr/opencore-amrnb ../libs/opencore-amr/opencore-amrwb";;
-    avformat) refs="avutil avcodec swresample ../libs/libxml2/libxml2 ../libs/bzip2/bzip2";;
+    avformat) refs="avutil avcodec swresample ../libs/libxml2/libxml2";;
     avfilter) refs="avutil avcodec avformat swscale swresample";;
   esac
   {

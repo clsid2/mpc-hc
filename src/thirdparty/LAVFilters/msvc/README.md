@@ -96,7 +96,6 @@ legacy encrypted-RTMP protocols `rtmpe`, `rtmpte` and `ffrtmpcrypt`.
 | libxml2 | 2.11.5 | `win32/Makefile.msvc`, without ftp/http/iconv/zlib/python, as LAV's build |
 | speex | 1.2.1 | `libspeex/Makefile.am`, floating point |
 | opencore-amr | 0.1.6 | `amrnb/Makefile.am` (decoder only) and `amrwb/Makefile.am` |
-| bzip2 | 1.0.8 | `Makefile`, library objects |
 
 ## Regenerating after a LAV Filters or library bump
 

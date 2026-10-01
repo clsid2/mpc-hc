@@ -24,7 +24,6 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)avcodec.vcxproj"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>
     <ProjectReference Include="$(MSBuildThisFileDirectory)swresample.vcxproj"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\libs\libxml2\libxml2.vcxproj"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\libs\bzip2\bzip2.vcxproj"><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

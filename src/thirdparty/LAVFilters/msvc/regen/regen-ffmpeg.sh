@@ -72,7 +72,6 @@ OPTIONS="
     --disable-stripping             \
     --disable-debug                 \
     --enable-schannel               \
-    --enable-bzlib                  \
     --enable-libdav1d               \
     --enable-libspeex               \
     --enable-libopencore-amrnb      \
@@ -89,7 +88,7 @@ else
   CCOPT=("--cc=clang --target=$triple")
   EXTRA_CFLAGS="$EXTRA_CFLAGS -fms-runtime-lib=dll"
 fi
-EXTRA_CFLAGS="$EXTRA_CFLAGS -I$(w "$M/libs/speex/include") -I$(w "$M/libs/speex/speex/include") -I$(w "$M/libs/bzip2/bzip2")"
+EXTRA_CFLAGS="$EXTRA_CFLAGS -I$(w "$M/libs/speex/include") -I$(w "$M/libs/speex/speex/include")"
 EXTRA_CFLAGS="$EXTRA_CFLAGS -I$(w "$LAV/thirdparty/$lavarch/include") -I$(w "$MPC/src/thirdparty/zlib") -I$(w "$M/../msvcInclude")"
 EXTRA_LDFLAGS="-LIBPATH:$(w "$LAVBIN/lib") -LIBPATH:$(w "$MPC/bin/lib/Release_$PLAT") -NODEFAULTLIB:libcmt"
 
