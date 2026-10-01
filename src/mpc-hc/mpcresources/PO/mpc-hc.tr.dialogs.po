@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2026-09-12 13:45+0000\n"
+"PO-Revision-Date: 2026-09-30 21:28+0000\n"
 "Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Turkish (https://app.transifex.com/mpchc/teams/106126/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -85,7 +85,7 @@ msgstr ""
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
-msgstr "Düzgeleme kullan"
+msgstr "Ses düzeyi normalleştirme"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC4"
 msgid "Max amplification:"
@@ -490,7 +490,7 @@ msgstr "Ses:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
 msgid "Allow overriding external splitter choice"
-msgstr "Dışsal ayırıcı tercihlerini geçersiz kıl"
+msgstr "LAV ayrıştırıcı tercihlerini geçersiz kıl"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Open settings"
@@ -1097,7 +1097,7 @@ msgstr "Dahili LAV Filtresi ayarları"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_SPLITTER_CONF"
 msgid "Splitter"
-msgstr "Ayırıcı"
+msgstr "Ayrıştırıcı"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_VIDEO_DEC_CONF"
 msgid "Video decoder"
@@ -1285,11 +1285,11 @@ msgstr "Kaydet"
 
 msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
 msgid "S"
-msgstr "Güç"
+msgstr "G"
 
 msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
 msgid "Q"
-msgstr "Kal."
+msgstr "K"
 
 msgctxt "IDD_TUNER_SCAN_IDC_CHECK_OFFSET"
 msgid "Use an offset"
@@ -1301,11 +1301,11 @@ msgstr "Sembol veri hızı"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
 msgid "Default Device"
-msgstr "Varsayılan aygıt"
+msgstr "Öntanımlı aygıt"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_RADIO1"
 msgid "Analog"
-msgstr "Karasal"
+msgstr "Analog"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_RADIO2"
 msgid "Digital"
@@ -1313,7 +1313,7 @@ msgstr "Dijital"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
 msgid "Analog settings"
-msgstr "Karasal yayın ayarları"
+msgstr "Analog ayarları"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC1"
 msgid "Video"

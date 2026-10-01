@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-07-18 21:00:08+0000\n"
-"PO-Revision-Date: 2026-09-12 13:45+0000\n"
+"PO-Revision-Date: 2026-09-30 21:28+0000\n"
 "Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/mpchc/teams/106126/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -88,11 +88,11 @@ msgstr "启用内置音频切换滤镜 (需要重新启动)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
-msgstr "归一化"
+msgstr "音量标准化"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC4"
 msgid "Max amplification:"
-msgstr "最大放大率:"
+msgstr "最大放大倍数："
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC5"
 msgid "%"
@@ -100,7 +100,7 @@ msgstr "%"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK6"
 msgid "Regain volume"
-msgstr "恢复音量"
+msgstr "音量补偿"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC6"
 msgid "Boost:"
@@ -255,15 +255,15 @@ msgstr "确定"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "Open options"
-msgstr "打开选项"
+msgstr "打开新文件时"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO1"
 msgid "Use the same player for each media file"
-msgstr "为每个媒体文件使用相同的播放器"
+msgstr "使用同一个播放器窗口"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO2"
 msgid "Open a new player for each media file played"
-msgstr "为每个播放的媒体文件打开一个新的播放器"
+msgstr "打开一个新的播放器窗口"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "Title bar"
@@ -275,7 +275,7 @@ msgstr "显示完整路径"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO4"
 msgid "File name only"
-msgstr "仅文件名"
+msgstr "仅显示文件名"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_RADIO5"
 msgid "Don't prefix anything"
@@ -291,7 +291,7 @@ msgstr "其它"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK3"
 msgid "Tray icon"
-msgstr "托盘图标"
+msgstr "显示托盘图标"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK8"
 msgid "Store settings in .ini file"
@@ -315,31 +315,31 @@ msgstr "历史"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK1"
 msgid "Keep history of recently opened files"
-msgstr "保存最近打开文件的历史记录"
+msgstr "记住最近打开的文件"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK2"
 msgid "Remember last playlist"
-msgstr "记忆最后的播放列表"
+msgstr "记住最后的播放列表"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
 msgid "Remember File position"
-msgstr "记忆文件播放位置"
+msgstr "记住文件的播放位置"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_DVD_POS"
 msgid "Remember DVD position"
-msgstr "记忆 DVD 播放位置"
+msgstr "记住DVD的播放位置"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK6"
 msgid "Remember last window position"
-msgstr "记忆最后的窗口位置"
+msgstr "记住最后的窗口位置"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
-msgstr "记忆最后的窗口大小"
+msgstr "记住最后的窗口大小"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
-msgstr "记住最后的全景缩放大小"
+msgstr "记住画面的平移缩放"
 
 msgctxt "IDD_PPAGEDVD_IDC_STATIC"
 msgid "\"Open DVD/BD\" behavior"
@@ -423,7 +423,7 @@ msgstr "速度步进:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Playback"
-msgstr "回放"
+msgstr "播放"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_RADIO1"
 msgid "Play"
@@ -443,7 +443,7 @@ msgstr "重复模式:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "After Playback"
-msgstr "回放结束后"
+msgstr "播放结束后"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Zoom and Alignment"
@@ -499,7 +499,7 @@ msgstr "渲染失败时报告 pin"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK2"
 msgid "Auto-load audio files"
-msgstr "自动装载音频文件"
+msgstr "自动加载音频文件"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK3"
 msgid "Override placement"
@@ -543,7 +543,7 @@ msgstr "最大纹理分辨率:"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_NO_SUB_ANIM"
 msgid "Never animate the subtitles"
-msgstr "永不播放字幕动画"
+msgstr "从不播放字幕动画"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC5"
 msgid "Render at"
@@ -654,7 +654,7 @@ msgstr "默认"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK3"
 msgid "Auto-hide the mouse pointer during playback in windowed mode"
-msgstr "在窗口模式回放时自动隐藏鼠标指针"
+msgstr "在窗口模式播放时自动隐藏鼠标指针"
 
 msgctxt "IDD_PPAGETWEAKS_IDC_CHECK_LCD"
 msgid "Enable Logitech LCD support (experimental)"
@@ -773,11 +773,11 @@ msgstr "为您的快捷方式选择一个名称:"
 
 msgctxt "IDD_FAVADD_IDC_CHECK1"
 msgid "Remember position"
-msgstr "记忆位置"
+msgstr "记住位置"
 
 msgctxt "IDD_FAVADD_IDC_CHECK3"
 msgid "Remember A-B repeat marks"
-msgstr "记忆A-B重复标记"
+msgstr "记住A-B重复标记点"
 
 msgctxt "IDD_FAVADD_IDC_CHECK2"
 msgid "Relative drive"
@@ -1165,7 +1165,7 @@ msgstr "下载字幕"
 
 msgctxt "IDD_SUBTITLEDL_DLG_IDC_CHECK1"
 msgid "Replace currently loaded subtitles"
-msgstr "替换当前已装载的字幕"
+msgstr "替换当前已加载的字幕"
 
 msgctxt "IDD_SUBTITLEDL_DLG_IDOK"
 msgid "Download"
@@ -1449,7 +1449,7 @@ msgstr "分离控制栏窗口"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK5"
 msgid "Exit fullscreen at the end of playback"
-msgstr "在回放结束后退出全屏幕"
+msgstr "在播放结束后退出全屏幕"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK4"
 msgid "Hide controls in fullscreen"
@@ -1849,23 +1849,23 @@ msgstr "现代主题颜色: "
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
-msgstr "进度条"
+msgstr "进度栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC22"
 msgid "Modern Seekbar height:"
-msgstr "现代进度条高度: "
+msgstr "现代进度栏高度: "
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK2"
 msgid "Show chapter marks on seekbar"
-msgstr "在进度条上显示章节标记"
+msgstr "在进度栏上显示章节标记"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr "进度条时间"
+msgstr "进度栏时间"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
-msgstr "进度条悬停"
+msgstr "鼠标悬停于进度栏时"
 
 msgctxt "IDD_PPAGETHEME_IDC_SEEK_PREVIEW"
 msgid "Show video preview"
@@ -1877,7 +1877,7 @@ msgstr "显示时间"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
 msgid "Hover Position:"
-msgstr "悬停位置:"
+msgstr "画面显示位置:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"
@@ -1917,7 +1917,7 @@ msgstr "语言: "
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC9"
 msgid "On Screen Display (OSD)"
-msgstr "画面上层显示 (OSD)"
+msgstr "画面左上角显示 (OSD)"
 
 msgctxt "IDD_PPAGETHEME_IDC_SHOW_OSD"
 msgid "Show OSD (requires restart)"
@@ -1965,31 +1965,31 @@ msgstr "通过 Windows UI 来控制 (SMTC)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr "自定义 预设视图(4)"
+msgstr "查看->预设布局->自定义"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
-msgstr "菜单"
+msgstr "菜单栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
-msgstr "状态"
+msgstr "状态栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_SEEKBAR"
 msgid "Seek Bar"
-msgstr "进度条"
+msgstr "进度栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_INFO"
 msgid "Information"
-msgstr "信息"
+msgstr "信息栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_TOOLBAR"
 msgid "Controls"
-msgstr "控件"
+msgstr "控制栏"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATS"
 msgid "Statistics"
-msgstr "统计"
+msgstr "统计栏"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_CAPTION"
 msgid "Select Media from RAR"
@@ -1997,7 +1997,7 @@ msgstr "在 RAR 中选取媒体"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_IDOK"
 msgid "Select"
-msgstr "选取"
+msgstr "选择"
 
 msgctxt "IDD_RAR_ENTRY_SELECTOR_IDCANCEL"
 msgid "Cancel"
@@ -2017,7 +2017,7 @@ msgstr "工具栏对齐: "
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Active Style:"
-msgstr "活动样式: "
+msgstr "选择样式: "
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 1"
