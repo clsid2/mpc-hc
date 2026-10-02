@@ -598,6 +598,7 @@ CMPCTheme::ModernThemeStyle CMPCTheme::EffectiveThemeStyle() {
 
 void CMPCTheme::InitializeColors() {
     isWindows11Style = EffectiveThemeStyle() == ModernThemeStyle::WINDOWS11;
+    drawThemedControls = false; //the palettes that draw the controls set it back; a live switch can land on one that does not
     InfoBarBGColor = RGB(0, 0, 0);
     InfoBarTextColor = RGB(255, 255, 255);
     InfoBarBorderColor = RGB(0, 0, 0);

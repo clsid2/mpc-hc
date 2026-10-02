@@ -361,63 +361,66 @@ static inline const WORD& DlgTemplateItemCount(const DLGTEMPLATE* pTemplate)
 
 bool CMPCThemeUtil::ModifyTemplates(CPropertySheet* sheet, CRuntimeClass* pageClass, DWORD id, DWORD addStyle, DWORD removeStyle)
 {
-    if (AppIsThemeLoaded()) {
-        PROPSHEETHEADER m_psh = sheet->m_psh;
-        for (int i = 0; i < sheet->GetPageCount(); i++) {
-            CPropertyPage* pPage = sheet->GetPage(i);
-            if (nullptr == AfxDynamicDownCast(pageClass, pPage)) {
-                continue;
+    //the patch lands in the loaded resource, so it outlives the theme it was made for;
+    //with the theme off, take it back out again
+    if (!AppNeedsThemedControls()) {
+        std::swap(addStyle, removeStyle);
+    }
+    PROPSHEETHEADER m_psh = sheet->m_psh;
+    for (int i = 0; i < sheet->GetPageCount(); i++) {
+        CPropertyPage* pPage = sheet->GetPage(i);
+        if (nullptr == AfxDynamicDownCast(pageClass, pPage)) {
+            continue;
+        }
+        PROPSHEETPAGE* tpsp = &pPage->m_psp;
+
+        const DLGTEMPLATE* pTemplate;
+        if (tpsp->dwFlags & PSP_DLGINDIRECT) {
+            pTemplate = tpsp->pResource;
+        } else {
+            HRSRC hResource = ::FindResource(tpsp->hInstance, tpsp->pszTemplate, RT_DIALOG);
+            if (hResource == NULL) {
+                return false;
             }
-            PROPSHEETPAGE* tpsp = &pPage->m_psp;
-
-            const DLGTEMPLATE* pTemplate;
-            if (tpsp->dwFlags & PSP_DLGINDIRECT) {
-                pTemplate = tpsp->pResource;
-            } else {
-                HRSRC hResource = ::FindResource(tpsp->hInstance, tpsp->pszTemplate, RT_DIALOG);
-                if (hResource == NULL) {
-                    return false;
-                }
-                HGLOBAL hTemplate = LoadResource(tpsp->hInstance, hResource);
-                if (hTemplate == NULL) {
-                    return false;
-                }
-                pTemplate = (LPCDLGTEMPLATE)LockResource(hTemplate);
-                if (pTemplate == NULL) {
-                    return false;
-                }
+            HGLOBAL hTemplate = LoadResource(tpsp->hInstance, hResource);
+            if (hTemplate == NULL) {
+                return false;
             }
+            pTemplate = (LPCDLGTEMPLATE)LockResource(hTemplate);
+            if (pTemplate == NULL) {
+                return false;
+            }
+        }
 
-            if (afxOccManager != NULL) {
-                DLGITEMTEMPLATE* pItem = _AfxFindFirstDlgItem(pTemplate);
-                DLGITEMTEMPLATE* pNextItem;
-                BOOL bDialogEx = IsDialogEx(pTemplate);
+        if (afxOccManager != NULL) {
+            DLGITEMTEMPLATE* pItem = _AfxFindFirstDlgItem(pTemplate);
+            DLGITEMTEMPLATE* pNextItem;
+            BOOL bDialogEx = IsDialogEx(pTemplate);
 
-                int iItem, iItems = DlgTemplateItemCount(pTemplate);
+            int iItem, iItems = DlgTemplateItemCount(pTemplate);
 
-                for (iItem = 0; iItem < iItems; iItem++) {
-                    pNextItem = _AfxFindNextDlgItem(pItem, bDialogEx);
-                    DWORD dwOldProtect, tp;
-                    if (bDialogEx) {
-                        auto* pItemEx = (DLGITEMTEMPLATEEX*)pItem;
-                        if (pItemEx->id == id) {
-                            if (VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), PAGE_READWRITE, &dwOldProtect)) {
-                                pItemEx->style |= addStyle;
-                                pItemEx->style &= ~removeStyle;
-                                VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), dwOldProtect, &tp);
-                            }
-                        }
-                    } else {
-                        if (pItem->id == id) {
-                            if (VirtualProtect(&pItem->style, sizeof(pItem->style), PAGE_READWRITE, &dwOldProtect)) {
-                                pItem->style |= addStyle;
-                                pItem->style &= ~removeStyle;
-                                VirtualProtect(&pItem->style, sizeof(pItem->style), dwOldProtect, &tp);
-                            }
+            for (iItem = 0; iItem < iItems; iItem++) {
+                pNextItem = _AfxFindNextDlgItem(pItem, bDialogEx);
+                DWORD dwOldProtect, tp;
+                if (bDialogEx) {
+                    auto* pItemEx = (DLGITEMTEMPLATEEX*)pItem;
+                    if (pItemEx->id == id) {
+                        if (VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), PAGE_READWRITE, &dwOldProtect)) {
+                            pItemEx->style |= addStyle;
+                            pItemEx->style &= ~removeStyle;
+                            VirtualProtect(&pItemEx->style, sizeof(pItemEx->style), dwOldProtect, &tp);
                         }
                     }
-                    pItem = pNextItem;
+                } else {
+                    if (pItem->id == id) {
+                        if (VirtualProtect(&pItem->style, sizeof(pItem->style), PAGE_READWRITE, &dwOldProtect)) {
+                            pItem->style |= addStyle;
+                            pItem->style &= ~removeStyle;
+                            VirtualProtect(&pItem->style, sizeof(pItem->style), dwOldProtect, &tp);
+                        }
+                    }
                 }
+                pItem = pNextItem;
             }
         }
     }
