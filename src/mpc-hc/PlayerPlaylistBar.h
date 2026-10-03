@@ -119,6 +119,7 @@ private:
     bool m_bScrollToCurrentPending = false; // a scroll was deferred while the bar had no geometry
     int FindItem(const POSITION pos) const;
     POSITION FindPos(int i);
+    POSITION FindPosById(UINT id);
     void RebuildPosMap();
     void InvalidatePlayingItem(POSITION oldPos, POSITION newPos);
     std::unordered_map<POSITION, int> m_posToIndex;
