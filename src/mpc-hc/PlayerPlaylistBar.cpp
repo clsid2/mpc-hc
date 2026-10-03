@@ -1784,15 +1784,25 @@ bool CPlayerPlaylistBar::SelectFileInPlaylist(LPCTSTR filename)
     return false;
 }
 
+//the confirmation prompt and CloseMedia both pump messages, and the graph thread takes the playlist
+//edit lock while opening a file, so this is split into short locked phases instead of holding the
+//lock throughout. holding it across either of them would stop the graph thread opening the next file
 bool CPlayerPlaylistBar::DeleteFileInPlaylist(POSITION pos, bool recycle)
 {
-    CAutoLock pledit(&m_plEditLock);
-
     auto& s = AfxGetAppSettings();
-    CString filename = m_pl.GetAt(pos).m_fns.GetHead();
+    CString filename;
+    UINT itemId;
+    bool noconfirm;
+
+    {
+        CAutoLock pledit(&m_plEditLock);
+        CPlaylistItem& pli = m_pl.GetAt(pos);
+        filename = pli.m_fns.GetHead();
+        itemId = pli.m_id;
+        noconfirm = !s.bConfirmFileDelete;
+    }
+
     bool candeletefile = false;
-    bool folderPlayNext = false;
-    bool noconfirm = !s.bConfirmFileDelete;
     if (!PathUtils::IsURL(filename)) {
         if (!noconfirm && IsWindows10OrGreater()) {
             // show prompt, because Windows might not ask for confirmation
@@ -1807,37 +1817,58 @@ bool CPlayerPlaylistBar::DeleteFileInPlaylist(POSITION pos, bool recycle)
         } else {
             candeletefile = true;
         }
-        folderPlayNext = (m_pl.GetCount() == 1 && (s.nCLSwitches & CLSW_PLAYNEXT || s.eAfterPlayback == CAppSettings::AfterPlayback::PLAY_NEXT));
-    }
-    
-    bool isplaying = false;
-    if (pos == m_pl.GetPos()) {
-        isplaying = true;
     }
 
-    // Get position of next file
-    POSITION nextpos = pos;
-    if (isplaying) {
-        m_pl.GetNext(nextpos);
-        if (nextpos == nullptr && m_pl.GetCount() > 1) {
-            nextpos = m_pl.GetHeadPosition();
+    bool folderPlayNext = false;
+    bool isplaying = false;
+    POSITION nextpos = nullptr;
+    int listPos = -1;
+
+    {
+        CAutoLock pledit(&m_plEditLock);
+
+        //the playlist may have changed while the prompt was up, so find the item again by its id.
+        //when it is gone the file the user confirmed is no longer the item they clicked
+        pos = FindPosById(itemId);
+        if (!pos) {
+            return false;
+        }
+
+        if (!PathUtils::IsURL(filename)) {
+            folderPlayNext = (m_pl.GetCount() == 1 && (s.nCLSwitches & CLSW_PLAYNEXT || s.eAfterPlayback == CAppSettings::AfterPlayback::PLAY_NEXT));
+        }
+
+        if (pos == m_pl.GetPos()) {
+            isplaying = true;
+        }
+
+        // Get position of next file
+        nextpos = pos;
+        if (isplaying) {
+            m_pl.GetNext(nextpos);
+            if (nextpos == nullptr && m_pl.GetCount() > 1) {
+                nextpos = m_pl.GetHeadPosition();
+            }
+        }
+
+        // remove selected from playlist
+        listPos = FindItem(pos);
+        if (listPos >= 0) {
+            m_pl.RemoveAt(pos);
+            RebuildPosMap();
+            m_list.SetItemCountEx((int)m_pl.GetCount(), LVSICF_NOINVALIDATEALL);
+            m_list.Invalidate();
+        } else {
+            ASSERT(false);
+        }
+
+        if (isplaying && !folderPlayNext && nextpos) {
+            m_pl.SetPos(nextpos);
         }
     }
 
-    // remove selected from playlist
-    int listPos = FindItem(pos);
     if (listPos >= 0) {
-        m_pl.RemoveAt(pos);
-        RebuildPosMap();
-        m_list.SetItemCountEx((int)m_pl.GetCount(), LVSICF_NOINVALIDATEALL);
-        m_list.Invalidate();
         SavePlaylist();
-    } else {
-        ASSERT(false);
-    }
-
-    if (isplaying && !folderPlayNext && nextpos) {
-        m_pl.SetPos(nextpos);
     }
 
     if (isplaying) {
