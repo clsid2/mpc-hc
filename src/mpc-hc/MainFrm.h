@@ -55,6 +55,7 @@
 #include "AllocatorCommon.h"
 #include <deque>
 #include <functional>
+#include <optional>
 #include <vector>
 
 class CDebugShadersDlg;
@@ -591,6 +592,28 @@ private:
     std::vector<DeferredAction> m_deferredActions;
     bool m_bDeferredOnClose = false;
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
+
+    // a tracked popup or the menu bar is showing menus that a media change rebuilds
+    // (the stream, filter and recent submenus). Windows owns those popup windows
+    // while they are up, and emptying one frees the per item data it hands back to
+    // DrawItem. So while one is tracked an open or close is recorded like any other
+    // nested request, the menu is ended, and the rebuild runs from the top level
+    // pump with nothing on screen. See DeferIfNested.
+    class CTrackedMenuScope {
+        CMainFrame& m_frame;
+        // declared after m_frame, and destroyed only once the destructor body has
+        // run, so the tracked depth is already back down when this one posts
+        // WM_MPC_RUN_DEFERRED. Keep the order
+        CDeferredActionScope m_defer;
+    public:
+        explicit CTrackedMenuScope(CMainFrame& frame);
+        ~CTrackedMenuScope();
+    };
+    int m_nTrackedMenuDepth = 0;
+    // the menu bar's modal loop spans OnEnterMenuLoop and OnExitMenuLoop, so its
+    // scope cannot live on the stack like the tracked popups' ones do
+    std::optional<CTrackedMenuScope> m_menuBarMenuScope;
+
     // bodies of OpenMedia and CloseMedia; the public wrappers record the request
     // while a holder is on the stack, these always run
     void OpenMediaInternal(CAutoPtr<OpenMediaData> pOMD);
@@ -1022,6 +1045,7 @@ public:
     afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
     afx_msg void OnUnInitMenuPopup(CMenu* pPopupMenu, UINT nFlags);
     afx_msg void OnEnterMenuLoop(BOOL bIsTrackPopupMenu);
+    afx_msg void OnExitMenuLoop(BOOL bIsTrackPopupMenu);
 
     afx_msg BOOL OnQueryEndSession();
     afx_msg void OnEndSession(BOOL bEnding);

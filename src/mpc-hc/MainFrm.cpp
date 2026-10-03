@@ -319,6 +319,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_WM_UNINITMENUPOPUP()
 
     ON_WM_ENTERMENULOOP()
+    ON_WM_EXITMENULOOP()
 
     ON_WM_QUERYENDSESSION()
     ON_WM_ENDSESSION()
@@ -1327,6 +1328,25 @@ CMainFrame::CDeferredActionScope::~CDeferredActionScope()
     }
 }
 
+// A tracked popup and the menu bar are holders too, for a different reason: the
+// stream, filter and recent submenus they show are rebuilt by a media change, and
+// emptying one frees the per item data Windows hands back to DrawItem while the
+// popup window is still on screen. DeferIfNested ends the menu loop whenever it
+// records a request against this depth, so the rebuild runs with nothing up.
+CMainFrame::CTrackedMenuScope::CTrackedMenuScope(CMainFrame& frame)
+    : m_frame(frame)
+    , m_defer(frame)
+{
+    ++m_frame.m_nTrackedMenuDepth;
+}
+
+CMainFrame::CTrackedMenuScope::~CTrackedMenuScope()
+{
+    // members are destroyed after this body, so the depth is back down before
+    // m_defer's own destructor posts WM_MPC_RUN_DEFERRED
+    --m_frame.m_nTrackedMenuDepth;
+}
+
 LRESULT CMainFrame::OnRunDeferredActions(WPARAM wParam, LPARAM lParam)
 {
     if (m_nDeferredActionDepth > 0) {
@@ -1389,6 +1409,12 @@ bool CMainFrame::DeferIfNested(DeferredActionType type, std::function<void()> ac
         return false;
     }
     m_deferredActions.push_back({ type, std::move(action) });
+    if (m_nTrackedMenuDepth > 0) {
+        // the menu is showing the old file's streams and filters, so it is stale the
+        // moment the next one opens. Ending the loop here lets the recorded request
+        // run from the top level pump instead of under a popup Windows is drawing
+        ::EndMenu();
+    }
     return true;
 }
 
@@ -1402,6 +1428,10 @@ void CMainFrame::OnClose()
         // SC_CLOSE, so an open dispatched in between is dropped
         m_bDeferredOnClose = true;
         m_OnClose_queued = true;
+        if (m_nTrackedMenuDepth > 0) {
+            // otherwise the exit waits for the user to close the menu
+            ::EndMenu();
+        }
         return;
     }
 
@@ -4128,7 +4158,25 @@ void CMainFrame::OnEnterMenuLoop(BOOL bIsTrackPopupMenu)
         ASSERT(!m_pActiveContextMenu);
         VERIFY(SetMenuBarState(AFX_MBS_VISIBLE));
     }
+    if (!bIsTrackPopupMenu && !m_menuBarMenuScope) {
+        // the menu bar reaches the submenus a media change rebuilds, and its loop
+        // spans two handlers, so the scope is held in a member until OnExitMenuLoop.
+        // Only emplaced when empty: a second enter without an exit in between must
+        // not drop the depth while the loop is still up, which is what replacing a
+        // held scope would do, and the one exit still balances this.
+        // Not done for a tracked popup: the playlist and subresync bars track their
+        // own menus with the frame as owner, and those must not defer the transition
+        m_menuBarMenuScope.emplace(*this);
+    }
     __super::OnEnterMenuLoop(bIsTrackPopupMenu);
+}
+
+void CMainFrame::OnExitMenuLoop(BOOL bIsTrackPopupMenu)
+{
+    if (!bIsTrackPopupMenu && m_menuBarMenuScope.has_value()) {
+        m_menuBarMenuScope.reset();
+    }
+    __super::OnExitMenuLoop(bIsTrackPopupMenu);
 }
 
 BOOL CMainFrame::OnQueryEndSession()
@@ -4164,7 +4212,11 @@ BOOL CMainFrame::OnMenu(CMenu* pMenu)
 
     m_pActiveContextMenu = pMenu;
 
-    pMenu->TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NOANIMATION, point.x, point.y, this);
+    {
+        // the popup carries the submenus a media change rebuilds
+        CTrackedMenuScope trackedMenuScope(*this);
+        pMenu->TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NOANIMATION, point.x, point.y, this);
+    }
 
     return TRUE;
 }
@@ -4919,7 +4971,11 @@ void CMainFrame::ToolbarContextMenu(int iItem, int nIndex, CRect buttonRect) {
         m_bTBDropdownActive = true;
         TPMPARAMS overlap = { sizeof(TPMPARAMS) };
         overlap.rcExclude = buttonRect;
-        subMenu->TrackPopupMenuEx(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL | TPM_BOTTOMALIGN, buttonRect.left, buttonRect.top, this, &overlap);
+        {
+            // the dropdown is one of the submenus a media change rebuilds
+            CTrackedMenuScope trackedMenuScope(*this);
+            subMenu->TrackPopupMenuEx(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL | TPM_BOTTOMALIGN, buttonRect.left, buttonRect.top, this, &overlap);
+        }
 
         m_bTBDropdownActive = false;
     }

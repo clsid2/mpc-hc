@@ -1427,6 +1427,18 @@ POSITION CPlayerPlaylistBar::FindPos(int i)
     return m_indexToPos[i];
 }
 
+POSITION CPlayerPlaylistBar::FindPosById(UINT id)
+{
+    POSITION pos = m_pl.GetHeadPosition();
+    while (pos) {
+        POSITION cur = pos;
+        if (m_pl.GetNext(pos).m_id == id) {
+            return cur;
+        }
+    }
+    return nullptr;
+}
+
 void CPlayerPlaylistBar::RebuildPosMap()
 {
     m_posToIndex.clear();
@@ -1677,10 +1689,13 @@ void CPlayerPlaylistBar::SortByPathFrom(int startIndex)
 
 void CPlayerPlaylistBar::Randomize()
 {
-    POSITION selPos = FindPos(m_list.GetSelectionMark());
-    m_pl.Randomize();
-    SetupList();
-    SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+    {
+        CAutoLock pledit(&m_plEditLock);
+        POSITION selPos = FindPos(m_list.GetSelectionMark());
+        m_pl.Randomize();
+        SetupList();
+        SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+    }
     SavePlaylist();
 }
 
@@ -1769,15 +1784,25 @@ bool CPlayerPlaylistBar::SelectFileInPlaylist(LPCTSTR filename)
     return false;
 }
 
+//the confirmation prompt and CloseMedia both pump messages, and the graph thread takes the playlist
+//edit lock while opening a file, so this is split into short locked phases instead of holding the
+//lock throughout. holding it across either of them would stop the graph thread opening the next file
 bool CPlayerPlaylistBar::DeleteFileInPlaylist(POSITION pos, bool recycle)
 {
-    CAutoLock pledit(&m_plEditLock);
-
     auto& s = AfxGetAppSettings();
-    CString filename = m_pl.GetAt(pos).m_fns.GetHead();
+    CString filename;
+    UINT itemId;
+    bool noconfirm;
+
+    {
+        CAutoLock pledit(&m_plEditLock);
+        CPlaylistItem& pli = m_pl.GetAt(pos);
+        filename = pli.m_fns.GetHead();
+        itemId = pli.m_id;
+        noconfirm = !s.bConfirmFileDelete;
+    }
+
     bool candeletefile = false;
-    bool folderPlayNext = false;
-    bool noconfirm = !s.bConfirmFileDelete;
     if (!PathUtils::IsURL(filename)) {
         if (!noconfirm && IsWindows10OrGreater()) {
             // show prompt, because Windows might not ask for confirmation
@@ -1792,37 +1817,58 @@ bool CPlayerPlaylistBar::DeleteFileInPlaylist(POSITION pos, bool recycle)
         } else {
             candeletefile = true;
         }
-        folderPlayNext = (m_pl.GetCount() == 1 && (s.nCLSwitches & CLSW_PLAYNEXT || s.eAfterPlayback == CAppSettings::AfterPlayback::PLAY_NEXT));
-    }
-    
-    bool isplaying = false;
-    if (pos == m_pl.GetPos()) {
-        isplaying = true;
     }
 
-    // Get position of next file
-    POSITION nextpos = pos;
-    if (isplaying) {
-        m_pl.GetNext(nextpos);
-        if (nextpos == nullptr && m_pl.GetCount() > 1) {
-            nextpos = m_pl.GetHeadPosition();
+    bool folderPlayNext = false;
+    bool isplaying = false;
+    POSITION nextpos = nullptr;
+    int listPos = -1;
+
+    {
+        CAutoLock pledit(&m_plEditLock);
+
+        //the playlist may have changed while the prompt was up, so find the item again by its id.
+        //when it is gone the file the user confirmed is no longer the item they clicked
+        pos = FindPosById(itemId);
+        if (!pos) {
+            return false;
+        }
+
+        if (!PathUtils::IsURL(filename)) {
+            folderPlayNext = (m_pl.GetCount() == 1 && (s.nCLSwitches & CLSW_PLAYNEXT || s.eAfterPlayback == CAppSettings::AfterPlayback::PLAY_NEXT));
+        }
+
+        if (pos == m_pl.GetPos()) {
+            isplaying = true;
+        }
+
+        // Get position of next file
+        nextpos = pos;
+        if (isplaying) {
+            m_pl.GetNext(nextpos);
+            if (nextpos == nullptr && m_pl.GetCount() > 1) {
+                nextpos = m_pl.GetHeadPosition();
+            }
+        }
+
+        // remove selected from playlist
+        listPos = FindItem(pos);
+        if (listPos >= 0) {
+            m_pl.RemoveAt(pos);
+            RebuildPosMap();
+            m_list.SetItemCountEx((int)m_pl.GetCount(), LVSICF_NOINVALIDATEALL);
+            m_list.Invalidate();
+        } else {
+            ASSERT(false);
+        }
+
+        if (isplaying && !folderPlayNext && nextpos) {
+            m_pl.SetPos(nextpos);
         }
     }
 
-    // remove selected from playlist
-    int listPos = FindItem(pos);
     if (listPos >= 0) {
-        m_pl.RemoveAt(pos);
-        RebuildPosMap();
-        m_list.SetItemCountEx((int)m_pl.GetCount(), LVSICF_NOINVALIDATEALL);
-        m_list.Invalidate();
         SavePlaylist();
-    } else {
-        ASSERT(false);
-    }
-
-    if (isplaying && !folderPlayNext && nextpos) {
-        m_pl.SetPos(nextpos);
     }
 
     if (isplaying) {
@@ -2567,42 +2613,11 @@ BOOL CPlayerPlaylistBar::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResul
 
 void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 {
-    CAutoLock pledit(&m_plEditLock);
-
     LVHITTESTINFO lvhti;
-
-    bool bOnItem;
-    if (point.x == -1 && point.y == -1) {
-        lvhti.iItem = m_list.GetSelectionMark();
-
-        if (lvhti.iItem == -1 && m_pl.GetCount() == 1) {
-            lvhti.iItem = 0;
-        }
-
-        CRect r;
-        if (!!m_list.GetItemRect(lvhti.iItem, r, LVIR_BOUNDS)) {
-            point.SetPoint(r.left, r.bottom);
-        } else {
-            point.SetPoint(0, 0);
-        }
-        m_list.ClientToScreen(&point);
-        bOnItem = lvhti.iItem != -1;
-    } else {
-        lvhti.pt = point;
-        m_list.ScreenToClient(&lvhti.pt);
-        m_list.SubItemHitTest(&lvhti);
-        bOnItem = lvhti.iItem >= 0 && !!(lvhti.flags & LVHT_ONITEM);
-        if (!bOnItem && m_pl.GetCount() == 1) {
-            bOnItem = true;
-            lvhti.iItem = 0;
-        }
-    }
-
-    POSITION pos = FindPos(lvhti.iItem);
-    bool bIsLocalFile = bOnItem ? PathUtils::Exists(m_pl.GetAt(pos).m_fns.GetHead()) : false;
+    POSITION pos = nullptr;
+    UINT selId = 0;
 
     CMPCThemeMenu m;
-    m.CreatePopupMenu();
 
     enum {
         M_OPEN = 1,
@@ -2632,64 +2647,101 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
     CAppSettings& s = AfxGetAppSettings();
 
-    UINT styleOnItem       = MF_STRING | (!bOnItem ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
-    UINT styleOnItemLocal  = MF_STRING | ((!bOnItem || !bIsLocalFile) ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
-    UINT styleListNotEmpty = MF_STRING | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
+    {
+        CAutoLock pledit(&m_plEditLock);
 
-    m.AppendMenu(styleOnItem, M_OPEN, ResStr(IDS_PLAYLIST_OPEN));
-    if (m_pMainFrame->GetPlaybackMode() == PM_ANALOG_CAPTURE) {
-        m.AppendMenu(MF_STRING | MF_ENABLED, M_ADD, ResStr(IDS_PLAYLIST_ADD));
-    }
-    m.AppendMenu(styleOnItem, M_REMOVE, ResStr(IDS_PLAYLIST_REMOVE));
-    m.AppendMenu(MF_SEPARATOR);
-    m.AppendMenu(styleListNotEmpty, M_CLEAR, ResStr(IDS_PLAYLIST_CLEAR));
-    m.AppendMenu(MF_SEPARATOR);
-    m.AppendMenu(styleOnItem, M_CLIPBOARD, ResStr(IDS_PLAYLIST_COPYTOCLIPBOARD));
-    m.AppendMenu(styleOnItemLocal, M_SHOWFOLDER, ResStr(IDS_PLAYLIST_SHOWFOLDER));
-    m.AppendMenu(styleOnItemLocal, M_RECYCLE, ResStr(IDS_FILE_RECYCLE));
-    m.AppendMenu(styleOnItemLocal, M_ADDFOLDER, ResStr(IDS_PLAYLIST_ADDFOLDER));
-    m.AppendMenu(MF_SEPARATOR);
-    if (!m_playListPath.IsEmpty()) {
-        m.AppendMenu(styleListNotEmpty, M_SAVE, ResStr(IDS_PLAYLIST_SAVE));
-    }
-    m.AppendMenu(styleListNotEmpty, M_SAVEAS, ResStr(IDS_PLAYLIST_SAVEAS));
-    m.AppendMenu(MF_SEPARATOR);
-    //the submenus are plain menus: m themes them when they are appended and owns what that allocates. a local
-    //CMPCThemeMenu would free its item data here while m still shows the items, which crashed once the freed
-    //addresses were reused
-    {
-        CMenu sortMenu;
-        sortMenu.CreatePopupMenu();
-        UINT styleListNotEmptyPopup = MF_POPUP | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
-        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYNAME, ResStr(IDS_PLAYLIST_SORTBYLABEL));
-        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYPATH, ResStr(IDS_PLAYLIST_SORTBYPATH));
-        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATENEWEST, ResStr(IDS_PLAYLIST_SORTBYDATE_NEWEST));
-        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATEOLDEST, ResStr(IDS_PLAYLIST_SORTBYDATE_OLDEST));
-        sortMenu.AppendMenu(styleListNotEmpty, M_RANDOMIZE, ResStr(IDS_PLAYLIST_RANDOMIZE));
-        sortMenu.AppendMenu(MF_SEPARATOR);
-        sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYID, ResStr(IDS_PLAYLIST_RESTORE));
-        m.AppendMenu(styleListNotEmptyPopup, (UINT_PTR)sortMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_SORT));
-        sortMenu.Detach();
-    }
-    m.AppendMenu(MF_SEPARATOR);
-    m.AppendMenu(MF_STRING | MF_ENABLED | (s.bShufflePlaylistItems ? MF_CHECKED : MF_UNCHECKED), M_SHUFFLE, ResStr(IDS_PLAYLIST_SHUFFLE));
-    m.AppendMenu(MF_SEPARATOR);
-    m.AppendMenu(MF_STRING | MF_ENABLED | (s.bHidePlaylistFullScreen ? MF_CHECKED : MF_UNCHECKED), M_HIDEFULLSCREEN, ResStr(IDS_PLAYLIST_HIDEFS));
-    m.AppendMenu(MF_SEPARATOR);
-    {
-        const UINT dockBarID = GetParent()->GetDlgCtrlID();
-        CMenu positionMenu;
-        positionMenu.CreatePopupMenu();
-        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_LEFT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_LEFT, ResStr(IDS_PLAYLIST_POSITION_LEFT));
-        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_TOP ? MF_CHECKED : MF_UNCHECKED), M_POSITION_TOP, ResStr(IDS_PLAYLIST_POSITION_TOP));
-        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_RIGHT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_RIGHT, ResStr(IDS_PLAYLIST_POSITION_RIGHT));
-        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_BOTTOM ? MF_CHECKED : MF_UNCHECKED), M_POSITION_BOTTOM, ResStr(IDS_PLAYLIST_POSITION_BOTTOM));
-        positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_FLOAT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_FLOAT, ResStr(IDS_PLAYLIST_POSITION_FLOAT));
-        m.AppendMenu(MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)positionMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_POSITION));
-        positionMenu.Detach();
-    }
-    if (AppIsThemeLoaded()) {
-        m.fulfillThemeReqs();
+        bool bOnItem;
+        if (point.x == -1 && point.y == -1) {
+            lvhti.iItem = m_list.GetSelectionMark();
+
+            if (lvhti.iItem == -1 && m_pl.GetCount() == 1) {
+                lvhti.iItem = 0;
+            }
+
+            CRect r;
+            if (!!m_list.GetItemRect(lvhti.iItem, r, LVIR_BOUNDS)) {
+                point.SetPoint(r.left, r.bottom);
+            } else {
+                point.SetPoint(0, 0);
+            }
+            m_list.ClientToScreen(&point);
+            bOnItem = lvhti.iItem != -1;
+        } else {
+            lvhti.pt = point;
+            m_list.ScreenToClient(&lvhti.pt);
+            m_list.SubItemHitTest(&lvhti);
+            bOnItem = lvhti.iItem >= 0 && !!(lvhti.flags & LVHT_ONITEM);
+            if (!bOnItem && m_pl.GetCount() == 1) {
+                bOnItem = true;
+                lvhti.iItem = 0;
+            }
+        }
+
+        pos = FindPos(lvhti.iItem);
+        bool bIsLocalFile = bOnItem ? PathUtils::Exists(m_pl.GetAt(pos).m_fns.GetHead()) : false;
+        selId = (bOnItem && pos) ? m_pl.GetAt(pos).m_id : 0;
+
+        m.CreatePopupMenu();
+
+        UINT styleOnItem       = MF_STRING | (!bOnItem ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
+        UINT styleOnItemLocal  = MF_STRING | ((!bOnItem || !bIsLocalFile) ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
+        UINT styleListNotEmpty = MF_STRING | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
+
+        m.AppendMenu(styleOnItem, M_OPEN, ResStr(IDS_PLAYLIST_OPEN));
+        if (m_pMainFrame->GetPlaybackMode() == PM_ANALOG_CAPTURE) {
+            m.AppendMenu(MF_STRING | MF_ENABLED, M_ADD, ResStr(IDS_PLAYLIST_ADD));
+        }
+        m.AppendMenu(styleOnItem, M_REMOVE, ResStr(IDS_PLAYLIST_REMOVE));
+        m.AppendMenu(MF_SEPARATOR);
+        m.AppendMenu(styleListNotEmpty, M_CLEAR, ResStr(IDS_PLAYLIST_CLEAR));
+        m.AppendMenu(MF_SEPARATOR);
+        m.AppendMenu(styleOnItem, M_CLIPBOARD, ResStr(IDS_PLAYLIST_COPYTOCLIPBOARD));
+        m.AppendMenu(styleOnItemLocal, M_SHOWFOLDER, ResStr(IDS_PLAYLIST_SHOWFOLDER));
+        m.AppendMenu(styleOnItemLocal, M_RECYCLE, ResStr(IDS_FILE_RECYCLE));
+        m.AppendMenu(styleOnItemLocal, M_ADDFOLDER, ResStr(IDS_PLAYLIST_ADDFOLDER));
+        m.AppendMenu(MF_SEPARATOR);
+        if (!m_playListPath.IsEmpty()) {
+            m.AppendMenu(styleListNotEmpty, M_SAVE, ResStr(IDS_PLAYLIST_SAVE));
+        }
+        m.AppendMenu(styleListNotEmpty, M_SAVEAS, ResStr(IDS_PLAYLIST_SAVEAS));
+        m.AppendMenu(MF_SEPARATOR);
+        //the submenus are plain menus: m themes them when they are appended and owns what that allocates. a local
+        //CMPCThemeMenu would free its item data here while m still shows the items, which crashed once the freed
+        //addresses were reused
+        {
+            CMenu sortMenu;
+            sortMenu.CreatePopupMenu();
+            UINT styleListNotEmptyPopup = MF_POPUP | (!m_pl.GetCount() ? (MF_DISABLED | MF_GRAYED) : MF_ENABLED);
+            sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYNAME, ResStr(IDS_PLAYLIST_SORTBYLABEL));
+            sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYPATH, ResStr(IDS_PLAYLIST_SORTBYPATH));
+            sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATENEWEST, ResStr(IDS_PLAYLIST_SORTBYDATE_NEWEST));
+            sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYDATEOLDEST, ResStr(IDS_PLAYLIST_SORTBYDATE_OLDEST));
+            sortMenu.AppendMenu(styleListNotEmpty, M_RANDOMIZE, ResStr(IDS_PLAYLIST_RANDOMIZE));
+            sortMenu.AppendMenu(MF_SEPARATOR);
+            sortMenu.AppendMenu(styleListNotEmpty, M_SORTBYID, ResStr(IDS_PLAYLIST_RESTORE));
+            m.AppendMenu(styleListNotEmptyPopup, (UINT_PTR)sortMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_SORT));
+            sortMenu.Detach();
+        }
+        m.AppendMenu(MF_SEPARATOR);
+        m.AppendMenu(MF_STRING | MF_ENABLED | (s.bShufflePlaylistItems ? MF_CHECKED : MF_UNCHECKED), M_SHUFFLE, ResStr(IDS_PLAYLIST_SHUFFLE));
+        m.AppendMenu(MF_SEPARATOR);
+        m.AppendMenu(MF_STRING | MF_ENABLED | (s.bHidePlaylistFullScreen ? MF_CHECKED : MF_UNCHECKED), M_HIDEFULLSCREEN, ResStr(IDS_PLAYLIST_HIDEFS));
+        m.AppendMenu(MF_SEPARATOR);
+        {
+            const UINT dockBarID = GetParent()->GetDlgCtrlID();
+            CMenu positionMenu;
+            positionMenu.CreatePopupMenu();
+            positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_LEFT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_LEFT, ResStr(IDS_PLAYLIST_POSITION_LEFT));
+            positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_TOP ? MF_CHECKED : MF_UNCHECKED), M_POSITION_TOP, ResStr(IDS_PLAYLIST_POSITION_TOP));
+            positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_RIGHT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_RIGHT, ResStr(IDS_PLAYLIST_POSITION_RIGHT));
+            positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_BOTTOM ? MF_CHECKED : MF_UNCHECKED), M_POSITION_BOTTOM, ResStr(IDS_PLAYLIST_POSITION_BOTTOM));
+            positionMenu.AppendMenu(MF_STRING | MF_ENABLED | (dockBarID == AFX_IDW_DOCKBAR_FLOAT ? MF_CHECKED : MF_UNCHECKED), M_POSITION_FLOAT, ResStr(IDS_PLAYLIST_POSITION_FLOAT));
+            m.AppendMenu(MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)positionMenu.GetSafeHmenu(), ResStr(IDS_PLAYLIST_POSITION));
+            positionMenu.Detach();
+        }
+        if (AppIsThemeLoaded()) {
+            m.fulfillThemeReqs();
+        }
     }
 
     SetHasActivePopup(true);
@@ -2698,15 +2750,33 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     int nID = (int)m.TrackPopupMenu(TPM_LEFTBUTTON | TPM_RETURNCMD, point.x, point.y, m_pMainFrame);
     SetHasActivePopup(false);
     m_list.SetFocus();
+
+    //the lock is not held while the menu is up, so the playlist may have changed meanwhile.
+    //find the clicked item again by its id and drop the command when it is gone.
+    {
+        CAutoLock pledit(&m_plEditLock);
+        pos = selId ? FindPosById(selId) : nullptr;
+        lvhti.iItem = pos ? FindItem(pos) : -1;
+    }
+    if (!pos && (nID == M_OPEN || nID == M_REMOVE || nID == M_RECYCLE || nID == M_CLIPBOARD || nID == M_SHOWFOLDER || nID == M_ADDFOLDER)) {
+        return;
+    }
+
     switch (nID) {
         case M_OPEN:
-            m_pl.SetPos(pos);
+            {
+                CAutoLock pledit(&m_plEditLock);
+                m_pl.SetPos(pos);
+            }
             m_list.Invalidate();
             m_pMainFrame->PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
             break;
         case M_ADD:
             m_pMainFrame->AddCurDevToPlaylist();
-            m_pl.SetPos(m_pl.GetTailPosition());
+            {
+                CAutoLock pledit(&m_plEditLock);
+                m_pl.SetPos(m_pl.GetTailPosition());
+            }
             break;
         case M_REMOVE:
             RemoveItemAt(lvhti.iItem);
@@ -2721,35 +2791,47 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             SavePlaylist();
             break;
         case M_SORTBYID: {
-            POSITION selPos = FindPos(m_list.GetSelectionMark());
-            m_pl.SortById();
-            SetupList();
-            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            {
+                CAutoLock pledit(&m_plEditLock);
+                POSITION selPos = FindPos(m_list.GetSelectionMark());
+                m_pl.SortById();
+                SetupList();
+                SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            }
             SavePlaylist();
             break;
         }
         case M_SORTBYNAME: {
-            POSITION selPos = FindPos(m_list.GetSelectionMark());
-            m_pl.SortByName();
-            SetupList();
-            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            {
+                CAutoLock pledit(&m_plEditLock);
+                POSITION selPos = FindPos(m_list.GetSelectionMark());
+                m_pl.SortByName();
+                SetupList();
+                SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            }
             SavePlaylist();
             break;
         }
         case M_SORTBYPATH: {
-            POSITION selPos = FindPos(m_list.GetSelectionMark());
-            m_pl.SortByPath();
-            SetupList();
-            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            {
+                CAutoLock pledit(&m_plEditLock);
+                POSITION selPos = FindPos(m_list.GetSelectionMark());
+                m_pl.SortByPath();
+                SetupList();
+                SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            }
             SavePlaylist();
             break;
         }
         case M_SORTBYDATENEWEST:
         case M_SORTBYDATEOLDEST: {
-            POSITION selPos = FindPos(m_list.GetSelectionMark());
-            m_pl.SortByDate(nID == M_SORTBYDATEOLDEST);
-            SetupList();
-            SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            {
+                CAutoLock pledit(&m_plEditLock);
+                POSITION selPos = FindPos(m_list.GetSelectionMark());
+                m_pl.SortByDate(nID == M_SORTBYDATEOLDEST);
+                SetupList();
+                SyncSelectionToPos(selPos ? selPos : m_pl.GetPos());
+            }
             SavePlaylist();
             break;
         }
@@ -2758,11 +2840,13 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             break;
         case M_CLIPBOARD: {
                 CString str;
-
-                CPlaylistItem& pli = m_pl.GetAt(pos);
-                POSITION pos2 = pli.m_fns.GetHeadPosition();
-                while (pos2) {
-                    str += _T("\r\n") + pli.m_fns.GetNext(pos2);
+                {
+                    CAutoLock pledit(&m_plEditLock);
+                    CPlaylistItem& pli = m_pl.GetAt(pos);
+                    POSITION pos2 = pli.m_fns.GetHeadPosition();
+                    while (pos2) {
+                        str += _T("\r\n") + pli.m_fns.GetNext(pos2);
+                    }
                 }
                 str.Trim();
 
@@ -2770,12 +2854,23 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                 VERIFY(clipboard.SetText(str));
             }
             break;
-        case M_SHOWFOLDER:
-            ExploreToFile(m_pl.GetAt(pos).m_fns.GetHead());
+        case M_SHOWFOLDER: {
+            CString fn;
+            {
+                CAutoLock pledit(&m_plEditLock);
+                fn = m_pl.GetAt(pos).m_fns.GetHead();
+            }
+            ExploreToFile(fn);
             break;
+        }
         case M_ADDFOLDER: {
             // add all media files in current playlist item folder that are not yet in the playlist
-            const CString dirName = PathUtils::DirName(m_pl.GetAt(pos).m_fns.GetHead());
+            CString fn;
+            {
+                CAutoLock pledit(&m_plEditLock);
+                fn = m_pl.GetAt(pos).m_fns.GetHead();
+            }
+            const CString dirName = PathUtils::DirName(fn);
             if (PathUtils::IsDir(dirName)) {
                 m_insertingPos = pos;
                 if (AddItemsInFolder(dirName, true)) {
@@ -2847,11 +2942,11 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                 f.WriteString(_T("<ASX version = \"3.0\">\n"));
             }
 
-            pos = m_pl.GetHeadPosition();
+            POSITION savePos = m_pl.GetHeadPosition();
             CString str;
             int i;
-            for (i = 0; pos; i++) {
-                CPlaylistItem& pli = m_pl.GetNext(pos);
+            for (i = 0; savePos; i++) {
+                CPlaylistItem& pli = m_pl.GetNext(savePos);
 
                 if (pli.m_type != CPlaylistItem::file) {
                     continue;
@@ -2895,7 +2990,10 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         break;
         case M_SHUFFLE:
             s.bShufflePlaylistItems = !s.bShufflePlaylistItems;
-            m_pl.SetShuffle(s.bShufflePlaylistItems);
+            {
+                CAutoLock pledit(&m_plEditLock);
+                m_pl.SetShuffle(s.bShufflePlaylistItems);
+            }
             break;
         case M_HIDEFULLSCREEN:
             s.bHidePlaylistFullScreen = !s.bHidePlaylistFullScreen;
