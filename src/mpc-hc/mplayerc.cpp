@@ -1866,8 +1866,7 @@ static CMPCThemeScrollBarRenderer* GetScrollBarRenderer(HWND hWnd) {
 
     // Themed scrollbars not available in classic mode = !IsThemeActive()
     if (pWnd && sbrIsThemeActive) {
-        static BOOL cachedThemedControls = AppNeedsThemedControls();
-        if (cachedThemedControls) {
+        if (AppNeedsThemedControls()) { //not cached: the theme can change while the player runs
             CMPCThemeScrollBarRenderer* pRenderer = DYNAMIC_DOWNCAST(CMPCThemePlayerListCtrl, pWnd);
             if (pRenderer) {
                 return pRenderer;
