@@ -247,7 +247,7 @@ void CMPCThemeComboBox::checkHover(UINT nFlags, CPoint point, bool invalidate)
     } else {
         isHover = false;
     }
-    if (isHover != oldHover && invalidate) {
+    if (isHover != oldHover && invalidate && !GetDroppedState()) { //a repaint while the list is open would draw the item under the mouse instead of the selected one
         Invalidate();
     }
 
