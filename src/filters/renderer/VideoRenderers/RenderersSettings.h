@@ -102,6 +102,7 @@ public:
 
         // Other settings
         bool    bCacheShaders;
+        bool    bHLGToSDR;      // EVR-CP/Sync: show HLG (HDR) video with SDR colours
         CString sShaderCachePath;
 
         void    SetDefault();

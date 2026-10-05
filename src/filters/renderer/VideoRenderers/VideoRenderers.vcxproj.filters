@@ -124,6 +124,9 @@
     <ClInclude Include="DX9RenderingEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HLGToSDR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="OuterEVR.h">
       <Filter>Header Files</Filter>
     </ClInclude>

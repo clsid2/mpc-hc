@@ -47,6 +47,7 @@ void CRenderersSettings::CAdvRendererSettings::SetDefault()
     bEVRForceInputHighColorResolution = false;
     bEVREnableFrameTimeCorrection     = false;
     iEVROutputRange                   = 0;
+    bHLGToSDR                         = true;
     bSynchronizeVideo                 = false;
     bSynchronizeDisplay               = false;
     bSynchronizeNearest               = true;

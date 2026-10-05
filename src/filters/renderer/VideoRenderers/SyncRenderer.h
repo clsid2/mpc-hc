@@ -145,6 +145,9 @@ namespace GothSync
 
         CAutoPtr<CPixelShaderCompiler> m_pPSC;
         CAtlList<CExternalPixelShader> m_pPixelShaders;
+        CExternalPixelShader m_HLGToSDRShader; // run before m_pPixelShaders while the input is HLG
+        bool m_bHLGInput = false;              // set from the mixer's input type
+        bool HLGToSDRActive();
         CAtlList<CExternalPixelShader> m_pPixelShadersScreenSpace;
         CComPtr<IDirect3DPixelShader9> m_pResizerPixelShader[4]; // bl, bc1, bc2_1, bc2_2
         CComPtr<IDirect3DTexture9> m_pScreenSizeTemporaryTexture[2];
