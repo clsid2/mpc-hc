@@ -2984,6 +2984,10 @@ CFGManagerPlayer::CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HW
             case VIDRNDT_DS_MPCVR:
                 if (!m_bIsCapture) {
                     m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_MPCVRAllocatorPresenter, StrRes(IDS_PPAGE_OUTPUT_MPCVR), renderer_merit));
+                } else if (IsCLSIDRegistered(CLSID_EnhancedVideoRenderer)) {
+                    m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_EVRAllocatorPresenter, StrRes(IDS_PPAGE_OUTPUT_EVR_CUSTOM), renderer_merit));
+                } else {
+                    m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_VMR9AllocatorPresenter, StrRes(IDS_PPAGE_OUTPUT_VMR9RENDERLESS), renderer_merit));
                 }
                 break;
             case VIDRNDT_DS_NULL_COMP:
