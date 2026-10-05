@@ -789,6 +789,9 @@ HRESULT CFGManager::Connect(IPin* pPinOut, IPin* pPinIn, bool bContinueRender)
                 continue;
             }
 
+#if !WIN64
+            if (pBF != (IBaseFilter*)0x3) // invalid pointer value, weird x86 bug
+#endif
             pBFs.AddTail(pBF);
         }
         EndEnumFilters;
