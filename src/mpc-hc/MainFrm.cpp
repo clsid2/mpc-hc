@@ -5963,8 +5963,28 @@ void CMainFrame::OnFileReopen()
     PostMessage(WM_MPC_OPENCURPLAYLIST, 1, 0);
 }
 
+// While a modal dialog is open the main frame is disabled, and WindowFromPoint
+// does not descend into a disabled window, so ole32 hands a drop anywhere over
+// the player to our drop target instead of the playlist bar's. Recognize a drop
+// that lands over the playlist so it can be given to the playlist (#4265).
+bool CMainFrame::IsPlaylistDropWhileDisabled(CPoint ptClient) const
+{
+    if (IsWindowEnabled() || !m_wndPlaylistBar.IsWindowVisible()) {
+        return false;
+    }
+    ClientToScreen(&ptClient);
+    CRect r;
+    m_wndPlaylistBar.GetWindowRect(&r);
+    return !!r.PtInRect(ptClient);
+}
+
 DROPEFFECT CMainFrame::OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
+    m_lastDropPoint = point;
+    if (IsPlaylistDropWhileDisabled(point)) {
+        return DROPEFFECT_COPY;
+    }
+
     ClientToScreen(&point);
     if (CMouse::CursorOnRootWindow(point, *this)) {
         UpdateControlState(UPDATE_CONTROLS_VISIBILITY);
@@ -6054,6 +6074,11 @@ void CMainFrame::OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect)
         if (DeferIfNested(type, [this, pFiles, dropEffect] { OnDropFiles(*pFiles, dropEffect); })) {
             return;
         }
+    }
+
+    if (IsPlaylistDropWhileDisabled(m_lastDropPoint)) {
+        m_wndPlaylistBar.OnDropFiles(slFiles, dropEffect);
+        return;
     }
 
     SetForegroundWindow();
