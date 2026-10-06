@@ -678,6 +678,10 @@ void CMPCTheme::InitializeWindows10Colors() {
         CheckboxBGColor = RGB(0, 0, 0);
         CheckboxBorderHoverColor = RGB(121, 121, 121);
         CheckboxBGHoverColor = RGB(8, 8, 8);
+        //the established windows 10 dark disabled grey, dimmer than the enabled border
+        CheckboxDisabledBorderColor = RGB(109, 109, 109);
+        CheckboxDisabledCheckedColor = RGB(109, 109, 109);
+        CheckboxDisabledGlyphColor = RGB(109, 109, 109);
 
         ImageDisabledColor = RGB(109, 109, 109);
 
