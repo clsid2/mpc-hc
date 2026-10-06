@@ -109,7 +109,7 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 
 IMPLEMENT_DYNAMIC(CChildView, CMouseWndWithArtView)
 
-BEGIN_MESSAGE_MAP(CChildView, CMouseWnd)
+BEGIN_MESSAGE_MAP(CChildView, CMouseWndWithArtView)
     ON_WM_PAINT()
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
