@@ -107,7 +107,7 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
     return CWnd::PreTranslateMessage(pMsg);
 }
 
-IMPLEMENT_DYNAMIC(CChildView, CMouseWnd)
+IMPLEMENT_DYNAMIC(CChildView, CMouseWndWithArtView)
 
 BEGIN_MESSAGE_MAP(CChildView, CMouseWnd)
     ON_WM_PAINT()
@@ -126,12 +126,12 @@ void CChildView::OnPaint()
 void CChildView::OnSize(UINT nType, int cx, int cy)
 {
     __super::OnSize(nType, cx, cy);
+    if (!m_bSwitchingFullscreen) {
+        m_pMainFrame->MoveVideoWindow();
+    }
     // bitmap OSD draws into the renderer, so it never gets its own WM_SIZE
     if (m_pMainFrame->m_OSD.GetOSDType() == OSD_TYPE_BITMAP && m_pMainFrame->m_pVideoWnd == this) {
         m_pMainFrame->m_OSD.OnSize(nType, cx, cy);
-    }
-    if (!m_bSwitchingFullscreen) {
-        m_pMainFrame->MoveVideoWindow();
     }
     m_pMainFrame->UpdateThumbnailClip();
 }

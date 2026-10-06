@@ -169,6 +169,12 @@ void COSD::OnDrawWnd()
 void COSD::OnSize(UINT nType, int cx, int cy)
 {
     if (m_pWnd && m_pMFVMB) {
+        const CRect rectWnd(m_rectWnd), rectBitmap(m_rectBitmap);
+        CalcWndRects();
+        if (m_rectWnd == rectWnd && m_rectBitmap == rectBitmap && m_BitmapInfo.bmBits) {
+            return; // called from both the view's WM_SIZE and MoveVideoWindow
+        }
+
         if (m_bSeekBarVisible || m_bFlyBarVisible) {
             m_bCursorMoving     = false;
             m_bSeekBarVisible   = false;
@@ -178,8 +184,8 @@ void COSD::OnSize(UINT nType, int cx, int cy)
         CalcSeekbar();
         CalcFlybar();
 
-        InvalidateBitmapOSD();
         UpdateBitmap();
+        InvalidateBitmapOSD();
     }
     else if (m_pWnd) {
         //PostMessageW(WM_OSD_DRAW);
@@ -205,21 +211,24 @@ void COSD::UpdateBitmap()
 
         ZeroMemory(&bmi.bmiHeader, sizeof(BITMAPINFOHEADER));
         bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-        bmi.bmiHeader.biWidth       = m_rectWnd.Width();
-        bmi.bmiHeader.biHeight      = -m_rectWnd.Height(); // top-down
+        bmi.bmiHeader.biWidth       = m_rectBitmap.Width();
+        bmi.bmiHeader.biHeight      = -m_rectBitmap.Height(); // top-down
         bmi.bmiHeader.biPlanes      = 1;
         bmi.bmiHeader.biBitCount    = 32;
         bmi.bmiHeader.biCompression = BI_RGB;
 
         hbmpRender = CreateDIBSection(m_MemDC, &bmi, DIB_RGB_COLORS, nullptr, nullptr, 0);
         m_MemDC.SelectObject(hbmpRender);
+        // everything is drawn in client coordinates of m_pWnd, the same space the mouse is hit-tested in
+        m_MemDC.SetViewportOrg(-m_rectBitmap.TopLeft());
         if (::GetObjectW(hbmpRender, sizeof(BITMAP), &m_BitmapInfo) != 0) {
+            const CRect rectSrc(CPoint(0, 0), m_rectBitmap.Size());
             if (m_pVMB) {
                 ZeroMemory(&m_VMR9AlphaBitmap, sizeof(m_VMR9AlphaBitmap));
                 m_VMR9AlphaBitmap.dwFlags = VMRBITMAP_HDC | VMRBITMAP_SRCCOLORKEY;
                 m_VMR9AlphaBitmap.hdc = m_MemDC;
                 m_VMR9AlphaBitmap.clrSrcKey = m_colors[OSD_TRANSPARENT];
-                m_VMR9AlphaBitmap.rSrc = m_rectWnd;
+                m_VMR9AlphaBitmap.rSrc = rectSrc;
                 m_VMR9AlphaBitmap.rDest = { 0, 0, 1, 1 };
                 m_VMR9AlphaBitmap.fAlpha = 1.0;
             } else if (m_pMFVMB) {
@@ -228,7 +237,7 @@ void COSD::UpdateBitmap()
                 m_MFVAlphaBitmap.bitmap.hdc       = m_MemDC;
                 m_MFVAlphaBitmap.params.dwFlags   = MFVideoAlphaBitmap_SrcColorKey;
                 m_MFVAlphaBitmap.params.clrSrcKey = m_colors[OSD_TRANSPARENT];
-                m_MFVAlphaBitmap.params.rcSrc     = m_rectWnd;
+                m_MFVAlphaBitmap.params.rcSrc     = rectSrc;
                 m_MFVAlphaBitmap.params.nrcDest   = { 0, 0, 1, 1 };
                 m_MFVAlphaBitmap.params.fAlpha    = 1.0;
             } 
@@ -327,6 +336,21 @@ void COSD::Stop()
     Reset();
 }
 
+// the renderer stretches the bitmap over its whole window, which in fullscreen can extend past the
+// client area underneath docked panels, so the bitmap covers the video rect and drawing stays in the client area
+void COSD::CalcWndRects()
+{
+    m_pWnd->GetClientRect(&m_rectWnd);
+
+    m_rectBitmap.SetRectEmpty();
+    if (auto pVideoWnd = DYNAMIC_DOWNCAST(CMouseWndWithArtView, m_pWnd)) {
+        m_rectBitmap = pVideoWnd->GetVideoRect();
+    }
+    if (m_rectBitmap.IsRectEmpty()) {
+        m_rectBitmap = m_rectWnd;
+    }
+}
+
 void COSD::CalcSeekbar()
 {
     if (m_pWnd && m_pMFVMB) {
@@ -339,7 +363,7 @@ void COSD::CalcSeekbar()
         int SliderBarHeight = m_DPIHelper.ScaleY(SLIDER_BAR_HEIGHT);
         int hor8 = m_DPIHelper.ScaleX(8);
 
-        m_pWnd->GetClientRect(&m_rectWnd);
+        CalcWndRects();
 
         m_rectSeekBar.left   = m_rectWnd.left;
         m_rectSeekBar.right  = m_rectWnd.right;
