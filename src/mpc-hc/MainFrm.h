@@ -629,6 +629,9 @@ private:
     void OnVideoSizeChanged(const bool bWasAudioOnly = false);
 
     CDropTarget m_dropTarget;
+    // client coordinates of the last OnDropAccept call; OnDropFiles gets no point
+    CPoint m_lastDropPoint;
+    bool IsPlaylistDropWhileDisabled(CPoint ptClient) const;
     void OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect) override;
     DROPEFFECT OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point) override;
 

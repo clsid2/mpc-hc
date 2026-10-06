@@ -5963,8 +5963,28 @@ void CMainFrame::OnFileReopen()
     PostMessage(WM_MPC_OPENCURPLAYLIST, 1, 0);
 }
 
+// While a modal dialog is open the main frame is disabled, and WindowFromPoint
+// does not descend into a disabled window, so ole32 hands a drop anywhere over
+// the player to our drop target instead of the playlist bar's. Recognize a drop
+// that lands over the playlist so it can be given to the playlist (#4265).
+bool CMainFrame::IsPlaylistDropWhileDisabled(CPoint ptClient) const
+{
+    if (IsWindowEnabled() || !m_wndPlaylistBar.IsWindowVisible()) {
+        return false;
+    }
+    ClientToScreen(&ptClient);
+    CRect r;
+    m_wndPlaylistBar.GetWindowRect(&r);
+    return !!r.PtInRect(ptClient);
+}
+
 DROPEFFECT CMainFrame::OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
+    m_lastDropPoint = point;
+    if (IsPlaylistDropWhileDisabled(point)) {
+        return DROPEFFECT_COPY;
+    }
+
     ClientToScreen(&point);
     if (CMouse::CursorOnRootWindow(point, *this)) {
         UpdateControlState(UPDATE_CONTROLS_VISIBILITY);
@@ -6054,6 +6074,11 @@ void CMainFrame::OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect)
         if (DeferIfNested(type, [this, pFiles, dropEffect] { OnDropFiles(*pFiles, dropEffect); })) {
             return;
         }
+    }
+
+    if (IsPlaylistDropWhileDisabled(m_lastDropPoint)) {
+        m_wndPlaylistBar.OnDropFiles(slFiles, dropEffect);
+        return;
     }
 
     SetForegroundWindow();
@@ -12305,6 +12330,12 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
 
         CString desc = GetFileName();
 
+        // capture the rest of the entry here as well, the file can change while the modal pump runs
+        CPlaylistItem pli;
+        bool bHasCur = !is_BD && m_wndPlaylistBar.GetCur(pli);
+        REFERENCE_TIME rtPos = GetPos();
+        ABRepeat ab = abRepeat;
+
         // Name
         CString name;
         if (fShowDialog) {
@@ -12322,11 +12353,11 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         // RememberPos
         CString posStr = _T("0");
         if (s.bFavRememberPos) {
-            posStr.Format(_T("%I64d"), GetPos());
+            posStr.Format(_T("%I64d"), rtPos);
         }
         // RememberABMarks
-        if (s.bFavRememberABMarks && abRepeat) {
-            posStr.AppendFormat(_T(":%I64d:%I64d"), abRepeat.positionA, abRepeat.positionB);
+        if (s.bFavRememberABMarks && ab) {
+            posStr.AppendFormat(_T(":%I64d:%I64d"), ab.positionA, ab.positionB);
         }
         args.AddTail(posStr);
 
@@ -12340,8 +12371,7 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         if (is_BD) {
             args.AddTail(fn);
         } else {
-            CPlaylistItem pli;
-            if (m_wndPlaylistBar.GetCur(pli)) {
+            if (bHasCur) {
                 if (pli.m_bYoutubeDL) {
                     args.AddTail(pli.m_ydlSourceURL);
                 } else {
@@ -12371,6 +12401,22 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
             } else {
                 desc = fn;
             }
+
+            // capture the state here as well, the disc position can change while the modal pump runs
+            CString state;
+            {
+                CDVDStateStream stream;
+                stream.AddRef();
+
+                CComPtr<IDvdState> pStateData;
+                CComQIPtr<IPersistStream> pPersistStream;
+                if (SUCCEEDED(m_pDVDI->GetState(&pStateData))
+                        && (pPersistStream = pStateData)
+                        && SUCCEEDED(OleSaveToStream(pPersistStream, (IStream*)&stream))) {
+                    state = BinToCString(stream.m_data.GetData(), stream.m_data.GetCount());
+                }
+            }
+
             // Name
             CString name;
             if (fShowDialog) {
@@ -12386,17 +12432,8 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
 
             // RememberPos
             CString pos(_T("0"));
-            if (s.bFavRememberPos) {
-                CDVDStateStream stream;
-                stream.AddRef();
-
-                CComPtr<IDvdState> pStateData;
-                CComQIPtr<IPersistStream> pPersistStream;
-                if (SUCCEEDED(m_pDVDI->GetState(&pStateData))
-                        && (pPersistStream = pStateData)
-                        && SUCCEEDED(OleSaveToStream(pPersistStream, (IStream*)&stream))) {
-                    pos = BinToCString(stream.m_data.GetData(), stream.m_data.GetCount());
-                }
+            if (s.bFavRememberPos && !state.IsEmpty()) {
+                pos = state;
             }
 
             args.AddTail(pos);
