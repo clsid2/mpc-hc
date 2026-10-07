@@ -655,7 +655,8 @@ void CMainFrameControls::UpdateToolbarsVisibility()
                 if (it != m_panelZones.end()) {
                     const auto& panels = it->second;
                     for (const auto panel : panels) {
-                        if (m_panels[panel]->HasActivePopup()) {
+                        // hiding another panel of the zone moves this one and ends its input
+                        if (m_panels[panel]->HasActivePopup() || ToolbarInputActive(m_panels[panel])) {
                             mask.maskHide &= ~zone;
                             break;
                         }
