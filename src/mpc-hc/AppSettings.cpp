@@ -2534,6 +2534,7 @@ void CAppSettings::UpdateRenderersData(bool fSave)
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("VMRColorManagementIntent"), ars.iVMR9ColorManagementIntent);
 
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("EVROutputRange"), ars.iEVROutputRange);
+        pApp->WriteProfileInt(IDS_R_SETTINGS, _T("ConvertHLGToSDR"), ars.bHLGToSDR);
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("EVRHighColorRes"), ars.bEVRHighColorResolution);
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("EVRForceInputHighColorRes"), ars.bEVRForceInputHighColorResolution);
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("EVREnableFrameTimeCorrection"), ars.bEVREnableFrameTimeCorrection);
@@ -2593,6 +2594,7 @@ void CAppSettings::UpdateRenderersData(bool fSave)
         ars.iVMR9ColorManagementIntent = pApp->GetProfileInt(IDS_R_SETTINGS, _T("VMRColorManagementIntent"), DefaultSettings.iVMR9ColorManagementIntent);
 
         ars.iEVROutputRange = !!pApp->GetProfileInt(IDS_R_SETTINGS, _T("EVROutputRange"), DefaultSettings.iEVROutputRange);
+        ars.bHLGToSDR = !!pApp->GetProfileInt(IDS_R_SETTINGS, _T("ConvertHLGToSDR"), DefaultSettings.bHLGToSDR);
 
         ars.bVMRFlushGPUBeforeVSync = !!pApp->GetProfileInt(IDS_R_SETTINGS, _T("VMRFlushGPUBeforeVSync"), DefaultSettings.bVMRFlushGPUBeforeVSync);
         ars.bVMRFlushGPUAfterPresent = !!pApp->GetProfileInt(IDS_R_SETTINGS, _T("VMRFlushGPUAfterPresent"), DefaultSettings.bVMRFlushGPUAfterPresent);

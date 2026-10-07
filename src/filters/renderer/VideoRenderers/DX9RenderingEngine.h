@@ -119,6 +119,13 @@ namespace DSObjects
 
         // Custom pixel shaders
         CAtlList<CExternalPixelShader>   m_pCustomPixelShaders;
+
+        // HLG-to-SDR pass, run before the custom pixel shaders while the input is HLG
+        CExternalPixelShader             m_HLGToSDRShader;
+        bool                             HLGToSDRActive();
+    protected:
+        bool                             m_bHLGInput = false; // set by the presenter from the mixer's input type
+    private:
         CComPtr<IDirect3DTexture9>       m_pTemporaryVideoTextures[2];
 
         // Screen space pipeline

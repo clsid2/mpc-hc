@@ -26,6 +26,7 @@
 #include "../../../mpc-hc/resource.h"
 #include "../../../DSUtil/DSUtil.h"
 #include "../../../DSUtil/WinAPIUtils.h"
+#include "HLGToSDR.h"
 #include <strsafe.h> // Required in CGenlock
 #include <videoacc.h>
 #include <d3d9.h>
@@ -442,6 +443,7 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
         CExternalPixelShader& Shader = m_pPixelShaders.GetNext(pos);
         Shader.m_pPixelShader = nullptr;
     }
+    m_HLGToSDRShader.m_pPixelShader = nullptr;
 
     if (!m_pD3D) {
         _Error += L"Failed to create Direct3D device\n";
@@ -809,6 +811,7 @@ HRESULT CBaseAP::ResetDXDevice(CString& _Error)
         CExternalPixelShader& Shader = m_pPixelShaders.GetNext(pos);
         Shader.m_pPixelShader = nullptr;
     }
+    m_HLGToSDRShader.m_pPixelShader = nullptr;
 
     D3DDISPLAYMODE d3ddm;
     ZeroMemory(&d3ddm, sizeof(d3ddm));
@@ -1626,7 +1629,7 @@ STDMETHODIMP_(bool) CBaseAP::Paint(bool bAll)
         if (m_pVideoTexture[m_nCurSurface]) {
             CComPtr<IDirect3DTexture9> pVideoTexture = m_pVideoTexture[m_nCurSurface];
 
-            if (m_pVideoTexture[m_nDXSurface] && m_pVideoTexture[m_nDXSurface + 1] && !m_pPixelShaders.IsEmpty()) {
+            if (m_pVideoTexture[m_nDXSurface] && m_pVideoTexture[m_nDXSurface + 1] && (!m_pPixelShaders.IsEmpty() || HLGToSDRActive())) {
                 static __int64 counter = 0;
                 static long start = clock();
 
@@ -1652,12 +1655,20 @@ STDMETHODIMP_(bool) CBaseAP::Paint(bool bAll)
                 CComPtr<IDirect3DSurface9> pRT;
                 hr = m_pD3DDev->GetRenderTarget(0, &pRT);
 
-                POSITION pos = m_pPixelShaders.GetHeadPosition();
+                CAtlList<CExternalPixelShader*> passes;
+                if (HLGToSDRActive()) {
+                    passes.AddTail(&m_HLGToSDRShader);
+                }
+                for (POSITION p = m_pPixelShaders.GetHeadPosition(); p;) {
+                    passes.AddTail(&m_pPixelShaders.GetNext(p));
+                }
+
+                POSITION pos = passes.GetHeadPosition();
                 while (pos) {
                     pVideoTexture = m_pVideoTexture[dst];
 
                     hr = m_pD3DDev->SetRenderTarget(0, m_pVideoSurface[dst]);
-                    CExternalPixelShader& Shader = m_pPixelShaders.GetNext(pos);
+                    CExternalPixelShader& Shader = *passes.GetNext(pos);
                     if (!Shader.m_pPixelShader) {
                         Shader.Compile(m_pPSC);
                     }
@@ -2507,6 +2518,19 @@ STDMETHODIMP CBaseAP::SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget)
     return SetPixelShader2(pSrcData, pTarget, false);
 }
 
+bool CBaseAP::HLGToSDRActive()
+{
+    if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
+            || m_caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
+        return false;
+    }
+    if (m_HLGToSDRShader.m_SourceData.IsEmpty()) {
+        m_HLGToSDRShader.m_SourceData = HLG_TO_SDR_SHADER;
+        m_HLGToSDRShader.m_SourceTarget = "ps_3_0";
+    }
+    return true;
+}
+
 STDMETHODIMP CBaseAP::SetPixelShader2(LPCSTR pSrcData, LPCSTR pTarget, bool bScreenSpace)
 {
     CAutoLock cRenderLock(&m_allocatorLock);
@@ -3101,6 +3125,11 @@ HRESULT CSyncAP::CreateOptimalOutputType(IMFMediaType* pMixerProposedType, IMFMe
             TRACE(_T("Copying color attribute %s failed: 0x%08x\n"), static_cast<LPCTSTR>(CComBSTR(guidKey)), hr);
         }
     }
+
+    // HLG input: converted to SDR from the very first frame (see HLGToSDR.h).
+    UINT32 transferFunction;
+    m_bHLGInput = SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
+                  && transferFunction == MFVideoTransFunc_HLG;
 
     pOptimalMediaType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
 

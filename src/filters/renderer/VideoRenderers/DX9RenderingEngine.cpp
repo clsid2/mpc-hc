@@ -25,6 +25,7 @@
 #include "../../../mpc-hc/resource.h"
 #include "Dither.h"
 #include "DX9RenderingEngine.h"
+#include "HLGToSDR.h"
 #include "../../../mpc-hc/ColorProfileUtil.h"
 
 // UUID for vorpX hack
@@ -212,6 +213,7 @@ void CDX9RenderingEngine::CleanupRenderingEngine()
         CExternalPixelShader& Shader = m_pCustomPixelShaders.GetNext(pos);
         Shader.m_pPixelShader = nullptr;
     }
+    m_HLGToSDRShader.m_pPixelShader = nullptr;
 
     for (int i = 0; i < 2; i++) {
         m_pTemporaryVideoTextures[i].Release();
@@ -358,10 +360,11 @@ HRESULT CDX9RenderingEngine::RenderVideoDrawPath(IDirect3DSurface9* pRenderTarge
             screenSpacePassCount += (int)m_pCustomScreenSpacePixelShaders.GetCount();
         }
 
-        // Custom pixel shaders
-        bCustomPixelShaders = !m_pCustomPixelShaders.IsEmpty();
+        // Custom pixel shaders, preceded by the HLG-to-SDR pass for HLG input
+        const int passCount = (int)m_pCustomPixelShaders.GetCount() + (HLGToSDRActive() ? 1 : 0);
+        bCustomPixelShaders = passCount > 0;
 
-        hr = InitTemporaryVideoTextures(std::min((int)m_pCustomPixelShaders.GetCount(), 2));
+        hr = InitTemporaryVideoTextures(std::min(passCount, 2));
         if (FAILED(hr)) {
             bCustomPixelShaders = false;
         }
@@ -416,13 +419,21 @@ HRESULT CDX9RenderingEngine::RenderVideoDrawPath(IDirect3DSurface9* pRenderTarge
         int dest = 0;
         bool first = true;
 
-        POSITION pos = m_pCustomPixelShaders.GetHeadPosition();
+        CAtlList<CExternalPixelShader*> passes;
+        if (HLGToSDRActive()) {
+            passes.AddTail(&m_HLGToSDRShader);
+        }
+        for (POSITION p = m_pCustomPixelShaders.GetHeadPosition(); p;) {
+            passes.AddTail(&m_pCustomPixelShaders.GetNext(p));
+        }
+
+        POSITION pos = passes.GetHeadPosition();
         while (pos) {
             CComPtr<IDirect3DSurface9> pTemporarySurface;
             hr = m_pTemporaryVideoTextures[dest]->GetSurfaceLevel(0, &pTemporarySurface);
             hr = m_pD3DDev->SetRenderTarget(0, pTemporarySurface);
 
-            CExternalPixelShader& Shader = m_pCustomPixelShaders.GetNext(pos);
+            CExternalPixelShader& Shader = *passes.GetNext(pos);
             if (!Shader.m_pPixelShader) {
                 Shader.Compile(m_pPSC);
             }
@@ -1725,6 +1736,19 @@ HRESULT CDX9RenderingEngine::AlphaBlt(const RECT* pSrc, const RECT* pDst, IDirec
     m_pD3DDev->SetRenderState(D3DRS_DESTBLEND, db);
 
     return S_OK;
+}
+
+bool CDX9RenderingEngine::HLGToSDRActive()
+{
+    if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
+            || m_Caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
+        return false;
+    }
+    if (m_HLGToSDRShader.m_SourceData.IsEmpty()) {
+        m_HLGToSDRShader.m_SourceData = HLG_TO_SDR_SHADER;
+        m_HLGToSDRShader.m_SourceTarget = "ps_3_0";
+    }
+    return true;
 }
 
 HRESULT CDX9RenderingEngine::SetCustomPixelShader(LPCSTR pSrcData, LPCSTR pTarget, bool bScreenSpace)

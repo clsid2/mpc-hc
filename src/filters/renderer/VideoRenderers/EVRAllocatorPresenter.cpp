@@ -725,6 +725,12 @@ HRESULT CEVRAllocatorPresenter::CreateOptimalOutputType(IMFMediaType* pMixerProp
 
     pOptimalMediaType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
 
+    // HLG input: the rendering engine converts it to SDR, from the very first frame
+    // (the decoder often signals HLG only in a format change after the first frames).
+    UINT32 transferFunction;
+    m_bHLGInput = SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
+                  && transferFunction == MFVideoTransFunc_HLG;
+
     const CRenderersSettings& r = GetRenderersSettings();
 
     UINT32 nominalRange;
