@@ -1489,7 +1489,11 @@ int CPlayerPlaylistBar::GetSelIdx() const
 
 void CPlayerPlaylistBar::SetSelIdx(int i)
 {
-    m_pl.SetPos(FindPos(i));
+    POSITION org = m_pl.GetPos();
+    POSITION pos = FindPos(i);
+    m_pl.SetPos(pos);
+    InvalidatePlayingItem(org, pos);
+    EnsureVisible(pos);
 }
 
 bool CPlayerPlaylistBar::IsAtEnd()
