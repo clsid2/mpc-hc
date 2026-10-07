@@ -2082,6 +2082,9 @@ void CPlayerPlaylistBar::ResizeListColumn()
             width -= m_pMainFrame->m_dpi.GetSystemMetricsDPI(SM_CXVSCROLL);
         }
         m_list.SetColumnWidth(COL_NAME, std::max(0, width - m_nTimeColWidth));
+        // when too narrow for both, the name column stays at the list's minimum, so shrink the
+        // time column to what is left, else the columns overflow into a horizontal scrollbar
+        m_list.SetColumnWidth(COL_TIME, std::max(0, std::min(m_nTimeColWidth, width - m_list.GetColumnWidth(COL_NAME))));
         m_list.SetRedraw(TRUE);
 
         Invalidate();
