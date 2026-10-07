@@ -20,6 +20,9 @@
 
 #pragma once
 
+// MFVideoTransFunc_HLG, which the Windows 8.1 SDK's mfobjects.h lacks
+constexpr UINT32 MFVideoTransFunc_HLG_Value = 16;
+
 // HLG (BT.2100) to SDR (BT.709). The internal renderers otherwise pass HDR video to the
 // display unconverted, washed out and desaturated (e.g. iPhone videos). It runs first on
 // the mixer's output, which is HLG-encoded R'G'B' with BT.2020 primaries: it decodes HLG,

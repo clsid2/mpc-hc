@@ -3129,7 +3129,7 @@ HRESULT CSyncAP::CreateOptimalOutputType(IMFMediaType* pMixerProposedType, IMFMe
     // HLG input: converted to SDR from the very first frame (see HLGToSDR.h).
     UINT32 transferFunction;
     m_bHLGInput = SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
-                  && transferFunction == MFVideoTransFunc_HLG;
+                  && transferFunction == MFVideoTransFunc_HLG_Value;
 
     pOptimalMediaType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
 

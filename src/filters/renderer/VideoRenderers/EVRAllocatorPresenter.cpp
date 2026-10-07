@@ -28,6 +28,7 @@
 #include "IMPCVideoDecFilter.h"
 #include "Utils.h"
 #include "Variables.h"
+#include "HLGToSDR.h"
 
 #if (0)     // Set to 1 to activate EVR traces
 #define TRACE_EVR   TRACE
@@ -729,7 +730,7 @@ HRESULT CEVRAllocatorPresenter::CreateOptimalOutputType(IMFMediaType* pMixerProp
     // (the decoder often signals HLG only in a format change after the first frames).
     UINT32 transferFunction;
     m_bHLGInput = SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
-                  && transferFunction == MFVideoTransFunc_HLG;
+                  && transferFunction == MFVideoTransFunc_HLG_Value;
 
     const CRenderersSettings& r = GetRenderersSettings();
 
