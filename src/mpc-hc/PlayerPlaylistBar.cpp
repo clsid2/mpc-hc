@@ -2290,15 +2290,17 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
         contentBGColor = GetSysColor(COLOR_WINDOW);
     }
 
+    //the windows 11 style moves the sequence number right to make room for the selection indicator
+    int numOffset = win11Style ? m_pMainFrame->m_dpi.ScaleX(4) : 0;
+    numWidth.cx += numOffset; //move the filename and inline edit with it, keeping the same gap after the number
+
     CRect fileRect = rcItem, seqRect = rcItem;
     fileRect.left += numWidth.cx;
     inlineEditXpos = numWidth.cx - 2; //magic number 2 for accounting for border/padding of inline edit.  works at all dpi except 168, where it's off by 1px (shrug)
     seqRect.right = fileRect.left;
 
-    int numOffset = 0;
     if (win11Style) {
         //fluent list selection: a neutral fill across the whole row, with an accent indicator at the left edge
-        numOffset = m_pMainFrame->m_dpi.ScaleX(4);
         bgColor = itemSelected ? CMPCTheme::PlaylistSelectedColor : contentBGColor;
         FillRect(pDC->m_hDC, rcItem, CBrush(bgColor));
         if (itemSelected) {
@@ -2359,7 +2361,7 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
             pDC->TextOut(timept.x, timept.y, time);
         }
     }
-    pli.inlineEditMaxWidth = timept.x - inlineEditXpos;
+    pli.inlineEditMaxWidth = std::max(0, (int)timept.x - dpi6 - inlineEditXpos); //leave the same gap before the time as the truncated filename
 
     file = pli.GetLabel(0);
     CSize filesize = pDC->GetTextExtent(file);
