@@ -456,11 +456,21 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     return TRUE;
 }
 
+int CPlayerToolBar::FirstMovableButtonIndex(const std::vector<int>& buttons, int layoutRevision) {
+    if (layoutRevision >= 1) {
+        return 1;
+    }
+    // Revision 0 saved play/pause/stop, after the left separator if the layout had one
+    return (!buttons.empty() && buttons.front() == ID_LEFTSEPARATOR) ? 4 : 3;
+}
+
 bool CPlayerToolBar::IsValidButtonLayout(const std::vector<int>& buttons, int layoutRevision) {
-    // Revision 0: [leftsep, <3 skipped>, ...movable..., dummysep, volume] — min 5 entries
-    // Revision 1+: [leftsep, ...movable..., dummysep, volume]             — min 3 entries
+    // Revision 0: [leftsep, play, pause, stop, ...movable..., dummysep, volume] — min 6 entries
+    //             (older still, without the left separator)                    — min 5 entries
+    // Revision 1+: [leftsep, ...movable..., dummysep, volume]                   — min 3 entries
     //              (the movable part may be empty, the user can remove every button)
-    if (layoutRevision == 0 && buttons.size() < 5) return false;
+    int start = FirstMovableButtonIndex(buttons, layoutRevision);
+    if (layoutRevision == 0 && (int)buttons.size() < start + 2) return false;
     if (layoutRevision >= 1) {
         if (buttons.size() < 3) return false;
         if (buttons.front() != ID_LEFTSEPARATOR) return false;
@@ -468,14 +478,13 @@ bool CPlayerToolBar::IsValidButtonLayout(const std::vector<int>& buttons, int la
         if (buttons.back() != ID_VOLUME_MUTE) return false;
     }
 
-    // For revision 0, play/pause/stop are always prepended and must not appear in the saved sequence.
+    // For revision 0, play/pause/stop are always prepended and must not appear in the movable part.
     // Seed the duplicate-check set with them so they count as already-seen.
     std::set<int> seen;
     if (layoutRevision == 0) {
         seen = {ID_PLAY_PLAY, ID_PLAY_PAUSE, ID_PLAY_STOP};
     }
 
-    int start = (layoutRevision == 0) ? 3 : 1;
     int end   = (int)buttons.size() - 2;
 
     for (int i = start; i < end; i++) {
@@ -513,8 +522,8 @@ void CPlayerToolBar::PlaceButtons(bool loadSavedLayout) {
         addButton(ID_PLAY_PLAY);
         addButton(ID_PLAY_PAUSE);
         addButton(ID_PLAY_STOP);
-        // Load remaining buttons (skip first 3, stop before last 2 which are dummy separator and volume)
-        for (int i = 3; i < (int)buttons.size() - 2; i++) {
+        // Load remaining buttons (skip the saved play/pause/stop, stop before last 2 which are dummy separator and volume)
+        for (int i = FirstMovableButtonIndex(buttons, 0); i < (int)buttons.size() - 2; i++) {
             auto& btn = supportedSvgButtons[buttons[i]];
             if (!btn.positionLocked) {
                 addButton(buttons[i]);
