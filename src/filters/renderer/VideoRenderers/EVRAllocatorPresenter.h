@@ -173,6 +173,7 @@ namespace DSObjects
         };
 
         COuterEVR*                       m_pOuterEVR;
+        bool                             InputPinIsHLGNow() override;
         CComPtr<IMFClock>                m_pClock;
         CComPtr<IDirect3DDeviceManager9> m_pD3DManager;
         CComPtr<IMFTransform>            m_pMixer;
