@@ -26,7 +26,6 @@
 #include "../../../mpc-hc/resource.h"
 #include "../../../DSUtil/DSUtil.h"
 #include "../../../DSUtil/WinAPIUtils.h"
-#include "HLGToSDR.h"
 #include <strsafe.h> // Required in CGenlock
 #include <videoacc.h>
 #include <d3d9.h>
@@ -50,6 +49,7 @@
 #include "SyncRenderer.h"
 #include "Utils.h"
 #include "Variables.h"
+#include "HLGInput.h"
 
 #if (0)     // Set to 1 to activate SyncRenderer traces
 #define TRACE_SR   TRACE
@@ -2520,6 +2520,10 @@ STDMETHODIMP CBaseAP::SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget)
 
 bool CBaseAP::HLGToSDRActive()
 {
+    if (m_bHLGPinCheck) {
+        m_bHLGPinCheck = false;
+        m_bHLGInput = InputPinIsHLG(m_pOuterEVR);
+    }
     if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
             || m_caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
         return false;
@@ -3127,9 +3131,8 @@ HRESULT CSyncAP::CreateOptimalOutputType(IMFMediaType* pMixerProposedType, IMFMe
     }
 
     // HLG input: converted to SDR from the very first frame (see HLGToSDR.h).
-    UINT32 transferFunction;
-    m_bHLGInput = SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
-                  && transferFunction == MFVideoTransFunc_HLG;
+    m_bHLGInput = MixerTypeIsHLG(pMixerInputType);
+    m_bHLGPinCheck = !m_bHLGInput;
 
     pOptimalMediaType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
 
