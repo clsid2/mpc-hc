@@ -69,6 +69,7 @@ private:
 
     CMainFrame* m_pMainFrame;
     int inlineEditXpos;
+    int inlineEditItem;
     CMPCThemeInlineEdit m_edit;
 
     CFont m_font;

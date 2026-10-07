@@ -103,6 +103,7 @@ CPlayerPlaylistBar::CPlayerPlaylistBar(CMainFrame* pMainFrame)
     , m_pl(AfxGetAppSettings().bShufflePlaylistItems)
     , createdWindow(false)
     , inlineEditXpos(0)
+    , inlineEditItem(-1)
     , m_tcLastSave(0)
     , m_SaveDelayed(false)
     , m_insertingPos(nullptr)
@@ -2370,9 +2371,7 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
         filesize = pDC->GetTextExtent(file);
     }
 
-    CWnd* pFocused = GetFocus();
-    bool inlineEditActive = pFocused && pFocused != &m_list && m_list.IsChild(pFocused);
-    if (!inlineEditActive || !itemSelected) { //if inline edit is active, and this is the selected item, don't draw filename (visually distracting while editing)
+    if (nItem != inlineEditItem) { //don't draw the filename of the item being edited (visually distracting while editing)
         pDC->SetTextColor(textColor);
         pDC->SetBkColor(bgColor);
         pDC->TextOut(rcItem.left + dpi3 + numWidth.cx, (rcItem.top + rcItem.bottom - filesize.cy) / 2, file);
@@ -3104,6 +3103,7 @@ void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult
         POSITION pos = FindPos(pDispInfo->item.iItem);
         int maxW = pos ? m_pl.GetAt(pos).inlineEditMaxWidth : -1;
         m_edit.setOverridePos(inlineEditXpos, maxW);
+        inlineEditItem = pDispInfo->item.iItem;
     }
     *pResult = 0; // allow
 }
@@ -3111,6 +3111,7 @@ void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult
 void CPlayerPlaylistBar::OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+    inlineEditItem = -1;
     // pszText is nullptr when the edit was cancelled (ESC)
     if (pDispInfo->item.pszText != nullptr) {
         POSITION pos = FindPos(pDispInfo->item.iItem);
