@@ -73,7 +73,7 @@ BOOL CSaveThumbnailsDialog::OnInitDialog()
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-BEGIN_MESSAGE_MAP(CSaveThumbnailsDialog, CFileDialog)
+BEGIN_MESSAGE_MAP(CSaveThumbnailsDialog, CSaveImageDialog)
 END_MESSAGE_MAP()
 
 // CSaveThumbnailsDialog message handlers

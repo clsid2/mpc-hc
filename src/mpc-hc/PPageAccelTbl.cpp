@@ -869,7 +869,7 @@ void CPPageAccelTbl::DoDataExchange(CDataExchange* pDX)
     DDX_Check(pDX, IDC_CHECK2, m_fGlobalMedia);
 }
 
-BEGIN_MESSAGE_MAP(CPPageAccelTbl, CPPageBase)
+BEGIN_MESSAGE_MAP(CPPageAccelTbl, CMPCThemePPageBase)
     ON_NOTIFY(LVN_BEGINLABELEDIT, IDC_LIST1, OnBeginListLabelEdit)
     ON_NOTIFY(LVN_DOLABELEDIT, IDC_LIST1, OnDoListLabelEdit)
     ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST1, OnEndListLabelEdit)
