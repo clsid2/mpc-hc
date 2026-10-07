@@ -13867,6 +13867,11 @@ void CMainFrame::MoveVideoWindow(bool fShowStats/* = false*/, bool bSetStoppedVi
         } else {
             m_wndView.SetVideoRect(&windowRect);
         }
+
+        // the bitmap OSD is sized to the renderer's window, which can change without a WM_SIZE of the view
+        if (m_OSD.GetOSDType() == OSD_TYPE_BITMAP) {
+            m_OSD.OnSize(SIZE_RESTORED, windowRect.Width(), windowRect.Height());
+        }
     } else {
         m_wndView.SetVideoRect();
     }

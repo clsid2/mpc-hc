@@ -86,7 +86,7 @@ LRESULT CFullscreenWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
     return __super::WindowProc(message, wParam, lParam);
 }
 
-BEGIN_MESSAGE_MAP(CFullscreenWnd, CMouseWnd)
+BEGIN_MESSAGE_MAP(CFullscreenWnd, CMouseWndWithArtView)
     ON_WM_ERASEBKGND()
     ON_WM_DESTROY()
 END_MESSAGE_MAP()

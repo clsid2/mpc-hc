@@ -93,6 +93,7 @@ class COSD : public CWnd
     CBrush    m_debugBrushBack;
 
     CRect    m_rectWnd;
+    CRect    m_rectBitmap;
 
     CRect    m_rectFlyBar;
     CRect    m_rectCloseButton;
@@ -211,6 +212,7 @@ public:
 
 private:
     void UpdateBitmap();
+    void CalcWndRects();
     void CalcSeekbar();
     void CalcFlybar();
     void UpdateSeekBarPos(CPoint point);
