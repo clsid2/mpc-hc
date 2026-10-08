@@ -80,6 +80,7 @@ private:
     };
 
     static std::map<WORD, svgButtonInfo> supportedSvgButtons;
+    static int FirstMovableButtonIndex(const std::vector<int>& buttons, int layoutRevision);
     static bool IsValidButtonLayout(const std::vector<int>& buttons, int layoutRevision);
 public:
     CPlayerToolBar(CMainFrame* pMainFrame);
