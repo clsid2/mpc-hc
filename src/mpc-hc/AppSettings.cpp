@@ -1922,7 +1922,7 @@ void CAppSettings::LoadSettings()
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
     nHorPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, 50);
     nVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, 90);
-    nSecondarySubVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, 0);
+    nSecondarySubVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SECONDARYSUBVERPOS, 8);
     if (nSecondarySubVerPos < 0 || nSecondarySubVerPos > 100) {
         nSecondarySubVerPos = 8;
     }
