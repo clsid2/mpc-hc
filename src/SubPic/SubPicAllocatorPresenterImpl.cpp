@@ -520,7 +520,7 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::GetString(LPCSTR field, LPWSTR* valu
                     case 0:
                         // guess
                         if (pBIH) {
-                            if (pBIH->biWidth <= 1024 && abs(pBIH->biWidth) <= 576) {
+                            if (pBIH->biWidth <= 1024 && abs(pBIH->biHeight) <= 576) {
                                 ret.Append(L"601");
                             } else {
                                 ret.Append(L"709");
@@ -535,7 +535,7 @@ STDMETHODIMP CSubPicAllocatorPresenterImpl::GetString(LPCSTR field, LPWSTR* valu
                 }
             } else if (pBIH) {
                 // guess
-                if (pBIH->biWidth <= 1024 && abs(pBIH->biWidth) <= 576) {
+                if (pBIH->biWidth <= 1024 && abs(pBIH->biHeight) <= 576) {
                     ret = L"TV.601";
                 } else {
                     ret = L"TV.709";
