@@ -691,7 +691,19 @@ HRESULT CEVRAllocatorPresenter::IsMediaTypeSupported(IMFMediaType* pMixerType)
 
 bool CEVRAllocatorPresenter::InputPinIsHLGNow()
 {
-    return InputPinIsHLG(m_pOuterEVR);
+    CComPtr<IPin> pPin;
+    CMediaType    mt;
+    if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
+        if (mt.formattype == FORMAT_VideoInfo2 || mt.formattype == FORMAT_MPEG2_VIDEO) {
+            VIDEOINFOHEADER2& vih2 = *(VIDEOINFOHEADER2*)mt.pbFormat;
+            if (vih2.dwControlFlags & AMCONTROL_COLORINFO_PRESENT) {
+                DXVA2_ExtendedFormat exfmt;
+                exfmt.value = vih2.dwControlFlags;
+                return exfmt.VideoTransferFunction == TRANSFER_FUNCTION_HLG;
+            }
+        }
+    }
+    return false;
 }
 
 HRESULT CEVRAllocatorPresenter::CreateOptimalOutputType(IMFMediaType* pMixerProposedType, IMFMediaType* pMixerInputType, IMFMediaType** ppType)

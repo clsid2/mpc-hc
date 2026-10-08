@@ -20,7 +20,8 @@
 
 #pragma once
 
-#include "HLGToSDR.h"
+// MFVideoTransFunc_HLG, which the Windows 8.1 SDK doesn't declare.
+constexpr UINT32 TRANSFER_FUNCTION_HLG = 16;
 
 // Is the video reaching the renderer HLG? The mixer's input type doesn't always carry the
 // colour attributes, so when it doesn't say HLG, the media type of the renderer's input pin
@@ -32,28 +33,4 @@ inline bool MixerTypeIsHLG(IMFMediaType* pMixerInputType)
     UINT32 transferFunction;
     return pMixerInputType && SUCCEEDED(pMixerInputType->GetUINT32(MF_MT_TRANSFER_FUNCTION, &transferFunction))
            && transferFunction == TRANSFER_FUNCTION_HLG;
-}
-
-// Not from within the mixer's type negotiation: the EVR is connecting its pin then and
-// querying it deadlocks. The presenters call it from the render thread instead.
-inline bool InputPinIsHLG(IBaseFilter* pRenderer)
-{
-    CComPtr<IEnumPins> pEnumPins;
-    if (!pRenderer || FAILED(pRenderer->EnumPins(&pEnumPins))) {
-        return false;
-    }
-    for (CComPtr<IPin> pPin; pEnumPins->Next(1, &pPin, nullptr) == S_OK; pPin.Release()) {
-        PIN_DIRECTION dir;
-        CMediaType mt;
-        if (FAILED(pPin->QueryDirection(&dir)) || dir != PINDIR_INPUT || FAILED(pPin->ConnectionMediaType(&mt))
-                || mt.formattype != FORMAT_VideoInfo2 || mt.cbFormat < sizeof(VIDEOINFOHEADER2)) {
-            continue;
-        }
-        const DWORD flags = ((const VIDEOINFOHEADER2*)mt.pbFormat)->dwControlFlags;
-        // DXVA2_ExtendedFormat: VideoTransferFunction is the 5 bits from bit 27
-        if ((flags & AMCONTROL_COLORINFO_PRESENT) && ((flags >> 27) & 0x1F) == TRANSFER_FUNCTION_HLG) {
-            return true;
-        }
-    }
-    return false;
 }

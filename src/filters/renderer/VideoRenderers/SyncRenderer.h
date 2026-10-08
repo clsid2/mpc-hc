@@ -148,6 +148,7 @@ namespace GothSync
         CExternalPixelShader m_HLGToSDRShader; // run before m_pPixelShaders while the input is HLG
         bool m_bHLGInput = false;              // set from the mixer's input type
         bool m_bHLGPinCheck = false;           // check the input pin before the next frame
+        bool InputPinIsHLGNow();
         bool HLGToSDRActive();
         CAtlList<CExternalPixelShader> m_pPixelShadersScreenSpace;
         CComPtr<IDirect3DPixelShader9> m_pResizerPixelShader[4]; // bl, bc1, bc2_1, bc2_2

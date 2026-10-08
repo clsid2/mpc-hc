@@ -50,6 +50,7 @@
 #include "Utils.h"
 #include "Variables.h"
 #include "HLGInput.h"
+#include "HLGToSDR.h"
 
 #if (0)     // Set to 1 to activate SyncRenderer traces
 #define TRACE_SR   TRACE
@@ -2518,11 +2519,28 @@ STDMETHODIMP CBaseAP::SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget)
     return SetPixelShader2(pSrcData, pTarget, false);
 }
 
+bool CBaseAP::InputPinIsHLGNow()
+{
+    CComPtr<IPin> pPin;
+    CMediaType    mt;
+    if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
+        if (mt.formattype == FORMAT_VideoInfo2 || mt.formattype == FORMAT_MPEG2_VIDEO) {
+            VIDEOINFOHEADER2& vih2 = *(VIDEOINFOHEADER2*)mt.pbFormat;
+            if (vih2.dwControlFlags & AMCONTROL_COLORINFO_PRESENT) {
+                DXVA2_ExtendedFormat exfmt;
+                exfmt.value = vih2.dwControlFlags;
+                return exfmt.VideoTransferFunction == TRANSFER_FUNCTION_HLG;
+            }
+        }
+    }
+    return false;
+}
+
 bool CBaseAP::HLGToSDRActive()
 {
     if (m_bHLGPinCheck) {
         m_bHLGPinCheck = false;
-        m_bHLGInput = InputPinIsHLG(m_pOuterEVR);
+        m_bHLGInput = InputPinIsHLGNow();
     }
     if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
             || m_caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
