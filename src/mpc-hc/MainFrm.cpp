@@ -12524,6 +12524,8 @@ void CMainFrame::PlayFavoriteFile(const CString& fav)
     CAtlList<CString> args;
     REFERENCE_TIME rtStart = 0;
     FileFavorite ff = ParseFavoriteFile(fav, args, &rtStart);
+    // closing the current file clears abRepeat, so keep the favorite's marks for the open
+    ABRepeat favABRepeat = abRepeat;
 
     auto firstFile = args.GetHead();
     if (!m_wndPlaylistBar.SelectFileInPlaylist(firstFile)) {
@@ -12548,7 +12550,7 @@ void CMainFrame::PlayFavoriteFile(const CString& fav)
         if (!CloseMediaBeforeOpen()) {
             return;
         }
-        OpenCurPlaylistItem(rtStart, abRepeat);
+        OpenCurPlaylistItem(rtStart, false, favABRepeat);
     }
 
 }
@@ -20896,7 +20898,7 @@ void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = fa
             return;
         }
         if (ProcessYoutubeDLURL(pli.m_ydlSourceURL, false, true)) {
-            OpenCurPlaylistItem(rtStart, false);
+            OpenCurPlaylistItem(rtStart, false, abRepeat);
             return;
         }
     }
