@@ -72,6 +72,7 @@ extern bool LoadResource(UINT resid, CStringA& str, LPCTSTR restype);
 
 CBaseAP::CBaseAP(HWND hWnd, bool bFullscreen, HRESULT& hr, CString& _Error)
     : CSubPicAllocatorPresenterImpl(hWnd, hr, &_Error)
+    , m_nRenderState(Shutdown)
     , m_hDWMAPI(nullptr)
     , m_pDwmIsCompositionEnabled(nullptr)
     , m_pDwmEnableComposition(nullptr)
@@ -2521,6 +2522,10 @@ STDMETHODIMP CBaseAP::SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget)
 
 bool CBaseAP::InputPinIsHLGNow()
 {
+    if (m_nRenderState != Started && m_nRenderState != Paused) {
+        return false;
+    }
+
     CComPtr<IPin> pPin;
     CMediaType    mt;
     if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
@@ -2609,7 +2614,6 @@ CSyncAP::CSyncAP(HWND hWnd, bool bFullscreen, HRESULT& hr, CString& _Error)
     , m_bPrerolled(false)
     , m_hRenderThread(nullptr)
     , m_hMixerThread(nullptr)
-    , m_nRenderState(Shutdown)
     , m_bStepping(false)
     , m_nCurrentGroupId(0)
     , m_nResetToken(0)

@@ -691,6 +691,10 @@ HRESULT CEVRAllocatorPresenter::IsMediaTypeSupported(IMFMediaType* pMixerType)
 
 bool CEVRAllocatorPresenter::InputPinIsHLGNow()
 {
+    if (m_nRenderState != Started && m_nRenderState != Paused) {
+        return false;
+    }
+
     CComPtr<IPin> pPin;
     CMediaType    mt;
     if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
