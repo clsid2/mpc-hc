@@ -20514,8 +20514,11 @@ bool CMainFrame::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPrevi
         m_pMVRS.Release();
         m_pMVRFG.Release();
         m_pMVRSR.Release();
+        m_pMVRC.Release();
+        m_pMVRI.Release();
         m_pMVTO.Release();
         m_pMPCVRSR.Release();
+        m_pD3DFSC.Release();
         m_pCAP3.Release();
         m_pCAP2.Release();
         m_pCAP.Release();
@@ -20604,6 +20607,9 @@ bool CMainFrame::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPrevi
         m_pMVRS = m_pCAP;
         m_pMVRFG = m_pCAP;
         m_pMPCVRSR = m_pCAP;
+        m_pMVRC = m_pCAP;
+        m_pMVRI = m_pCAP;
+        m_pD3DFSC = m_pCAP;
 
         const CAppSettings& s = AfxGetAppSettings();
         m_pVideoWnd = &m_wndView;

@@ -1591,6 +1591,12 @@ STDMETHODIMP CFGManager::NukeDownstream(IUnknown* pUnk)
             NukeDownstream(pPin);
         }
         EndEnumPins;
+
+        // The interfaces collected while connecting were handed out by
+        // filters downstream and are stale once they are gone. Holding
+        // them kept the old presenter alive and let FindInterface()
+        // hand it out again.
+        m_pUnks.RemoveAll();
     } else if (CComQIPtr<IPin> pPin = pUnk) {
         CComPtr<IPin> pPinTo;
         if (S_OK == IsPinDirection(pPin, PINDIR_OUTPUT)
