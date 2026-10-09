@@ -82,9 +82,6 @@
 #define IDF_SVG_GEAR                    710
 #define IDF_SVG_TICK                    711
 #define IDF_SVG_CROSS                   712
-#define IDF_SVG_AUDIOTYPE_NOAUDIO       713
-#define IDF_SVG_AUDIOTYPE_MONO          714
-#define IDF_SVG_AUDIOTYPE_STEREO        715
 #define ID_FILE_OPENMEDIA               800
 #define ID_FILE_OPENDVDBD               801
 #define ID_FILE_OPENDEVICE              802

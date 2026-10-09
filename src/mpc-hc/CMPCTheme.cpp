@@ -1061,11 +1061,6 @@ void CMPCTheme::InitializeWindows11Colors() {
 
         EditBorderColor = Flatten(ControlStrokeColorSecondary, WindowBGColor); //text boxes have the stronger bottom stroke
 
-        //a black strip under light toolbars looks out of place in windows 11, so the statistics and status bars join the player bars
-        InfoBarBGColor = PlayerBGColor;
-        InfoBarTextColor = TextFGColor;
-        InfoBarBorderColor = Flatten(DividerStrokeColorDefault, PlayerBGColor);
-
         TreeCtrlLineColor = Flatten(ControlStrongStrokeColorDisabled, ContentBGColor); //tree connector lines: a de-emphasised strong stroke
         TreeCtrlHoverColor = Flatten(SubtleFillColorSecondary, ContentBGColor);
         TreeCtrlFocusColor = Opaque(SolidBackgroundFillColorBaseAlt); //selection, as ContentSelectedColor
