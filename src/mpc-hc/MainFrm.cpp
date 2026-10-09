@@ -20810,10 +20810,10 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
 
     switch (iRes) {
         case CPPageSheet::RESET_SETTINGS:
-            // Request MPC-HC to close itself
-            SendMessage(WM_CLOSE);
-            // and immediately reopen
-            ShellExecute(nullptr, _T("open"), PathUtils::GetProgramPath(true), _T("/reset"), nullptr, SW_SHOWNORMAL);
+            // Close, and reopen with /reset from ExitInstance once the frame is gone.
+            // Closing from here would delete the frame under ShowOptions and its callers
+            AfxGetMyApp()->m_bRelaunchWithReset = true;
+            PostMessage(WM_CLOSE);
             break;
         default:
             ASSERT(iRes != CPPageSheet::APPLY_UI_CHANGE);

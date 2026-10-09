@@ -258,6 +258,8 @@ public:
     // (/dvbscan, /thumbnails), which have no other way to tell their caller
     // that the job did not get done.
     int m_nExitCode = 0;
+    // set by Reset in Options: ExitInstance starts a new instance with /reset
+    bool m_bRelaunchWithReset = false;
     bool m_bThemeLoaded;
     bool m_bNativeMenus;
     CRenderersData m_Renderers;
