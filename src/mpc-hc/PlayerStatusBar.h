@@ -96,6 +96,7 @@ public:
 protected:
 
     void SetMediaTypeIcon();
+    void LoadStatusBitmap();
     void ScaleFont();
 
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);

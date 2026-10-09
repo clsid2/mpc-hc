@@ -26,6 +26,8 @@
 #include "DSUtil.h"
 #include "CMPCTheme.h"
 #include "DpiHelper.h"
+#include "ImageGrayer.h"
+#include "SVGImage.h"
 
 // CPlayerStatusBar
 
@@ -77,12 +79,14 @@ void CPlayerStatusBar::CreateToolTip()
     tip.AddTool(&m_status);
 }
 
-//the tooltip is the one made for the theme, so swap it
+//the tooltip and the audio channel icon are the ones made for the theme, so swap them
 LRESULT CPlayerStatusBar::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
 {
     themedToolTip.DestroyWindow();
     m_tooltip.DestroyWindow();
     CreateToolTip();
+    LoadStatusBitmap();
+    Relayout();
     return 0;
 }
 
@@ -149,6 +153,7 @@ void CPlayerStatusBar::EventCallback(MpcEvent ev)
     switch (ev) {
         case MpcEvent::DPI_CHANGED:
             ScaleFont();
+            LoadStatusBitmap();
             SetMediaTypeIcon();
             break;
 
@@ -207,7 +212,8 @@ void CPlayerStatusBar::Relayout()
     }
     m_status.MoveWindow(&rstatus, FALSE);
 
-    InvalidateRect(rfull);
+    // rfull excludes the strip the audio channel icon sits in, so invalidate everything
+    Invalidate();
     UpdateWindow();
 }
 
@@ -226,19 +232,41 @@ void CPlayerStatusBar::SetStatusBitmap(UINT id)
         return;
     }
 
-    if (m_bm.m_hObject) {
-        m_bm.DeleteObject();
-    }
-    if (id) {
-        // We can't use m_bm.LoadBitmap(id) directly since we want to load the bitmap from the main executable
-        CImage img;
-        img.LoadFromResource(AfxGetInstanceHandle(), id);
-        m_bm.Attach(img.Detach());
-    }
     m_bmid = id;
+    LoadStatusBitmap();
 
     Invalidate();
     Relayout();
+}
+
+// The modern theme draws the audio channel icon from an SVG scaled to the current DPI and
+// tinted like the status text, flattened onto the bar colour so OnPaint can BitBlt it like
+// the classic bitmap. Rebuilt whenever the id, the theme colours or the DPI change.
+void CPlayerStatusBar::LoadStatusBitmap()
+{
+    if (m_bm.m_hObject) {
+        m_bm.DeleteObject();
+    }
+    if (!m_bmid) {
+        return;
+    }
+
+    if (AppIsThemeLoaded()) {
+        UINT svgid = m_bmid == IDB_AUDIOTYPE_MONO ? IDF_SVG_AUDIOTYPE_MONO
+                     : m_bmid == IDB_AUDIOTYPE_STEREO ? IDF_SVG_AUDIOTYPE_STEREO
+                     : IDF_SVG_AUDIOTYPE_NOAUDIO;
+        CImage svg, tinted;
+        // the SVGs are 20x16: a 16px glyph with 2px of clear space on each side, like the bitmaps had
+        if (SUCCEEDED(SVGImage::LoadIconDef({ svgid, m_pMainFrame->m_dpi.ScaleY(20) }, svg))
+                && ImageGrayer::Colorize(svg, tinted, CMPCTheme::InfoBarTextColor, CMPCTheme::InfoBarBGColor, false)) {
+            m_bm.Attach(tinted.Detach());
+        }
+    } else {
+        // We can't use m_bm.LoadBitmap(id) directly since we want to load the bitmap from the main executable
+        CImage img;
+        img.LoadFromResource(AfxGetInstanceHandle(), m_bmid);
+        m_bm.Attach(img.Detach());
+    }
 }
 
 void CPlayerStatusBar::SetMediaType(CString ext)
