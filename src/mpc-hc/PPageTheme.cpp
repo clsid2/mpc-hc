@@ -325,6 +325,9 @@ BOOL CPPageTheme::OnApply()
         pFrame->m_wndPreView.SetRelativeSize(m_iSeekPreviewSize);
     }
 
+    // Stored before the status bar is laid out again below, so it makes room for the audio channel icon right away
+    s.bShowAudioFormatInStatusbar = m_bShowAudioFormatInStatusbar;
+
     // There is no main frame when the option dialog is displayed stand-alone
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
         pMainFrame->UpdateControlState(CMainFrame::UPDATE_SEEKBAR_CHAPTERS);
@@ -334,7 +337,6 @@ BOOL CPPageTheme::OnApply()
     s.fShowOSD = m_fShowOSD;
     s.fShowCurrentTimeInOSD = m_fShowCurrentTimeInOSD;
     s.bShowVideoInfoInStatusbar = m_bShowVideoInfoInStatusbar;
-    s.bShowAudioFormatInStatusbar = m_bShowAudioFormatInStatusbar;
     s.bShowLangInStatusbar = m_bShowLangInStatusbar;
     s.bShowFPSInStatusbar = m_bShowFPSInStatusbar;
     s.bShowABMarksInStatusbar = m_bShowABMarksInStatusbar;

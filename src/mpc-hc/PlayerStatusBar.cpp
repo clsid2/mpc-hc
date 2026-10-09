@@ -207,7 +207,8 @@ void CPlayerStatusBar::Relayout()
     }
     m_status.MoveWindow(&rstatus, FALSE);
 
-    InvalidateRect(rfull);
+    // rfull excludes the strip the audio channel icon sits in, so invalidate everything
+    Invalidate();
     UpdateWindow();
 }
 
