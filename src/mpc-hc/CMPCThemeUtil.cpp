@@ -285,33 +285,42 @@ void CMPCThemeUtil::subClassFileDialogWidgets(HWND widget, HWND parent, wchar_t*
     }
 }
 
-void CMPCThemeUtil::subClassFileDialog(CWnd* wnd) {
-    if (AfxGetAppSettings().bWindows10DarkThemeActive) {
-        initHelperObjects();
+//called from the dialog's own OnFolderChange, the first callback at which the injected controls exist;
+//the dialog is not visible yet, so this does not depend on the player being the active window.
+//hard coded behavior for windows 10 dark theme file dialogs, irrespective of theme loaded by user (fixing windows bugs)
+void CMPCThemeUtil::subClassFileDialog(IFileDialog* pfd) {
+    if (fileDialogSubclassed || !pfd || !AfxGetAppSettings().bWindows10DarkThemeActive) { //OnFolderChange fires again on every navigation
+        return;
+    }
+    HWND dialogHandle = nullptr;
+    CComQIPtr<IOleWindow> pOleWindow(pfd);
+    if (!pOleWindow || FAILED(pOleWindow->GetWindow(&dialogHandle)) || !dialogHandle) {
+        return;
+    }
+    initHelperObjects();
 
-        HWND duiview = ::FindWindowExW(themableDialogHandle, NULL, L"DUIViewWndClassName", NULL);
-        HWND duihwnd = ::FindWindowExW(duiview, NULL, L"DirectUIHWND", NULL);
+    HWND duiview = ::FindWindowExW(dialogHandle, NULL, L"DUIViewWndClassName", NULL);
+    HWND duihwnd = ::FindWindowExW(duiview, NULL, L"DirectUIHWND", NULL);
 
-        if (duihwnd) { //we found the FileDialog
-            if (dialogProminentControlStringID) { //if this is set, we assume there is a single prominent control (note, it's in the filedialog main window)
-                subClassFileDialogRecurse(wnd, themableDialogHandle, ProminentControlIDWidget);
-            } else {
-                subClassFileDialogRecurse(wnd, duihwnd, RecurseSinkWidgets);
-            }
-            themableDialogHandle = nullptr;
-            ::RedrawWindow(duiview, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+    if (duihwnd) { //we found the FileDialog
+        if (dialogProminentControlStringID) { //if this is set, we assume there is a single prominent control (note, it's in the filedialog main window)
+            subClassFileDialogRecurse(dialogHandle, ProminentControlIDWidget);
+        } else {
+            subClassFileDialogRecurse(duihwnd, RecurseSinkWidgets);
         }
+        fileDialogSubclassed = true;
+        ::RedrawWindow(duiview, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     }
 }
 
-void CMPCThemeUtil::subClassFileDialogRecurse(CWnd* wnd, HWND hWnd, FileDialogWidgetSearch searchType) {
+void CMPCThemeUtil::subClassFileDialogRecurse(HWND hWnd, FileDialogWidgetSearch searchType) {
     HWND pChild = ::GetWindow(hWnd, GW_CHILD);
     while (pChild) {
         WCHAR childWindowClass[MAX_PATH];
         ::GetClassName(pChild, childWindowClass, _countof(childWindowClass));
         if (searchType == RecurseSinkWidgets) {
             if (0 == _wcsicmp(childWindowClass, L"FloatNotifySink")) { //children are the injected controls
-                subClassFileDialogRecurse(wnd, pChild, ThemeAllChildren); //recurse and theme all children of sink
+                subClassFileDialogRecurse(pChild, ThemeAllChildren); //recurse and theme all children of sink
             }
         } else if (searchType == ThemeAllChildren) {
             subClassFileDialogWidgets(pChild, hWnd, childWindowClass);
@@ -425,12 +434,6 @@ bool CMPCThemeUtil::ModifyTemplates(CPropertySheet* sheet, CRuntimeClass* pageCl
         }
     }
     return true;
-}
-
-void CMPCThemeUtil::enableFileDialogHook()
-{
-    CMainFrame* pMainFrame = AfxGetMainFrame();
-    pMainFrame->enableFileDialogHook(this);
 }
 
 HBRUSH CMPCThemeUtil::getCtlColorFileDialog(HDC hDC, UINT nCtlColor)

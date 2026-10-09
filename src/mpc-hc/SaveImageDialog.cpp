@@ -57,13 +57,6 @@ CSaveImageDialog::~CSaveImageDialog()
 {
 }
 
-INT_PTR CSaveImageDialog::DoModal()
-{
-    enableFileDialogHook();
-    return __super::DoModal();
-}
-
-
 BOOL CSaveImageDialog::OnInitDialog()
 {
     __super::OnInitDialog();
@@ -94,6 +87,14 @@ BOOL CSaveImageDialog::OnFileNameOK()
     }
 
     return __super::OnFileNameOK();
+}
+
+void CSaveImageDialog::OnFolderChange()
+{
+    __super::OnFolderChange();
+    if (m_bVistaStyle) {
+        subClassFileDialog(static_cast<IFileDialog*>(m_pIFileDialog));
+    }
 }
 
 void CSaveImageDialog::OnTypeChange()

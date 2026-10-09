@@ -45,14 +45,13 @@ public:
         ,ProminentControlIDWidget
     };
 
-    HWND themableDialogHandle = nullptr;
-    void enableFileDialogHook();
-    void subClassFileDialogRecurse(CWnd* wnd, HWND hWnd, FileDialogWidgetSearch searchType);
-    void subClassFileDialog(CWnd* wnd);
+    void subClassFileDialogRecurse(HWND hWnd, FileDialogWidgetSearch searchType);
+    void subClassFileDialog(IFileDialog* pfd);
     void subClassFileDialogWidgets(HWND widget, HWND parent, wchar_t* childWindowClass);
     void redrawAllThemedWidgets();
 protected:
     int dialogProminentControlStringID = 0;
+    bool fileDialogSubclassed = false;
 
     static CBrush contentBrush, windowBrush, controlAreaBrush, W10DarkThemeFileDialogInjectedBGBrush;
     static NONCLIENTMETRICS nonClientMetrics;

@@ -32,7 +32,6 @@ public:
         LPCTSTR lpszDefExt = nullptr, LPCTSTR lpszFileName = nullptr,
         LPCTSTR lpszFilter = nullptr, CWnd* pParentWnd = nullptr, bool subtitleOptionSupported = false);
     virtual ~CSaveImageDialog();
-    virtual INT_PTR DoModal();
 
     int m_nJpegQuality;
 
@@ -44,5 +43,6 @@ protected:
     DECLARE_MESSAGE_MAP()
     virtual BOOL OnInitDialog();
     virtual BOOL OnFileNameOK();
+    virtual void OnFolderChange();
     virtual void OnTypeChange();
 };

@@ -36,18 +36,19 @@ MPCFolderPickerDialog::MPCFolderPickerDialog(LPCTSTR lpszFolder, DWORD dwFlags, 
 
 }
 
-INT_PTR MPCFolderPickerDialog::DoModal()
-{
-    enableFileDialogHook();
-    return __super::DoModal();
-}
-
-
 BOOL MPCFolderPickerDialog::OnInitDialog()
 {
     __super::OnInitDialog();
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void MPCFolderPickerDialog::OnFolderChange()
+{
+    __super::OnFolderChange();
+    if (m_bVistaStyle) {
+        subClassFileDialog(static_cast<IFileDialog*>(m_pIFileDialog));
+    }
 }
 
 BEGIN_MESSAGE_MAP(MPCFolderPickerDialog, CFolderPickerDialog)

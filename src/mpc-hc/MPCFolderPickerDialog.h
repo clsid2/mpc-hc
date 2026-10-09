@@ -28,10 +28,10 @@ class MPCFolderPickerDialog : public CFolderPickerDialog
 
 public:
     MPCFolderPickerDialog(LPCTSTR lpszFolder = NULL, DWORD dwFlags = 0, CWnd* pParentWnd = NULL, int prominentID = 0, DWORD dwSize = 0, BOOL fNonFileSystemFolders = FALSE);
-    virtual INT_PTR DoModal();
 protected:
 
     DECLARE_MESSAGE_MAP()
     virtual BOOL OnInitDialog();
+    virtual void OnFolderChange();
 
 };

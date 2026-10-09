@@ -107,6 +107,8 @@ COLORREF CMPCTheme::ClosePushColor = RGB(139, 10, 20);
 COLORREF CMPCTheme::DebugColorRed = RGB(255, 0, 0);
 COLORREF CMPCTheme::DebugColorYellow = RGB(255, 255, 0);
 COLORREF CMPCTheme::DebugColorGreen = RGB(0, 255, 0);
+//the controls injected into the windows dark mode file dialog; windows paints that dialog, and its background is
+//(56, 56, 56) whatever the modern theme looks like (or whether it is on), so no palette reassigns these
 COLORREF CMPCTheme::W10DarkThemeFileDialogInjectedTextColor = RGB(255, 255, 255);
 COLORREF CMPCTheme::W10DarkThemeFileDialogInjectedBGColor = RGB(56, 56, 56);
 COLORREF CMPCTheme::W10DarkThemeFileDialogInjectedEditBorderColor = RGB(155, 155, 155);
@@ -184,10 +186,12 @@ COLORREF CMPCTheme::ButtonFillHoverColor;
 COLORREF CMPCTheme::ButtonFillSelectedColor;
 COLORREF CMPCTheme::ButtonDisabledFGColor;
 
-COLORREF CMPCTheme::CheckboxBorderColor;
-COLORREF CMPCTheme::CheckboxBGColor;
-COLORREF CMPCTheme::CheckboxBorderHoverColor;
-COLORREF CMPCTheme::CheckboxBGHoverColor;
+//the windows 10 dark values, which the check box injected into the dark mode file dialog draws with
+//when no palette has been loaded; the checked state comes from the dark png strip, so these match it
+COLORREF CMPCTheme::CheckboxBorderColor = RGB(137, 137, 137);
+COLORREF CMPCTheme::CheckboxBGColor = RGB(0, 0, 0);
+COLORREF CMPCTheme::CheckboxBorderHoverColor = RGB(121, 121, 121);
+COLORREF CMPCTheme::CheckboxBGHoverColor = RGB(8, 8, 8);
 
 COLORREF CMPCTheme::ImageDisabledColor;
 
@@ -248,7 +252,7 @@ COLORREF CMPCTheme::PlaylistSelectedColor;
 COLORREF CMPCTheme::PlaylistIndicatorColor;
 COLORREF CMPCTheme::CheckboxCheckedColor;
 COLORREF CMPCTheme::CheckboxGlyphColor;
-COLORREF CMPCTheme::CheckboxDisabledBorderColor;
+COLORREF CMPCTheme::CheckboxDisabledBorderColor = RGB(109, 109, 109); //see CheckboxBorderColor
 COLORREF CMPCTheme::CheckboxDisabledCheckedColor;
 COLORREF CMPCTheme::CheckboxDisabledGlyphColor;
 COLORREF CMPCTheme::SliderThumbColor;
@@ -968,9 +972,6 @@ void CMPCTheme::InitializeWindows11Colors() {
         //mode independent in the Windows 10 palette
         CloseHoverColor = Opaque(FluentLight::SystemFillColorCritical); //windows 11 uses the same close red in both modes
         ClosePushColor = Flatten(ControlStrokeColorOnAccentSecondary, CloseHoverColor); //pressed close: the on-accent stroke darkens the red
-        W10DarkThemeFileDialogInjectedTextColor = Opaque(TextFillColorPrimary);
-        W10DarkThemeFileDialogInjectedBGColor = ControlAreaBGColor;
-        W10DarkThemeFileDialogInjectedEditBorderColor = Flatten(ControlStrokeColorSecondary, ControlAreaBGColor);
         W10DarkThemeTitlebarBGColor = base;
         W10DarkThemeTitlebarInactiveBGColor = base; //windows 11 keeps the titlebar colour and dims the text when inactive
         W10DarkThemeTitlebarFGColor = Opaque(TextFillColorPrimary);
@@ -1106,12 +1107,9 @@ void CMPCTheme::InitializeWindows11Colors() {
         ComboboxArrowColorDisabled = Flatten(TextFillColorDisabled, ButtonFillColor);
         HeaderCtrlSortArrowColor = Flatten(TextFillColorSecondary, ContentBGColor);
 
-        //mode independent in the Windows 10 palette; the titlebar and file dialog slots are only drawn in dark mode
+        //mode independent in the Windows 10 palette; the titlebar slots are only drawn in dark mode
         CloseHoverColor = Opaque(SystemFillColorCritical); //windows 11 uses the same close red in both modes
         ClosePushColor = Flatten(ControlStrokeColorOnAccentSecondary, CloseHoverColor); //pressed close: the on-accent stroke darkens the red
-        W10DarkThemeFileDialogInjectedTextColor = TextFGColor;
-        W10DarkThemeFileDialogInjectedBGColor = ControlAreaBGColor;
-        W10DarkThemeFileDialogInjectedEditBorderColor = Flatten(ControlStrokeColorSecondary, ControlAreaBGColor);
         W10DarkThemeTitlebarBGColor = base;
         W10DarkThemeTitlebarInactiveBGColor = base;
         W10DarkThemeTitlebarFGColor = TextFGColor;
