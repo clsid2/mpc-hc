@@ -1610,17 +1610,6 @@ public:
     ULONGLONG m_lastSMTCThumbnailTick = 0;
 #endif
 
-    enum themableDialogTypes {
-        None,
-        windowsFileDialog,
-    };
-    void enableFileDialogHook(CMPCThemeUtil* helper);
-    void enableDialogHook(CMPCThemeUtil* helper, themableDialogTypes type);
-private:
-    themableDialogTypes watchingDialog, foundDialog;
-    CMPCThemeUtil* dialogHookHelper;
-
-public:
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
 private:

@@ -41,7 +41,6 @@ public:
         LPCTSTR lpszDefExt = nullptr, LPCTSTR lpszFileName = nullptr,
         LPCTSTR lpszFilter = nullptr, CWnd* pParentWnd = nullptr);
     virtual ~CSaveTextFileDialog();
-    virtual INT_PTR DoModal();
 
     CTextFile::enc GetEncoding() { return m_e; }
 
@@ -49,6 +48,7 @@ protected:
     DECLARE_MESSAGE_MAP()
     virtual BOOL OnInitDialog();
     virtual BOOL OnFileNameOK();
+    virtual void OnFolderChange();
 
     afx_msg void OnEncodingChange();
 };
