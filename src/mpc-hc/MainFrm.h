@@ -1578,6 +1578,7 @@ public:
     CHdmvClipInfo::BDMVMeta GetBDMVMeta();
 
     bool GetDecoderType(CString& type) const;
+    CString GetAudioInfo() const;
 
     static bool IsOnYDLWhitelist(const CString url);
 
