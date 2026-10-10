@@ -302,6 +302,10 @@ STDMETHODIMP CEVRAllocatorPresenter::CreateRenderer(IUnknown** ppRenderer)
 
 STDMETHODIMP_(bool) CEVRAllocatorPresenter::Paint(bool bAll)
 {
+    // Once shut down the EVR may already be gone, so nothing of it can be drawn
+    if (m_nRenderState == Shutdown) {
+        return false;
+    }
     return __super::Paint(bAll);
 }
 
