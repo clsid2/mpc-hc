@@ -1302,8 +1302,13 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::Paint(bool bAll)
     CRect rSrcPri(CPoint(0, 0), m_windowRect.Size());
     CRect rDstPri(rSrcPri);
 
+    // Without a current frame the video surface holds nothing valid (uninitialized before the
+    // first sample, the last frame before a stop or flush after that), so only the cleared back
+    // buffer is shown until the next frame is presented.
+    const bool bHasFrame = HasCurrentFrame();
+
     // Render the current video frame
-    hr = RenderVideo(pBackBuffer, rSrcVid, rDstVid);
+    hr = bHasFrame ? RenderVideo(pBackBuffer, rSrcVid, rDstVid) : S_OK;
 
     if (FAILED(hr)) {
         if (m_RenderingPath == RENDERING_PATH_STRETCHRECT) {
@@ -1322,7 +1327,9 @@ STDMETHODIMP_(bool) CDX9AllocatorPresenter::Paint(bool bAll)
 
     if (!m_bIsPreview) {
         // paint the text on the backbuffer
-        AlphaBltSubPic(rDstPri, rDstVid);
+        if (bHasFrame) {
+            AlphaBltSubPic(rDstPri, rDstVid);
+        }
 
         // Casimir666 : show OSD
         if (m_VMR9AlphaBitmap.dwFlags & VMRBITMAP_UPDATE) {
