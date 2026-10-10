@@ -91,7 +91,6 @@ LRESULT CPlayerStatusBar::OnMPCThemeChanged(WPARAM wParam, LPARAM lParam)
     m_tooltip.DestroyWindow();
     CreateToolTip();
     LoadStatusBitmap();
-    Invalidate();
     Relayout();
     return 0;
 }
@@ -161,7 +160,6 @@ void CPlayerStatusBar::EventCallback(MpcEvent ev)
             ScaleFont();
             LoadStatusBitmap();
             SetMediaTypeIcon();
-            Invalidate();
             Relayout();
             break;
 
