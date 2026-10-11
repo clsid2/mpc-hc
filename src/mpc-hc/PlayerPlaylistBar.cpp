@@ -103,6 +103,7 @@ CPlayerPlaylistBar::CPlayerPlaylistBar(CMainFrame* pMainFrame)
     , m_pl(AfxGetAppSettings().bShufflePlaylistItems)
     , createdWindow(false)
     , inlineEditXpos(0)
+    , inlineEditItem(-1)
     , m_tcLastSave(0)
     , m_SaveDelayed(false)
     , m_insertingPos(nullptr)
@@ -1241,6 +1242,13 @@ void CPlayerPlaylistBar::Append(CAtlList<CString>& fns, bool fMulti, CAtlList<CS
     } else { // if the playlist was originally empty
         CAppSettings& s = AfxGetAppSettings();
         posFirstAdded = m_pl.GetHeadPosition();
+        // AddItem skips the duration of a lone entry; load it now that it is not alone
+        if (m_pl.GetCount() > 1) {
+            const CPlaylistItem& pli = m_pl.GetHead();
+            if (pli.m_duration == 0 && !pli.m_fns.IsEmpty()) {
+                LoadDuration(posFirstAdded);
+            }
+        }
         if (s.fKeepHistory && s.bRememberExternalPlaylistPos && fns.GetCount() == 1 && fns.GetHead() == s.externalPlayListPath) {
             UINT idx = s.GetSavedPlayListPosition(s.externalPlayListPath);
             if (idx != 0) {
@@ -1489,7 +1497,11 @@ int CPlayerPlaylistBar::GetSelIdx() const
 
 void CPlayerPlaylistBar::SetSelIdx(int i)
 {
-    m_pl.SetPos(FindPos(i));
+    POSITION org = m_pl.GetPos();
+    POSITION pos = FindPos(i);
+    m_pl.SetPos(pos);
+    InvalidatePlayingItem(org, pos);
+    EnsureVisible(pos);
 }
 
 bool CPlayerPlaylistBar::IsAtEnd()
@@ -2071,6 +2083,9 @@ void CPlayerPlaylistBar::ResizeListColumn()
             width -= m_pMainFrame->m_dpi.GetSystemMetricsDPI(SM_CXVSCROLL);
         }
         m_list.SetColumnWidth(COL_NAME, std::max(0, width - m_nTimeColWidth));
+        // when too narrow for both, the name column stays at the list's minimum, so shrink the
+        // time column to what is left, else the columns overflow into a horizontal scrollbar
+        m_list.SetColumnWidth(COL_TIME, std::max(0, std::min(m_nTimeColWidth, width - m_list.GetColumnWidth(COL_NAME))));
         m_list.SetRedraw(TRUE);
 
         Invalidate();
@@ -2276,15 +2291,17 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
         contentBGColor = GetSysColor(COLOR_WINDOW);
     }
 
+    //the windows 11 style moves the sequence number right to make room for the selection indicator
+    int numOffset = win11Style ? m_pMainFrame->m_dpi.ScaleX(4) : 0;
+    numWidth.cx += numOffset; //move the filename and inline edit with it, keeping the same gap after the number
+
     CRect fileRect = rcItem, seqRect = rcItem;
     fileRect.left += numWidth.cx;
     inlineEditXpos = numWidth.cx - 2; //magic number 2 for accounting for border/padding of inline edit.  works at all dpi except 168, where it's off by 1px (shrug)
     seqRect.right = fileRect.left;
 
-    int numOffset = 0;
     if (win11Style) {
         //fluent list selection: a neutral fill across the whole row, with an accent indicator at the left edge
-        numOffset = m_pMainFrame->m_dpi.ScaleX(4);
         bgColor = itemSelected ? CMPCTheme::PlaylistSelectedColor : contentBGColor;
         FillRect(pDC->m_hDC, rcItem, CBrush(bgColor));
         if (itemSelected) {
@@ -2345,7 +2362,7 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
             pDC->TextOut(timept.x, timept.y, time);
         }
     }
-    pli.inlineEditMaxWidth = timept.x - inlineEditXpos;
+    pli.inlineEditMaxWidth = std::max(0, (int)timept.x - dpi6 - inlineEditXpos); //leave the same gap before the time as the truncated filename
 
     file = pli.GetLabel(0);
     CSize filesize = pDC->GetTextExtent(file);
@@ -2354,9 +2371,7 @@ void CPlayerPlaylistBar::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruc
         filesize = pDC->GetTextExtent(file);
     }
 
-    CWnd* pFocused = GetFocus();
-    bool inlineEditActive = pFocused && pFocused != &m_list && m_list.IsChild(pFocused);
-    if (!inlineEditActive || !itemSelected) { //if inline edit is active, and this is the selected item, don't draw filename (visually distracting while editing)
+    if (nItem != inlineEditItem) { //don't draw the filename of the item being edited (visually distracting while editing)
         pDC->SetTextColor(textColor);
         pDC->SetBkColor(bgColor);
         pDC->TextOut(rcItem.left + dpi3 + numWidth.cx, (rcItem.top + rcItem.bottom - filesize.cy) / 2, file);
@@ -3088,6 +3103,7 @@ void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult
         POSITION pos = FindPos(pDispInfo->item.iItem);
         int maxW = pos ? m_pl.GetAt(pos).inlineEditMaxWidth : -1;
         m_edit.setOverridePos(inlineEditXpos, maxW);
+        inlineEditItem = pDispInfo->item.iItem;
     }
     *pResult = 0; // allow
 }
@@ -3095,6 +3111,7 @@ void CPlayerPlaylistBar::OnLvnBeginlabeleditList(NMHDR* pNMHDR, LRESULT* pResult
 void CPlayerPlaylistBar::OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     NMLVDISPINFO* pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+    inlineEditItem = -1;
     // pszText is nullptr when the edit was cancelled (ESC)
     if (pDispInfo->item.pszText != nullptr) {
         POSITION pos = FindPos(pDispInfo->item.iItem);

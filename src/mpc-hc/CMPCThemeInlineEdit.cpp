@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CMPCThemeInlineEdit, CEdit)
     ON_WM_CTLCOLOR_REFLECT()
     ON_WM_WINDOWPOSCHANGED()
     ON_WM_PAINT()
+    ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 HBRUSH CMPCThemeInlineEdit::CtlColor(CDC* pDC, UINT nCtlColor)
@@ -63,4 +64,9 @@ void CMPCThemeInlineEdit::OnPaint() {
     } else {
         __super::OnPaint();
     }
+}
+
+BOOL CMPCThemeInlineEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
+    //eat the wheel: the edit doesn't use it, and returning FALSE lets it fall through to the main frame (volume by default)
+    return TRUE;
 }

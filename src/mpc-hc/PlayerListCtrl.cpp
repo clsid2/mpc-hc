@@ -138,6 +138,7 @@ BEGIN_MESSAGE_MAP(CInPlaceEdit, CEdit)
     ON_WM_NCDESTROY()
     ON_WM_CHAR()
     ON_WM_CREATE()
+    ON_WM_MOUSEWHEEL()
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -191,6 +192,12 @@ void CInPlaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     }
 
     CEdit::OnChar(nChar, nRepCnt, nFlags);
+}
+
+BOOL CInPlaceEdit::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+    // eat the wheel: the edit doesn't use it, and returning FALSE lets it fall through to the main frame (volume by default)
+    return TRUE;
 }
 
 int CInPlaceEdit::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -875,6 +882,12 @@ void CPlayerListCtrl::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 BOOL CPlayerListCtrl::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
+    // while a label or in-place edit is open, eat the wheel: taking focus would end the edit,
+    // and returning FALSE would pass the wheel on to the main frame (volume by default)
+    HWND hFocus = ::GetFocus();
+    if (hFocus && ::IsChild(m_hWnd, hFocus)) {
+        return TRUE;
+    }
     if (GetFocus() != this) {
         SetFocus();
     }

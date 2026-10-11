@@ -2041,6 +2041,20 @@ void CMainFrame::OnSizingFixWndToVideo(UINT nSide, LPRECT lpRect, bool bCtrl)
             break;
     }
 
+    // Windows enlarges a window below its minimum size keeping its top-left corner, which
+    // would make the anchored right or bottom edge creep with every WM_SIZING, so stay above it
+    MINMAXINFO mmi = {};
+    OnGetMinMaxInfo(&mmi);
+    const CSize minSize(mmi.ptMinTrackSize.x - controlsSize.cx, mmi.ptMinTrackSize.y - controlsSize.cy);
+    if (newWindowSize.cx < minSize.cx) {
+        newWindowSize.cx = minSize.cx;
+        newWindowSize.cy = long(newWindowSize.cx * videoSize.cy / (double)videoSize.cx + 0.5);
+    }
+    if (newWindowSize.cy < minSize.cy) {
+        newWindowSize.cy = minSize.cy;
+        newWindowSize.cx = std::max(minSize.cx, long(newWindowSize.cy * videoSize.cx / (double)videoSize.cy + 0.5));
+    }
+
     newWindowSize += controlsSize;
 
     switch (nSide) {

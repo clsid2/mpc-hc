@@ -316,26 +316,34 @@ bool ToolbarInputActive(CPlayerBar *bar) {
         return false;
     }
 
-    if (capture == bar->m_hWnd) {
+    // capture anywhere inside the bar (e.g. a drag, or selecting text in an edit)
+    if (capture && (capture == bar->m_hWnd || ::IsChild(bar->m_hWnd, capture))) {
         return true;
     }
 
-    if (CWnd* pChildDialog = bar->GetWindow(GW_CHILD)) {
-        CWnd* pChild = pChildDialog->GetWindow(GW_CHILD);
-        while (pChild) {
-            if (CComboBox* cb = DYNAMIC_DOWNCAST(CComboBox, pChild)) {
-                COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO) };
-                if (cb->GetComboBoxInfo(&cbi)) {
-                    if (cbi.hwndList == capture) {
-                        return true;
+    // an edit with focus anywhere inside the bar, including the playlist's inline label edit
+    if (focus && ::IsChild(bar->m_hWnd, focus)) {
+        TCHAR className[16];
+        if (::GetClassName(focus, className, _countof(className)) && !_tcsicmp(className, WC_EDIT)) {
+            return true;
+        }
+    }
+
+    // a dropped combo list is not a descendant of the bar
+    if (capture) {
+        if (CWnd* pChildDialog = bar->GetWindow(GW_CHILD)) {
+            CWnd* pChild = pChildDialog->GetWindow(GW_CHILD);
+            while (pChild) {
+                if (CComboBox* cb = DYNAMIC_DOWNCAST(CComboBox, pChild)) {
+                    COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO) };
+                    if (cb->GetComboBoxInfo(&cbi)) {
+                        if (cbi.hwndList == capture) {
+                            return true;
+                        }
                     }
                 }
-            } else if (CEdit* e = DYNAMIC_DOWNCAST(CEdit, pChild)) {
-                if (e->m_hWnd == focus) {
-                    return true;
-                }
+                pChild = pChild->GetNextWindow();
             }
-            pChild = pChild->GetNextWindow();
         }
     }
     return false;
@@ -647,7 +655,8 @@ void CMainFrameControls::UpdateToolbarsVisibility()
                 if (it != m_panelZones.end()) {
                     const auto& panels = it->second;
                     for (const auto panel : panels) {
-                        if (m_panels[panel]->HasActivePopup()) {
+                        // hiding another panel of the zone moves this one and ends its input
+                        if (m_panels[panel]->HasActivePopup() || ToolbarInputActive(m_panels[panel])) {
                             mask.maskHide &= ~zone;
                             break;
                         }
