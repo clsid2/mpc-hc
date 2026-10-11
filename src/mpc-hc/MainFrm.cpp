@@ -2788,10 +2788,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                                  AATR.bNumberOfChannels,
                                  ResStr(AATR.bNumberOfChannels > 1 ? IDS_MAINFRM_13 : IDS_MAINFRM_12).GetString());
 
-                    m_wndStatusBar.SetStatusBitmap(
-                        AATR.bNumberOfChannels == 1 ? IDB_AUDIOTYPE_MONO
-                        : AATR.bNumberOfChannels >= 2 ? IDB_AUDIOTYPE_STEREO
-                        : IDB_AUDIOTYPE_NOAUDIO);
+                    m_wndStatusBar.SetAudioChannels(AATR.bNumberOfChannels);
                 }
 
                 if (m_wndInfoBar.IsVisible()) {
@@ -3712,9 +3709,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 if (m_fCustomGraph) {
                     int nAudioChannels = (int)evParam1;
 
-                    m_wndStatusBar.SetStatusBitmap(nAudioChannels == 1 ? IDB_AUDIOTYPE_MONO
-                                                   : nAudioChannels >= 2 ? IDB_AUDIOTYPE_STEREO
-                                                   : IDB_AUDIOTYPE_NOAUDIO);
+                    m_wndStatusBar.SetAudioChannels(nAudioChannels);
                 }
                 break;
             case EC_BG_ERROR:
@@ -16401,7 +16396,6 @@ void CMainFrame::CheckSelectedAudioStream()
 
     int nChannels = 0;
     int audiostreamcount = 0;
-    UINT audiobitmapid = IDB_AUDIOTYPE_NOAUDIO;
     m_loadedAudioTrackIndex = -1;
 
     if (m_pAudioSwitcherSS) {
@@ -16501,12 +16495,7 @@ void CMainFrame::CheckSelectedAudioStream()
         UpdateSelectedAudioStreamInfo(-1, nullptr, -1);
     }
 
-    if (nChannels >= 2) {
-        audiobitmapid = IDB_AUDIOTYPE_STEREO;
-    } else if (nChannels == 1) {
-        audiobitmapid = IDB_AUDIOTYPE_MONO;
-    }
-    m_wndStatusBar.SetStatusBitmap(audiobitmapid);
+    m_wndStatusBar.SetAudioChannels(nChannels);
 }
 
 void CMainFrame::CheckSelectedVideoStream()
@@ -24636,6 +24625,16 @@ bool CMainFrame::GetDecoderType(CString& type) const
         return true;
     }
     return false;
+}
+
+// What Audio Info adds to the status text, for when it is turned off
+CString CMainFrame::GetAudioInfo() const
+{
+    CString info = m_statusbarAudioFormat;
+    if (!currentAudioLang.IsEmpty()) {
+        AppendWithDelimiter(info, currentAudioLang);
+    }
+    return info;
 }
 
 bool CMainFrame::ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary)

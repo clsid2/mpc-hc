@@ -39,7 +39,9 @@ private:
     CStatic m_type;
     CStatusLabel m_status, m_time;
     CBitmap m_bm;
-    UINT m_bmid;
+    int m_nAudioChannels;
+    CRect m_audioRect;
+    CString m_audioTip;
     CString m_typeExt;
     HICON m_hIcon;
 
@@ -65,7 +67,8 @@ public:
 
     void Clear();
 
-    void SetStatusBitmap(UINT id);
+    // -1 shows nothing, 0 the no-audio icon
+    void SetAudioChannels(int nChannels);
     void SetMediaType(CString ext);
     void SetStatusMessage(CString str);
     void SetStatusTimer(CString str);
@@ -96,6 +99,9 @@ public:
 protected:
 
     void SetMediaTypeIcon();
+    void LoadStatusBitmap();
+    CString GetAudioChannelsLabel() const;
+    int GetAudioIconWidth();
     void ScaleFont();
 
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
