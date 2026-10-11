@@ -174,6 +174,7 @@ namespace DSObjects
 
         COuterEVR*                       m_pOuterEVR;
         bool                             InputPinIsHLGNow() override;
+        bool                             HasCurrentFrame() override { return m_nRenderState != Stopped && m_pCurrentlyDisplayedSample; }
         CComPtr<IMFClock>                m_pClock;
         CComPtr<IDirect3DDeviceManager9> m_pD3DManager;
         CComPtr<IMFTransform>            m_pMixer;
