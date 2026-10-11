@@ -1361,6 +1361,11 @@ LRESULT CMainFrame::OnRunDeferredActions(WPARAM wParam, LPARAM lParam)
     }
 
     if (m_bDeferredOnClose) {
+        if (m_pOptionsSheet) {
+            // a holder returned inside the options sheet's pump; ShowOptions posts
+            // again once the sheet is down
+            return 0;
+        }
         // exiting anyway, so the pending opens and closes are pointless
         m_bDeferredOnClose = false;
         m_deferredActions.clear();
@@ -1420,15 +1425,20 @@ void CMainFrame::OnClose()
 {
     CAppSettings& s = AfxGetAppSettings();
 
-    if (m_nDeferredActionDepth > 0) {
-        // reached from inside a holder's nested pump; the exit runs once that
-        // holder has returned (see OnRunDeferredActions). Queued like a posted
-        // SC_CLOSE, so an open dispatched in between is dropped
+    if (m_nDeferredActionDepth > 0 || m_pOptionsSheet) {
+        // reached from inside a holder's nested pump, or the options sheet's; the
+        // exit runs once that holder or ShowOptions has returned (see
+        // OnRunDeferredActions). Queued like a posted SC_CLOSE, so an open
+        // dispatched in between is dropped
         m_bDeferredOnClose = true;
         m_OnClose_queued = true;
         if (m_nTrackedMenuDepth > 0) {
             // otherwise the exit waits for the user to close the menu
             ::EndMenu();
+        }
+        if (m_pOptionsSheet && m_pOptionsSheet->GetSafeHwnd()) {
+            // likewise for the sheet; unapplied changes are dropped as by its Cancel button
+            m_pOptionsSheet->PostMessage(PSM_PRESSBUTTON, PSBTN_CANCEL);
         }
         return;
     }
@@ -20778,20 +20788,32 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
     INT_PTR iRes;
     do {
         CPPageSheet options(ResStr(IDS_OPTIONS_CAPTION), m_pGB, GetModalParent(), idPage);
+        m_pOptionsSheet = &options;
         iRes = options.DoModal();
+        m_pOptionsSheet = nullptr;
         idPage = 0; // If we are to show the dialog again, always show the latest page
         if (m_bThemeChangePending) {
             m_bThemeChangePending = false;
             ApplyThemeChange();
         }
-    } while (iRes == CPPageSheet::APPLY_UI_CHANGE); // check if we exited the dialog so that the language or theme change can be applied
+        // check if we exited the dialog so that the language or theme change can be applied
+    } while (iRes == CPPageSheet::APPLY_UI_CHANGE && !m_bDeferredOnClose);
+
+    if (m_bDeferredOnClose) {
+        // an exit arrived while the sheet was up (see OnClose). Under a holder, its
+        // scope exit posts this instead
+        if (m_nDeferredActionDepth == 0) {
+            PostMessage(WM_MPC_RUN_DEFERRED);
+        }
+        return;
+    }
 
     switch (iRes) {
         case CPPageSheet::RESET_SETTINGS:
-            // Request MPC-HC to close itself
-            SendMessage(WM_CLOSE);
-            // and immediately reopen
-            ShellExecute(nullptr, _T("open"), PathUtils::GetProgramPath(true), _T("/reset"), nullptr, SW_SHOWNORMAL);
+            // Close, and reopen with /reset from ExitInstance once the frame is gone.
+            // Closing from here would delete the frame under ShowOptions and its callers
+            AfxGetMyApp()->m_bRelaunchWithReset = true;
+            PostMessage(WM_CLOSE);
             break;
         default:
             ASSERT(iRes != CPPageSheet::APPLY_UI_CHANGE);

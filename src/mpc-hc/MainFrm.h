@@ -591,6 +591,10 @@ private:
     };
     std::vector<DeferredAction> m_deferredActions;
     bool m_bDeferredOnClose = false;
+    // the options sheet while ShowOptions has it up. Its modal pump is not a holder,
+    // since an open from in there is fine, but an exit would delete the frame under
+    // ShowOptions, so OnClose defers that one and cancels the sheet
+    CWnd* m_pOptionsSheet = nullptr;
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
 
     // a tracked popup or the menu bar is showing menus that a media change rebuilds

@@ -2731,6 +2731,11 @@ int CMPlayerCApp::ExitInstance()
         m_s = nullptr;
     }
 
+    if (m_bRelaunchWithReset) {
+        // the frame is gone, so the new instance does not have to wait for it
+        ShellExecute(nullptr, _T("open"), PathUtils::GetProgramPath(true), _T("/reset"), nullptr, SW_SHOWNORMAL);
+    }
+
     CMPCPngImage::CleanUp();
 
     MH_Uninitialize();
