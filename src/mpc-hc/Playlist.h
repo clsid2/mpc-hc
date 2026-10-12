@@ -56,7 +56,7 @@ public:
 
     bool m_fInvalid;
 
-    CPlaylistItem();
+    CPlaylistItem(bool is_copy = false);
     virtual ~CPlaylistItem();
 
     CPlaylistItem(const CPlaylistItem& pli);

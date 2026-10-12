@@ -31,7 +31,7 @@
 
 UINT CPlaylistItem::m_globalid = 0;
 
-CPlaylistItem::CPlaylistItem()
+CPlaylistItem::CPlaylistItem(bool is_copy /*= false*/)
     : m_posNextShuffle(nullptr)
     , m_posPrevShuffle(nullptr)
     , m_type(file)
@@ -55,7 +55,11 @@ CPlaylistItem::CPlaylistItem()
     , m_ydl_subs()
     , inlineEditMaxWidth(0)
 {
-    m_id = ++m_globalid;
+    if (is_copy) {
+        m_id = 0;
+    } else {
+        m_id = ++m_globalid;
+    }
 }
 
 CPlaylistItem::~CPlaylistItem()

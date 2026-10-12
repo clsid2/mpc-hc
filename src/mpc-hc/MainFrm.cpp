@@ -4781,7 +4781,7 @@ LRESULT CMainFrame::OnOpenMediaFailed(WPARAM wParam, LPARAM lParam)
     m_iReloadSubIdx = -1;
 
     if (wParam == PM_FILE && m_OpenMediaFailedCount < 5) {
-        CPlaylistItem pli;
+        CPlaylistItem pli = CPlaylistItem(true);
         if (m_wndPlaylistBar.GetCur(pli) && pli.m_bYoutubeDL && m_sydlLastProcessURL != pli.m_ydlSourceURL) {
             OpenCurPlaylistItem(0, true);  // Try to reprocess if failed first time.
             return 0;
@@ -6202,7 +6202,7 @@ void CMainFrame::OnFileSaveAs()
     CString in, out, ext;
     CAppSettings& s = AfxGetAppSettings();
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (m_wndPlaylistBar.GetCur(pli, true)) {
         in = pli.m_fns.GetHead();
     } else {
@@ -7101,7 +7101,7 @@ bool CMainFrame::SaveThumbnails(LPCTSTR fn)
         DVD_HMSF_TIMECODE hmsf = RT2HMS_r(rtDur);
 
         CString title;
-        CPlaylistItem pli;
+        CPlaylistItem pli = CPlaylistItem(true);
         if (m_wndPlaylistBar.GetCur(pli, true) && pli.m_bYoutubeDL && pli.m_label && !pli.m_label.IsEmpty()) {
             title = pli.m_label;
         } else {
@@ -7171,7 +7171,7 @@ CString CMainFrame::MakeSnapshotFileName(BOOL thumbnails)
     auto fullName = m_wndPlaylistBar.GetCurFileName(true);
     bool needsExtensionRemoval = !s.bSnapShotKeepVideoExtension;
     if (IsPlaylistFile(videoFn)) {
-        CPlaylistItem pli;
+        CPlaylistItem pli = CPlaylistItem(true);
         if (m_wndPlaylistBar.GetCur(pli, true)) {
             videoFn = pli.m_label;
             needsExtensionRemoval = false;
@@ -7372,7 +7372,7 @@ void CMainFrame::OnCmdLineSaveThumbnails()
         return;
     }
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (!m_wndPlaylistBar.GetCur(pli, true)) {
         AfxGetMyApp()->ReportCmdLineError(_T("no file to take thumbnails of"));
         return;
@@ -7868,7 +7868,7 @@ void CMainFrame::OnFileProperties()
     if (m_pDVBState) {
         fn = m_pDVBState->sChannelName;
     } else {
-        CPlaylistItem pli;
+        CPlaylistItem pli = CPlaylistItem(true);
         if (m_wndPlaylistBar.GetCur(pli, true)) {
             fn = pli.m_fns.GetHead();
             if (pli.m_bYoutubeDL) {
@@ -10048,7 +10048,7 @@ void CMainFrame::OnPlayPlay()
                     strOSD.LoadString(IDS_PLAY_BD);
                 } else {
                     strOSD = GetFileName();
-                    CPlaylistItem pli;
+                    CPlaylistItem pli = CPlaylistItem(true);
                     if (!strOSD.IsEmpty() && (!m_wndPlaylistBar.GetCur(pli) || !pli.m_bYoutubeDL)) {
                         strOSD.TrimRight('/');
                         strOSD.Replace('\\', '/');
@@ -11970,7 +11970,7 @@ void CMainFrame::OnNavigateSkip(UINT nID)
 bool CMainFrame::CanSkipFromClosedFile() {
     if (GetPlaybackMode() == PM_NONE && AfxGetAppSettings().fUseSearchInFolder) {
         if (m_wndPlaylistBar.GetCount() == 1) {
-            CPlaylistItem pli;
+            CPlaylistItem pli = CPlaylistItem(true);
             return m_wndPlaylistBar.GetCur(pli, true) && !PathUtils::IsURL(pli.m_fns.GetHead());
         } else if (m_wndPlaylistBar.GetCount() == 0 && !lastOpenFile.IsEmpty()) {
             return !PathUtils::IsURL(lastOpenFile);
@@ -12348,7 +12348,7 @@ void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         CString desc = GetFileName();
 
         // capture the rest of the entry here as well, the file can change while the modal pump runs
-        CPlaylistItem pli;
+        CPlaylistItem pli = CPlaylistItem(true);
         bool bHasCur = !is_BD && m_wndPlaylistBar.GetCur(pli);
         REFERENCE_TIME rtPos = GetPos();
         ABRepeat ab = abRepeat;
@@ -15353,7 +15353,7 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
             if (bMainFile) {
                 auto* pMRU = &s.MRU;
                 RecentFileEntry r;
-                CPlaylistItem pli;
+                CPlaylistItem pli = CPlaylistItem(true);
                 if (m_wndPlaylistBar.GetCur(pli, true)) {
                     if (pli.m_bYoutubeDL && !pli.m_ydlSourceURL.IsEmpty()) {
                         pMRU->LoadMediaHistoryEntryFN(pli.m_ydlSourceURL, r);
@@ -15416,7 +15416,7 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
                 }
             }
             else {
-                CPlaylistItem pli;
+                CPlaylistItem pli = CPlaylistItem(true);
                 if (!m_wndPlaylistBar.GetCur(pli) || !pli.m_bYoutubeDL) {
                     CRecentFileList* pMRUDub = &s.MRUDub;
                     pMRUDub->ReadList();
@@ -15597,7 +15597,7 @@ void CMainFrame::SetupChapters()
         }
     }
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (m_wndPlaylistBar.GetCur(pli, true) && pli.m_cue) {
         SetupCueChapters(pli.m_cue_filename);
     }
@@ -15609,7 +15609,7 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
     CString str;
     int cue_index(-1);
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (!m_wndPlaylistBar.GetCur(pli, true)) {
         ASSERT(false);
         return;
@@ -17348,7 +17348,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
                 }
             }
 
-            CPlaylistItem pli;
+            CPlaylistItem pli = CPlaylistItem(true);
             if (m_wndPlaylistBar.GetCur(pli) && pli.m_bYoutubeDL && !s.sYDLSubsPreference.IsEmpty()) {
                 POSITION pos2 = pli.m_ydl_subs.GetHeadPosition();
                 while (pos2) {
@@ -20908,7 +20908,7 @@ void CMainFrame::OpenCurPlaylistItem(REFERENCE_TIME rtStart, bool reopen /* = fa
         return;
     }
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (!m_wndPlaylistBar.GetCur(pli)) {
         m_wndPlaylistBar.SetFirstSelected();
         if (!m_wndPlaylistBar.GetCur(pli)) {
@@ -22899,7 +22899,7 @@ void CMainFrame::SendNowPlayingToApi(bool sendtrackinfo)
             m_wndInfoBar.GetLine(StrRes(IDS_INFOBAR_AUTHOR), author);
             m_wndInfoBar.GetLine(StrRes(IDS_INFOBAR_DESCRIPTION), description);
 
-            CPlaylistItem pli;
+            CPlaylistItem pli = CPlaylistItem(true);
             if (m_wndPlaylistBar.GetCur(pli, true)) {
                 label = !pli.m_label.IsEmpty() ? pli.m_label : pli.m_fns.GetHead();
                 REFERENCE_TIME rtDur;
@@ -24260,7 +24260,7 @@ void CMainFrame::UpdateControlState(UpdateControlTarget target)
                     m_currentCoverPath = filename;
                     m_currentCoverAuthor = author;
                 } else {
-                    CPlaylistItem pli;
+                    CPlaylistItem pli = CPlaylistItem(true);
                     if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty() && CLongPath(pli.m_cover).FileExists()) {
                         LoadArtToViews(pli.m_cover);
                     } else if (PathUtils::IsURL(filename)) {
@@ -24576,7 +24576,7 @@ SubtitleInput* CMainFrame::GetSubtitleInput(int& i, bool bIsOffset /*= false*/)
 
 CString CMainFrame::GetFileName()
 {
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (m_wndPlaylistBar.GetCur(pli, true)) {
         CString path(m_wndPlaylistBar.GetCurFileName(true));
         if (!pli.m_bYoutubeDL && m_pFSF) {
@@ -25280,7 +25280,7 @@ CString CMainFrame::getBestTitle(bool fTitleBarTextTitle) {
         }
     }
 
-    CPlaylistItem pli;
+    CPlaylistItem pli = CPlaylistItem(true);
     if (m_wndPlaylistBar.GetCur(pli, true) && pli.m_label && !pli.m_label.IsEmpty()) {
         if (fTitleBarTextTitle || pli.m_bYoutubeDL) {
             title = pli.m_label;
@@ -25423,7 +25423,7 @@ void CMainFrame::MediaTransportControlSetMedia() {
             if (CoverArt::FindEmbedded(pFilterGraph, internalCover)) {
                 m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
             } else {
-                CPlaylistItem pli;
+                CPlaylistItem pli = CPlaylistItem(true);
                 if (m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
                     m_media_trans_control.loadThumbnail(pli.m_cover);
                 } else {
