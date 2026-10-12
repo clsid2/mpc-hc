@@ -55,7 +55,7 @@ CPlaylistItem::CPlaylistItem()
     , m_ydl_subs()
     , inlineEditMaxWidth(0)
 {
-    m_id = m_globalid++;
+    m_id = ++m_globalid;
 }
 
 CPlaylistItem::~CPlaylistItem()
