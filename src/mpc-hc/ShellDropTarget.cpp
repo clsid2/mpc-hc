@@ -102,9 +102,11 @@ static bool LaunchNewInstance(const CAtlList<CString>& files)
         return false;
     }
 
+    CString mpcexe = PathUtils::GetProgramPath(true);
+
     SHELLEXECUTEINFO sei = { sizeof(sei) };
     sei.fMask = SEE_MASK_NOASYNC;
-    sei.lpFile = PathUtils::GetProgramPath(true);
+    sei.lpFile = mpcexe.GetString();
     sei.lpParameters = args;
     sei.nShow = SW_SHOWNORMAL;
     return !!ShellExecuteEx(&sei);
