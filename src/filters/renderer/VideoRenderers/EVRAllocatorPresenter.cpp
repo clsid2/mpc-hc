@@ -753,8 +753,8 @@ HRESULT CEVRAllocatorPresenter::CreateOptimalOutputType(IMFMediaType* pMixerProp
 
     // HLG input: the rendering engine converts it to SDR, from the very first frame
     // (the decoder often signals HLG only in a format change after the first frames).
-    m_bHLGInput = MixerTypeIsHLG(pMixerInputType);
-    m_bHLGPinCheck = !m_bHLGInput;
+    m_bHLGInput = !m_bIsPreview && MixerTypeIsHLG(pMixerInputType);
+    m_bHLGPinCheck = !m_bIsPreview && !m_bHLGInput;
 
     const CRenderersSettings& r = GetRenderersSettings();
 
@@ -2469,7 +2469,7 @@ void CEVRAllocatorPresenter::RenderThread()
                                 }
                             }
                         } else if (m_nRenderState == Paused) {
-                            if (bForcePaint) {
+                            if (bForcePaint && !m_bEvtFlush) {
                                 bStepForward = true;
                                 // Ensure that the renderer is properly updated after seeking when paused
                                 SubPicSetTime();
@@ -2485,7 +2485,7 @@ void CEVRAllocatorPresenter::RenderThread()
                         if (bStepForward) {
                             m_MaxSampleDuration = std::max(SampleDuration, m_MaxSampleDuration);
                             checkPendingMediaFinished();
-                        } else {
+                        } else if (!m_bEvtFlush) {
                             AddToScheduledList(pMFSample, true);
                             pMFSample = nullptr; // The sample should not be used after being queued
                         }

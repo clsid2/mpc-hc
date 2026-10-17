@@ -1740,7 +1740,7 @@ HRESULT CDX9RenderingEngine::AlphaBlt(const RECT* pSrc, const RECT* pDst, IDirec
 
 bool CDX9RenderingEngine::HLGToSDRActive()
 {
-    if (m_bHLGPinCheck) {
+    if (m_bHLGPinCheck && !InputPinIsFlushing()) {
         m_bHLGPinCheck = false;
         m_bHLGInput = InputPinIsHLGNow();
     }

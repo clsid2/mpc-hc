@@ -163,6 +163,8 @@ namespace DSObjects
         MFCLOCK_STATE m_LastClockState;
         LONGLONG GetClockTime(LONGLONG PerformanceCounter);
 
+        bool InputPinIsFlushing() { return m_bEvtFlush; };
+
     private:
 
         enum RENDER_STATE {
