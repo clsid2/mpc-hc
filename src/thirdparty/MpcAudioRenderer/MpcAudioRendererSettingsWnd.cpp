@@ -237,9 +237,9 @@ void CMpcAudioRendererSettingsWnd::OnBnClickedReset()
 	m_cbUseBitExactOutput.SetCheck(BST_CHECKED);
 	m_cbUseSystemLayoutChannels.SetCheck(BST_CHECKED);
 	m_cbAltCheckFormat.SetCheck(BST_UNCHECKED);
-	m_cbReleaseDeviceIdle.SetCheck(BST_CHECKED);
+	m_cbReleaseDeviceIdle.SetCheck(BST_UNCHECKED);
 	m_cbUseCrossFeed.SetCheck(BST_UNCHECKED);
-	m_cbDummyChannels.SetCheck(BST_UNCHECKED);
+	m_cbDummyChannels.SetCheck(BST_CHECKED);
 	m_cbPauseKeepActive.SetCheck(BST_UNCHECKED);
 
 	OnClickedWasapiMode();
