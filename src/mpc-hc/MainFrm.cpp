@@ -11442,6 +11442,10 @@ void CMainFrame::OnPlayVolumeBoost(UINT nID)
 
 void CMainFrame::SetVolumeBoost(UINT nAudioBoost)
 {
+    if (!IsStateLoaded()) {
+        return;
+    }
+
     if (CComQIPtr<IAudioSwitcherFilter> pASF = FindFilter(__uuidof(CAudioSwitcherFilter), m_pGB)) {
         bool fNormalize, fNormalizeRecover;
         UINT nMaxNormFactor, nBoost;
