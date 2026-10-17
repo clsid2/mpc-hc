@@ -13447,8 +13447,10 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
         }
 
         ModifyStyle(dwRemove, dwAdd, SWP_NOZORDER);
+        restoringWindowRect = true; //do not adjust for DPI if moving to a monitor with a different DPI
         SetWindowPos(pInsertAfter, windowRect.left, windowRect.top, windowRect.Width(), windowRect.Height(),
             SWP_NOSENDCHANGING | SWP_FRAMECHANGED);
+        restoringWindowRect = false;
 
         // If MPC-HC wasn't previously set "on top" by an external tool,
         // we restore the current internal on top state. (2/2)
