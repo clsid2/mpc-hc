@@ -21560,7 +21560,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                             processmsg = false;
                             #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER && (MPC_VERSION_REV > 10)
                             if (extendedwait && CrashReporter::IsEnabled()) {
-                                if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
+                                if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.\n\nIf you can reproduce this problem with a specific file, then please share details with the developers.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
                                     throw 0xdead;
                                 }
                             }
@@ -21570,7 +21570,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                             if (s.iDSVideoRendererType == VIDRNDT_DS_MADVR) {
                                 timeoutmsg = L"Timeout while aborting filter graph creation.\n\nIf files load slowly with MadVR, you should change dithering in Madvr settings (Error Diffusion is broken on AMD GPU).\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
                             } else {
-                                timeoutmsg = L"Timeout while aborting filter graph creation.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
+                                timeoutmsg = L"Timeout while aborting filter graph creation.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).\n\nIf you can reproduce this problem with a specific file, then please share details with the developers.";
                             }
                             if (USE_LOGGER(s)) {
                                 PLAYER_LOG(_T("CMainFrame::CloseMedia - Timeout when aborting filter graph creation"));
@@ -21759,7 +21759,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                     if (extendedwait || m_fFullScreen || s.hMasterWnd || hibernating || app_closing || m_OnClose_queued) {
                         #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER && (MPC_VERSION_REV > 10)
                         if (extendedwait && CrashReporter::IsEnabled()) {
-                            if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
+                            if (IDYES == AfxMessageBox(L"It looks like the filter graph might be deadlocked.\n\nClick YES to submit a crash report.\nClick NO to terminate the player process.\n\nIf you can reproduce this problem with a specific file, then please share details with the developers.", MB_ICONEXCLAMATION | MB_YESNO, 0)) {
                                 throw 0xdead;
                             }
                         }
@@ -21773,7 +21773,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                             continue;
                         }
 
-                        CString timeoutmsg = L"Timeout when closing filter graph.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).";
+                        CString timeoutmsg = L"Timeout when closing filter graph.\n\nClick YES to terminate player process. Click NO to wait longer (up to 15 seconds).\n\nIf you can reproduce this problem with a specific file, then please share details with the developers.";
                         if (USE_LOGGER(s)) {
                             PLAYER_LOG(_T("CMainFrame::CloseMedia - Timeout when closing filter graph"));
                         }
