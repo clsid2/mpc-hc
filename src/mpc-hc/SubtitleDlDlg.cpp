@@ -265,7 +265,9 @@ BOOL CSubtitleDlDlg::OnInitDialog()
             columnWidth.Add(n);
             token = strColumnWidth.Tokenize(_T(","), curPos);
         } else {
-            throw 1;
+            ASSERT(false);
+            columnWidth.RemoveAll();
+            break;
         }
     }
 
