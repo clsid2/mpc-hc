@@ -27,8 +27,13 @@
 CWebServerSocket::CWebServerSocket(CWebServer* pWebServer, int port)
     : m_pWebServer(pWebServer)
 {
-    Create(port);
-    Listen();
+    try {
+        Create(port);
+        Listen();
+    } catch (...) {
+        ASSERT(false);
+        m_pWebServer = nullptr;
+    }
 }
 
 CWebServerSocket::~CWebServerSocket()
