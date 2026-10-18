@@ -147,7 +147,12 @@ bool CDSMSplitterFile::Sync(UINT64& syncpos, dsmp_t& type, UINT64& len, __int64 
     limit += DSMSW_SIZE;
 
     for (UINT64 id = 0; (id & ((1ui64 << (DSMSW_SIZE << 3)) - 1)) != DSMSW; id = (id << 8) | (BYTE)BitRead(8)) {
-        if (limit-- <= 0 || GetRemaining() <= 2) {
+        if (limit-- <= 0) {
+            return false;
+        }
+        if (GetRemaining() <= 2) {
+            // too little left for a header, skip to the end so callers looping on GetRemaining() stop
+            Seek(GetLength());
             return false;
         }
     }
