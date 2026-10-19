@@ -39,5 +39,6 @@ The installer script expects the official portable runtime assets in
 the built player and renderer, and the validation logs named in the script.
 It packages the runtime, source archives, first-run preset, desktop/Start Menu
 shortcuts and an independent per-user uninstaller using Inno Setup 6.
+The destination-folder page always appears, including on reinstall/update.
 Generated installers, user configuration and playback history are not stored
-in Git. The tested installer is `MPC-HC-Ambilight-Setup-x64-v4.exe`.
+in Git. The current installer is `MPC-HC-Ambilight-Setup-x64-v5.exe`.

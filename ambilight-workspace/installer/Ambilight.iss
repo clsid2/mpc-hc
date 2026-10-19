@@ -1,14 +1,16 @@
 #define AppName "MPC-HC Ambilight"
-#define StageDir "..\work\installer-stage"
+#define StageDir "..\work\installer-stage-v5"
 
 [Setup]
 AppId={{75D3FAAD-E16D-49BC-9374-44A279A02E13}
 AppName={#AppName}
-AppVersion=2.8.4 Ambilight 4
-AppVerName={#AppName} 2.8.4 (Ambilight 4)
+AppVersion=2.8.4 Ambilight 5
+AppVerName={#AppName} 2.8.4 (Ambilight 5)
 AppPublisher=teguhsatria892 (community fork)
 AppPublisherURL=https://github.com/teguhsatria892/mpc-hc
 DefaultDirName={localappdata}\Programs\MPC-HC Ambilight
+DisableDirPage=no
+AlwaysShowDirOnReadyPage=yes
 DefaultGroupName={#AppName}
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
@@ -19,8 +21,8 @@ UninstallDisplayIcon={app}\mpc-hc64.exe
 SetupIconFile=..\mpc-hc\src\mpc-hc\res\icon.ico
 LicenseFile=..\mpc-hc\COPYING.txt
 OutputDir=..\outputs
-OutputBaseFilename=MPC-HC-Ambilight-Setup-x64-v4
-VersionInfoVersion=2.8.4.4
+OutputBaseFilename=MPC-HC-Ambilight-Setup-x64-v5
+VersionInfoVersion=2.8.4.5
 VersionInfoDescription=MPC-HC Ambilight Setup
 Compression=lzma2
 SolidCompression=yes

@@ -2,7 +2,7 @@ param([string]$Compiler = "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe")
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $workspace = $PSScriptRoot
-$stage = Join-Path $workspace 'work\installer-stage'
+$stage = Join-Path $workspace 'work\installer-stage-v5'
 if (!(Test-Path -LiteralPath $Compiler)) { throw 'Install Inno Setup 6 or pass -Compiler with the ISCC.exe path.' }
 if (Test-Path -LiteralPath $stage) { throw "Stage already exists: $stage. Move it aside before building another installer." }
 New-Item -ItemType Directory -Path $stage, (Join-Path $stage 'Source'), (Join-Path $stage 'Validation') | Out-Null
@@ -52,8 +52,8 @@ foreach ($entry in @(@('VideoRenderer','renderer-source.zip'),@('mpc-hc','player
 $sourceNotes | Set-Content -LiteralPath (Join-Path $stage 'Source\BUILD.md') -Encoding UTF8
 & $Compiler (Join-Path $workspace 'installer\Ambilight.iss')
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed: $LASTEXITCODE" }
-$setupPath = Join-Path $workspace 'outputs\MPC-HC-Ambilight-Setup-x64-v4.exe'
+$setupPath = Join-Path $workspace 'outputs\MPC-HC-Ambilight-Setup-x64-v5.exe'
 $hash = Get-FileHash -LiteralPath $setupPath -Algorithm SHA256
-($hash.Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($setupPath)) | Set-Content -LiteralPath (Join-Path $workspace 'outputs\SHA256SUMS-installer-v4.txt') -Encoding ASCII
+($hash.Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($setupPath)) | Set-Content -LiteralPath (Join-Path $workspace 'outputs\SHA256SUMS-installer-v5.txt') -Encoding ASCII
 Get-Item -LiteralPath $setupPath | Select-Object Name,Length
 Write-Output $hash.Hash

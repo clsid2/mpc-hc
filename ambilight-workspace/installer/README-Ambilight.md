@@ -19,6 +19,8 @@ Default sesuai preset pilihan:
 Reset mengembalikan angka ke preset tersebut. Pengaturan yang sudah disimpan
 tetap dipakai setelah update. Installer memasang aplikasi untuk pengguna
 Windows saat ini, menyediakan shortcut dan uninstaller.
+Halaman Select Destination Location selalu muncul, termasuk saat install
+ulang. Klik Browse untuk memilih folder tujuan sebelum melanjutkan.
 Update build Ambilight dilakukan lewat installer build berikutnya.
 
 Build komunitas ini berbasis MPC-HC 2.8.4 dan MPC Video Renderer, dengan panel
