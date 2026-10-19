@@ -24,10 +24,12 @@
 #include "VolumeCtrl.h"
 #include "CMPCThemeToolTipCtrl.h"
 #include "CMPCThemeUtil.h"
+#include "CMPCThemeButton.h"
 #include <atlimage.h>
 #include <optional>
 
 class CMainFrame;
+class CAmbilightDialog;
 
 class CPlayerToolBar : public CToolBar, public CMPCThemeUtil
 {
@@ -115,6 +117,9 @@ public:
     CImage& GetVolumeImageOff() { return volumeOff; };
 
     CVolumeCtrl m_volctrl;
+	CMPCThemeButton m_ambilightButton;
+	std::unique_ptr<CAmbilightDialog> m_ambilightDialog;
+	afx_msg void OnAmbilight();
 
     std::optional<bool> lastFullscreen = std::nullopt;
     void SetFullscreen(bool isFS);

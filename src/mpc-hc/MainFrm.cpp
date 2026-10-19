@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include <optional>
 #include "MainFrm.h"
+#include <FilterInterfaces.h>
 #include "mplayerc.h"
 #include "version.h"
 
@@ -9022,6 +9023,12 @@ void CMainFrame::OnUpdateViewCapture(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE));
     pCmdUI->Enable(GetLoadState() == MLS::LOADED && GetPlaybackMode() == PM_ANALOG_CAPTURE);
+}
+
+CComPtr<IExFilterConfig> CMainFrame::GetAmbilightConfig()
+{
+    CComQIPtr<IExFilterConfig> config = m_pCAP;
+    return config.p;
 }
 
 void CMainFrame::OnViewDebugShaders()

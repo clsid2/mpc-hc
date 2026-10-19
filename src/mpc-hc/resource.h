@@ -1904,6 +1904,18 @@
 #define IDS_MODERN_THEME_STYLE_WINDOWS11 58061
 
 // Next default values for new objects
+#define IDD_AMBILIGHT                   20080
+#define ID_AMBILIGHT                    33470
+#define IDC_AMBILIGHT_LABEL             23000
+#define IDC_AMBILIGHT_SLIDER            23020
+#define IDC_AMBILIGHT_VALUE             23040
+#define IDC_AMBILIGHT_ENABLED           23100
+#define IDC_AMBILIGHT_TOP               23101
+#define IDC_AMBILIGHT_RIGHT             23102
+#define IDC_AMBILIGHT_BOTTOM            23103
+#define IDC_AMBILIGHT_LEFT              23104
+#define IDC_AMBILIGHT_STATUS            23105
+#define IDC_AMBILIGHT_RESET             23106
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

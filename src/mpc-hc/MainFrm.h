@@ -77,6 +77,7 @@ interface IMadVRFrameGrabber;
 interface IMadVRSettings;
 interface IMadVRSubclassReplacement;
 interface IMPCVRSubclassReplacement;
+interface IExFilterConfig;
 interface ISubClock;
 interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
@@ -1160,6 +1161,7 @@ public:
     afx_msg void OnViewCapture();
     afx_msg void OnUpdateViewCapture(CCmdUI* pCmdUI);
     afx_msg void OnViewDebugShaders();
+    CComPtr<IExFilterConfig> GetAmbilightConfig();
     afx_msg void OnUpdateViewDebugShaders(CCmdUI* pCmdUI);
     afx_msg void OnViewColorControls();
     afx_msg void OnUpdateViewColorControls(CCmdUI* pCmdUI);

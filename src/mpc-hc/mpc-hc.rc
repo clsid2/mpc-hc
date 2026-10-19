@@ -58,6 +58,8 @@ END
 // Dialog
 //
 
+#include "res\\AmbilightDialog.rc2"
+
 IDD_SELECTMEDIATYPE DIALOGEX 0, 0, 225, 47
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Media Type"

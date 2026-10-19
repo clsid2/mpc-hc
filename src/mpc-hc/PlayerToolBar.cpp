@@ -26,6 +26,7 @@
 #include <afxpriv.h>
 #include "MPCPngImage.h"
 #include "PlayerToolBar.h"
+#include "AmbilightDialog.h"
 #include "MainFrm.h"
 #include "PathUtils.h"
 #include "SVGImage.h"
@@ -438,6 +439,7 @@ BOOL CPlayerToolBar::Create(CWnd* pParentWnd)
     ModifyStyleEx(WS_EX_LAYOUTRTL, WS_EX_NOINHERITLAYOUT);
 
     m_volctrl.Create(this);
+    m_ambilightButton.Create(L"Ambilight", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON, CRect(0, 0, 80, 24), this, ID_AMBILIGHT);
     m_volctrl.SetRange(0, 100);
 
     m_nButtonHeight = 16; // reset m_nButtonHeight
@@ -624,8 +626,10 @@ void CPlayerToolBar::ArrangeControls() {
     int volumeButtonWidth = rVolumeButton.Width();
 
     int groupSpacing = CalculateGroupSpacing(volumeButtonWidth);
+    const int ambilightWidth = std::max(76, m_nButtonHeight * 3);
+    const int ambilightSpace = ambilightWidth + groupSpacing;
 
-    int totalContentWidth = dynamicButtonsWidth + volumeButtonWidth + m_volumeCtrlSize;
+    int totalContentWidth = dynamicButtonsWidth + volumeButtonWidth + m_volumeCtrlSize + ambilightSpace;
     int totalAvailableSpace = r.Width();
 
     int leftSpacing = 0;
@@ -644,25 +648,29 @@ void CPlayerToolBar::ArrangeControls() {
             break;
         case 2: // Right alignment
             rightSpacing = groupSpacing;
-            leftSpacing = totalAvailableSpace - dynamicButtonsWidth - rightSpacing - volumeButtonWidth - groupSpacing - m_volumeCtrlSize;
+            leftSpacing = totalAvailableSpace - dynamicButtonsWidth - rightSpacing - volumeButtonWidth - groupSpacing - m_volumeCtrlSize - ambilightSpace;
             leftSpacing = std::max(0, leftSpacing);
             break;
         case 0: // Left alignment (default)
         default:
             leftSpacing = 0;
-            rightSpacing = totalAvailableSpace - dynamicButtonsWidth - volumeButtonWidth - groupSpacing - m_volumeCtrlSize;
+            rightSpacing = totalAvailableSpace - dynamicButtonsWidth - volumeButtonWidth - groupSpacing - m_volumeCtrlSize - ambilightSpace;
             rightSpacing = std::max(groupSpacing, rightSpacing);
             break;
     }
 
-    int muteButtonRight = r.left + leftSpacing + dynamicButtonsWidth + rightSpacing + volumeButtonWidth;
+    int muteButtonRight = r.left + leftSpacing + dynamicButtonsWidth + rightSpacing + volumeButtonWidth + ambilightSpace;
     int volumeSliderLeft = muteButtonRight + groupSpacing;
 
     CRect vr = CRect(volumeSliderLeft, vrTop, volumeSliderLeft + m_volumeCtrlSize, vrBottom);
     m_volctrl.MoveWindow(vr);
+    if (m_ambilightButton.GetSafeHwnd()) {
+        const int x = muteButtonRight - volumeButtonWidth - ambilightSpace;
+        m_ambilightButton.MoveWindow(x, r.top + 2, ambilightWidth, std::max(20, r.Height() - 4));
+    }
 
     SetSeparatorWidth(leftSeparatorIndex, leftSpacing);
-    SetSeparatorWidth(dummySeparatorIndex, rightSpacing);
+    SetSeparatorWidth(dummySeparatorIndex, rightSpacing + ambilightSpace);
 }
 
 void CPlayerToolBar::SetMute(bool fMute) {
@@ -731,7 +739,7 @@ int CPlayerToolBar::GetMinWidth() const
 
     int groupSpacing = CalculateGroupSpacing(m_nButtonHeight + TOOLBAR_BUTTON_HORIZONTAL_PADDING);
 
-    return buttonCount * (m_nButtonHeight + 1 + TOOLBAR_BUTTON_HORIZONTAL_PADDING) + 2 * groupSpacing + m_volumeCtrlSize;
+    return buttonCount * (m_nButtonHeight + 1 + TOOLBAR_BUTTON_HORIZONTAL_PADDING) + 3 * groupSpacing + m_volumeCtrlSize + std::max(76, m_nButtonHeight * 3);
 }
 
 void CPlayerToolBar::SetVolume(int volume)
@@ -758,6 +766,7 @@ void CPlayerToolBar::EventCallback(MpcEvent ev)
 }
 
 BEGIN_MESSAGE_MAP(CPlayerToolBar, CToolBar)
+    ON_BN_CLICKED(ID_AMBILIGHT, OnAmbilight)
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
     ON_WM_SIZE()
     ON_MESSAGE_VOID(WM_INITIALUPDATE, OnInitialUpdate)
@@ -883,6 +892,31 @@ void CPlayerToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
     }
 
     *pResult = lr;
+}
+
+void CPlayerToolBar::OnAmbilight()
+{
+    if (!m_ambilightDialog) {
+        m_ambilightDialog = std::make_unique<CAmbilightDialog>(m_pMainFrame, [this]() {
+            return m_pMainFrame->GetAmbilightConfig();
+        });
+        if (!m_ambilightDialog->Create(IDD_AMBILIGHT, m_pMainFrame)) {
+            m_ambilightDialog.reset();
+            return;
+        }
+    } else if (m_ambilightDialog->IsWindowVisible()) {
+        m_ambilightDialog->ShowWindow(SW_HIDE);
+        return;
+    }
+    m_ambilightDialog->RefreshControls();
+    CRect anchor, panel;
+    m_ambilightButton.GetWindowRect(anchor);
+    m_ambilightDialog->GetWindowRect(panel);
+    MONITORINFO monitor = { sizeof(monitor) };
+    GetMonitorInfo(MonitorFromRect(anchor, MONITOR_DEFAULTTONEAREST), &monitor);
+    LONG x = std::clamp(anchor.right - panel.Width(), monitor.rcWork.left, std::max(monitor.rcWork.left, monitor.rcWork.right - panel.Width()));
+    LONG y = std::clamp(anchor.top - panel.Height(), monitor.rcWork.top, std::max(monitor.rcWork.top, monitor.rcWork.bottom - panel.Height()));
+    m_ambilightDialog->SetWindowPos(&CWnd::wndTop, x, y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 }
 
 void CPlayerToolBar::OnSize(UINT nType, int cx, int cy)
