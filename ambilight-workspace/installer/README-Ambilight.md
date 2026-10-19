@@ -5,6 +5,12 @@ Klik Ambilight di toolbar bawah, tepat di kiri kontrol volume/audio.
 Slider dan angka langsung mengubah tampilan, termasuk saat pause, dan
 tersimpan otomatis. Tidak perlu OK atau Apply.
 
+Posisi terakhir video disimpan otomatis saat file ditutup. Buka lagi file yang
+sama untuk melanjutkan dari posisi tersebut, termasuk setelah aplikasi ditutup.
+Fitur ini aktif juga untuk video pendek. File yang sudah selesai diputar mulai
+lagi dari awal. Update dari build lama mengaktifkan resume sekali; pengaturan
+lain tetap dipertahankan.
+
 Default sesuai preset pilihan:
 - Enable ambient light: aktif
 - Intensity: 53

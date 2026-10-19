@@ -77,8 +77,8 @@ CAppSettings::CAppSettings()
     , MRU(L"MediaHistory", iRecentFilesNumber)
     , MRUDub(0, _T("Recent Dub List"), _T("Dub%d"), 20)
     , fRememberDVDPos(false)
-    , fRememberFilePos(false)
-    , iRememberPosForLongerThan(5)
+    , fRememberFilePos(true)
+    , iRememberPosForLongerThan(0)
     , bRememberPosForAudioFiles(true)
     , bRememberExternalPlaylistPos(true)
     , bRememberTrackSelection(true)
@@ -2268,11 +2268,11 @@ void CAppSettings::LoadSettings()
     }
 
     // playback positions for last played files
-    fRememberFilePos = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, FALSE);
-    iRememberPosForLongerThan = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSLONGER, 5);
+    fRememberFilePos = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS, TRUE);
+    iRememberPosForLongerThan = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSLONGER, 0);
     bRememberPosForAudioFiles = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOSAUDIO, TRUE);
     if (iRememberPosForLongerThan < 0) {
-        iRememberPosForLongerThan = 5;
+        iRememberPosForLongerThan = 0;
     }
     bRememberExternalPlaylistPos = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS_PLAYLIST, TRUE);
     bRememberTrackSelection = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_FILEPOS_TRACK_SELECTION, TRUE);

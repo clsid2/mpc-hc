@@ -1,11 +1,11 @@
 #define AppName "MPC-HC Ambilight"
-#define StageDir "..\work\installer-stage-v5"
+#define StageDir "..\work\installer-stage-v6"
 
 [Setup]
 AppId={{75D3FAAD-E16D-49BC-9374-44A279A02E13}
 AppName={#AppName}
-AppVersion=2.8.4 Ambilight 5
-AppVerName={#AppName} 2.8.4 (Ambilight 5)
+AppVersion=2.8.4 Ambilight 6
+AppVerName={#AppName} 2.8.4 (Ambilight 6)
 AppPublisher=teguhsatria892 (community fork)
 AppPublisherURL=https://github.com/teguhsatria892/mpc-hc
 DefaultDirName={localappdata}\Programs\MPC-HC Ambilight
@@ -21,8 +21,8 @@ UninstallDisplayIcon={app}\mpc-hc64.exe
 SetupIconFile=..\mpc-hc\src\mpc-hc\res\icon.ico
 LicenseFile=..\mpc-hc\COPYING.txt
 OutputDir=..\outputs
-OutputBaseFilename=MPC-HC-Ambilight-Setup-x64-v5
-VersionInfoVersion=2.8.4.5
+OutputBaseFilename=MPC-HC-Ambilight-Setup-x64-v6
+VersionInfoVersion=2.8.4.6
 VersionInfoDescription=MPC-HC Ambilight Setup
 Compression=lzma2
 SolidCompression=yes
@@ -51,3 +51,23 @@ Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\mpc-hc64.exe"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  SettingsFile: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    SettingsFile := ExpandConstant('{app}\mpc-hc64.ini');
+    { Enable resume once for both new installs and upgrades from older builds.
+      Later upgrades respect a user's subsequent choice to disable it. }
+    if GetIniInt('Ambilight', 'ResumePositionPreset', 0, 0, 0, SettingsFile) < 1 then
+    begin
+      SetIniString('Settings', 'KeepHistory', '1', SettingsFile);
+      SetIniString('Settings', 'RememberFilePos', '1', SettingsFile);
+      SetIniString('Settings', 'RememberPosForLongerThan', '0', SettingsFile);
+      SetIniString('Ambilight', 'ResumePositionPreset', '1', SettingsFile);
+    end;
+  end;
+end;

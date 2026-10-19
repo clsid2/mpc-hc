@@ -41,4 +41,9 @@ It packages the runtime, source archives, first-run preset, desktop/Start Menu
 shortcuts and an independent per-user uninstaller using Inno Setup 6.
 The destination-folder page always appears, including on reinstall/update.
 Generated installers, user configuration and playback history are not stored
-in Git. The current installer is `MPC-HC-Ambilight-Setup-x64-v5.exe`.
+in Git. The current installer is `MPC-HC-Ambilight-Setup-x64-v6.exe`.
+
+Playback history and resume positions are enabled by default, with no minimum
+duration. The installer enables this once when upgrading older configurations;
+subsequent updates preserve user choices. Existing end-of-file behavior remains:
+completed files, or positions within the last five seconds, restart at zero.
