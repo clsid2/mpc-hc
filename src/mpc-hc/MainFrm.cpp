@@ -19785,6 +19785,9 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
             } else {
                 m_wndSubresyncBar.SetSubtitle(nullptr, m_pCAP->GetFPS(), g_bExternalSubtitle);
             }
+            // an index into the previous track's subresync list means nothing for the new one
+            m_nCurSubtitle = -1;
+            m_lSubtitleShift = 0;
         }
     }
 
