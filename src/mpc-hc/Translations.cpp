@@ -80,6 +80,8 @@ namespace
         { 1066,   _T("Vietnamese"),               _T("Lang\\mpcresources.vi.dll")    },
     };
 
+    HHOOK g_hRTLHook = nullptr;
+
     LRESULT CALLBACK RTLWindowsLayoutCbtFilterHook(int code, WPARAM wParam, LPARAM lParam)
     {
         if (code == HCBT_CREATEWND) {
@@ -94,7 +96,7 @@ namespace
                 }
             }
         }
-        return CallNextHookEx(nullptr, code, wParam, lParam);
+        return CallNextHookEx(g_hRTLHook, code, wParam, lParam);
     }
 }
 
@@ -184,14 +186,24 @@ bool Translations::SetLanguage(LANGID localeID, bool showErrorMsg /*= true*/)
         }
     }
 
+    // In case a dll was loaded, check if some special action is needed
+    if (hMod != nullptr && IsLangRTL(languageResource.localeID)) {
+        SetProcessDefaultLayout(LAYOUT_RTL);
+        if (!g_hRTLHook) {
+            g_hRTLHook = SetWindowsHookEx(WH_CBT, RTLWindowsLayoutCbtFilterHook, nullptr, GetCurrentThreadId());
+        }
+    } else {
+        // Undo a previous RTL language, new windows are laid out left to right again
+        SetProcessDefaultLayout(0);
+        if (g_hRTLHook) {
+            UnhookWindowsHookEx(g_hRTLHook);
+            g_hRTLHook = nullptr;
+        }
+    }
+
     // In case no dll was loaded, load the English translation from the executable
     if (hMod == nullptr) {
         hMod = AfxGetApp()->m_hInstance;
-    }
-    // In case a dll was loaded, check if some special action is needed
-    else if (IsLangRTL(languageResource.localeID)) {
-        SetProcessDefaultLayout(LAYOUT_RTL);
-        SetWindowsHookEx(WH_CBT, RTLWindowsLayoutCbtFilterHook, nullptr, GetCurrentThreadId());
     }
 
     // Free the old resource if it was a dll
