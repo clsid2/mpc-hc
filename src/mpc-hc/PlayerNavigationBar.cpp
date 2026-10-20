@@ -70,14 +70,46 @@ void CPlayerNavigationBar::ReloadTranslatableResources()
     m_navdlg.ShowWindow(SW_SHOWNORMAL);
 }
 
+static HWND g_parentFrame = nullptr;
 static WNDPROC g_parentFrameOrigWndProc = nullptr;
 LRESULT CALLBACK ParentFrameSubclassWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     ASSERT(g_parentFrameOrigWndProc);
+    WNDPROC origWndProc = g_parentFrameOrigWndProc;
     if (message == WM_SYSCOMMAND && wParam == SC_CLOSE) {
         AfxGetAppSettings().fHideNavigation = true;
+    } else if (message == WM_NCDESTROY) {
+        if ((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) == ParentFrameSubclassWndProc) {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)origWndProc);
+        }
+        if (hwnd == g_parentFrame) {
+            g_parentFrame = nullptr;
+            g_parentFrameOrigWndProc = nullptr;
+        }
     }
-    return CallWindowProc(g_parentFrameOrigWndProc, hwnd, message, wParam, lParam);
+    return CallWindowProc(origWndProc, hwnd, message, wParam, lParam);
+}
+
+static void SubclassParentFrame(HWND hwnd)
+{
+    ASSERT(!g_parentFrame);
+    if ((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) != ParentFrameSubclassWndProc) {
+        g_parentFrameOrigWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ParentFrameSubclassWndProc);
+        g_parentFrame = hwnd;
+    }
+}
+
+static void UnsubclassParentFrame()
+{
+    if (g_parentFrame && IsWindow(g_parentFrame)) {
+        // if something subclassed the frame after us, it still calls into us, so keep the original procedure
+        if ((WNDPROC)GetWindowLongPtr(g_parentFrame, GWLP_WNDPROC) != ParentFrameSubclassWndProc) {
+            return;
+        }
+        SetWindowLongPtr(g_parentFrame, GWLP_WNDPROC, (LONG_PTR)g_parentFrameOrigWndProc);
+    }
+    g_parentFrame = nullptr;
+    g_parentFrameOrigWndProc = nullptr;
 }
 
 void CPlayerNavigationBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
@@ -92,11 +124,14 @@ BOOL CPlayerNavigationBar::PreTranslateMessage(MSG* pMsg)
     if (CWnd* pParent1 = GetParent()) {
         CWnd* pParent2 = pParent1->GetParent();
         if (pParent2 != m_pParent) {
-            if (!g_parentFrameOrigWndProc) {
-                g_parentFrameOrigWndProc = SubclassWindow(pParent2->m_hWnd, ParentFrameSubclassWndProc);
+            if (pParent2->m_hWnd != g_parentFrame) {
+                UnsubclassParentFrame();
+                if (!g_parentFrame) {
+                    SubclassParentFrame(pParent2->m_hWnd);
+                }
             }
         } else {
-            g_parentFrameOrigWndProc = nullptr;
+            UnsubclassParentFrame();
         }
     }
 

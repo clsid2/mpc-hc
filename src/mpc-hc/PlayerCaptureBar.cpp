@@ -98,14 +98,46 @@ void CPlayerCaptureBar::EventCallback(MpcEvent ev) {
     }
 }
 
+static HWND g_parentFrameCapture = nullptr;
 static WNDPROC g_parentFrameOrigWndProcCapture = nullptr;
 LRESULT CALLBACK ParentFrameSubclassWndProcCapture(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     ASSERT(g_parentFrameOrigWndProcCapture);
+    WNDPROC origWndProc = g_parentFrameOrigWndProcCapture;
     if (message == WM_SYSCOMMAND && wParam == SC_CLOSE) {
         AfxGetAppSettings().bHideCaptureSettings = true;
+    } else if (message == WM_NCDESTROY) {
+        if ((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) == ParentFrameSubclassWndProcCapture) {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)origWndProc);
+        }
+        if (hwnd == g_parentFrameCapture) {
+            g_parentFrameCapture = nullptr;
+            g_parentFrameOrigWndProcCapture = nullptr;
+        }
     }
-    return CallWindowProc(g_parentFrameOrigWndProcCapture, hwnd, message, wParam, lParam);
+    return CallWindowProc(origWndProc, hwnd, message, wParam, lParam);
+}
+
+static void SubclassParentFrameCapture(HWND hwnd)
+{
+    ASSERT(!g_parentFrameCapture);
+    if ((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) != ParentFrameSubclassWndProcCapture) {
+        g_parentFrameOrigWndProcCapture = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ParentFrameSubclassWndProcCapture);
+        g_parentFrameCapture = hwnd;
+    }
+}
+
+static void UnsubclassParentFrameCapture()
+{
+    if (g_parentFrameCapture && IsWindow(g_parentFrameCapture)) {
+        // if something subclassed the frame after us, it still calls into us, so keep the original procedure
+        if ((WNDPROC)GetWindowLongPtr(g_parentFrameCapture, GWLP_WNDPROC) != ParentFrameSubclassWndProcCapture) {
+            return;
+        }
+        SetWindowLongPtr(g_parentFrameCapture, GWLP_WNDPROC, (LONG_PTR)g_parentFrameOrigWndProcCapture);
+    }
+    g_parentFrameCapture = nullptr;
+    g_parentFrameOrigWndProcCapture = nullptr;
 }
 
 BOOL CPlayerCaptureBar::PreTranslateMessage(MSG* pMsg)
@@ -113,11 +145,14 @@ BOOL CPlayerCaptureBar::PreTranslateMessage(MSG* pMsg)
     if (CWnd* pParent1 = GetParent()) {
         CWnd* pParent2 = pParent1->GetParent();
         if (pParent2 != m_pParent) {
-            if (!g_parentFrameOrigWndProcCapture) {
-                g_parentFrameOrigWndProcCapture = SubclassWindow(pParent2->m_hWnd, ParentFrameSubclassWndProcCapture);
+            if (pParent2->m_hWnd != g_parentFrameCapture) {
+                UnsubclassParentFrameCapture();
+                if (!g_parentFrameCapture) {
+                    SubclassParentFrameCapture(pParent2->m_hWnd);
+                }
             }
         } else {
-            g_parentFrameOrigWndProcCapture = nullptr;
+            UnsubclassParentFrameCapture();
         }
     }
 
