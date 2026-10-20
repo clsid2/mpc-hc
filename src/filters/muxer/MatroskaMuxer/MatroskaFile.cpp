@@ -816,6 +816,25 @@ Seek::Seek(DWORD id)
 {
 }
 
+// Returns the bytes left over when written into space, or -1 if it does not fit.
+// A one byte gap cannot hold a Void, so it does not fit either.
+INT64 Seek::FitInto(QWORD space)
+{
+    INT64 len = (INT64)space - (INT64)Size();
+    if (len < 0 || len == 1) {
+        // drop the Cluster entries, players find clusters through the Cues
+        POSITION pos = SeekHeads.GetHeadPosition();
+        while (pos) {
+            POSITION cur = pos;
+            if (SeekHeads.GetNext(pos)->ID.GetSeekID() == 0x1F43B675) {
+                SeekHeads.RemoveAt(cur);
+            }
+        }
+        len = (INT64)space - (INT64)Size();
+    }
+    return (len < 0 || len == 1) ? -1 : len;
+}
+
 QWORD Seek::Size(bool fWithHeader)
 {
     QWORD len = 0;
