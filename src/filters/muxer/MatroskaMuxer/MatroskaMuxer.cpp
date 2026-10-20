@@ -680,19 +680,8 @@ DWORD CMatroskaMuxerFilter::ThreadProc()
                 INT64 fit = seek.FitInto(voidlen);
                 if (fit >= 0) {
                     SetStreamPosition(pStream, voidpos);
-                    QWORD len = (QWORD)fit;
                     seek.Write(pStream);
-
-                    if (len == 0) {
-                        // nothing to do
-                    } else if (len >= 2) {
-                        for (QWORD i = 0; i < 8; i++) {
-                            if (len >= (QWORD(1) << i * 7) - 2 && len <= (QWORD(1) << (i + 1) * 7) - 2) {
-                                Void(len - 2 - i).Write(pStream);
-                                break;
-                            }
-                        }
-                    }
+                    Void::Fill(pStream, (QWORD)fit);
                 }
 
                 if (abs(m_rtCurrent - (REFERENCE_TIME)info.Duration * 10000) > 10000000i64) {

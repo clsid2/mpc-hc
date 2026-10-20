@@ -425,6 +425,7 @@ namespace MatroskaWriter
         QWORD m_len;
     public:
         Void(QWORD len, DWORD id = 0xEC);
+        static HRESULT Fill(IStream* pStream, QWORD len);
         QWORD Size(bool fWithHeader = true);
         HRESULT Write(IStream* pStream);
     };
