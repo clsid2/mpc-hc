@@ -816,6 +816,25 @@ Seek::Seek(DWORD id)
 {
 }
 
+// Returns the bytes left over when written into space, or -1 if it does not fit.
+// A one byte gap cannot hold a Void, so it does not fit either.
+INT64 Seek::FitInto(QWORD space)
+{
+    INT64 len = (INT64)space - (INT64)Size();
+    if (len < 0 || len == 1) {
+        // drop the Cluster entries, players find clusters through the Cues
+        POSITION pos = SeekHeads.GetHeadPosition();
+        while (pos) {
+            POSITION cur = pos;
+            if (SeekHeads.GetNext(pos)->ID.GetSeekID() == 0x1F43B675) {
+                SeekHeads.RemoveAt(cur);
+            }
+        }
+        len = (INT64)space - (INT64)Size();
+    }
+    return (len < 0 || len == 1) ? -1 : len;
+}
+
 QWORD Seek::Size(bool fWithHeader)
 {
     QWORD len = 0;
@@ -907,6 +926,28 @@ Void::Void(QWORD len, DWORD id)
     : CID(id)
     , m_len(len)
 {
+}
+
+// Covers len bytes with Voids. With a minimal size length one Void cannot total
+// every size (129, 16386, ...), so those get a two byte Void first.
+HRESULT Void::Fill(IStream* pStream, QWORD len)
+{
+    while (len >= 2) {
+        QWORD n = 0;
+        for (QWORD i = 1; i <= 8 && i + 1 <= len; i++) {
+            if (Void(len - 1 - i).Size() == len) {
+                n = len - 1 - i;
+                break;
+            }
+        }
+        Void v(n);
+        len -= v.Size();
+        HRESULT hr = v.Write(pStream);
+        if (FAILED(hr)) {
+            return hr;
+        }
+    }
+    return len == 0 ? S_OK : E_INVALIDARG;
 }
 
 QWORD Void::Size(bool fWithHeader)
