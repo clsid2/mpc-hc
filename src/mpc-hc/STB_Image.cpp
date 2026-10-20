@@ -4,7 +4,7 @@
 #include "stb/stb_image.h"
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb/stb_image_resize2.h"
+#include "stb/deprecated/stb_image_resize2.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(push)
