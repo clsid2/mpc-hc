@@ -128,6 +128,7 @@
     <ClCompile Include="freetype2\src\cff\cff.c" />
     <ClCompile Include="freetype2\src\cid\type1cid.c" />
     <ClCompile Include="freetype2\src\gzip\ftgzip.c" />
+    <ClCompile Include="freetype2\src\hvf\hvf.c" />
     <ClCompile Include="freetype2\src\lzw\ftlzw.c" />
     <ClCompile Include="freetype2\src\pcf\pcf.c" />
     <ClCompile Include="freetype2\src\pfr\pfr.c" />
