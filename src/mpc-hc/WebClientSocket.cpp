@@ -484,7 +484,7 @@ bool CWebClientSocket::OnInfo(CStringA& hdr, CStringA& body, CStringA& mime)
 {
     m_pWebServer->LoadPage(IDR_HTML_INFO, body, AToT(m_path));
     body.Replace("[version]", UTF8(AfxGetMyApp()->m_strVersion));
-    body.Replace("[file]", UTF8(m_pMainFrame->GetFileName()));
+    body.Replace("[file]", HtmlSpecialChars(UTF8(m_pMainFrame->GetFileName())));
     body.Replace("[position]", UTF8(ReftimeToString2(m_pMainFrame->GetPos())));
     body.Replace("[duration]", UTF8(ReftimeToString2(m_pMainFrame->GetDur())));
     body.Replace("[size]", UTF8(GetSize()));
@@ -581,7 +581,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
 
             files += "<tr>\r\n";
             files +=
-                "<td class=\"dirname\"><a href=\"[path]?path=" + UrlEncode(drive) + "\">" + drive + "</a></td>\r\n"
+                "<td class=\"dirname\"><a href=\"[path]?path=" + UrlEncode(drive) + "\">" + HtmlSpecialChars(drive) + "</a></td>\r\n"
                 "<td class=\"dirtype\">Directory</td>\r\n"
                 "<td class=\"dirsize\">&nbsp;</td>\r\n"
                 "<td class=\"dirdate\">&nbsp;</td>\r\n";
@@ -621,7 +621,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
 
                 files += "<tr>\r\n";
                 files +=
-                    "<td class=\"dirname\"><a href=\"[path]?path=" + UTF8Arg(fullpath) + "\">" + UTF8(fd.cFileName) + "</a></td>\r\n"
+                    "<td class=\"dirname\"><a href=\"[path]?path=" + UTF8Arg(fullpath) + "\">" + HtmlSpecialChars(UTF8(fd.cFileName)) + "</a></td>\r\n"
                     "<td class=\"dirtype\">Directory</td>\r\n"
                     "<td class=\"dirsize\">&nbsp;</td>\r\n"
                     "<td class=\"dirdate\"><span class=\"nobr\">" + CStringA(CTime(fd.ftLastWriteTime).Format(_T("%Y.%m.%d %H:%M"))) + "</span></td>\r\n";
@@ -647,17 +647,20 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
                 CStringA size;
                 size.Format("%I64uK", ((UINT64)fd.nFileSizeHigh << 22) | (fd.nFileSizeLow >> 10));
 
-                CString type(_T("&nbsp;"));
-                LoadType(fullpath, type);
+                CString type;
+                CStringA typeHtml("&nbsp;");
+                if (LoadType(fullpath, type)) {
+                    typeHtml = HtmlSpecialChars(UTF8(type));
+                }
 
                 if (ext != nullptr) {
-                    files += "<tr class=\"" + UTF8(ext) + "\">\r\n";
+                    files += "<tr class=\"" + HtmlSpecialChars(UTF8(ext)) + "\">\r\n";
                 } else {
                     files += "<tr class=\"noext\">\r\n";
                 }
                 files +=
-                    "<td><a href=\"[path]?path=" + UTF8Arg(fullpath) + "\">" + UTF8(fd.cFileName) + "</a></td>\r\n"
-                    "<td><span class=\"nobr\">" + UTF8(type) + "</span></td>\r\n"
+                    "<td><a href=\"[path]?path=" + UTF8Arg(fullpath) + "\">" + HtmlSpecialChars(UTF8(fd.cFileName)) + "</a></td>\r\n"
+                    "<td><span class=\"nobr\">" + typeHtml + "</span></td>\r\n"
                     "<td><span class=\"nobr\">" + size + "</span></td>\r\n"
                     "<td><span class=\"nobr\">" + CStringA(CTime(fd.ftLastWriteTime).Format(_T("%Y.%m.%d %H:%M"))) + "</span></td>\r\n";
                 files += "</tr>\r\n";
@@ -712,9 +715,9 @@ bool CWebClientSocket::OnControls(CStringA& hdr, CStringA& body, CStringA& mime)
 
     m_pWebServer->LoadPage(IDR_HTML_CONTROLS, body, AToT(m_path));
     body.Replace("[filepatharg]", UTF8Arg(path));
-    body.Replace("[filepath]", UTF8(path));
+    body.Replace("[filepath]", HtmlSpecialChars(UTF8(path)));
     body.Replace("[filedirarg]", UTF8Arg(dir));
-    body.Replace("[filedir]", UTF8(dir));
+    body.Replace("[filedir]", HtmlSpecialChars(UTF8(dir)));
     body.Replace("[state]", UTF8(state));
     body.Replace("[statestring]", UTF8(statestring));
     body.Replace("[position]", UTF8(NumToCString(std::lround(m_pMainFrame->GetPos() / 10000i64))));
@@ -767,11 +770,11 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     CString reloadtime(_T("0")); // TODO
 
     m_pWebServer->LoadPage(IDR_HTML_VARIABLES, body, AToT(m_path));
-    body.Replace("[file]", UTF8(m_pMainFrame->GetFileName()));
+    body.Replace("[file]", HtmlSpecialChars(UTF8(m_pMainFrame->GetFileName())));
     body.Replace("[filepatharg]", UTF8Arg(path));
-    body.Replace("[filepath]", UTF8(path));
+    body.Replace("[filepath]", HtmlSpecialChars(UTF8(path)));
     body.Replace("[filedirarg]", UTF8Arg(dir));
-    body.Replace("[filedir]", UTF8(dir));
+    body.Replace("[filedir]", HtmlSpecialChars(UTF8(dir)));
     body.Replace("[state]", UTF8(state));
     body.Replace("[statestring]", UTF8(statestring));
     body.Replace("[position]", UTF8(NumToCString(std::lround(m_pMainFrame->GetPos() / 10000i64))));
@@ -785,9 +788,9 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     body.Replace("[reloadtime]", UTF8(reloadtime));
     body.Replace("[version]", UTF8(AfxGetMyApp()->m_strVersion));
     m_pMainFrame->GetCurrentAudioTrackIdx(&strName);
-    body.Replace("[audiotrack]", UTF8(strName));
+    body.Replace("[audiotrack]", HtmlSpecialChars(UTF8(strName)));
     m_pMainFrame->GetCurrentSubtitleTrackIdx(&strName);
-    body.Replace("[subtitletrack]", UTF8(strName));
+    body.Replace("[subtitletrack]", HtmlSpecialChars(UTF8(strName)));
 
     return true;
 }

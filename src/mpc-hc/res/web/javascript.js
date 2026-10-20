@@ -387,13 +387,13 @@ function onStatus (title, status, pos, posStr, dur, durStr, muted, volume) {
     var el;
 
     if (dur > 0 && posStr && durStr) {
-        timestr = posStr + "&nbsp;/&nbsp;" + durStr;
+        timestr = posStr + " / " + durStr;
     } else {
-        timestr = "&nbsp;";
+        timestr = " ";
     }
 
     if (title.length > maxTitle) {
-        title = title.substr(0, maxTitle - 3) + "&hellip;";
+        title = title.substr(0, maxTitle - 3) + "…";
     }
     if (!dur || dur === 0) {
         dur = 1;
@@ -401,7 +401,7 @@ function onStatus (title, status, pos, posStr, dur, durStr, muted, volume) {
 
     el = getById("title");
     if (el) {
-        el.innerHTML = title;
+        el.textContent = title;
     }
 
     var sbpercent = Math.floor(100 * pos / dur);
@@ -421,13 +421,13 @@ function onStatus (title, status, pos, posStr, dur, durStr, muted, volume) {
     }
 
     el = getById("status");
-    if (el && el.innerHTML !== status) {
-        el.innerHTML = status;
+    if (el && el.textContent !== status) {
+        el.textContent = status;
     }
 
     el = getById("timer");
-    if (el && el.innerHTML !== timestr) {
-        el.innerHTML = timestr;
+    if (el && el.textContent !== timestr) {
+        el.textContent = timestr;
     }
 
     el = getById("controlvolumemute");
