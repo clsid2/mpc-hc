@@ -487,7 +487,7 @@ bool CWebClientSocket::OnInfo(CStringA& hdr, CStringA& body, CStringA& mime)
     body.Replace("[file]", HtmlSpecialChars(UTF8(m_pMainFrame->GetFileName())));
     body.Replace("[position]", UTF8(ReftimeToString2(m_pMainFrame->GetPos())));
     body.Replace("[duration]", UTF8(ReftimeToString2(m_pMainFrame->GetDur())));
-    body.Replace("[size]", UTF8(GetSize()));
+    body.Replace("[size]", UTF8(GetSize(m_pMainFrame)));
     return true;
 }
 
@@ -784,7 +784,7 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     body.Replace("[volumelevel]", UTF8(volumelevel));
     body.Replace("[muted]", UTF8(muted));
     body.Replace("[playbackrate]", UTF8(NumToCString(m_pMainFrame->GetPlayingRate())));
-    body.Replace("[size]", UTF8(GetSize()));
+    body.Replace("[size]", UTF8(GetSize(m_pMainFrame)));
     body.Replace("[reloadtime]", UTF8(reloadtime));
     body.Replace("[version]", UTF8(AfxGetMyApp()->m_strVersion));
     m_pMainFrame->GetCurrentAudioTrackIdx(&strName);
@@ -1133,7 +1133,7 @@ static void AppendJSONTrack(CStringA& tracks, UINT id, const CString& name)
 // CMainFrame::OnNavStreamSelectSubMenu() counterpart: the n-th stream of the
 // group, taken from the first filter that provides any, is selected by
 // baseID + n.
-void CWebClientSocket::GetNavStreamTracksJSON(DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active) const
+void CWebClientSocket::GetNavStreamTracksJSON(CMainFrame* pMainFrame, DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active)
 {
     int count = 0;
 
@@ -1165,36 +1165,36 @@ void CWebClientSocket::GetNavStreamTracksJSON(DWORD dwSelGroup, UINT baseID, CSt
         }
     };
 
-    if (m_pMainFrame->m_pSplitterSS) {
-        addStreamSelectFilter(m_pMainFrame->m_pSplitterSS);
+    if (pMainFrame->m_pSplitterSS) {
+        addStreamSelectFilter(pMainFrame->m_pSplitterSS);
     }
-    if (!count && m_pMainFrame->m_pOtherSS[0]) {
-        addStreamSelectFilter(m_pMainFrame->m_pOtherSS[0]);
+    if (!count && pMainFrame->m_pOtherSS[0]) {
+        addStreamSelectFilter(pMainFrame->m_pOtherSS[0]);
     }
-    if (!count && m_pMainFrame->m_pOtherSS[1]) {
-        addStreamSelectFilter(m_pMainFrame->m_pOtherSS[1]);
+    if (!count && pMainFrame->m_pOtherSS[1]) {
+        addStreamSelectFilter(pMainFrame->m_pOtherSS[1]);
     }
 }
 
 // The ids we report are the ones CMainFrame::OnPlayAudio() expects, which are
 // not simply ID_AUDIO_SUBITEM_START + track index: when the audio switcher is
 // used the first menu entry opens the options dialog.
-CStringA CWebClientSocket::GetAudioTracksJSON() const
+CStringA CWebClientSocket::GetAudioTracksJSON(CMainFrame* pMainFrame)
 {
     CStringA tracks, json;
     int active = -1;
 
-    if (m_pMainFrame->GetLoadState() == MLS::LOADED) {
+    if (pMainFrame->GetLoadState() == MLS::LOADED) {
         DWORD cStreams = 0;
 
-        if (m_pMainFrame->GetPlaybackMode() == PM_DVD) {
+        if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
-            if (m_pMainFrame->m_pDVDI
-                    && SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
+            if (pMainFrame->m_pDVDI
+                    && SUCCEEDED(pMainFrame->m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
                     CString name;
-                    if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
+                    if (SUCCEEDED(pMainFrame->m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
                         GetLocaleString(lcid, LOCALE_SENGLANGUAGE, name);
                     } else {
                         name.Format(IDS_AG_UNKNOWN, int(i + 1));
@@ -1208,12 +1208,12 @@ CStringA CWebClientSocket::GetAudioTracksJSON() const
                     AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + i, name);
                 }
             }
-        } else if (m_pMainFrame->m_pAudioSwitcherSS
-                   && SUCCEEDED(m_pMainFrame->m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
+        } else if (pMainFrame->m_pAudioSwitcherSS
+                   && SUCCEEDED(pMainFrame->m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
             for (long i = 0; i < (long)cStreams; i++) {
                 DWORD dwFlags;
                 CComHeapPtr<WCHAR> pszName;
-                if (FAILED(m_pMainFrame->m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
+                if (FAILED(pMainFrame->m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
                     break;
                 }
 
@@ -1224,9 +1224,9 @@ CStringA CWebClientSocket::GetAudioTracksJSON() const
                 // the options dialog takes the first id, the streams follow it
                 AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + 1 + i, CString(pszName));
             }
-        } else if (m_pMainFrame->GetPlaybackMode() == PM_FILE
-                   || m_pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
-            GetNavStreamTracksJSON(1, ID_AUDIO_SUBITEM_START, tracks, active);
+        } else if (pMainFrame->GetPlaybackMode() == PM_FILE
+                   || pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            GetNavStreamTracksJSON(pMainFrame, 1, ID_AUDIO_SUBITEM_START, tracks, active);
         }
     }
 
@@ -1237,25 +1237,25 @@ CStringA CWebClientSocket::GetAudioTracksJSON() const
 
 // Same as above for the subtitles, whose menu holds a lot more entries the
 // actual tracks are offset by, see CMainFrame::OnPlaySubtitles().
-CStringA CWebClientSocket::GetSubtitleTracksJSON() const
+CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
 {
     CStringA tracks, json;
     int active = -1, count = 0;
 
-    if (m_pMainFrame->GetLoadState() == MLS::LOADED && !m_pMainFrame->m_fAudioOnly) {
+    if (pMainFrame->GetLoadState() == MLS::LOADED && !pMainFrame->m_fAudioOnly) {
         UINT baseID = ID_SUBTITLES_SUBITEM_START;
 
         // DVD subpicture streams are never handled by the internal subtitle
         // renderer, but external subtitles can be loaded on top of them
-        if (m_pMainFrame->GetPlaybackMode() == PM_DVD) {
+        if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
             BOOL bIsDisabled;
-            if (m_pMainFrame->m_pDVDI
-                    && SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
+            if (pMainFrame->m_pDVDI
+                    && SUCCEEDED(pMainFrame->m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
                     && ulStreamsAvailable > 0) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
-                    if (FAILED(m_pMainFrame->m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
+                    if (FAILED(pMainFrame->m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
                         continue;
                     }
 
@@ -1280,16 +1280,16 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON() const
             }
         }
 
-        if (m_pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
-            GetNavStreamTracksJSON(2, baseID, tracks, active);
-        } else if (!m_pMainFrame->m_pSubStreams.IsEmpty()) {
+        if (pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
+            GetNavStreamTracksJSON(pMainFrame, 2, baseID, tracks, active);
+        } else if (!pMainFrame->m_pSubStreams.IsEmpty()) {
             // the internal subtitle renderer's menu has 6 items before the list
             baseID += 6;
 
-            POSITION pos = m_pMainFrame->m_pSubStreams.GetHeadPosition();
+            POSITION pos = pMainFrame->m_pSubStreams.GetHeadPosition();
             int i = 0;
             while (pos) {
-                SubtitleInput& subInput = m_pMainFrame->m_pSubStreams.GetNext(pos);
+                SubtitleInput& subInput = pMainFrame->m_pSubStreams.GetNext(pos);
 
                 if (CComQIPtr<IAMStreamSelect> pSSF = subInput.pSourceFilter) {
                     DWORD cStreams;
@@ -1310,7 +1310,7 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON() const
                             continue;
                         }
 
-                        if (subInput.pSubStream == m_pMainFrame->m_pCurrentSubInput.pSubStream
+                        if (subInput.pSubStream == pMainFrame->m_pCurrentSubInput.pSubStream
                                 && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
                             active = count + i;
                         }
@@ -1324,7 +1324,7 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON() const
                         continue;
                     }
 
-                    if (subInput.pSubStream == m_pMainFrame->m_pCurrentSubInput.pSubStream) {
+                    if (subInput.pSubStream == pMainFrame->m_pCurrentSubInput.pSubStream) {
                         active = count + i + pSubStream->GetStream();
                     }
 
@@ -1347,8 +1347,8 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON() const
             if (!AfxGetAppSettings().fEnableSubtitles) {
                 active = -1;
             }
-        } else if (m_pMainFrame->GetPlaybackMode() == PM_FILE) {
-            GetNavStreamTracksJSON(2, baseID, tracks, active);
+        } else if (pMainFrame->GetPlaybackMode() == PM_FILE) {
+            GetNavStreamTracksJSON(pMainFrame, 2, baseID, tracks, active);
         }
     }
 
@@ -1357,9 +1357,38 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON() const
     return json;
 }
 
-bool CWebClientSocket::OnStatusJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+// Runs build on the UI thread and copies its output into body. The wait is
+// bounded as in OnCommand, so a frame that does not answer in time (a hung UI
+// thread, or one blocked in CWebServer's destructor waiting for this thread)
+// costs one 503 rather than every other client's request. The request object is
+// shared with the frame, see CMainFrame::UIRequest: a send that timed out is
+// still delivered later, and by then this socket and its strings may be gone.
+bool CWebClientSocket::BuildOnUIThread(std::function<void(CMainFrame*, CStringA&)> build, CStringA& hdr, CStringA& body, CStringA& mime)
 {
-    OAFilterState fs = m_pMainFrame->GetMediaState();
+    auto pRequest = DEBUG_NEW CMainFrame::UIRequest{ std::move(build) };
+
+    DWORD_PTR dwResult;
+    if (::SendMessageTimeout(m_pMainFrame->GetSafeHwnd(), WM_MPC_UI_REQUEST, 0, reinterpret_cast<LPARAM>(pRequest),
+                             SMTO_NORMAL, 5000, &dwResult)) {
+        body = pRequest->body;
+        mime = "application/json";
+    } else {
+        if (GetLastError() != ERROR_TIMEOUT) {
+            // not delivered at all (no frame to deliver to), so the frame's
+            // reference is ours to drop as well
+            pRequest->Release();
+        }
+        hdr = "HTTP/1.0 503 Service Unavailable\r\n";
+    }
+    pRequest->Release();
+
+    // the request is always "handled", successfully or not.
+    return true;
+}
+
+void CWebClientSocket::BuildStatusJSON(CMainFrame* pMainFrame, CStringA& body)
+{
+    OAFilterState fs = pMainFrame->GetMediaState();
     CString statestring;
     switch (fs) {
         case State_Stopped:
@@ -1377,34 +1406,35 @@ bool CWebClientSocket::OnStatusJSON(CStringA& hdr, CStringA& body, CStringA& mim
     }
 
     body = "{";
-    body += "\"file\":" + JSONString(m_pMainFrame->GetFileName());
-    body += ",\"path\":" + JSONString(m_pMainFrame->m_wndPlaylistBar.GetCurFileName());
+    body += "\"file\":" + JSONString(pMainFrame->GetFileName());
+    body += ",\"path\":" + JSONString(pMainFrame->m_wndPlaylistBar.GetCurFileName());
     body.AppendFormat(",\"state\":%ld", fs);
     body += ",\"stateString\":" + JSONString(statestring);
     body.AppendFormat(",\"position\":%ld,\"duration\":%ld",
-                      std::lround(m_pMainFrame->GetPos() / 10000i64),
-                      std::lround(m_pMainFrame->GetDur() / 10000i64));
+                      std::lround(pMainFrame->GetPos() / 10000i64),
+                      std::lround(pMainFrame->GetDur() / 10000i64));
     body.AppendFormat(",\"volume\":%d,\"muted\":%s,\"rate\":%g",
-                      m_pMainFrame->GetVolume(), m_pMainFrame->IsMuted() ? "true" : "false",
-                      m_pMainFrame->GetPlayingRate());
-    body += ",\"size\":" + JSONString(GetSize());
+                      pMainFrame->GetVolume(), pMainFrame->IsMuted() ? "true" : "false",
+                      pMainFrame->GetPlayingRate());
+    body += ",\"size\":" + JSONString(GetSize(pMainFrame));
     body += ",\"version\":" + JSONString(AfxGetMyApp()->m_strVersion);
     body.AppendFormat(",\"preview\":%s", AfxGetAppSettings().bWebUIEnablePreview ? "true" : "false");
-    body += ",\"audio\":" + GetAudioTracksJSON();
-    body += ",\"subtitle\":" + GetSubtitleTracksJSON();
+    body += ",\"audio\":" + GetAudioTracksJSON(pMainFrame);
+    body += ",\"subtitle\":" + GetSubtitleTracksJSON(pMainFrame);
     body += "}";
-
-    mime = "application/json";
-
-    return true;
 }
 
-bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+bool CWebClientSocket::OnStatusJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    return BuildOnUIThread(BuildStatusJSON, hdr, body, mime);
+}
+
+void CWebClientSocket::BuildPlaylistJSON(CMainFrame* pMainFrame, CStringA& body)
 {
     CStringA items;
     int index = 0;
 
-    CPlaylist& pl = m_pMainFrame->m_wndPlaylistBar.m_pl;
+    CPlaylist& pl = pMainFrame->m_wndPlaylistBar.m_pl;
     POSITION pos = pl.GetHeadPosition();
     while (pos) {
         CPlaylistItem& pli = pl.GetNext(pos);
@@ -1419,11 +1449,12 @@ bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& m
     }
 
     body.Format("{\"active\":%d,\"items\":[%s]}",
-                m_pMainFrame->m_wndPlaylistBar.GetSelIdx(), items.GetString());
+                pMainFrame->m_wndPlaylistBar.GetSelIdx(), items.GetString());
+}
 
-    mime = "application/json";
-
-    return true;
+bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& mime)
+{
+    return BuildOnUIThread(BuildPlaylistJSON, hdr, body, mime);
 }
 
 bool CWebClientSocket::OnCommandsJSON(CStringA& hdr, CStringA& body, CStringA& mime)
@@ -1547,12 +1578,12 @@ bool CWebClientSocket::OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mim
     return true;
 }
 
-CString CWebClientSocket::GetSize() const
+CString CWebClientSocket::GetSize(CMainFrame* pMainFrame)
 {
     CString sizeString;
     LONGLONG size = 0;
 
-    if (CComQIPtr<IBaseFilter> pBF = m_pMainFrame->m_pFSF) {
+    if (CComQIPtr<IBaseFilter> pBF = pMainFrame->m_pFSF) {
         BeginEnumPins(pBF, pEP, pPin) {
             if (CComQIPtr<IAsyncReader> pAR = pPin) {
                 LONGLONG total, available;
@@ -1567,7 +1598,7 @@ CString CWebClientSocket::GetSize() const
 
     if (size == 0) {
         WIN32_FIND_DATA wfd;
-        HANDLE hFind = FindFirstFile(m_pMainFrame->m_wndPlaylistBar.GetCurFileName(), &wfd);
+        HANDLE hFind = FindFirstFile(pMainFrame->m_wndPlaylistBar.GetCurFileName(), &wfd);
         if (hFind != INVALID_HANDLE_VALUE) {
             FindClose(hFind);
             size = (LONGLONG(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
