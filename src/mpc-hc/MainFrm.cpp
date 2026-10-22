@@ -1491,7 +1491,7 @@ void CMainFrame::OnClose()
     m_wndPlaylistBar.SavePlaylist();
     m_wndPlaylistBar.ClearExternalPlaylistIfInvalid();
 
-    if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING) {
+    if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING || GetLoadState() == MLS::FAILING) {
         CloseMediaInternal();
     }
 
