@@ -21606,11 +21606,11 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
 
         // purge possible queued OnFilePostOpenmedia()
         if (PeekMessage(&msg, m_hWnd, WM_POSTOPEN, WM_POSTOPEN, PM_REMOVE | PM_NOYIELD)) {
-            free((OpenMediaData*)msg.lParam);
+            delete (OpenMediaData*)msg.lParam;
         }
         // purge possible queued OnOpenMediaFailed()
         if (PeekMessage(&msg, m_hWnd, WM_OPENFAILED, WM_OPENFAILED, PM_REMOVE | PM_NOYIELD)) {
-            free((OpenMediaData*)msg.lParam);
+            delete (OpenMediaData*)msg.lParam;
         }
 
         // abort finished, unset the flag
