@@ -88,6 +88,12 @@ bool CYoutubeDLInstance::Run(CString url)
 
     YDL_LOG(L"%s", url);
 
+    // a quote is not a valid URL character
+    if (url.Find(_T('"')) >= 0) {
+        YDL_LOG(L"Rejected URL containing a quote");
+        return false;
+    }
+
     bool ytdlp = true;
     CString args = _T("\"") + GetYDLExePath(&ytdlp) + _T("\" -J --no-warnings");
     if (!s.sYDLSubsPreference.IsEmpty()) {
