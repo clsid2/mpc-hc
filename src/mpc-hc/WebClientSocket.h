@@ -87,8 +87,15 @@ public:
     bool OnBrowseJSON(CStringA& hdr, CStringA& body, CStringA& mime);
 
 private:
-    CString GetSize() const;
-    void GetNavStreamTracksJSON(DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active) const;
-    CStringA GetAudioTracksJSON() const;
-    CStringA GetSubtitleTracksJSON() const;
+    static CString GetSize(CMainFrame* pMainFrame);
+    // The track and playlist answers walk lists the UI thread rebuilds whenever
+    // a file opens or the playlist changes, so they are built on that thread
+    // (see BuildOnUIThread). They take the frame rather than reading m_pMainFrame
+    // because a request that timed out runs after this socket may be gone.
+    static void GetNavStreamTracksJSON(CMainFrame* pMainFrame, DWORD dwSelGroup, UINT baseID, CStringA& tracks, int& active);
+    static CStringA GetAudioTracksJSON(CMainFrame* pMainFrame);
+    static CStringA GetSubtitleTracksJSON(CMainFrame* pMainFrame);
+    static void BuildStatusJSON(CMainFrame* pMainFrame, CStringA& body);
+    static void BuildPlaylistJSON(CMainFrame* pMainFrame, CStringA& body);
+    bool BuildOnUIThread(std::function<void(CMainFrame*, CStringA&)> build, CStringA& hdr, CStringA& body, CStringA& mime);
 };
