@@ -653,11 +653,12 @@ bool CFileAssoc::GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts)
     LONG ret;
     DWORD i = 0;
     CString keyName, ext;
-    DWORD len = MAX_PATH;
+    DWORD bufLen = MAX_PATH;
+    DWORD len = bufLen;
 
     LoadAAR();
 
-    while ((ret = rkHKCR.EnumKey(i, keyName.GetBuffer(len), &len)) != ERROR_NO_MORE_ITEMS) {
+    while ((ret = rkHKCR.EnumKey(i, keyName.GetBuffer(bufLen), &len)) != ERROR_NO_MORE_ITEMS) {
         if (ret == ERROR_SUCCESS) {
             keyName.ReleaseBuffer(len);
 
@@ -670,8 +671,15 @@ bool CFileAssoc::GetAssociatedExtensionsFromRegistry(CAtlList<CString>& exts)
             }
 
             i++;
-            len = MAX_PATH;
+        } else {
+            keyName.ReleaseBuffer(0);
+            // retry the same index with a bigger buffer, give up on anything else
+            if (ret != ERROR_MORE_DATA || bufLen >= 32768) {
+                break;
+            }
+            bufLen *= 2;
         }
+        len = bufLen;
     }
 
     return !exts.IsEmpty();
