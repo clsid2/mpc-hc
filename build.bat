@@ -326,20 +326,6 @@ CALL "%COMMON%" :SubMsg "INFO" "%2 signed successfully."
 POPD
 EXIT /B
 
-
-:SubCopyDXDll
-REM SubCopyDXDll skipped
-EXIT /B
-IF /I "%BUILDCFG%" == "Debug" EXIT /B
-PUSHD "%BIN_DIR%"
-COPY /Y /V "%WindowsSdkDir%\Redist\D3D\%~1\d3dcompiler_%MPC_D3D_COMPILER_VERSION%.dll" "mpc-hc_%~1%~2" >NUL
-IF %ERRORLEVEL% NEQ 0 CALL "%COMMON%" :SubMsg "ERROR" "Problem when copying %WindowsSdkDir%\Redist\D3D\%~1\d3dcompiler_%MPC_D3D_COMPILER_VERSION%.dll" & EXIT /B
-EXPAND "%DXSDK_DIR%\Redist\Jun2010_d3dx9_%MPC_DX_SDK_NUMBER%_%~1.cab" -F:d3dx9_%MPC_DX_SDK_NUMBER%.dll "mpc-hc_%~1%~2"
-IF %ERRORLEVEL% NEQ 0 CALL "%COMMON%" :SubMsg "ERROR" "Problem when extracting Jun2010_d3dx9_%MPC_DX_SDK_NUMBER%_%~1.cab" & EXIT /B
-POPD
-EXIT /B
-
-
 :SubCreateInstaller
 IF %ERRORLEVEL% NEQ 0 EXIT /B
 
@@ -353,8 +339,6 @@ IF DEFINED MPCHC_LITE (
   SET MPCHC_INNO_DEF=%MPCHC_INNO_DEF% /DMPCHC_LITE
   SET MPCHC_COPY_DX_DLL_ARGS=%MPCHC_COPY_DX_DLL_ARGS% " Lite"
 )
-
-CALL :SubCopyDXDll %MPCHC_COPY_DX_DLL_ARGS%
 
 CALL "%COMMON%" :SubDetectInnoSetup
 
