@@ -69,7 +69,11 @@ CSubtitleInputPin::CSubtitleInputPin(CBaseFilter* pFilter, CCritSec* pLock, CCri
 
 CSubtitleInputPin::~CSubtitleInputPin()
 {
-    m_bExitDecodingThread = m_bStopDecoding = true;
+    {
+        // set under the lock so the notify cannot fall between the waiter's predicate check and its block
+        std::lock_guard<std::mutex> lock(m_mutexQueue);
+        m_bExitDecodingThread = m_bStopDecoding = true;
+    }
     m_condQueueReady.notify_one();
     if (m_decodeThread.joinable()) {
         m_decodeThread.join();

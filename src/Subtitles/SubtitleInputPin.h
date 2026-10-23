@@ -25,6 +25,7 @@
 #include <list>
 #include <memory>
 #include <thread>
+#include <atomic>
 #include <condition_variable>
 
 #include "../SubPic/ISubPic.h"
@@ -63,7 +64,7 @@ class CSubtitleInputPin : public CBaseInputPin
     std::list<std::unique_ptr<SubtitleSample>> m_sampleQueue;
     std::vector<BYTE> m_lastHeader;
 
-    bool m_bExitDecodingThread, m_bStopDecoding;
+    std::atomic_bool m_bExitDecodingThread, m_bStopDecoding;
     std::thread m_decodeThread;
     std::mutex m_mutexQueue; // to protect m_sampleQueue
     std::condition_variable m_condQueueReady;
