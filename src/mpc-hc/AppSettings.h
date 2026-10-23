@@ -977,6 +977,8 @@ public:
 
     int             DebugLogMask;
 
+    bool            HasD3DCompiler47() const;
+
     bool            IsD3DFullscreen() const;
     CString         SelectedAudioRenderer() const;
     bool            IsISRAutoLoadEnabled() const;

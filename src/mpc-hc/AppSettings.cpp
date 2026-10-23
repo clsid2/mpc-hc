@@ -815,6 +815,21 @@ CAppSettings::~CAppSettings()
     }
 }
 
+bool CAppSettings::HasD3DCompiler47() const
+{
+    if (::PathFileExistsW(PathUtils::GetProgramPath(false) + L"\\D3DCompiler_47.dll")) {
+        return true;
+    }
+    wchar_t syspath[MAX_PATH];
+    UINT len = GetSystemDirectoryW(syspath, MAX_PATH);
+    if (len > 0 && len < MAX_PATH) {
+        if (::PathFileExistsW(CString(syspath) + L"\\D3DCompiler_47.dll")) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool CAppSettings::IsD3DFullscreen() const
 {
     if (iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || iDSVideoRendererType == VIDRNDT_DS_SYNC) {
@@ -2423,12 +2438,15 @@ void CAppSettings::LoadSettings()
                     }
                 }
             }
+            if (!HasD3DCompiler47()) {
+                iDSVideoRendererType = IsVideoRendererAvailable(VIDRNDT_DS_EVR_CUSTOM) ? VIDRNDT_DS_EVR_CUSTOM : VIDRNDT_DS_VMR9RENDERLESS;
+            }
         }
 
         bool gpu_changed = previous_gpuid1 != gpuid1;
-        // adjust settings if detection changed
-        if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter()) {
-            if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+        if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+            // adjust settings if detection changed
+            if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter() && HasD3DCompiler47()) {
                 iDSVideoRendererType = VIDRNDT_DS_MPCVR;
                 bool softwaredec = (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), -1) == HWAccel_None);
                 if (gpuinfo.SupportD3D11VA()) {
