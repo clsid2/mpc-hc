@@ -1029,6 +1029,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     CMPCThemeUtil::enableWindows10DarkFrame(this);
 
+    // keep DWM rendering the frame, or uxtheme paints a basic frame while the style changes for fullscreen
+    DWMNCRENDERINGPOLICY policy = DWMNCRP_ENABLED;
+    ::DwmSetWindowAttribute(m_hWnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy));
+
     if (IsWindows8Point1OrGreater()) {
         m_dpi.Override(m_hWnd);
     }
