@@ -88,6 +88,12 @@ bool CYoutubeDLInstance::Run(CString url)
 
     YDL_LOG(L"%s", url);
 
+    // a quote is not a valid URL character
+    if (url.Find(_T('"')) >= 0) {
+        YDL_LOG(L"Rejected URL containing a quote");
+        return false;
+    }
+
     bool ytdlp = true;
     CString args = _T("\"") + GetYDLExePath(&ytdlp) + _T("\" -J --no-warnings");
     if (!s.sYDLSubsPreference.IsEmpty()) {
@@ -97,13 +103,14 @@ bool CYoutubeDLInstance::Run(CString url)
     if (url.Find(_T("list=")) > 0) {
         args.Append(_T(" --ignore-errors --no-playlist"));
     }
-    args.Append(_T(" \"") + url + _T("\""));
     if (ytdlp) {
         WCHAR lpszTempPath[MAX_PATH] = { 0 };
         if (GetTempPathW(MAX_PATH, lpszTempPath)) {
-            args.AppendFormat(_T(" -P temp:\"%s\""), lpszTempPath);
+            args.Append(_T(" -P ") + PathUtils::QuoteArg(CString(_T("temp:")) + lpszTempPath));
         }
     }
+    // the URL goes last, after "--", so no part of it can be read as an option
+    args.Append(_T(" -- ") + PathUtils::QuoteArg(url));
 
     ZeroMemory(&proc_info, sizeof(PROCESS_INFORMATION));
     ZeroMemory(&startup_info, sizeof(STARTUPINFO));
