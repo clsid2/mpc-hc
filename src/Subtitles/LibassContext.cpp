@@ -1220,7 +1220,12 @@ void LibassContext::LoadASSSample(char *data, int dataSize, REFERENCE_TIME tStar
 }
 
 void LibassContext::LoadTrackData(ASS_Track* track, char* data, int size) {
-    m_trackData = data;
+    // data is a counted buffer, embedded tracks pass the format block which has no terminator
+    if (data && size > 0) {
+        m_trackData.assign(data, size);
+    } else {
+        m_trackData.clear();
+    }
     ass_process_codec_private(m_track.get(), data, size);
 }
 
