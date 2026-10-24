@@ -2683,8 +2683,9 @@ __int64 CAppSettings::ConvertTimeToMSec(const CString& time) const
     __int64 mSec = 0;
     __int64 mult = 1;
 
+    // short values such as "90" or "5:00" are plain seconds and minutes:seconds
     int pos = time.GetLength() - 1;
-    if (pos < 3) {
+    if (pos < 0) {
         return 0;
     }
 

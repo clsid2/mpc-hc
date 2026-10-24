@@ -1422,8 +1422,8 @@ void ShortenLongPath(CString& path)
         if (length > 0 && length < MAX_PATH) {
             path = buffer;
             path.Replace(_T("\\\\?\\"), _T(""));
-            delete[] buffer;
         }
+        delete[] buffer;
     }
 }
 

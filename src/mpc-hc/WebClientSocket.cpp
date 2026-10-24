@@ -41,12 +41,13 @@ CWebClientSocket::CWebClientSocket(CWebServer* pWebServer, CMainFrame* pMainFram
     , m_parsingState(PARSING_HEADER)
     , m_dataLen(0)
 {
-    m_buff = DEBUG_NEW char[m_buffMaxLen];
+    // malloc rather than new[], because OnReceive grows it with realloc
+    m_buff = (char*)malloc(m_buffMaxLen);
 }
 
 CWebClientSocket::~CWebClientSocket()
 {
-    delete [] m_buff;
+    free(m_buff);
 }
 
 bool CWebClientSocket::SetCookie(CStringA name, CString value, __time64_t expire, CString path, CString domain)
@@ -193,15 +194,14 @@ void CWebClientSocket::HandleRequest()
                 CString value;
                 m_cookie.GetNextAssoc(pos, key, value);
                 reshdr += "Set-Cookie: " + key + "=" + TToA(value);
-                POSITION pos2 = m_cookieattribs.GetStartPosition();
-                while (pos2) {
-                    cookie_attribs attribs;
-                    m_cookieattribs.GetNextAssoc(pos2, key, attribs);
+                // only this cookie's own attributes, not those of every cookie
+                cookie_attribs attribs;
+                if (m_cookieattribs.Lookup(key, attribs)) {
                     if (!attribs.path.IsEmpty()) {
                         reshdr += "; path=" + attribs.path;
                     }
                     if (!attribs.expire.IsEmpty()) {
-                        reshdr += "; expire=" + attribs.expire;
+                        reshdr += "; expires=" + attribs.expire;
                     }
                     if (!attribs.domain.IsEmpty()) {
                         reshdr += "; domain=" + attribs.domain;
@@ -255,21 +255,32 @@ void CWebClientSocket::ParseHeader(const char* headerEnd)
     m_path.SetString(start, int(end - start));
     start = end + 1;
     end = strstr(start, "\r\n");
+    if (!end) {
+        ASSERT(false);
+        return;
+    }
     m_ver.SetString(start, int(end - start));
     m_ver.MakeUpper();
 
     CStringA key, val;
     start = end + 2;
     while (start < headerEnd) {
-        // Parse the header fields
-        end = strchr(start, ':');
-        key.SetString(start, int(end - start));
-        start = end + 1;
-        end = strstr(start, "\r\n");
-        val.SetString(start, int(end - start));
-        start = end + 2;
-
-        m_hdrlines[key.MakeLower()] = val;
+        // Parse the header fields. The header block ends with an empty line,
+        // so every line in it, including the last one, ends with "\r\n".
+        char* lineEnd = strstr(start, "\r\n");
+        if (!lineEnd || lineEnd > headerEnd) {
+            break;
+        }
+        end = (char*)memchr(start, ':', lineEnd - start);
+        if (end) {
+            key.SetString(start, int(end - start));
+            val.SetString(end + 1, int(lineEnd - end - 1));
+            key.Trim();
+            val.Trim();
+            m_hdrlines[key.MakeLower()] = val;
+        }
+        // a line without a colon is malformed, skip it rather than read past it
+        start = lineEnd + 2;
     }
 
     if (m_cmd == "POST") {
@@ -822,15 +833,22 @@ bool CWebClientSocket::OnStatus(CStringA& hdr, CStringA& body, CStringA& mime)
     REFERENCE_TIME pos = m_pMainFrame->GetPos();
     REFERENCE_TIME dur = m_pMainFrame->GetDur();
 
-    title.Replace(_T("'"), _T("\\'"));
-    status.Replace(_T("'"), _T("\\'"));
+    // The web UI (and other clients) read this with a regular expression rather
+    // than evaluating it, so a backslash escape is shown as is: escaping "'"
+    // as "\'" put a stray backslash into every title with an apostrophe. A line
+    // break though stops the expression from matching at all.
+    CString filePath = (LPCTSTR)file;
+    for (CString* str : { &title, &status, &filePath }) {
+        str->Replace(_T('\r'), _T(' '));
+        str->Replace(_T('\n'), _T(' '));
+    }
 
     body.Format("OnStatus(\"%s\", \"%s\", %ld, \"%s\", %ld, \"%s\", %d, %d, \"%s\")", // , \"%s\"
                 UTF8(title).GetString(), UTF8(status).GetString(),
                 std::lround(pos / 10000i64), UTF8(ReftimeToString2(pos)).GetString(),
                 std::lround(dur / 10000i64), UTF8(ReftimeToString2(dur)).GetString(),
                 m_pMainFrame->IsMuted(), m_pMainFrame->GetVolume(),
-                UTF8(file).GetString()/*, UTF8(dir)*/);
+                UTF8(filePath).GetString()/*, UTF8(dir)*/);
 
     return true;
 }
@@ -942,6 +960,7 @@ bool CWebClientSocket::OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& m
 
         int bpp = bih->biBitCount;
         if (bpp != 16 && bpp != 24 && bpp != 32) {
+            delete [] pData;
             return false;
         }
         bool topdown = (bih->biHeight < 0);
@@ -951,7 +970,8 @@ bool CWebClientSocket::OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& m
 
         const BYTE* src = pData + sizeof(*bih);
 
-        int srcpitch = w * (bpp >> 3);
+        // DIB rows are padded to a DWORD boundary
+        int srcpitch = ((w * bpp + 31) >> 5) << 2;
         int dstpitch = w * 4;
 
         if (topdown) {
@@ -962,7 +982,8 @@ bool CWebClientSocket::OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& m
 
         {
             CBitmap bmp;
-            bmp.CreateBitmap(w, h, bih->biPlanes, bpp, p);
+            // p holds the image converted to 32 bits above, whatever the source depth
+            bmp.CreateBitmap(w, h, 1, 32, p);
             delete [] p;
 
             CImage img;
@@ -984,7 +1005,9 @@ bool CWebClientSocket::OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& m
                 }
             }
 
-            pStream->Release();
+            if (pStream) {
+                pStream->Release();
+            }
             delete [] pData;
 
             hdr +=
@@ -1069,10 +1092,9 @@ bool CWebClientSocket::OnDVBSetChannel(CStringA& hdr, CStringA& body, CStringA& 
     return true;
 }
 
-// Escape a UTF-8 string so that it can be used as a JSON string value. We can't
-// use EscapeJSONString() from text.h: it escapes the quotes before the
-// backslashes, which then escapes the backslashes it has just added itself, and
-// it leaves the other control characters alone.
+// Escape a UTF-8 string so that it can be used as a JSON string value. Unlike
+// EscapeJSONString() from text.h this also escapes the other control
+// characters.
 static CStringA JSONEscape(const CStringA& str)
 {
     CStringA escaped;
