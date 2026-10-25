@@ -4217,6 +4217,8 @@ BEGIN
                             "Display video info (codec name, resolution) in status bar."
     IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR
                             "Pause playback while dragging the seekbar."
+    IDS_PPAGEADVANCED_PAUSE_WHEN_MINIMIZED
+                            "Pause video playback when the player is minimized, and resume it when the player is restored. Audio files keep playing."
     IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE
                             "Show confirmation prompt before deleting file"
     IDS_PPAGEADVANCED_LIBASS_FOR_SRT

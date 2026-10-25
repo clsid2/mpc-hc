@@ -886,6 +886,7 @@ CMainFrame::CMainFrame()
     , m_bFirstPlay(false)
     , m_bOpeningInAutochangedMonitorMode(false)
     , m_bPausedForAutochangeMonitorMode(false)
+    , m_bPausedByMinimize(false)
     , m_bThemeChangePending(false)
     , m_fAudioOnly(true)
     , m_iDVDDomain(DVD_DOMAIN_Stop)
@@ -1973,6 +1974,23 @@ void CMainFrame::OnMoving(UINT fwSide, LPRECT pRect)
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy)
 {
+    if (nType == SIZE_MINIMIZED) {
+        // Like locking the session (see OnSessionChange): video that nobody can see is paused,
+        // audio keeps playing, since minimizing is how people listen in the background.
+        if (AfxGetAppSettings().bPauseWhenMinimized && !m_bPausedByMinimize && GetLoadState() == MLS::LOADED
+                && !m_fAudioOnly && GetMediaStateDirect() == State_Running) {
+            m_bPausedByMinimize = true;
+            SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
+        }
+    } else if (m_bPausedByMinimize && (nType == SIZE_RESTORED || nType == SIZE_MAXIMIZED)) {
+        m_bPausedByMinimize = false;
+        // only resume what was paused here: not if the file was closed, or playback was
+        // stopped or started again in the meantime
+        if (GetLoadState() == MLS::LOADED && GetMediaStateDirect() == State_Paused) {
+            SendMessage(WM_COMMAND, ID_PLAY_PLAY);
+        }
+    }
+
     if (m_bTrayIcon && nType == SIZE_MINIMIZED) {
         ShowWindow(SW_HIDE);
     } else {

@@ -306,6 +306,7 @@ CAppSettings::CAppSettings()
     , bUseMediainfoLoadFileDuration(false)
     , bCaptureDeinterlace(false)
     , bPauseWhileDraggingSeekbar(true)
+    , bPauseWhenMinimized(false)
     , bConfirmFileDelete(true)
     , bShowVolumePercentage(true)
     , bHistoryInAppData(false)
@@ -1436,6 +1437,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MOUSE_LEFTUP_DELAY, iMouseLeftUpDelay);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, bCaptureDeinterlace);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, bPauseWhileDraggingSeekbar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, bPauseWhenMinimized);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, bConfirmFileDelete);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, bShowVolumePercentage);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, bHistoryInAppData);
@@ -1921,6 +1923,7 @@ void CAppSettings::LoadSettings()
     bUseMediainfoLoadFileDuration = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION, FALSE);
     bCaptureDeinterlace = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, FALSE);
     bPauseWhileDraggingSeekbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, TRUE);
+    bPauseWhenMinimized = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, FALSE);
     bConfirmFileDelete = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, TRUE);
     bShowVolumePercentage = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, TRUE);
     bHistoryInAppData = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, FALSE);
