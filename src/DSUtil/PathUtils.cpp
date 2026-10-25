@@ -254,7 +254,13 @@ namespace PathUtils
     {
         bool ret = IsDir(path) || CreateDirectory(path, nullptr);
         if (!ret) {
-            ret = CreateDirRecursive(DirName(path)) && CreateDirectory(path, nullptr);
+            // A root that does not exist (a missing drive, an unreachable share) is its own
+            // parent, so stop there rather than recursing until the stack runs out.
+            CString parent = DirName(path);
+            if (parent.IsEmpty() || parent.CompareNoCase(path) == 0) {
+                return false;
+            }
+            ret = CreateDirRecursive(parent) && CreateDirectory(path, nullptr);
         }
         return ret;
     }
