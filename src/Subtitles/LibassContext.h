@@ -33,6 +33,9 @@ std::string ws2s(const std::wstring& wstr);
 std::wstring s2ws(const std::string& str);
 
 inline void swapRGBtoBGR(std::string& color) {
+    if (color.size() != 6) {
+        return;
+    }
     std::string tmp = color;
 
     color[0] = tmp[4];
