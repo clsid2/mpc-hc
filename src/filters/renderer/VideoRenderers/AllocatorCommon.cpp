@@ -28,6 +28,7 @@
 #include "madVRAllocatorPresenter.h"
 #include "EVRAllocatorPresenter.h"
 #include "MPCVRAllocatorPresenter.h"
+#include "FrankyAllocatorPresenter.h"
 
 bool IsVMR9InGraph(IFilterGraph* pFG)
 {
@@ -59,7 +60,7 @@ HRESULT CreateAP9(const CLSID& clsid, HWND hWnd, bool bFullscreen, ISubPicAlloca
     } else if (IsEqualCLSID(clsid, CLSID_madVRAllocatorPresenter)) {
         *ppAP = DEBUG_NEW CmadVRAllocatorPresenter(hWnd, hr, Error);
     } else if (IsEqualCLSID(clsid, CLSID_FrankyRenderer)) {
-        *ppAP = DEBUG_NEW CMPCVRAllocatorPresenter(hWnd, hr, Error, true);
+        *ppAP = DEBUG_NEW CFrankyAllocatorPresenter(hWnd, hr, Error);
     } else if (IsEqualCLSID(clsid, CLSID_MPCVRAllocatorPresenter)) {
         *ppAP = DEBUG_NEW CMPCVRAllocatorPresenter(hWnd, hr, Error);
     } else {

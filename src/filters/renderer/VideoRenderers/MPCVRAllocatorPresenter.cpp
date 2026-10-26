@@ -48,9 +48,8 @@ using namespace DSObjects;
 // CMPCVRAllocatorPresenter
 //
 
-CMPCVRAllocatorPresenter::CMPCVRAllocatorPresenter(HWND hWnd, HRESULT& hr, CString& _Error, bool franky)
+CMPCVRAllocatorPresenter::CMPCVRAllocatorPresenter(HWND hWnd, HRESULT& hr, CString& _Error)
     : CSubPicAllocatorPresenterImpl(hWnd, hr, &_Error)
-    , m_bFranky(franky)
 {
     if (FAILED(hr)) {
         _Error += L"ISubPicAllocatorPresenterImpl failed\n";
@@ -275,15 +274,10 @@ STDMETHODIMP CMPCVRAllocatorPresenter::CreateRenderer(IUnknown** ppRenderer)
         return E_UNEXPECTED;
     }
 
-    HRESULT hr;
-    if (m_bFranky) {
-        // Never load the bundled MPCVR or its compatibility registration here.
-        hr = m_pMPCVR.CoCreateInstance(CLSID_FrankyRenderer, GetOwner());
-    } else {
-        hr = InstantiateInternalMPCVR(m_pMPCVR, GetOwner());
-        if (FAILED(hr) && IsCLSIDRegistered(CLSID_MPCVR)) {
-            hr = m_pMPCVR.CoCreateInstance(CLSID_MPCVR, GetOwner());
-        }
+    HRESULT hr = InstantiateInternalMPCVR(m_pMPCVR, GetOwner());
+
+    if (FAILED(hr) && IsCLSIDRegistered(CLSID_MPCVR)) {
+        hr = m_pMPCVR.CoCreateInstance(CLSID_MPCVR, GetOwner());
     }
 
     if (FAILED(hr)) {
