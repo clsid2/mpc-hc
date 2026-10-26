@@ -885,6 +885,7 @@ bool CAppSettings::IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRendere
                 case VIDRNDT_DS_SYNC:
                 case VIDRNDT_DS_MADVR:
                 case VIDRNDT_DS_MPCVR:
+                case VIDRNDT_DS_FRANKY:
                     return true;
             }
             break;
@@ -899,6 +900,7 @@ bool CAppSettings::IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRendere
                 case VIDRNDT_DS_SYNC:
                 case VIDRNDT_DS_MADVR:
                 case VIDRNDT_DS_MPCVR:
+                case VIDRNDT_DS_FRANKY:
                     return true;
             }
             break;
@@ -923,6 +925,8 @@ bool CAppSettings::IsVideoRendererAvailable(int iVideoRendererType)
             return IsCLSIDRegistered(CLSID_EnhancedVideoRenderer);
         case VIDRNDT_DS_MADVR:
             return IsCLSIDRegistered(CLSID_madVR);
+        case VIDRNDT_DS_FRANKY:
+            return IsCLSIDRegistered(CLSID_FrankyRenderer);
         case VIDRNDT_DS_MPCVR:
             return IsCLSIDRegistered(CLSID_MPCVR) || DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter();
 #ifdef _WIN64
@@ -2444,7 +2448,7 @@ void CAppSettings::LoadSettings()
         }
 
         bool gpu_changed = previous_gpuid1 != gpuid1;
-        if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+        if (iDSVideoRendererType != VIDRNDT_DS_FRANKY && iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
             // adjust settings if detection changed
             if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter() && HasD3DCompiler47()) {
                 iDSVideoRendererType = VIDRNDT_DS_MPCVR;

@@ -34,9 +34,10 @@ namespace DSObjects
 		, ISubRender11Callback
 	{
 		CComPtr<IUnknown> m_pMPCVR;
+		bool m_bFranky = false;
 
 	public:
-		CMPCVRAllocatorPresenter(HWND hWnd, HRESULT& hr, CString& _Error);
+		CMPCVRAllocatorPresenter(HWND hWnd, HRESULT& hr, CString& _Error, bool franky = false);
 		virtual ~CMPCVRAllocatorPresenter();
 
 		DECLARE_IUNKNOWN

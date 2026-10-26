@@ -760,6 +760,14 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr "Trình Kết Xuất Video MPC"
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
+msgctxt "IDC_DSFRANKY"
+msgid "External libplacebo video renderer. Installed separately."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr "Trình Kết Xuất Trộn Video 7"

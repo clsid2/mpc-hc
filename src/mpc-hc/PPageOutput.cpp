@@ -190,6 +190,9 @@ BOOL CPPageOutput::OnInitDialog()
             case VIDRNDT_DS_SYNC:
                 resName = IDS_PPAGE_OUTPUT_SYNC;
                 break;
+            case VIDRNDT_DS_FRANKY:
+                resName = IDS_PPAGE_OUTPUT_FRANKY;
+                break;
             case VIDRNDT_DS_MPCVR:
                 resName = IDS_PPAGE_OUTPUT_MPCVR;
                 break;
@@ -211,6 +214,7 @@ BOOL CPPageOutput::OnInitDialog()
     CComboBox& m_iDSVRTC = m_iDSVideoRendererTypeCtrl;
     m_iDSVRTC.SetRedraw(FALSE); // Do not draw the control while we are filling it with items
     addRenderer(VIDRNDT_DS_MPCVR);
+    addRenderer(VIDRNDT_DS_FRANKY);
     addRenderer(VIDRNDT_DS_MADVR);
     addRenderer(VIDRNDT_DS_EVR_CUSTOM);
     addRenderer(VIDRNDT_DS_EVR);
@@ -430,7 +434,7 @@ BOOL CPPageOutput::OnApply()
 }
 
 void CPPageOutput::OnUpdateVideoRendererSettings(CCmdUI* pCmdUI) {
-    pCmdUI->Enable(m_iDSVideoRendererType == VIDRNDT_DS_MPCVR || m_iDSVideoRendererType == VIDRNDT_DS_MADVR
+    pCmdUI->Enable(m_iDSVideoRendererType == VIDRNDT_DS_FRANKY || m_iDSVideoRendererType == VIDRNDT_DS_MPCVR || m_iDSVideoRendererType == VIDRNDT_DS_MADVR
                    || m_iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || m_iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
                    || m_iDSVideoRendererType == VIDRNDT_DS_SYNC);
 }
@@ -450,7 +454,9 @@ void CPPageOutput::OpenVideoRendererSettings() {
     }
 
     GUID clsid;
-    if (m_iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
+    if (m_iDSVideoRendererType == VIDRNDT_DS_FRANKY) {
+        clsid = CLSID_FrankyRenderer;
+    } else if (m_iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
         clsid = CLSID_MPCVR;
     } else if (m_iDSVideoRendererType == VIDRNDT_DS_MADVR) {
         clsid = CLSID_madVR;
@@ -526,6 +532,7 @@ UINT CPPageOutput::GetRendererTooltipID() const
         case VIDRNDT_DS_SYNC:           return IDC_DSSYNC;
         case VIDRNDT_DS_MADVR:          return IDC_DSMADVR;
         case VIDRNDT_DS_DXR:            return IDC_DSDXR;
+        case VIDRNDT_DS_FRANKY:         return IDC_DSFRANKY;
         case VIDRNDT_DS_MPCVR:          return IDC_DSMPCVR;
         default:                        return 0;
     }
@@ -541,6 +548,10 @@ void CPPageOutput::UpdateStatusIcon()
     HICON icon;
     UINT noteID;
     switch (m_iDSVideoRendererType) {
+        case VIDRNDT_DS_FRANKY:
+            icon = m_tick;
+            noteID = IDC_DSFRANKY;
+            break;
         case VIDRNDT_DS_MPCVR:
         case VIDRNDT_DS_MADVR:
             icon = m_tick;

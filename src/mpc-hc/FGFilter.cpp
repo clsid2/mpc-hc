@@ -441,7 +441,7 @@ CFGFilterVideoRenderer::CFGFilterVideoRenderer(HWND hWnd, const CLSID& clsid, CS
     , m_bHasHookReceiveConnection(false)
     , m_bIsPreview(preview)
 {
-    bool mpcvr = (clsid == CLSID_MPCVR || clsid == CLSID_MPCVRAllocatorPresenter);
+    bool mpcvr = (clsid == CLSID_FrankyRenderer || clsid == CLSID_MPCVR || clsid == CLSID_MPCVRAllocatorPresenter);
     bool madvr = (clsid == CLSID_madVR || clsid == CLSID_madVRAllocatorPresenter);
     bool evr   = (clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_EVRAllocatorPresenter || clsid == CLSID_SyncAllocatorPresenter);
 
@@ -552,7 +552,7 @@ HRESULT CFGFilterVideoRenderer::Create(IBaseFilter** ppBF, CInterfaceList<IUnkno
         CheckNoLog(CreateEVR(m_clsid, m_hWnd, !m_bIsPreview && isD3DFullScreenMode(), &pCAP, m_bIsPreview));
     } else if (m_clsid == CLSID_SyncAllocatorPresenter) {
         CheckNoLog(CreateSyncRenderer(m_clsid, m_hWnd, isD3DFullScreenMode(), &pCAP));
-    } else if (m_clsid == CLSID_MPCVRAllocatorPresenter || m_clsid == CLSID_madVRAllocatorPresenter ||
+    } else if (m_clsid == CLSID_FrankyRenderer || m_clsid == CLSID_MPCVRAllocatorPresenter || m_clsid == CLSID_madVRAllocatorPresenter ||
                m_clsid == CLSID_VMR9AllocatorPresenter || m_clsid == CLSID_DXRAllocatorPresenter) {
         CheckNoLog(CreateAP9(m_clsid, m_hWnd, isD3DFullScreenMode(), &pCAP));
     } else {
@@ -605,7 +605,7 @@ HRESULT CFGFilterVideoRenderer::Create(IBaseFilter** ppBF, CInterfaceList<IUnkno
 
         *ppBF = CComQIPtr<IBaseFilter>(pRenderer).Detach();
 
-        if (m_clsid == CLSID_MPCVRAllocatorPresenter) {
+        if (m_clsid == CLSID_FrankyRenderer || m_clsid == CLSID_MPCVRAllocatorPresenter) {
             if (CComQIPtr<IMPCVRSubclassReplacement> pSR  = pCAP) {
                 pSR->DisableSubclassing();
             }

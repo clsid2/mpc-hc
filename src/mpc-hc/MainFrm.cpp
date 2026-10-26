@@ -7943,6 +7943,7 @@ void CMainFrame::OnUpdateViewDisplayRendererStats(CCmdUI* pCmdUI)
     bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
                       || s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM
                       || s.iDSVideoRendererType == VIDRNDT_DS_SYNC
+                      || s.iDSVideoRendererType == VIDRNDT_DS_FRANKY
                       || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
 
     pCmdUI->Enable(supported && GetLoadState() == MLS::LOADED && !m_fAudioOnly);
@@ -7960,6 +7961,7 @@ void CMainFrame::OnViewDisplayRendererStats()
     bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
                       || s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM
                       || s.iDSVideoRendererType == VIDRNDT_DS_SYNC
+                      || s.iDSVideoRendererType == VIDRNDT_DS_FRANKY
                       || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
 
     if (supported) {
@@ -13326,7 +13328,7 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
             }
 
             CreateFullScreenWindow(false);
-            if (m_pD3DFSC && s.iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
+            if (m_pD3DFSC && (s.iDSVideoRendererType == VIDRNDT_DS_FRANKY || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR)) {
                 m_pD3DFSC->SetD3DFullscreen(true);
             }
             // Assign the windowed video frame and pass it to the relevant classes.
@@ -13344,7 +13346,7 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
         } else {
             m_eventc.FireEvent(MpcEvent::SWITCHING_FROM_FULLSCREEN);
 
-            if (m_pD3DFSC && s.iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
+            if (m_pD3DFSC && (s.iDSVideoRendererType == VIDRNDT_DS_FRANKY || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR)) {
                 m_pD3DFSC->SetD3DFullscreen(false);
             }
             m_pVideoWnd = &m_wndView;
