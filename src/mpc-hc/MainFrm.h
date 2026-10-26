@@ -715,6 +715,7 @@ protected:
     bool m_bFirstPlay;
     bool m_bOpeningInAutochangedMonitorMode;
     bool m_bPausedForAutochangeMonitorMode;
+    bool m_bPausedByMinimize;
     bool m_bThemeChangePending;
     bool restoringWindowRect;
 
