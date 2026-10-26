@@ -3095,6 +3095,7 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
         if (sub->m_fAnimated) {
             delete sub;
             sub = nullptr;
+            m_subtitleCache.RemoveKey(entry);
         } else {
             return sub;
         }
