@@ -22,6 +22,7 @@
 #pragma once
 
 #include <list>
+#include <vector>
 #include <memory>
 #include "STS.h"
 #include "Rasterizer.h"
@@ -124,10 +125,12 @@ struct CTextDims {
 
 class CPolygon;
 class CLineBG;
+class CSubtitleBG;
 
 class CWord : public Rasterizer
 {
     friend class CLineBG;
+    friend class CSubtitleBG;
 
     bool m_fDrawn;
     CPoint m_p;
@@ -138,6 +141,7 @@ class CWord : public Rasterizer
     void Transform_SSE2(const CPoint& org);
     void Transform_quick_C(const CPoint& org);
     void Transform_quick_SSE2(const CPoint& org);
+    bool NeedsOpaqueBox() const;
     bool CreateOpaqueBox();
 
 protected:
@@ -167,6 +171,9 @@ public:
 
     virtual CWord* Copy() = 0;
     virtual bool Append(CWord* w);
+
+    double GetBorderX() const;
+    double GetBorderY() const;
 
     void Paint(const CPoint& p, const CPoint& org);
 
@@ -220,6 +227,20 @@ public:
 
     virtual CWord* Copy();
     virtual bool Append(CWord* w);
+};
+
+class CSubtitle;
+class CSubtitleBG
+{
+    STSStyle m_style;
+    int m_ktype = 0, m_kstart = 0;
+    CPoint m_p;
+    std::unique_ptr<CPolygon> m_pBox;
+
+public:
+    static std::unique_ptr<CSubtitleBG> Create(const CSubtitle* s, const std::vector<CPoint>& linePos, RenderingCaches& renderingCaches);
+    CRect PaintShadow(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int alpha);
+    CRect PaintOutline(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int time, int alpha);
 };
 
 class Effect

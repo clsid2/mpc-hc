@@ -1932,6 +1932,7 @@ void CAppSettings::LoadSettings()
         subtitlesDefStyle <<= temp;
         if (temp.IsEmpty()) { // Position the text subtitles relative to the video frame by default
             subtitlesDefStyle.relativeTo = STSStyle::AUTO;
+            subtitlesDefStyle.boxCornerRadiusX = subtitlesDefStyle.boxCornerRadiusY = 30;
         }
     }
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
