@@ -1297,6 +1297,11 @@ void CPPageAccelTbl::OnEndListLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
         return;
     }
 
+    // null text means the edit was cancelled with Esc
+    if (!pItem->pszText) {
+        return;
+    }
+
     if (pItem->iItem < 0) {
         return;
     }
