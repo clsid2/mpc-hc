@@ -354,8 +354,9 @@ void CWebClientSocket::OnReceive(int nErrorCode)
                         OnClose(0);
                         return;
                     } else {
-                        // Start next search from current end of the file
-                        m_buffLenProcessed += nRead;
+                        // Start next search just before the current end of the buffer,
+                        // in case the end of the header is split across two reads
+                        m_buffLenProcessed = std::max(m_buffLen - 3, 0);
                     }
                 }
                 break;
