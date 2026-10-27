@@ -51,10 +51,9 @@ private:
     int m_scaley;
     CMPCThemeSpinButtonCtrl m_scaleySpin;
     int m_borderStyle;
+    BOOL m_bRoundedOpaqueBox;
     CMPCThemeFloatEdit m_borderWidth;
     CMPCThemeFloatEdit m_shadowDepth;
-    CMPCThemeFloatEdit m_boxPadding;
-    CMPCThemeFloatEdit m_boxCornerRadius;
     int m_screenAlignment;
     CRect m_margin;
     CMPCThemeSpinButtonCtrl m_marginLeftSpin;

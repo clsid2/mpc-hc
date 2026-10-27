@@ -24825,6 +24825,7 @@ bool CMainFrame::ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool b
                 pRTS->SetAlignment(s.fOverridePlacement, s.nHorPos, s.nVerPos);
             }
             pRTS->SetUseFreeType(s.bUseFreeType);
+            pRTS->SetRoundedOpaqueBox(s.bSubtitleRoundedOpaqueBox);
             pRTS->SetOpenTypeLangHint(s.strOpenTypeLangHint);
             pRTS->Deinit();
         }

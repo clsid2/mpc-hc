@@ -197,6 +197,7 @@
 #define IDS_RS_AUTOFITFACTOR_MAX            _T("AutoFitFactorMax")
 #define IDS_RS_AFTER_PLAYBACK               _T("AfterPlayback")
 #define IDS_RS_SPSTYLE                      _T("SPDefaultStyle")
+#define IDS_RS_SPROUNDEDOPAQUEBOX           _T("SPRoundedOpaqueBox")
 #define IDS_RS_SPOVERRIDEPLACEMENT          _T("SPOverridePlacement")
 #define IDS_RS_SPHORPOS                     _T("SPHorPos")
 #define IDS_RS_SPVERPOS                     _T("SPVerPos")
