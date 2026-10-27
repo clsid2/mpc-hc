@@ -3735,6 +3735,8 @@ void STSStyle::SetDefault()
     scrAlignment = 2;
     borderStyle = 0;
     outlineWidthX = outlineWidthY = 2;
+    boxPaddingX = boxPaddingY = 0;
+    boxCornerRadiusX = boxCornerRadiusY = 0;
     shadowDepthX = shadowDepthY = 3;
     colors[0] = 0x00ffffff;
     colors[1] = 0x0000ffff;
@@ -3772,6 +3774,10 @@ bool STSStyle::operator == (const STSStyle& s) const
             && borderStyle == s.borderStyle
             && abs(outlineWidthX - s.outlineWidthX) < 0.00000001
             && abs(outlineWidthY - s.outlineWidthY) < 0.00000001
+            && abs(boxPaddingX - s.boxPaddingX) < 0.00000001
+            && abs(boxPaddingY - s.boxPaddingY) < 0.00000001
+            && abs(boxCornerRadiusX - s.boxCornerRadiusX) < 0.00000001
+            && abs(boxCornerRadiusY - s.boxCornerRadiusY) < 0.00000001
             && abs(shadowDepthX - s.shadowDepthX) < 0.00000001
             && abs(shadowDepthY - s.shadowDepthY) < 0.00000001
             && colors == s.colors
@@ -3847,7 +3853,7 @@ LOGFONTW& operator <<= (LOGFONTW& lfw, const STSStyle& s)
 
 CString& operator <<= (CString& style, const STSStyle& s)
 {
-    style.Format(_T("%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;0x%06lx;0x%06lx;0x%06lx;0x%06lx;0x%02x;0x%02x;0x%02x;0x%02x;%d;%s;%f;%f;%f;%f;%ld;%d;%d;%d;%d;%f;%f;%f;%f;%d"),
+    style.Format(_T("%d;%d;%d;%d;%d;%d;%f;%f;%f;%f;0x%06lx;0x%06lx;0x%06lx;0x%06lx;0x%02x;0x%02x;0x%02x;0x%02x;%d;%s;%f;%f;%f;%f;%ld;%d;%d;%d;%d;%f;%f;%f;%f;%d;%f;%f;%f;%f"),
                  s.marginRect.left, s.marginRect.right, s.marginRect.top, s.marginRect.bottom,
                  s.scrAlignment, s.borderStyle,
                  s.outlineWidthX, s.outlineWidthY, s.shadowDepthX, s.shadowDepthY,
@@ -3859,7 +3865,8 @@ CString& operator <<= (CString& style, const STSStyle& s)
                  s.fontSpacing, s.fontWeight,
                  s.fItalic, s.fUnderline, s.fStrikeOut, s.fBlur, s.fGaussianBlur,
                  s.fontAngleZ, s.fontAngleX, s.fontAngleY,
-                 s.relativeTo);
+                 s.relativeTo,
+                 s.boxPaddingX, s.boxPaddingY, s.boxCornerRadiusX, s.boxCornerRadiusY);
 
     return style;
 }
@@ -3904,7 +3911,14 @@ STSStyle& operator <<= (STSStyle& s, const CString& style)
             s.fontAngleZ = GetFloat(pszBuff, nBuffLength, L';');
             s.fontAngleX = GetFloat(pszBuff, nBuffLength, L';');
             s.fontAngleY = GetFloat(pszBuff, nBuffLength, L';');
+            LPCWSTR pszRelativeTo = pszBuff;
             s.relativeTo = (STSStyle::RelativeTo)GetInt(pszBuff, nBuffLength, L';');
+            if (pszBuff != pszRelativeTo) {
+                s.boxPaddingX = GetFloat(pszBuff, nBuffLength, L';');
+                s.boxPaddingY = GetFloat(pszBuff, nBuffLength, L';');
+                s.boxCornerRadiusX = GetFloat(pszBuff, nBuffLength, L';');
+                s.boxCornerRadiusY = GetFloat(pszBuff, nBuffLength, L';');
+            }
         }
     } catch (...) {
         s.SetDefault();

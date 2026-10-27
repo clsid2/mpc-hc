@@ -1039,6 +1039,18 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr "Jazyk OpenType"
 
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
+msgid "Opaque Box"
+msgstr "Nepriehľadný rámček"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
+msgid "Padding"
+msgstr "Odsadenie"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
+msgid "Corner radius"
+msgstr "Polomer rohov"
+
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr "Nastavenia Libass"

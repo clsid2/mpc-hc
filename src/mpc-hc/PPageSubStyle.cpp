@@ -92,6 +92,8 @@ void CPPageSubStyle::DoDataExchange(CDataExchange* pDX)
     DDX_Radio(pDX, IDC_RADIO1, m_borderStyle);
     DDX_Control(pDX, IDC_EDIT1, m_borderWidth);
     DDX_Control(pDX, IDC_EDIT2, m_shadowDepth);
+    DDX_Control(pDX, IDC_EDIT_BOXPADDING, m_boxPadding);
+    DDX_Control(pDX, IDC_EDIT_BOXRADIUS, m_boxCornerRadius);
     DDX_Radio(pDX, IDC_RADIO3, m_screenAlignment);
     DDX_Text(pDX, IDC_EDIT7, m_margin.left);
     DDX_Control(pDX, IDC_SPIN6, m_marginLeftSpin);
@@ -199,6 +201,10 @@ BOOL CPPageSubStyle::OnInitDialog()
     m_borderWidth = std::min(m_stss.outlineWidthX, m_stss.outlineWidthY);
     m_shadowDepth.SetRange(0.0f, 100.0f);
     m_shadowDepth = std::min(m_stss.shadowDepthX, m_stss.shadowDepthY);
+    m_boxPadding.SetRange(0.0f, 100.0f);
+    m_boxPadding = std::min(m_stss.boxPaddingX, m_stss.boxPaddingY);
+    m_boxCornerRadius.SetRange(0.0f, 100.0f);
+    m_boxCornerRadius = std::min(m_stss.boxCornerRadiusX, m_stss.boxCornerRadiusY);
 
     m_screenAlignment = m_stss.scrAlignment - 1;
     m_margin = m_stss.marginRect;
@@ -253,6 +259,8 @@ BOOL CPPageSubStyle::OnApply()
     m_stss.borderStyle = m_borderStyle;
     m_stss.outlineWidthX = m_stss.outlineWidthY = m_borderWidth;
     m_stss.shadowDepthX = m_stss.shadowDepthY = m_shadowDepth;
+    m_stss.boxPaddingX = m_stss.boxPaddingY = m_boxPadding;
+    m_stss.boxCornerRadiusX = m_stss.boxCornerRadiusY = m_boxCornerRadius;
 
     m_stss.scrAlignment = m_screenAlignment + 1;
     m_stss.marginRect = m_margin;
@@ -378,6 +386,8 @@ void CPPageSubStyle::AdjustDynamicWidgets() {
     AdjustDynamicWidgetPair(this, IDC_STATIC8, IDC_EDIT8);
     AdjustDynamicWidgetPair(this, IDC_STATIC9, IDC_EDIT9);
     AdjustDynamicWidgetPair(this, IDC_STATIC10, IDC_EDIT10);
+    AdjustDynamicWidgetPair(this, IDC_STATIC_BOXPADDING, IDC_EDIT_BOXPADDING);
+    AdjustDynamicWidgetPair(this, IDC_STATIC_BOXRADIUS, IDC_EDIT_BOXRADIUS);
 }
 
 

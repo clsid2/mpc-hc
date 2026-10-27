@@ -53,6 +53,8 @@ private:
     int m_borderStyle;
     CMPCThemeFloatEdit m_borderWidth;
     CMPCThemeFloatEdit m_shadowDepth;
+    CMPCThemeFloatEdit m_boxPadding;
+    CMPCThemeFloatEdit m_boxCornerRadius;
     int m_screenAlignment;
     CRect m_margin;
     CMPCThemeSpinButtonCtrl m_marginLeftSpin;
