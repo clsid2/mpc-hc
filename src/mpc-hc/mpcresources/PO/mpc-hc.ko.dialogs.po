@@ -1024,18 +1024,6 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr "OpenType 언어"
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
-msgid "Opaque Box"
-msgstr "불투명 상자"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
-msgid "Padding"
-msgstr "안쪽 여백"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
-msgid "Corner radius"
-msgstr "모서리 반경"
-
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr "Libass 옵션"

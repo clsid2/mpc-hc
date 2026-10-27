@@ -1051,18 +1051,6 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr ""
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
-msgid "Opaque Box"
-msgstr "Caixa opaca"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
-msgid "Padding"
-msgstr "Marge interior"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
-msgid "Corner radius"
-msgstr "Radi de les cantonades"
-
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr ""

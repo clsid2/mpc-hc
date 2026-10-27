@@ -141,7 +141,6 @@ class CWord : public Rasterizer
     void Transform_SSE2(const CPoint& org);
     void Transform_quick_C(const CPoint& org);
     void Transform_quick_SSE2(const CPoint& org);
-    bool NeedsOpaqueBox() const;
     bool CreateOpaqueBox();
 
 protected:
@@ -171,9 +170,6 @@ public:
 
     virtual CWord* Copy() = 0;
     virtual bool Append(CWord* w);
-
-    double GetBorderX() const;
-    double GetBorderY() const;
 
     void Paint(const CPoint& p, const CPoint& org);
 
@@ -440,6 +436,7 @@ class CSubtitle : public CAtlList<CLine*>
     int GetFullLineWidth(POSITION pos);
     int GetWrapWidth(POSITION pos, int maxwidth);
     CLine* GetNextLine(POSITION& pos, int maxwidth);
+    void AddRoundedBoxPadding(CLine* l) const;
 
 public:
     int m_scrAlignment;
@@ -463,6 +460,7 @@ public:
     double m_total_scale_x,  m_total_scale_y;
 
     bool m_allowLinePadding;
+    bool m_roundedBox;
 
 public:
     CSubtitle(RenderingCaches& renderingCaches);
@@ -515,6 +513,7 @@ class __declspec(uuid("537DCACA-2812-4a4f-B2C6-1A34C17ADEB0"))
     int m_polygonBaselineOffset;
     bool m_bOverridePlacement;
     bool m_bUseFreeType;
+    bool m_bRoundedOpaqueBox;
     CSize m_overridePlacement;
     bool m_bTopAlignedPlacement; // secondary subtitle track: forced top-anchored placement
 
@@ -544,6 +543,9 @@ public:
  
     void SetUseFreeType(bool useFreeType) { m_bUseFreeType = useFreeType; }
     bool GetUseFreeType() { return m_bUseFreeType; }
+
+    // rounds the opaque box of subtitles that use the player's default style
+    void SetRoundedOpaqueBox(bool rounded) { m_bRoundedOpaqueBox = rounded; }
 
     void SetAlignment(bool bOverridePlacement, LONG lHorPos, LONG lVerPos, bool bTopAligned = false) {
         m_bOverridePlacement = bOverridePlacement;

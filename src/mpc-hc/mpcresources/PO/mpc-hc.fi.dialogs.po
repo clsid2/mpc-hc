@@ -1037,18 +1037,6 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr ""
 
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
-msgid "Opaque Box"
-msgstr "Läpinäkyvä laatikko"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
-msgid "Padding"
-msgstr "Täyte"
-
-msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
-msgid "Corner radius"
-msgstr "Kulmien säde"
-
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr ""

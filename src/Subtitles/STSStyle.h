@@ -37,8 +37,6 @@ public:
     int        scrAlignment;           // 1 - 9: as on the numpad, 0: default
     int        borderStyle;            // 0: outline, 1: opaque box
     double     outlineWidthX, outlineWidthY;
-    double     boxPaddingX, boxPaddingY;           // opaque box only: extra space around the text
-    double     boxCornerRadiusX, boxCornerRadiusY; // opaque box only: 0 = square corners
     double     shadowDepthX, shadowDepthY;
     std::array<COLORREF, 4> colors;    // usually: {primary, secondary, outline/background, shadow}
     std::array<BYTE, 4> alpha;

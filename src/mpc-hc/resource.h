@@ -774,10 +774,7 @@
 #define IDC_MODERNSEEKBARHEIGHT         22092
 #define IDC_MODERNSEEKBARHEIGHT_SPIN    22093
 #define IDC_COLOR_CONTROLS              22103
-#define IDC_STATIC_BOXPADDING           22104
-#define IDC_EDIT_BOXPADDING             22105
-#define IDC_STATIC_BOXRADIUS            22106
-#define IDC_EDIT_BOXRADIUS              22107
+#define IDC_CHECK_ROUNDEDBOX            22104
 #define ID_SUB_DELAY_DOWN               24000
 #define ID_SUB_DELAY_UP                 24001
 #define IDS_MPLAYERC_104                24002
@@ -1913,7 +1910,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        20079
 #define _APS_NEXT_COMMAND_VALUE         33465
-#define _APS_NEXT_CONTROL_VALUE         22108
+#define _APS_NEXT_CONTROL_VALUE         22105
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif
