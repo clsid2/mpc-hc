@@ -174,6 +174,7 @@ CAppSettings::CAppSettings()
     , fCustomChannelMapping(false)
     , nSpeakerChannels(2)
     , pSpeakerToChannelMap()
+    , bSubtitleRoundedOpaqueBox(false)
     , fOverridePlacement(false)
     , nHorPos(50)
     , nVerPos(90)
@@ -1075,6 +1076,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CLOSEDCAPTIONS, fClosedCaptions);
     CString style;
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_SPSTYLE, style <<= subtitlesDefStyle);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPROUNDEDOPAQUEBOX, bSubtitleRoundedOpaqueBox);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, fOverridePlacement);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, nHorPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, nVerPos);
@@ -1935,9 +1937,9 @@ void CAppSettings::LoadSettings()
         subtitlesDefStyle <<= temp;
         if (temp.IsEmpty()) { // Position the text subtitles relative to the video frame by default
             subtitlesDefStyle.relativeTo = STSStyle::AUTO;
-            subtitlesDefStyle.boxCornerRadiusX = subtitlesDefStyle.boxCornerRadiusY = 30;
         }
     }
+    bSubtitleRoundedOpaqueBox = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPROUNDEDOPAQUEBOX, FALSE);
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
     nHorPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, 50);
     nVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, 90);
