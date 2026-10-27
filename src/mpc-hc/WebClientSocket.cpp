@@ -389,8 +389,9 @@ void CWebClientSocket::OnReceive(int nErrorCode)
 void CWebClientSocket::OnClose(int nErrorCode)
 {
     // TODO: save session
-    m_pWebServer->OnClose(this);
     __super::OnClose(nErrorCode);
+    // removing the client from the server's list deletes this, so it must come last
+    m_pWebServer->OnClose(this);
 }
 
 ////////////////////
