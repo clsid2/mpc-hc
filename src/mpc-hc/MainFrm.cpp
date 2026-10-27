@@ -11267,30 +11267,34 @@ void CMainFrame::OnPlaySubtitles(UINT nID)
 
                     if (dlg.DoModal() == IDOK) {
                         {
-                            CAutoLock cAutoLock(&m_csSubLock);
                             bool defaultStyleChanged = false, otherStyleChanged = false;
+                            {
+                                CAutoLock cAutoLock(&m_csSubLock);
 
-                            for (size_t l = 0; l < pages.GetCount(); l++) {
-                                STSStyle tmpStyle = *styles[l];
-                                pages[l]->GetStyle(*styles[l]);
-                                if (pages[l]->GetStyleName() == L"Default") {
-                                    if (*styles[l] != s.subtitlesDefStyle) {
-                                        pRTS->m_bUsingPlayerDefaultStyle = false;
-                                        pRTS->SetDefaultStyle(*styles[l]);
-                                        defaultStyleChanged = true;
+                                for (size_t l = 0; l < pages.GetCount(); l++) {
+                                    STSStyle tmpStyle = *styles[l];
+                                    pages[l]->GetStyle(*styles[l]);
+                                    if (pages[l]->GetStyleName() == L"Default") {
+                                        if (*styles[l] != s.subtitlesDefStyle) {
+                                            pRTS->m_bUsingPlayerDefaultStyle = false;
+                                            pRTS->SetDefaultStyle(*styles[l]);
+                                            defaultStyleChanged = true;
+                                        }
+                                    } else if (tmpStyle != *styles[l]) {
+                                        otherStyleChanged = true;
                                     }
-                                } else if (tmpStyle != *styles[l]) {
-                                    otherStyleChanged = true;
+                                }
+                                if (otherStyleChanged || defaultStyleChanged) {
+                                    if (!defaultStyleChanged) { //it will already have triggered SetStyleChanged() internally
+                                        pRTS->SetStyleChanged();
+                                    }
+                                    pRTS->Deinit();
+                                    InvalidateSubtitle();
+                                    m_wndSubresyncBar.ReloadSubtitle();
                                 }
                             }
                             if (otherStyleChanged || defaultStyleChanged) {
-                                if (!defaultStyleChanged) { //it will already have triggered SetStyleChanged() internally
-                                    pRTS->SetStyleChanged();
-                                }
-                                pRTS->Deinit();
-                                InvalidateSubtitle();
                                 RepaintVideo();
-                                m_wndSubresyncBar.ReloadSubtitle();
                             }
                         }
                     }
