@@ -12532,17 +12532,8 @@ void CMainFrame::OnFavoritesOrganize()
 
 void CMainFrame::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)
 {
-    const CAppSettings& s = AfxGetAppSettings();
-    CAtlList<CString> sl;
-    s.GetFav(FAV_FILE, sl);
-    bool enable = !sl.IsEmpty();
-
-    if (!enable) {
-        s.GetFav(FAV_DVD, sl);
-        enable = !sl.IsEmpty();
-    }
-
-    pCmdUI->Enable(enable);
+    // always available, also without favorites: the dialog can add them
+    pCmdUI->Enable(TRUE);
 }
 
 void CMainFrame::OnRecentFileClear()
