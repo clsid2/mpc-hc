@@ -886,6 +886,7 @@ CMainFrame::CMainFrame()
     , m_bFirstPlay(false)
     , m_bOpeningInAutochangedMonitorMode(false)
     , m_bPausedForAutochangeMonitorMode(false)
+    , m_bPausedByMinimize(false)
     , m_bThemeChangePending(false)
     , m_fAudioOnly(true)
     , m_iDVDDomain(DVD_DOMAIN_Stop)
@@ -1973,6 +1974,24 @@ void CMainFrame::OnMoving(UINT fwSide, LPRECT pRect)
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy)
 {
+    if (nType == SIZE_MINIMIZED) {
+        // Like locking the session (see OnSessionChange): video that nobody can see is paused,
+        // audio keeps playing, since minimizing is how people listen in the background.
+        if (AfxGetAppSettings().bPauseWhenMinimized && !m_bPausedByMinimize && GetLoadState() == MLS::LOADED
+                && !m_fAudioOnly && GetMediaStateDirect() == State_Running) {
+            SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
+            // set after the pause, which clears it like any other play, pause or stop
+            m_bPausedByMinimize = true;
+        }
+    } else if (m_bPausedByMinimize && (nType == SIZE_RESTORED || nType == SIZE_MAXIMIZED)) {
+        m_bPausedByMinimize = false;
+        // still set means nothing has played, paused, stopped or closed since the pause
+        // above, so resume, unless that pause did not take (it can be disabled, e.g. for live streams)
+        if (GetLoadState() == MLS::LOADED && GetMediaStateDirect() == State_Paused) {
+            SendMessage(WM_COMMAND, ID_PLAY_PLAY);
+        }
+    }
+
     if (m_bTrayIcon && nType == SIZE_MINIMIZED) {
         ShowWindow(SW_HIDE);
     } else {
@@ -9953,6 +9972,7 @@ void CMainFrame::OnPlayPlay()
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
+    m_bPausedByMinimize = false;
 
     if (!IsStateClosedOrLoaded()) {
         return;
@@ -10092,6 +10112,7 @@ void CMainFrame::OnPlayPause()
 {
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
+    m_bPausedByMinimize = false;
 
     if (GetLoadState() != MLS::LOADED) {
         return;
@@ -10165,6 +10186,7 @@ void CMainFrame::OnPlayStop(bool is_closing)
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
+    m_bPausedByMinimize = false; // also on close, which stops through here
 
     KillTimersStop();
 

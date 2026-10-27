@@ -97,8 +97,10 @@ CStringA EscapeJSONString(const CStringA& str)
     CStringA escapedString = str;
     // replace all of JSON's reserved characters with their escaped
     // equivalents.
-    escapedString.Replace("\"", "\\\"");
+    // the backslash goes first, so that the backslashes the other
+    // replacements add are not escaped a second time
     escapedString.Replace("\\", "\\\\");
+    escapedString.Replace("\"", "\\\"");
     escapedString.Replace("/", "\\/");
     escapedString.Replace("\b", "\\b");
     escapedString.Replace("\f", "\\f");
@@ -335,12 +337,13 @@ CStringA HtmlSpecialChars(CStringA str, bool bQuotes /*= false*/)
 
 CStringA HtmlSpecialCharsDecode(CStringA str)
 {
-    str.Replace("&amp;", "&");
     str.Replace("&quot;", "\"");
     str.Replace("&#039;", "\'");
     str.Replace("&lt;", "<");
     str.Replace("&gt;", ">");
     str.Replace("&rsquo;", "'");
+    // last, so that "&amp;lt;" decodes to "&lt;" rather than "<"
+    str.Replace("&amp;", "&");
 
     return str;
 }
@@ -506,7 +509,7 @@ CStringW& TrimLeadingUTF16BOM(CStringW& str)
 {
     if (str.GetLength() >= 2) {
         int i = 0;
-        while (i++ < 2 && (str.GetAt(0) == 0xFFEF || str.GetAt(0) == 0xFEFF)) {
+        while (i++ < 2 && (str.GetAt(0) == 0xFFFE || str.GetAt(0) == 0xFEFF)) {
             str.Delete(0, 1);
         }
     }

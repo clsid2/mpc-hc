@@ -1043,6 +1043,7 @@ public:
     bool bUseFreeType;
     bool bUseMediainfoLoadFileDuration;
     bool bPauseWhileDraggingSeekbar;
+    bool bPauseWhenMinimized;
     CStringA strOpenTypeLangHint;
 
     CStringW lastQuickOpenPath;
