@@ -1035,6 +1035,18 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr ""
 
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
+msgid "Opaque Box"
+msgstr "Кою"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
+msgid "Padding"
+msgstr "Эчке ара"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
+msgid "Corner radius"
+msgstr "Почмаклар радиусы"
+
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr ""

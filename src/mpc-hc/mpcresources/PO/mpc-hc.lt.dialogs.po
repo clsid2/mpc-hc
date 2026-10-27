@@ -1038,6 +1038,18 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC22"
 msgid "OpenType Language"
 msgstr ""
 
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC"
+msgid "Opaque Box"
+msgstr "Užpildas"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXPADDING"
+msgid "Padding"
+msgstr "Vidinė paraštė"
+
+msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_BOXRADIUS"
+msgid "Corner radius"
+msgstr "Kampų spindulys"
+
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC_LIBASS"
 msgid "Libass Options"
 msgstr ""

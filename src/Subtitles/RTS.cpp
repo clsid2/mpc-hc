@@ -208,7 +208,7 @@ void CWord::Paint(const CPoint& p, const CPoint& org)
     if (m_renderingCaches.overlayCache.Lookup(overlayKey, m_pOverlayData)) {
         m_fDrawn = m_renderingCaches.outlineCache.Lookup(overlayKey, m_pOutlineData);
         if (m_style.borderStyle == 1) {
-            if (m_style.outlineWidthX > 0.0 || m_style.shadowDepthX > 0.0 || m_style.outlineWidthY > 0.0 || m_style.shadowDepthY > 0.0) {
+            if (NeedsOpaqueBox()) {
                 VERIFY(CreateOpaqueBox());
             }
         }
@@ -216,7 +216,7 @@ void CWord::Paint(const CPoint& p, const CPoint& org)
         if (!m_fDrawn) {
             if (m_renderingCaches.outlineCache.Lookup(overlayKey, m_pOutlineData)) {
                 if (m_style.borderStyle == 1) {
-                    if (m_style.outlineWidthX > 0.0 || m_style.shadowDepthX > 0.0 || m_style.outlineWidthY > 0.0 || m_style.shadowDepthY > 0.0) {
+                    if (NeedsOpaqueBox()) {
                         VERIFY(CreateOpaqueBox());
                     }
                 }
@@ -248,7 +248,7 @@ void CWord::Paint(const CPoint& p, const CPoint& org)
                         return;
                     }
                 } else if (m_style.borderStyle == 1) {
-                    if (m_style.outlineWidthX > 0.0 || m_style.shadowDepthX > 0.0 || m_style.outlineWidthY > 0.0 || m_style.shadowDepthY > 0.0) {
+                    if (NeedsOpaqueBox()) {
                         VERIFY(CreateOpaqueBox());
                     }
                 }
@@ -285,6 +285,25 @@ void CWord::Transform(CPoint org)
     }
 }
 
+double CWord::GetBorderX() const
+{
+    if (m_style.borderStyle != 1) {
+        return m_style.outlineWidthX;
+    }
+    return m_style.outlineWidthX + m_style.boxPaddingX + std::min<double>(m_style.boxPaddingX, m_descent);
+}
+
+double CWord::GetBorderY() const
+{
+    return m_style.outlineWidthY + (m_style.borderStyle == 1 ? m_style.boxPaddingY : 0.0);
+}
+
+bool CWord::NeedsOpaqueBox() const
+{
+    return m_style.outlineWidthX > 0.0 || m_style.shadowDepthX > 0.0 || m_style.outlineWidthY > 0.0 || m_style.shadowDepthY > 0.0
+           || m_style.boxPaddingX > 0.0 || m_style.boxPaddingY > 0.0;
+}
+
 bool CWord::CreateOpaqueBox()
 {
     if (m_pOpaqueBox) {
@@ -306,16 +325,40 @@ bool CWord::CreateOpaqueBox()
     style.colors[0] = m_style.colors[2];
     style.alpha[0] = m_style.alpha[2];
 
-    int w = std::lround(m_style.outlineWidthX);
-    int h = std::lround(m_style.outlineWidthY);
+    int w = std::lround(GetBorderX());
+    int h = std::lround(GetBorderY());
 
     // Convert to pixels rounding to nearest
+    const int left = -(w + 4) / 8;
+    const int top = -(h + 4) / 8;
+    const int right = (m_width + w + 4) / 8;
+    const int bottom = (m_ascent + m_descent + h + 4) / 8;
+
+    const double rx = std::min(m_style.boxCornerRadiusX / 8.0, (right - left) / 2.0);
+    const double ry = std::min(m_style.boxCornerRadiusY / 8.0, (bottom - top) / 2.0);
+
     CStringW str;
-    str.Format(L"m %d %d l %d %d %d %d %d %d",
-               -(w + 4) / 8, -(h + 4) / 8,
-               (m_width + w + 4) / 8, -(h + 4) / 8,
-               (m_width + w + 4) / 8, (m_ascent + m_descent + h + 4) / 8,
-               -(w + 4) / 8, (m_ascent + m_descent + h + 4) / 8);
+    if (rx > 0.0 && ry > 0.0) {
+        // Each corner is a cubic bezier approximating a quarter ellipse
+        const double kx = rx * 0.5523, ky = ry * 0.5523;
+        str.Format(L"m %f %d l %f %d b %f %d %d %f %d %f l %d %f b %d %f %f %d %f %d"
+                   L" l %f %d b %f %d %d %f %d %f l %d %f b %d %f %f %d %f %d",
+                   left + rx, top,
+                   right - rx, top,
+                   right - rx + kx, top, right, top + ry - ky, right, top + ry,
+                   right, bottom - ry,
+                   right, bottom - ry + ky, right - rx + kx, bottom, right - rx, bottom,
+                   left + rx, bottom,
+                   left + rx - kx, bottom, left, bottom - ry + ky, left, bottom - ry,
+                   left, top + ry,
+                   left, top + ry - ky, left + rx - kx, top, left + rx, top);
+    } else {
+        str.Format(L"m %d %d l %d %d %d %d %d %d",
+                   left, top,
+                   right, top,
+                   right, bottom,
+                   left, bottom);
+    }
 
     try {
         m_pOpaqueBox = DEBUG_NEW CPolygon(style, str, 0, 0, 0, 1.0, 1.0, 0, m_renderingCaches);
@@ -812,6 +855,16 @@ bool CText::CreatePath()
 }
 
 
+// Whether words can share an opaque box: everything in style must match except these properties
+static bool HaveSameBoxStyle(const STSStyle& s1, STSStyle s2)
+{
+    s2.fontWeight = s1.fontWeight;
+    s2.fItalic = s1.fItalic;
+    s2.fUnderline = s1.fUnderline;
+    s2.fStrikeOut = s1.fStrikeOut;
+    return s2 == s1;
+}
+
 CLineBG::CLineBG(RenderingCaches& renderingCaches)
     : CText(renderingCaches) {
 }
@@ -853,16 +906,7 @@ std::shared_ptr<CLineBG> CLineBG::CLineBGFactory(CLine const* line, RenderingCac
             lineBG->m_descent != w->m_descent) {
             return nullptr; //to combine words into one line, we currently restrict it to words who have identical properties
         } else {
-            //check style
-            STSStyle s1(lineBG->m_style);
-            STSStyle s2(w->m_style);
-            //everything in style must match except these properties
-            s2.fontWeight = s1.fontWeight;
-            s2.fItalic = s1.fItalic;
-            s2.fUnderline = s1.fUnderline;
-            s2.fStrikeOut = s1.fStrikeOut;
-
-            if (s2 != s1) {
+            if (!HaveSameBoxStyle(lineBG->m_style, w->m_style)) {
                 return nullptr;
             }
             lineBG->m_width += w->m_width;
@@ -918,6 +962,187 @@ CRect CLineBG::PaintLineOutline(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMa
         if (m_style.borderStyle == 1 && m_pOpaqueBox) {
             bbox |= m_pOpaqueBox->Draw(spd, clipRect, pAlphaMask, x, y, sw, true, false);
         }
+    }
+
+    return bbox;
+}
+
+// CSubtitleBG
+
+std::unique_ptr<CSubtitleBG> CSubtitleBG::Create(const CSubtitle* s, const std::vector<CPoint>& linePos, RenderingCaches& renderingCaches)
+{
+    if (!s || s->GetCount() < 2 || linePos.size() != s->GetCount()) {
+        return nullptr;
+    }
+
+    auto bg = std::make_unique<CSubtitleBG>();
+    double scalex = 0.0, scaley = 0.0;
+    int kend = 0;
+    std::vector<CRect> boxes; // in pixels, relative to the first line
+
+    POSITION pos = s->GetHeadPosition();
+    while (pos) {
+        const CLine* l = s->GetNext(pos);
+        std::shared_ptr<CLineBG> lineBG = CLineBG::CLineBGFactory(l, renderingCaches);
+        const CWord* w = lineBG ? lineBG.get() : l->GetCount() == 1 ? l->GetHead() : nullptr;
+        if (!w || w->m_style.borderStyle != 1 || !w->NeedsOpaqueBox()) {
+            return nullptr;
+        }
+
+        if (boxes.empty()) {
+            // Square boxes are still drawn per line
+            if (w->m_style.boxCornerRadiusX <= 0.0 || w->m_style.boxCornerRadiusY <= 0.0) {
+                return nullptr;
+            }
+            bg->m_style = w->m_style;
+            bg->m_ktype = w->m_ktype;
+            bg->m_kstart = w->m_kstart;
+            kend = w->m_kend;
+            scalex = w->m_scalex;
+            scaley = w->m_scaley;
+        } else if (w->m_scalex != scalex || w->m_scaley != scaley
+                   || w->m_ktype != bg->m_ktype || w->m_kstart != bg->m_kstart || w->m_kend != kend
+                   || !HaveSameBoxStyle(bg->m_style, w->m_style)) {
+            return nullptr;
+        }
+
+        // Same box as CWord::CreateOpaqueBox, converted to pixels rounding to nearest
+        const int bw = std::lround(w->GetBorderX());
+        const int bh = std::lround(w->GetBorderY());
+        const CPoint d = linePos[boxes.size()] - linePos[0];
+        boxes.emplace_back(std::lround((d.x - bw) / 8.0), std::lround((d.y - bh) / 8.0),
+                           std::lround((d.x + w->m_width + bw) / 8.0), std::lround((d.y + w->m_ascent + w->m_descent + bh) / 8.0));
+    }
+
+    // Neighboring lines meet halfway, whether their boxes overlap or leave a gap
+    for (size_t i = 0; i + 1 < boxes.size(); i++) {
+        if (boxes[i].right <= boxes[i + 1].left || boxes[i].left >= boxes[i + 1].right) {
+            return nullptr;
+        }
+        boxes[i].bottom = boxes[i + 1].top = (boxes[i].bottom + boxes[i + 1].top) / 2;
+    }
+    for (const CRect& box : boxes) {
+        if (box.Width() <= 0 || box.Height() <= 0) {
+            return nullptr;
+        }
+    }
+
+    // Corners of the outline of all boxes, clockwise, so that edges alternate between horizontal and vertical
+    std::vector<CPoint> v;
+    v.emplace_back(boxes.front().left, boxes.front().top);
+    v.emplace_back(boxes.front().right, boxes.front().top);
+    for (size_t i = 0; i + 1 < boxes.size(); i++) {
+        if (boxes[i].right != boxes[i + 1].right) {
+            v.emplace_back(boxes[i].right, boxes[i].bottom);
+            v.emplace_back(boxes[i + 1].right, boxes[i].bottom);
+        }
+    }
+    v.emplace_back(boxes.back().right, boxes.back().bottom);
+    v.emplace_back(boxes.back().left, boxes.back().bottom);
+    for (size_t i = boxes.size() - 1; i > 0; i--) {
+        if (boxes[i].left != boxes[i - 1].left) {
+            v.emplace_back(boxes[i].left, boxes[i].top);
+            v.emplace_back(boxes[i - 1].left, boxes[i].top);
+        }
+    }
+
+    // Round every corner with a cubic bezier approximating a quarter ellipse. The same curve rounds
+    // the outer corners and fills in the inner ones, where a narrower line meets a wider one.
+    const double rx = bg->m_style.boxCornerRadiusX / 8.0;
+    const double ry = bg->m_style.boxCornerRadiusY / 8.0;
+    const double k = 1.0 - 0.5523; // distance of the control points from the corner, relative to the radius
+    auto sign = [](LONG a) { return double((a > 0) - (a < 0)); };
+
+    CStringW str, start;
+    const size_t n = v.size();
+    for (size_t i = 0; i < n; i++) {
+        const CPoint& prev = v[(i + n - 1) % n];
+        const CPoint& cur = v[i];
+        const CPoint& next = v[(i + 1) % n];
+        const bool inHorizontal = prev.y == cur.y;
+        const double hLen = std::abs(inHorizontal ? cur.x - prev.x : next.x - cur.x);
+        const double vLen = std::abs(inHorizontal ? next.y - cur.y : cur.y - prev.y);
+        // Both ends of an edge have a corner, so each corner gets at most half of the edge
+        const double f = std::min({ 1.0, hLen / 2.0 / rx, vLen / 2.0 / ry });
+        const double rIn = (inHorizontal ? rx : ry) * f;
+        const double rOut = (inHorizontal ? ry : rx) * f;
+        const double inX = sign(cur.x - prev.x), inY = sign(cur.y - prev.y);
+        const double outX = sign(next.x - cur.x), outY = sign(next.y - cur.y);
+
+        CStringW from;
+        from.Format(L"%f %f", cur.x - inX * rIn, cur.y - inY * rIn);
+        if (i == 0) {
+            start = from;
+            str = L"m " + from;
+        } else {
+            str += L" l " + from;
+        }
+        str.AppendFormat(L" b %f %f %f %f %f %f",
+                         cur.x - inX * rIn * k, cur.y - inY * rIn * k,
+                         cur.x + outX * rOut * k, cur.y + outY * rOut * k,
+                         cur.x + outX * rOut, cur.y + outY * rOut);
+    }
+    str += L" l " + start;
+
+    STSStyle style = bg->m_style;
+    style.borderStyle = 0;
+    style.outlineWidthX = style.outlineWidthY = 0.0;
+    style.fontScaleX = style.fontScaleY = 100.0;
+    style.colors[0] = style.colors[2];
+    style.alpha[0] = style.alpha[2];
+
+    try {
+        bg->m_pBox.reset(DEBUG_NEW CPolygon(style, str, 0, 0, 0, 1.0, 1.0, 0, renderingCaches));
+    } catch (CMemoryException* e) {
+        e->Delete();
+        return nullptr;
+    }
+    bg->m_p = linePos[0];
+
+    return bg;
+}
+
+//see CLineBG::PaintLineShadow
+CRect CSubtitleBG::PaintShadow(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int alpha)
+{
+    CRect bbox(0, 0, 0, 0);
+
+    if (m_style.shadowDepthX != 0 || m_style.shadowDepthY != 0) {
+        int x = m_p.x + (int)(m_style.shadowDepthX + 0.5);
+        int y = m_p.y + (int)(m_style.shadowDepthY + 0.5);
+
+        DWORD a = 0xff - m_style.alpha[3];
+        if (alpha > 0) {
+            a = a * (0xff - static_cast<DWORD>(alpha)) / 0xff;
+        }
+        COLORREF shadow = revcolor(m_style.colors[3]) | (a << 24);
+        DWORD sw[6] = { shadow, DWORD_MAX };
+        sw[0] = ColorConvTable::ColorCorrection(sw[0]);
+
+        m_pBox->Paint(CPoint(x, y), org);
+        bbox |= m_pBox->Draw(spd, clipRect, pAlphaMask, x, y, sw, true, false);
+    }
+
+    return bbox;
+}
+
+//see CLineBG::PaintLineOutline
+CRect CSubtitleBG::PaintOutline(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int time, int alpha)
+{
+    CRect bbox(0, 0, 0, 0);
+
+    if (!(m_ktype == 2 && time < m_kstart)) {
+        bool has_outline = m_style.outlineWidthX + m_style.outlineWidthY > 0.0;
+        DWORD aoutline = m_style.alpha[2];
+        if (alpha > 0) {
+            aoutline += alpha * (0xff - m_style.alpha[2]) / 0xff;
+        }
+        COLORREF outline = revcolor(has_outline ? m_style.colors[2] : m_style.colors[3]) | ((0xff - aoutline) << 24);
+        DWORD sw[6] = { outline, DWORD_MAX };
+        sw[0] = ColorConvTable::ColorCorrection(sw[0]);
+
+        m_pBox->Paint(m_p, org);
+        bbox |= m_pBox->Draw(spd, clipRect, pAlphaMask, m_p.x, m_p.y, sw, true, false);
     }
 
     return bbox;
@@ -1422,11 +1647,11 @@ void CLine::Compact()
         if (m_descent < w->m_descent) {
             m_descent = w->m_descent;
         }
-        if (m_borderX < w->m_style.outlineWidthX) {
-            m_borderX = (int)(w->m_style.outlineWidthX + 0.5);
+        if (m_borderX < w->GetBorderX()) {
+            m_borderX = (int)(w->GetBorderX() + 0.5);
         }
-        if (m_borderY < w->m_style.outlineWidthY) {
-            m_borderY = (int)(w->m_style.outlineWidthY + 0.5);
+        if (m_borderY < w->GetBorderY()) {
+            m_borderY = (int)(w->GetBorderY() + 0.5);
         }
     }
 }
@@ -1734,11 +1959,11 @@ CLine* CSubtitle::GetNextLine(POSITION& pos, int maxwidth)
         if (ret->m_descent < w->m_descent) {
             ret->m_descent = w->m_descent;
         }
-        if (ret->m_borderX < w->m_style.outlineWidthX) {
-            ret->m_borderX = (int)(w->m_style.outlineWidthX + 0.5);
+        if (ret->m_borderX < w->GetBorderX()) {
+            ret->m_borderX = (int)(w->GetBorderX() + 0.5);
         }
-        if (ret->m_borderY < w->m_style.outlineWidthY) {
-            ret->m_borderY = (int)(w->m_style.outlineWidthY + 0.5);
+        if (ret->m_borderY < w->GetBorderY()) {
+            ret->m_borderY = (int)(w->GetBorderY() + 0.5);
         }
         if (w->m_style.borderStyle == 1 && m_allowLinePadding && (ret->m_linePadding < ret->m_borderY * 2)) {
             ret->m_linePadding = ret->m_borderY * 2;
@@ -3330,17 +3555,29 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
             tmp.outlineWidthY *= sub->m_total_scale_y * 8.0;
             tmp.shadowDepthX  *= sub->m_total_scale_x * 8.0;
             tmp.shadowDepthY  *= sub->m_total_scale_y * 8.0;
+            tmp.boxPaddingX   *= sub->m_total_scale_x * 8.0;
+            tmp.boxPaddingY   *= sub->m_total_scale_y * 8.0;
+            tmp.boxCornerRadiusX *= sub->m_total_scale_x * 8.0;
+            tmp.boxCornerRadiusY *= sub->m_total_scale_y * 8.0;
         } else if (m_scaledBAS == -1 && m_layoutRes.cx == 0 && sub->m_script_scale_y <= 0.9 && (m_subtitleType == Subtitle::ASS || m_subtitleType == Subtitle::SSA)) {
             // If PlayRes is bigger than video, it usually is a buggy script where ScaledBorderAndShadow was intended
             tmp.outlineWidthX *= sub->m_total_scale_x * 8.0;
             tmp.outlineWidthY *= sub->m_total_scale_y * 8.0;
             tmp.shadowDepthX  *= sub->m_total_scale_x * 8.0;
             tmp.shadowDepthY  *= sub->m_total_scale_y * 8.0;
+            tmp.boxPaddingX   *= sub->m_total_scale_x * 8.0;
+            tmp.boxPaddingY   *= sub->m_total_scale_y * 8.0;
+            tmp.boxCornerRadiusX *= sub->m_total_scale_x * 8.0;
+            tmp.boxCornerRadiusY *= sub->m_total_scale_y * 8.0;
         } else {
             tmp.outlineWidthX *= 8.0;
             tmp.outlineWidthY *= 8.0;
             tmp.shadowDepthX  *= 8.0;
             tmp.shadowDepthY  *= 8.0;
+            tmp.boxPaddingX   *= 8.0;
+            tmp.boxPaddingY   *= 8.0;
+            tmp.boxCornerRadiusX *= 8.0;
+            tmp.boxCornerRadiusY *= 8.0;
         }
         tmp.fGaussianBlur *= sub->m_target_scale_y;
 
@@ -3715,15 +3952,10 @@ STDMETHODIMP CRenderedTextSubtitle::Render(SubPicDesc& spd, REFERENCE_TIME rt, d
         iclipRect[2] = CRect(clipRect.right, clipRect.top, spd.w, clipRect.bottom);
         iclipRect[3] = CRect(0, clipRect.bottom, spd.w, spd.h);
 
-        bool multiLine = s->GetCount() > 1;
-        int numPass = multiLine ? 2 : 1;
-        for (int pass = 0; pass < numPass; pass++) {
-            bool paintBG = (pass == 0);
-            bool paintBody = (!multiLine || pass == 1);
+        std::vector<CPoint> linePos;
+        {
             CPoint p(0, r.top);
-            POSITION pos;
-
-            pos = s->GetHeadPosition();
+            POSITION pos = s->GetHeadPosition();
             while (pos) {
                 CLine* l = s->GetNext(pos);
 
@@ -3731,6 +3963,33 @@ STDMETHODIMP CRenderedTextSubtitle::Render(SubPicDesc& spd, REFERENCE_TIME rt, d
                 p.x = (s->m_scrAlignment % 3) == 1 ? org.x
                     : (s->m_scrAlignment % 3) == 0 ? org.x - l->m_width
                     : org.x - (l->m_width / 2);
+                linePos.push_back(p);
+                p.y += l->m_ascent + l->m_descent;
+            }
+        }
+
+        bool multiLine = s->GetCount() > 1;
+        std::unique_ptr<CSubtitleBG> subtitleBG;
+        if (multiLine && !s->m_clipInverse) {
+            subtitleBG = CSubtitleBG::Create(s, linePos, m_renderingCaches);
+        }
+
+        int numPass = multiLine ? 2 : 1;
+        for (int pass = 0; pass < numPass; pass++) {
+            bool paintBG = (pass == 0);
+            bool paintBody = (!multiLine || pass == 1);
+            size_t line = 0;
+            POSITION pos;
+
+            if (paintBG && subtitleBG) {
+                bbox2 |= subtitleBG->PaintShadow(spd, clipRect, pAlphaMask, org2, alpha);
+                bbox2 |= subtitleBG->PaintOutline(spd, clipRect, pAlphaMask, org2, m_time, alpha);
+            }
+
+            pos = s->GetHeadPosition();
+            while (pos) {
+                CLine* l = s->GetNext(pos);
+                CPoint p = linePos[line++];
 
                 if (s->m_clipInverse) {
                     if (paintBG) {
@@ -3750,7 +4009,7 @@ STDMETHODIMP CRenderedTextSubtitle::Render(SubPicDesc& spd, REFERENCE_TIME rt, d
                         bbox2 |= l->PaintBody(spd, iclipRect[3], pAlphaMask, p, org2, m_time, alpha);
                     }
                 } else {
-                    if (paintBG) {
+                    if (paintBG && !subtitleBG) {
                         auto lineBG = CLineBG::CLineBGFactory(l, m_renderingCaches);
                         if (lineBG) {
                             bbox2 |= lineBG->PaintLineShadow(spd, clipRect, pAlphaMask, p, org2, m_time, alpha);
@@ -3764,7 +4023,6 @@ STDMETHODIMP CRenderedTextSubtitle::Render(SubPicDesc& spd, REFERENCE_TIME rt, d
                         bbox2 |= l->PaintBody(spd, clipRect, pAlphaMask, p, org2, m_time, alpha);
                     }
                 }
-                p.y += l->m_ascent + l->m_descent;
             }
         }
     }
