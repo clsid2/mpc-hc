@@ -105,7 +105,7 @@ bool IsStreamEnd(IBaseFilter* pBF)
 bool IsVideoRenderer(IBaseFilter* pBF)
 {
     CLSID clsid = GetCLSID(pBF);
-    if (clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_VideoMixingRenderer9 || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_madVR || clsid == CLSID_DXR || clsid == CLSID_MPCVR) {
+    if (clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_VideoMixingRenderer9 || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_madVR || clsid == CLSID_DXR || clsid == CLSID_MPCVR || clsid == CLSID_FrankyRenderer) {
         return true;
     }
 

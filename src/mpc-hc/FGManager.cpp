@@ -1028,7 +1028,7 @@ HRESULT CFGManager::Connect(IPin* pPinOut, IPin* pPinIn, bool bContinueRender)
                 if (!m_bIsCapture) {
                     // Check if selected video renderer fails to load
                     CLSID filter = pFGF->GetCLSID();
-                    if (filter == CLSID_MPCVRAllocatorPresenter || filter == CLSID_madVRAllocatorPresenter || filter == CLSID_DXRAllocatorPresenter) {
+                    if (filter == CLSID_FrankyRenderer || filter == CLSID_MPCVRAllocatorPresenter || filter == CLSID_madVRAllocatorPresenter || filter == CLSID_DXRAllocatorPresenter) {
                         if (IDYES == AfxMessageBox(_T("The selected video renderer has failed to load.\n\nThe player will now fallback to using a basic video renderer, which has reduced performance and quality. Subtitles may also fail to load.\n\nDo you want to change settings to use the default video renderer (EVR-CP/VMR9)? (player restart required)"), MB_ICONEXCLAMATION | MB_YESNO, 0)) {
                             CAppSettings& s2 = AfxGetAppSettings();
                             s2.iDSVideoRendererType = IsCLSIDRegistered(CLSID_EnhancedVideoRenderer) ? VIDRNDT_DS_EVR_CUSTOM : VIDRNDT_DS_VMR9RENDERLESS;

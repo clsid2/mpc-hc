@@ -2844,7 +2844,7 @@ BEGIN
     IDS_NAVIGATE_CHANNELS   "&Channels"
     IDS_PPAGE_OUTPUT_MPCVR  "MPC Video Renderer"
     IDS_PPAGE_OUTPUT_FRANKY "FrankyRenderer"
-    IDC_DSFRANKY "External libplacebo video renderer. Installed separately."
+    IDC_DSFRANKY "MPC-HC shaders, exclusive fullscreen and XySubFilter unavailable."
     IDS_PPAGE_OUTPUT_VMR7   "Video Mixing Renderer 7"
 END
 

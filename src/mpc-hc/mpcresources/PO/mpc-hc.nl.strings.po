@@ -766,7 +766,7 @@ msgid "FrankyRenderer"
 msgstr ""
 
 msgctxt "IDC_DSFRANKY"
-msgid "External libplacebo video renderer. Installed separately."
+msgid "MPC-HC shaders, exclusive fullscreen and XySubFilter unavailable."
 msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"

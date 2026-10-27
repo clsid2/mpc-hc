@@ -338,24 +338,29 @@ BOOL CPPageOutput::OnApply()
         // video renderer changed, optimize HW decoding settings
         CMPlayerCApp* pApp = AfxGetMyApp();
         int curhwa = pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), -1);
-        bool needcopyback = false; // external filters that require copyback
-        if (s.GetSubtitleRenderer() == CAppSettings::SubtitleRenderer::VS_FILTER) {
-            needcopyback = true;
+        auto subtitleRenderer = s.GetSubtitleRenderer();
+        if (m_SubtitleRendererCtrl.IsWindowEnabled() && m_SubtitleRendererCtrl.GetCurSel() != CB_ERR) {
+            subtitleRenderer = static_cast<CAppSettings::SubtitleRenderer>(m_SubtitleRendererCtrl.GetItemData(m_SubtitleRendererCtrl.GetCurSel()));
         }
-        if (s.m_filters.GetCount() > 0) {
-            POSITION pos = s.m_filters.GetHeadPosition();
-            while (pos) {
-               FilterOverride fo = s.m_filters.GetNext(pos);
-               if (!fo.fDisabled && fo.dwMerit > MERIT_DO_NOT_USE) {
-                   if (fo.clsid == CLSID_VSFilter || fo.clsid == CLSID_VSFilter2 || fo.clsid == CLSID_FFDShowRawVideo || fo.clsid ==  CLSID_AviSynthFilter || fo.clsid ==  CLSID_VapourSynthFilter) {
-                       needcopyback = true;
-                       break;
-                   }
-               }
-            }
-        }
+        const bool needcopyback = s.RequiresDecoderCopyback(subtitleRenderer);
 
-        if (m_iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
+        if (m_iDSVideoRendererType == VIDRNDT_DS_FRANKY) {
+            GPUDetect gpuinfo = GPUDetect();
+            if (curhwa > HWAccel_None && gpuinfo.SupportD3D11VA()) {
+                pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_D3D11);
+                if (needcopyback) {
+                    if (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccelDeviceD3D11"), -1) == -1) {
+                        pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccelDeviceD3D11"), 0);
+                    }
+                } else if (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccelDeviceD3D11"), -1) != -1) {
+                    if (AfxMessageBox(L"Change hardware decoding setting to \"D3D11 Native\"?\n\nThat gives better performance and is optimal choice for the selected video renderer.", MB_YESNO, 0) == IDYES) {
+                        pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccelDeviceD3D11"), -1);
+                    }
+                }
+            } else if (curhwa == HWAccel_DXVA2Native || curhwa == HWAccel_D3D11) {
+                pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_DXVA2CopyBack);
+            }
+        } else if (m_iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
             GPUDetect gpuinfo = GPUDetect();
             if (gpuinfo.SupportD3D11VA()) {
                 WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
@@ -542,14 +547,14 @@ void CPPageOutput::UpdateStatusIcon()
 {
     // Feature-support indicator below the renderer dropdown:
     // green tick     - supports all player functionality including HDR (MPCVR/madVR)
-    // yellow warning - supports all player functionality except HDR (EVR CP/Sync)
+    // yellow warning - feature restrictions; see the renderer-specific note
     // red cross      - old renderer with limited functionality
     // The tooltip carries the detailed capability description of the renderer.
     HICON icon;
     UINT noteID;
     switch (m_iDSVideoRendererType) {
         case VIDRNDT_DS_FRANKY:
-            icon = m_tick;
+            icon = m_warn;
             noteID = IDC_DSFRANKY;
             break;
         case VIDRNDT_DS_MPCVR:

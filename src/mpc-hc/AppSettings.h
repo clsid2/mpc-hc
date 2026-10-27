@@ -1009,6 +1009,7 @@ public:
     static bool IsSubtitleRendererRegistered(SubtitleRenderer eSubtitleRenderer);
 
     static bool IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRenderer, int videoRenderer);
+    bool RequiresDecoderCopyback(SubtitleRenderer subtitleRenderer) const;
 
     CSize GetAspectRatioOverride() const {
         ASSERT(fKeepAspectRatio && "Keep Aspect Ratio option have to be enabled if override value is used.");
