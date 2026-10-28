@@ -3460,7 +3460,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                     // Device lost
                     if (GetPlaybackMode() == PM_ANALOG_CAPTURE) {
                         CComQIPtr<IBaseFilter> pBF = (IUnknown*)evParam1;
-                        if (!m_pVidCap && m_pVidCap == pBF || !m_pAudCap && m_pAudCap == pBF) {
+                        if ((m_pVidCap && m_pVidCap == pBF) || (m_pAudCap && m_pAudCap == pBF)) {
                             PostMessage(WM_COMMAND, ID_FILE_CLOSE_AND_RESTORE);
                         }
                     } else if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
