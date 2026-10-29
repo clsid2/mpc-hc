@@ -5462,13 +5462,15 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     DWORD len = *((DWORD*)pCDS->lpData);
     TCHAR* pBuff = (TCHAR*)((DWORD*)pCDS->lpData + 1);
-    TCHAR* pBuffEnd = (TCHAR*)((BYTE*)pBuff + pCDS->cbData - sizeof(DWORD));
+    TCHAR* pBuffEnd = pBuff + (pCDS->cbData - sizeof(DWORD)) / sizeof(TCHAR);
 
     CAtlList<CString> cmdln;
 
     while (len-- > 0 && pBuff < pBuffEnd) {
-        CString str(pBuff);
-        pBuff += str.GetLength() + 1;
+        // the sender is another process, so do not trust it to terminate the last string
+        size_t n = wcsnlen(pBuff, pBuffEnd - pBuff);
+        CString str(pBuff, (int)n);
+        pBuff += n + 1;
 
         cmdln.AddTail(str);
     }
