@@ -590,6 +590,17 @@ bool GetYDLStreamDetails(const Value& format, YDLStreamDetails& details, bool re
     }
     #endif
 
+    // guess missing width value
+    if (canuse && details.has_video && details.width == 0 && details.height >= 0) {
+        if (details.format_id.Find(L"portrait") >= 0) {
+            // swap if vertical video
+            details.width = details.height;
+            details.height = details.width * 16 / 9;
+        } else {
+            details.width = details.height * 16 / 9;
+        }
+    }
+
     return canuse;
 }
 
@@ -613,6 +624,15 @@ bool IsBetterYDLStream(YDLStreamDetails& first, YDLStreamDetails& second, int ma
             if (second.video_score > first.video_score) {
                 return true;
             }
+        }
+
+        // prefer landscape over portrait
+        if (first.height > first.width) {
+            if (second.height <= second.width) {
+                return true;
+            }
+        } else if (second.height > second.width) {
+            return false;
         }
 
         // Video resolution
