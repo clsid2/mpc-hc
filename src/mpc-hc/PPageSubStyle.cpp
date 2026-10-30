@@ -39,6 +39,7 @@ CPPageSubStyle::CPPageSubStyle(bool isStyleDialog)
     , m_scalex(0)
     , m_scaley(0)
     , m_borderStyle(0)
+    , m_bRoundedOpaqueBox(FALSE)
     , m_screenAlignment(0)
     , m_margin(0, 0, 0, 0)
     , m_bLinkAlphaSliders(FALSE)
@@ -90,6 +91,7 @@ void CPPageSubStyle::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_EDIT6, m_scaley);
     DDX_Control(pDX, IDC_SPIN5, m_scaleySpin);
     DDX_Radio(pDX, IDC_RADIO1, m_borderStyle);
+    DDX_Check(pDX, IDC_CHECK_ROUNDEDBOX, m_bRoundedOpaqueBox);
     DDX_Control(pDX, IDC_EDIT1, m_borderWidth);
     DDX_Control(pDX, IDC_EDIT2, m_shadowDepth);
     DDX_Radio(pDX, IDC_RADIO3, m_screenAlignment);
@@ -144,6 +146,10 @@ BOOL CPPageSubStyle::OnInitDialog()
         GetDlgItem(IDC_CHECK2)->ShowWindow(SW_HIDE);
     }
 
+    if (!m_bDefaultStyle) { // the rounded box is an option of the player's default style only
+        GetDlgItem(IDC_CHECK_ROUNDEDBOX)->ShowWindow(SW_HIDE);
+    }
+
     SetHandCursor(m_hWnd, IDC_COMBO1);
 
     m_font.SetWindowText(m_stss.fontName);
@@ -195,6 +201,7 @@ BOOL CPPageSubStyle::OnInitDialog()
     m_scaleySpin.SetRange32(-10000, 10000);
 
     m_borderStyle = m_stss.borderStyle;
+    m_bRoundedOpaqueBox = s.bSubtitleRoundedOpaqueBox;
     m_borderWidth.SetRange(0.0f, 100.0f);
     m_borderWidth = std::min(m_stss.outlineWidthX, m_stss.outlineWidthY);
     m_shadowDepth.SetRange(0.0f, 100.0f);
@@ -265,8 +272,9 @@ BOOL CPPageSubStyle::OnApply()
 
     if (m_bDefaultStyle) {
         STSStyle& stss = AfxGetAppSettings().subtitlesDefStyle;
-        if (stss != m_stss) {
+        if (stss != m_stss || s.bSubtitleRoundedOpaqueBox != !!m_bRoundedOpaqueBox) {
             AfxGetAppSettings().subtitlesDefStyle = m_stss;
+            s.bSubtitleRoundedOpaqueBox = !!m_bRoundedOpaqueBox;
             if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
                 pMainFrame->UpdateSubtitleRenderingParameters();
                 pMainFrame->RepaintVideo();
