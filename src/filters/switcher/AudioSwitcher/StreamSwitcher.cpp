@@ -1598,8 +1598,6 @@ STDMETHODIMP CStreamSwitcherFilter::Enable(long lIndex, DWORD dwFlags)
         return E_NOTIMPL;
     }
 
-    PauseGraph;
-
     bool bFound = false;
     int i = 0;
     CStreamSwitcherInputPin* pNewInputPin = nullptr;
@@ -1638,6 +1636,8 @@ STDMETHODIMP CStreamSwitcherFilter::Enable(long lIndex, DWORD dwFlags)
     if (!bFound) {
         return E_INVALIDARG;
     }
+
+    PauseGraph;
 
     SelectInput(pNewInputPin);
 
