@@ -581,6 +581,15 @@ static CString CombinePath(CLongPath p, CString fn)
     return (LPCTSTR)p;
 }
 
+// for comparing local playlist paths, which CombinePath leaves as base + entry
+static CString NormalizePlaylistPath(CString fn)
+{
+    fn.Replace(_T('/'), _T('\\'));
+    CLongPath p(fn);
+    p.Canonicalize();
+    return (LPCTSTR)p;
+}
+
 bool CPlayerPlaylistBar::ParseBDMVPlayList(CString fn)
 {
     CHdmvClipInfo ClipInfo;
@@ -793,12 +802,15 @@ bool CPlayerPlaylistBar::ParseCUESheet(CString cuefn) {
     return success;
 }
 
-bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn, bool* lav_fallback) {
+bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn, bool* lav_fallback, std::vector<CString> parents) {
     CString str;
     CPlaylistItem pli;
     std::vector<int> idx;
 
     bool isurl = PathUtils::IsURL(fn);
+    if (!isurl) {
+        parents.push_back(NormalizePlaylistPath(fn));
+    }
 
     CWebTextFile f(CTextFile::UTF8);
     f.SetFallbackEncoding(CTextFile::ANSI);
@@ -887,13 +899,22 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn, bool* lav_fallback) {
             }
         } else {
             // check for nested playlist
-            CString ext = GetFileExt(str);
+            CString ext = GetFileExt(str).MakeLower();
             if (ext == L".m3u" || ext == L".m3u8") {
-                bool dummy = false;
-                if (!PathUtils::IsURL(str) && ParseM3UPlayList(str, &dummy)) {
-                    success = true;
-                    extinf_title = L"";
-                    continue;
+                if (!PathUtils::IsURL(str)) {
+                    // skip a playlist which lists itself, directly or through another one,
+                    // rather than recurse until the stack overflows
+                    CString nested = NormalizePlaylistPath(str);
+                    if (std::any_of(parents.begin(), parents.end(), [&nested](const CString& parent) { return parent.CompareNoCase(nested) == 0; })) {
+                        extinf_title = L"";
+                        continue;
+                    }
+                    bool dummy = false;
+                    if (ParseM3UPlayList(str, &dummy, parents)) {
+                        success = true;
+                        extinf_title = L"";
+                        continue;
+                    }
                 }
             } else if (ext == L".pls") {
                 int count = m_pl.GetCount();
@@ -950,8 +971,10 @@ bool CPlayerPlaylistBar::ParseMPCPlayList(CString fn)
             CString value = sl.RemoveHead();
 
             if (key == _T("type")) {
+                if (std::find(idx.begin(), idx.end(), i) == idx.end()) {
+                    idx.push_back(i); // only once, a repeated "type" line must not add the item twice
+                }
                 pli[i].m_type = (CPlaylistItem::type_t)_ttol(value);
-                idx.push_back(i);
             } else if (key == _T("label")) {
                 pli[i].m_label = value;
             } else if (key == _T("filename")) {
@@ -987,11 +1010,14 @@ bool CPlayerPlaylistBar::ParseMPCPlayList(CString fn)
             } else if (key == _T("country")) {
                 pli[i].m_country = _ttol(value);
             } else if (key == _T("cue_filename")) {
+                // saved relative to the playlist like filename and subtitle, see SaveMPCPlayList
+                if (!PathUtils::IsURL(value)) value = CombinePath(base, value);
                 pli[i].m_cue = true;
                 pli[i].m_cue_filename = value;
             } else if (key == _T("cue_index")) {
                 pli[i].m_cue_index = _ttoi(value);
             } else if (key == _T("cover")) {
+                if (!PathUtils::IsURL(value)) value = CombinePath(base, value);
                 pli[i].m_cover = value;
             } else if (key == _T("ydl_sub") || key == _T("ydl_auto_sub")) {
                 CAtlList<CString> li;
@@ -1008,10 +1034,14 @@ bool CPlayerPlaylistBar::ParseMPCPlayList(CString fn)
     }
 
     std::sort(idx.begin(), idx.end());
+    bool added = false;
     for (int i : idx) {
-        if (pli[i].m_fns.GetCount() > 0) m_pl.AddTail(pli[i]);
+        if (pli[i].m_fns.GetCount() > 0) {
+            m_pl.AddTail(pli[i]);
+            added = true;
+        }
     }
-    return !pli.IsEmpty();
+    return added;
 }
 
 bool CPlayerPlaylistBar::PlaylistCanStripPath(CString path)

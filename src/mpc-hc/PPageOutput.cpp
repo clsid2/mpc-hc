@@ -305,10 +305,18 @@ BOOL CPPageOutput::OnApply()
 
     CAppSettings& s = AfxGetAppSettings();
 
-    if (!s.IsVideoRendererAvailable(m_iDSVideoRendererType)) {
+    bool vrender_missing = !s.IsVideoRendererAvailable(m_iDSVideoRendererType);
+    bool missing_dx = !vrender_missing && m_iDSVideoRendererType == VIDRNDT_DS_MPCVR && !s.HasD3DCompiler47();
+    if (vrender_missing || missing_dx) {
         ((CPropertySheet*)GetParent())->SetActivePage(this);
-        AfxMessageBox(IDS_PPAGE_OUTPUT_UNAVAILABLEMSG, MB_ICONEXCLAMATION | MB_OK, 0);
-
+        if (vrender_missing) {
+            AfxMessageBox(IDS_PPAGE_OUTPUT_UNAVAILABLEMSG, MB_ICONEXCLAMATION | MB_OK, 0);
+        } else if (missing_dx) {
+            AfxMessageBox(L"Your system is missing the DirectX file \"D3DCompiler_47.dll\".\n\nMPC Video Renderer requires that file.\n\nPlease update your Windows or install the DirectX end-user runtime.", MB_OK, 0);
+        }
+        if (s.iDSVideoRendererType == m_iDSVideoRendererType) {
+            s.iDSVideoRendererType = s.IsVideoRendererAvailable(VIDRNDT_DS_EVR_CUSTOM) ? VIDRNDT_DS_EVR_CUSTOM : VIDRNDT_DS_VMR9RENDERLESS;
+        }
         // revert to the renderer in the settings
         m_iDSVideoRendererTypeCtrl.SetCurSel(0);
         for (int i = 0; i < m_iDSVideoRendererTypeCtrl.GetCount(); ++i) {

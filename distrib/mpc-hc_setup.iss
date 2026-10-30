@@ -260,7 +260,7 @@ Source: {#bindir}\{#lavfiltersdir}\*.manifest;     DestDir: {app}\{#lavfiltersdi
 	#if INCLUDE_MPCVR
 Source: ..\distrib\mpcvr\{#mpcvr_ax};              DestDir: {app}\MPCVR;            Components: main;         Flags: ignoreversion
 	#endif
-Source: {#platform}\d3dcompiler_{#MPC_D3D_COMPILER_VERSION}.dll; DestDir: {app};    Components: main;         Flags: ignoreversion
+Source: {#platform}\d3dcompiler_{#MPC_D3D_COMPILER_VERSION}.dll; DestDir: {app};    Components: main;         Flags: ignoreversion; Check: NOT FileExists(ExpandConstant('{sys}\D3DCompiler_47.dll'));
 Source: {#platform}\d3dx9_{#MPC_DX_SDK_NUMBER}.dll;              DestDir: {app};    Components: main;         Flags: ignoreversion
 	#if INCLUDE_MEDIAINFO
 Source: {#platform}\mediainfo.dll;                 DestDir: {app};                  Components: main;         Flags: ignoreversion

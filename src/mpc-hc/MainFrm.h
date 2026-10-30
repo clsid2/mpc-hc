@@ -598,6 +598,25 @@ private:
     CWnd* m_pOptionsSheet = nullptr;
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
 
+    // Work the web server's thread needs done here, because it reads lists this
+    // thread rebuilds whenever a file opens or the playlist changes: the subtitle
+    // streams (m_pSubStreams, written without m_csSubLock in LoadSubtitle and
+    // OnGetSubtitles) and the playlist (never locked). The web thread sends
+    // WM_MPC_UI_REQUEST with one of these and waits a bounded time for OnUIRequest
+    // to run build. A send that times out is still delivered later, so the
+    // request lives on the heap with a reference from each side, and whichever
+    // side lets go last frees it. See CWebClientSocket::BuildOnUIThread.
+    struct UIRequest {
+        std::function<void(CMainFrame*, CStringA&)> build;
+        CStringA body;
+        LONG refs = 2;
+        void Release() {
+            if (InterlockedDecrement(&refs) == 0) {
+                delete this;
+            }
+        }
+    };
+
     // a tracked popup or the menu bar is showing menus that a media change rebuilds
     // (the stream, filter and recent submenus). Windows owns those popup windows
     // while they are up, and emptying one frees the per item data it hands back to
@@ -697,6 +716,7 @@ protected:
     bool m_bFirstPlay;
     bool m_bOpeningInAutochangedMonitorMode;
     bool m_bPausedForAutochangeMonitorMode;
+    bool m_bPausedByMinimize;
     bool m_bThemeChangePending;
     bool restoringWindowRect;
 
@@ -1069,6 +1089,7 @@ public:
     afx_msg LRESULT OnFilePostOpenmedia(WPARAM wParam, LPARAM lparam);
     afx_msg LRESULT OnOpenMediaFailed(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnUIRequest(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to
     // it instead, because DoTunerScan sends to the HWND it was handed.

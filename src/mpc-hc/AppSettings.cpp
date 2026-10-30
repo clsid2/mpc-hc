@@ -306,6 +306,7 @@ CAppSettings::CAppSettings()
     , bUseMediainfoLoadFileDuration(false)
     , bCaptureDeinterlace(false)
     , bPauseWhileDraggingSeekbar(true)
+    , bPauseWhenMinimized(false)
     , bConfirmFileDelete(true)
     , bShowVolumePercentage(true)
     , bHistoryInAppData(false)
@@ -813,6 +814,21 @@ CAppSettings::~CAppSettings()
     if (hAccel) {
         DestroyAcceleratorTable(hAccel);
     }
+}
+
+bool CAppSettings::HasD3DCompiler47() const
+{
+    if (::PathFileExistsW(PathUtils::GetProgramPath(false) + L"\\D3DCompiler_47.dll")) {
+        return true;
+    }
+    wchar_t syspath[MAX_PATH];
+    UINT len = GetSystemDirectoryW(syspath, MAX_PATH);
+    if (len > 0 && len < MAX_PATH) {
+        if (::PathFileExistsW(CString(syspath) + L"\\D3DCompiler_47.dll")) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool CAppSettings::IsD3DFullscreen() const
@@ -1421,6 +1437,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MOUSE_LEFTUP_DELAY, iMouseLeftUpDelay);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, bCaptureDeinterlace);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, bPauseWhileDraggingSeekbar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, bPauseWhenMinimized);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, bConfirmFileDelete);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, bShowVolumePercentage);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, bHistoryInAppData);
@@ -1906,6 +1923,7 @@ void CAppSettings::LoadSettings()
     bUseMediainfoLoadFileDuration = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION, FALSE);
     bCaptureDeinterlace = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, FALSE);
     bPauseWhileDraggingSeekbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, TRUE);
+    bPauseWhenMinimized = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, FALSE);
     bConfirmFileDelete = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, TRUE);
     bShowVolumePercentage = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, TRUE);
     bHistoryInAppData = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, FALSE);
@@ -2423,12 +2441,15 @@ void CAppSettings::LoadSettings()
                     }
                 }
             }
+            if (!HasD3DCompiler47()) {
+                iDSVideoRendererType = IsVideoRendererAvailable(VIDRNDT_DS_EVR_CUSTOM) ? VIDRNDT_DS_EVR_CUSTOM : VIDRNDT_DS_VMR9RENDERLESS;
+            }
         }
 
         bool gpu_changed = previous_gpuid1 != gpuid1;
-        // adjust settings if detection changed
-        if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter()) {
-            if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+        if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+            // adjust settings if detection changed
+            if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter() && HasD3DCompiler47()) {
                 iDSVideoRendererType = VIDRNDT_DS_MPCVR;
                 bool softwaredec = (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), -1) == HWAccel_None);
                 if (gpuinfo.SupportD3D11VA()) {
@@ -2665,8 +2686,9 @@ __int64 CAppSettings::ConvertTimeToMSec(const CString& time) const
     __int64 mSec = 0;
     __int64 mult = 1;
 
+    // short values such as "90" or "5:00" are plain seconds and minutes:seconds
     int pos = time.GetLength() - 1;
-    if (pos < 3) {
+    if (pos < 0) {
         return 0;
     }
 

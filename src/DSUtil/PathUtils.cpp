@@ -153,6 +153,33 @@ namespace PathUtils
         return CString(path).Trim(_T("\""));
     }
 
+    CString QuoteArg(LPCTSTR arg)
+    {
+        // Quotes one argument so that CommandLineToArgvW and the CRT read it back unchanged:
+        // a backslash run is literal unless a quote follows it, so double the run before an
+        // embedded quote (which is then escaped) and before the closing quote.
+        CString quoted = _T("\"");
+        for (LPCTSTR p = arg; ; p++) {
+            int backslashes = 0;
+            while (*p == _T('\\')) {
+                backslashes++;
+                p++;
+            }
+            if (!*p) {
+                quoted.Append(CString(_T('\\'), backslashes * 2));
+                break;
+            }
+            if (*p == _T('"')) {
+                quoted.Append(CString(_T('\\'), backslashes * 2 + 1));
+            } else {
+                quoted.Append(CString(_T('\\'), backslashes));
+            }
+            quoted.AppendChar(*p);
+        }
+        quoted.AppendChar(_T('"'));
+        return quoted;
+    }
+
     CString StripPathOrUrl(LPCTSTR path)
     {
         // Replacement for CPath::StripPath which works fine also for URLs
@@ -227,7 +254,13 @@ namespace PathUtils
     {
         bool ret = IsDir(path) || CreateDirectory(path, nullptr);
         if (!ret) {
-            ret = CreateDirRecursive(DirName(path)) && CreateDirectory(path, nullptr);
+            // A root that does not exist (a missing drive, an unreachable share) is its own
+            // parent, so stop there rather than recursing until the stack runs out.
+            CString parent = DirName(path);
+            if (parent.IsEmpty() || parent.CompareNoCase(path) == 0) {
+                return false;
+            }
+            ret = CreateDirRecursive(parent) && CreateDirectory(path, nullptr);
         }
         return ret;
     }

@@ -64,6 +64,7 @@ namespace PathUtils
     CString CombinePaths(LPCTSTR dir, LPCTSTR path);
     CString FilterInvalidCharsFromFileName(LPCTSTR fn, TCHAR replacementChar = _T('_'));
     CString Unquote(LPCTSTR path);
+    CString QuoteArg(LPCTSTR arg);
     CString StripPathOrUrl(LPCTSTR path);
     bool IsInDir(LPCTSTR path, LPCTSTR dir);
     bool IsStrictlyInDir(LPCTSTR path, LPCTSTR dir);

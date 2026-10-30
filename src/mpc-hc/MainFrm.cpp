@@ -117,7 +117,7 @@
 #include "MPCFolderPickerDialog.h"
 
 #include "stb/stb_image.h"
-#include "stb/stb_image_resize2.h"
+#include "stb/deprecated/stb_image_resize2.h"
 #include "stb/stb_image_write.h"
 
 #include  "Logger.h"
@@ -334,6 +334,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_POSTOPEN, OnFilePostOpenmedia)
     ON_MESSAGE(WM_OPENFAILED, OnOpenMediaFailed)
     ON_MESSAGE(WM_MPC_RUN_DEFERRED, OnRunDeferredActions)
+    ON_MESSAGE(WM_MPC_UI_REQUEST, OnUIRequest)
     ON_MESSAGE(WM_TUNER_NEW_CHANNEL, OnHeadlessScanNewChannel)
     ON_MESSAGE(WM_TUNER_SCAN_END, OnHeadlessScanEnd)
     ON_MESSAGE(WM_DVB_EIT_DATA_READY, OnCurrentChannelInfoUpdated)
@@ -673,7 +674,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 END_MESSAGE_MAP()
 
 //#ifdef _DEBUG
-const TCHAR* GetEventString(LONG evCode)
+CString GetEventString(LONG evCode)
 {
 #define UNPACK_VALUE(VALUE) case VALUE: return _T(#VALUE);
     switch (evCode) {
@@ -886,6 +887,7 @@ CMainFrame::CMainFrame()
     , m_bFirstPlay(false)
     , m_bOpeningInAutochangedMonitorMode(false)
     , m_bPausedForAutochangeMonitorMode(false)
+    , m_bPausedByMinimize(false)
     , m_bThemeChangePending(false)
     , m_fAudioOnly(true)
     , m_iDVDDomain(DVD_DOMAIN_Stop)
@@ -1028,6 +1030,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     CMPCThemeUtil::enableWindows10DarkFrame(this);
+
+    // keep DWM rendering the frame, or uxtheme paints a basic frame while the style changes for fullscreen
+    DWMNCRENDERINGPOLICY policy = DWMNCRP_ENABLED;
+    ::DwmSetWindowAttribute(m_hWnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy));
 
     if (IsWindows8Point1OrGreater()) {
         m_dpi.Override(m_hWnd);
@@ -1422,6 +1428,18 @@ bool CMainFrame::DeferIfNested(DeferredActionType type, std::function<void()> ac
     return true;
 }
 
+// A sent message is dispatched wherever this thread next retrieves one, which
+// includes the waits on the graph thread while a file opens or closes; the
+// builders only read the lists while the load state is LOADED, and that state
+// changes on this thread, so nothing is read while the graph thread rewrites it.
+LRESULT CMainFrame::OnUIRequest(WPARAM wParam, LPARAM lParam)
+{
+    auto pRequest = reinterpret_cast<UIRequest*>(lParam);
+    pRequest->build(this, pRequest->body);
+    pRequest->Release();
+    return 0;
+}
+
 void CMainFrame::OnClose()
 {
     CAppSettings& s = AfxGetAppSettings();
@@ -1492,7 +1510,7 @@ void CMainFrame::OnClose()
     m_wndPlaylistBar.SavePlaylist();
     m_wndPlaylistBar.ClearExternalPlaylistIfInvalid();
 
-    if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING) {
+    if (GetLoadState() == MLS::LOADED || GetLoadState() == MLS::LOADING || GetLoadState() == MLS::FAILING) {
         CloseMediaInternal();
     }
 
@@ -1957,6 +1975,24 @@ void CMainFrame::OnMoving(UINT fwSide, LPRECT pRect)
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy)
 {
+    if (nType == SIZE_MINIMIZED) {
+        // Like locking the session (see OnSessionChange): video that nobody can see is paused,
+        // audio keeps playing, since minimizing is how people listen in the background.
+        if (AfxGetAppSettings().bPauseWhenMinimized && !m_bPausedByMinimize && GetLoadState() == MLS::LOADED
+                && !m_fAudioOnly && GetMediaStateDirect() == State_Running) {
+            SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
+            // set after the pause, which clears it like any other play, pause or stop
+            m_bPausedByMinimize = true;
+        }
+    } else if (m_bPausedByMinimize && (nType == SIZE_RESTORED || nType == SIZE_MAXIMIZED)) {
+        m_bPausedByMinimize = false;
+        // still set means nothing has played, paused, stopped or closed since the pause
+        // above, so resume, unless that pause did not take (it can be disabled, e.g. for live streams)
+        if (GetLoadState() == MLS::LOADED && GetMediaStateDirect() == State_Paused) {
+            SendMessage(WM_COMMAND, ID_PLAY_PLAY);
+        }
+    }
+
     if (m_bTrayIcon && nType == SIZE_MINIMIZED) {
         ShowWindow(SW_HIDE);
     } else {
@@ -3376,11 +3412,11 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
         m_ActiveGraphNotifyEvCode = evCode;
 #ifdef _DEBUG
         if (evCode != EC_DVD_CURRENT_HMSF_TIME) {
-            TRACE(_T("--> CMainFrame::OnGraphNotify (thread %lu)(graph %u)(loadstate %d) event: %ws\n"), GetCurrentThreadId(), (unsigned int)(lParam & 0xffff), loadstate, GetEventString(evCode));
+            TRACE(_T("--> CMainFrame::OnGraphNotify (thread %lu)(graph %u)(loadstate %d) event: %ws\n"), GetCurrentThreadId(), (unsigned int)(lParam & 0xffff), loadstate, GetEventString(evCode).GetString());
         }
 #else
         if (evCode != EC_DVD_CURRENT_HMSF_TIME && USE_LOGGER(AfxGetAppSettings())) {
-            PLAYER_LOG(_T("CMainFrame::OnGraphNotify (thread %lu)(graph %u)(loadstate %d) event: %ws"), GetCurrentThreadId(), (unsigned int)(lParam & 0xffff), loadstate, GetEventString(evCode));
+            PLAYER_LOG(_T("CMainFrame::OnGraphNotify (thread %lu)(graph %u)(loadstate %d) event: %ws"), GetCurrentThreadId(), (unsigned int)(lParam & 0xffff), loadstate, GetEventString(evCode).GetString());
         }
 #endif
 
@@ -5427,13 +5463,15 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCDS)
 
     DWORD len = *((DWORD*)pCDS->lpData);
     TCHAR* pBuff = (TCHAR*)((DWORD*)pCDS->lpData + 1);
-    TCHAR* pBuffEnd = (TCHAR*)((BYTE*)pBuff + pCDS->cbData - sizeof(DWORD));
+    TCHAR* pBuffEnd = pBuff + (pCDS->cbData - sizeof(DWORD)) / sizeof(TCHAR);
 
     CAtlList<CString> cmdln;
 
     while (len-- > 0 && pBuff < pBuffEnd) {
-        CString str(pBuff);
-        pBuff += str.GetLength() + 1;
+        // the sender is another process, so do not trust it to terminate the last string
+        size_t n = wcsnlen(pBuff, pBuffEnd - pBuff);
+        CString str(pBuff, (int)n);
+        pBuff += n + 1;
 
         cmdln.AddTail(str);
     }
@@ -8343,7 +8381,7 @@ void CMainFrame::OnViewSynchronizeVideo()
         r.m_AdvRendSets.bVMR9AlterativeVSync = false;
     }
     m_OSD.DisplayMessage(OSD_TOPRIGHT, ResStr(r.m_AdvRendSets.bSynchronizeVideo
-                                              ? IDS_OSD_RS_SYNC_TO_DISPLAY_ON : IDS_OSD_RS_SYNC_TO_DISPLAY_ON));
+                                              ? IDS_OSD_RS_SYNC_TO_DISPLAY_ON : IDS_OSD_RS_SYNC_TO_DISPLAY_OFF));
 }
 
 void CMainFrame::OnViewSynchronizeDisplay()
@@ -8358,7 +8396,7 @@ void CMainFrame::OnViewSynchronizeDisplay()
         r.m_AdvRendSets.bVMR9AlterativeVSync = false;
     }
     m_OSD.DisplayMessage(OSD_TOPRIGHT, ResStr(r.m_AdvRendSets.bSynchronizeDisplay
-                                              ? IDS_OSD_RS_SYNC_TO_VIDEO_ON : IDS_OSD_RS_SYNC_TO_VIDEO_ON));
+                                              ? IDS_OSD_RS_SYNC_TO_VIDEO_ON : IDS_OSD_RS_SYNC_TO_VIDEO_OFF));
 }
 
 void CMainFrame::OnViewSynchronizeNearest()
@@ -9943,6 +9981,7 @@ void CMainFrame::OnPlayPlay()
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
+    m_bPausedByMinimize = false;
 
     if (!IsStateClosedOrLoaded()) {
         return;
@@ -10082,6 +10121,7 @@ void CMainFrame::OnPlayPause()
 {
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
+    m_bPausedByMinimize = false;
 
     if (GetLoadState() != MLS::LOADED) {
         return;
@@ -10155,6 +10195,7 @@ void CMainFrame::OnPlayStop(bool is_closing)
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
+    m_bPausedByMinimize = false; // also on close, which stops through here
 
     KillTimersStop();
 
@@ -11235,30 +11276,34 @@ void CMainFrame::OnPlaySubtitles(UINT nID)
 
                     if (dlg.DoModal() == IDOK) {
                         {
-                            CAutoLock cAutoLock(&m_csSubLock);
                             bool defaultStyleChanged = false, otherStyleChanged = false;
+                            {
+                                CAutoLock cAutoLock(&m_csSubLock);
 
-                            for (size_t l = 0; l < pages.GetCount(); l++) {
-                                STSStyle tmpStyle = *styles[l];
-                                pages[l]->GetStyle(*styles[l]);
-                                if (pages[l]->GetStyleName() == L"Default") {
-                                    if (*styles[l] != s.subtitlesDefStyle) {
-                                        pRTS->m_bUsingPlayerDefaultStyle = false;
-                                        pRTS->SetDefaultStyle(*styles[l]);
-                                        defaultStyleChanged = true;
+                                for (size_t l = 0; l < pages.GetCount(); l++) {
+                                    STSStyle tmpStyle = *styles[l];
+                                    pages[l]->GetStyle(*styles[l]);
+                                    if (pages[l]->GetStyleName() == L"Default") {
+                                        if (*styles[l] != s.subtitlesDefStyle) {
+                                            pRTS->m_bUsingPlayerDefaultStyle = false;
+                                            pRTS->SetDefaultStyle(*styles[l]);
+                                            defaultStyleChanged = true;
+                                        }
+                                    } else if (tmpStyle != *styles[l]) {
+                                        otherStyleChanged = true;
                                     }
-                                } else if (tmpStyle != *styles[l]) {
-                                    otherStyleChanged = true;
+                                }
+                                if (otherStyleChanged || defaultStyleChanged) {
+                                    if (!defaultStyleChanged) { //it will already have triggered SetStyleChanged() internally
+                                        pRTS->SetStyleChanged();
+                                    }
+                                    pRTS->Deinit();
+                                    InvalidateSubtitle();
+                                    m_wndSubresyncBar.ReloadSubtitle();
                                 }
                             }
                             if (otherStyleChanged || defaultStyleChanged) {
-                                if (!defaultStyleChanged) { //it will already have triggered SetStyleChanged() internally
-                                    pRTS->SetStyleChanged();
-                                }
-                                pRTS->Deinit();
-                                InvalidateSubtitle();
                                 RepaintVideo();
-                                m_wndSubresyncBar.ReloadSubtitle();
                             }
                         }
                     }
@@ -19792,6 +19837,9 @@ void CMainFrame::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = 
             } else {
                 m_wndSubresyncBar.SetSubtitle(nullptr, m_pCAP->GetFPS(), g_bExternalSubtitle);
             }
+            // an index into the previous track's subresync list means nothing for the new one
+            m_nCurSubtitle = -1;
+            m_lSubtitleShift = 0;
         }
     }
 
@@ -21610,11 +21658,11 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
 
         // purge possible queued OnFilePostOpenmedia()
         if (PeekMessage(&msg, m_hWnd, WM_POSTOPEN, WM_POSTOPEN, PM_REMOVE | PM_NOYIELD)) {
-            free((OpenMediaData*)msg.lParam);
+            delete (OpenMediaData*)msg.lParam;
         }
         // purge possible queued OnOpenMediaFailed()
         if (PeekMessage(&msg, m_hWnd, WM_OPENFAILED, WM_OPENFAILED, PM_REMOVE | PM_NOYIELD)) {
-            free((OpenMediaData*)msg.lParam);
+            delete (OpenMediaData*)msg.lParam;
         }
 
         // abort finished, unset the flag

@@ -132,6 +132,7 @@
 #define IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION _T("UseMediainfoLoadFileDuration")
 #define IDS_RS_CAPTURE_DEINTERLACE          _T("CaptureDeinterlace")
 #define IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR _T("PauseWhileDraggingSeekbar")
+#define IDS_RS_PAUSE_WHEN_MINIMIZED         _T("PauseWhenMinimized")
 #define IDS_RS_CONFIRM_FILE_DELETE          _T("ConfirmFileDelete")
 #define IDS_RS_LIBASS_FOR_SRT               _T("UseLibassForSRT")
 #define IDS_RS_SHOW_VOLUME_PERCENTAGE       _T("ShowVolumePercentage")

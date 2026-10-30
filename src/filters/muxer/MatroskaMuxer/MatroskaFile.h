@@ -373,6 +373,9 @@ namespace MatroskaWriter
         void Set(DWORD id) {
             m_cid = id;
         }
+        DWORD GetSeekID() const {
+            return m_cid.GetID();
+        }
         QWORD Size(bool fWithHeader = true);
         HRESULT Write(IStream* pStream);
     };
@@ -394,6 +397,7 @@ namespace MatroskaWriter
         CNode<SeekHead> SeekHeads;
 
         Seek(DWORD id = 0x114D9B74);
+        INT64 FitInto(QWORD space);
         QWORD Size(bool fWithHeader = true);
         HRESULT Write(IStream* pStream);
     };
@@ -421,6 +425,7 @@ namespace MatroskaWriter
         QWORD m_len;
     public:
         Void(QWORD len, DWORD id = 0xEC);
+        static HRESULT Fill(IStream* pStream, QWORD len);
         QWORD Size(bool fWithHeader = true);
         HRESULT Write(IStream* pStream);
     };

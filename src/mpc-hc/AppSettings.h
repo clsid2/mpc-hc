@@ -977,6 +977,8 @@ public:
 
     int             DebugLogMask;
 
+    bool            HasD3DCompiler47() const;
+
     bool            IsD3DFullscreen() const;
     CString         SelectedAudioRenderer() const;
     bool            IsISRAutoLoadEnabled() const;
@@ -1041,6 +1043,7 @@ public:
     bool bUseFreeType;
     bool bUseMediainfoLoadFileDuration;
     bool bPauseWhileDraggingSeekbar;
+    bool bPauseWhenMinimized;
     CStringA strOpenTypeLangHint;
 
     CStringW lastQuickOpenPath;

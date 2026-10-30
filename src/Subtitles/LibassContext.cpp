@@ -121,8 +121,14 @@ void ParseSrtLine(std::string& srtLine, const STSStyle& style) {
                         } else if (attribute_name == "color") {
                             MatchColorSrt(attribute_value);
 
+                            // Expand shorthand #RGB to RRGGBB, as HTML does
+                            if (attribute_value.size() == 3) {
+                                const std::string rgb = attribute_value;
+                                attribute_value = { rgb[0], rgb[0], rgb[1], rgb[1], rgb[2], rgb[2] };
+                            }
+
                             // If color is invalid, use WHITE
-                            if ((strtoul(attribute_value.c_str(), NULL, 16) == 0) && (attribute_value != "000000"))
+                            if (attribute_value.size() != 6 || attribute_value.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
                                 attribute_value.assign("FFFFFF");
 
                             // HTML is RGB and we need BGR for libass
@@ -1220,7 +1226,12 @@ void LibassContext::LoadASSSample(char *data, int dataSize, REFERENCE_TIME tStar
 }
 
 void LibassContext::LoadTrackData(ASS_Track* track, char* data, int size) {
-    m_trackData = data;
+    // data is a counted buffer, embedded tracks pass the format block which has no terminator
+    if (data && size > 0) {
+        m_trackData.assign(data, size);
+    } else {
+        m_trackData.clear();
+    }
     ass_process_codec_private(m_track.get(), data, size);
 }
 
