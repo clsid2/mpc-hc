@@ -1528,6 +1528,8 @@
 #define IDS_NAVIGATE_TITLES             41464
 #define IDS_NAVIGATE_CHANNELS           41465
 #define IDS_PPAGE_OUTPUT_MPCVR          41466
+#define IDS_PPAGE_OUTPUT_FRANKY         41718
+#define IDC_DSFRANKY                   41719
 #define IDS_PPAGE_OUTPUT_VMR7           41467
 #define IDS_MOUSE_CLICK_MIDDLE          41702
 #define IDS_MOUSE_CLICK_X1              41703

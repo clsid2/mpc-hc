@@ -692,6 +692,9 @@ void CFGFilterLAVVideo::Settings::LoadSettings()
         if (gpuinfo.SupportHWA()) {
              dwHWAccel = HWAccel_DXVA2Native;
 
+             if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_FRANKY) {
+                 dwHWAccel = gpuinfo.SupportD3D11VA() ? HWAccel_D3D11 : HWAccel_DXVA2CopyBack;
+             }
              if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
                  if (gpuinfo.SupportD3D11VA()) {
                      WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
