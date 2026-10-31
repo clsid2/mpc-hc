@@ -57,9 +57,8 @@ void alpha_mask_deleter::operator()(CAlphaMask* ptr) const noexcept
 
 // CMyFont
 
-CMyFont::CMyFont(const STSStyle& style)
+void CMyFont::GetLogFont(const STSStyle& style, LOGFONT& lf)
 {
-    LOGFONT lf;
     ZeroMemory(&lf, sizeof(lf));
     lf <<= style;
     lf.lfHeight = (LONG)(style.fontSize + 0.5);
@@ -69,7 +68,25 @@ CMyFont::CMyFont(const STSStyle& style)
     lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
     if (lf.lfCharSet == 0)
         lf.lfCharSet = DEFAULT_CHARSET;
+}
 
+// Callers keep the returned pointer while the font is selected into g_hDC, so an eviction cannot delete it
+CMyFontSharedPtr CMyFont::Get(const STSStyle& style, RenderingCaches& renderingCaches)
+{
+    LOGFONT lf;
+    GetLogFont(style, lf);
+
+    CFontKey fontKey(lf);
+    CMyFontSharedPtr font;
+    if (!renderingCaches.fontCache.Lookup(fontKey, font)) {
+        font = std::make_shared<CMyFont>(lf);
+        renderingCaches.fontCache.SetAt(fontKey, font);
+    }
+    return font;
+}
+
+CMyFont::CMyFont(LOGFONT lf)
+{
     if (!CreateFontIndirect(&lf)) {
         _tcscpy_s(lf.lfFaceName, _T("Calibri"));
         VERIFY(CreateFontIndirect(&lf));
@@ -580,11 +597,11 @@ CText::CText(const STSStyle& style, CStringW str, int ktype, int kstart, int ken
     CTextDimsKey textDimsKey(m_str, m_style);
     CTextDims textDims;
     if (!renderingCaches.textDimsCache.Lookup(textDimsKey, textDims)) {
-        CMyFont font(m_style);
-        m_ascent  = font.m_ascent;
-        m_descent = font.m_descent;
+        CMyFontSharedPtr font = CMyFont::Get(m_style, renderingCaches);
+        m_ascent  = font->m_ascent;
+        m_descent = font->m_descent;
 
-        HFONT hOldFont = SelectFont(g_hDC, font);
+        HFONT hOldFont = SelectFont(g_hDC, *font);
 
         if (m_style.fontSpacing) {
             for (LPCWSTR s = m_str; *s; s++) {
@@ -643,9 +660,9 @@ bool CText::Append(CWord* w)
 
 bool CText::CreatePath()
 {
-    CMyFont font(m_style);
+    CMyFontSharedPtr font = CMyFont::Get(m_style, m_renderingCaches);
 
-    HFONT hOldFont = SelectFont(g_hDC, font);
+    HFONT hOldFont = SelectFont(g_hDC, *font);
 
     LONG cx = 0;
     auto getExtent = [&](LPCWSTR s, int len) {
@@ -734,6 +751,7 @@ bool CText::CreatePath()
         if (!getExtent(m_str, strlen) || cx == 0) {
             // possible unhandled unprintable character
             ASSERT(false);
+            SelectFont(g_hDC, hOldFont);
             return false;
         }
 

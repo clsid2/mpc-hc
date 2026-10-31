@@ -102,6 +102,22 @@ bool CPolygonPathKey::operator==(const CPolygonPathKey& polygonPathKey) const
            && IsNearlyEqual(m_scaley, polygonPathKey.m_scaley, 1e-6);
 }
 
+CFontKey::CFontKey(const LOGFONT& lf)
+    : m_lf(lf)
+{
+    UpdateHash();
+}
+
+void CFontKey::UpdateHash()
+{
+    m_hash = 0;
+    const BYTE* p = reinterpret_cast<const BYTE*>(&m_lf);
+    for (size_t i = 0; i < sizeof(m_lf); i++) {
+        m_hash += m_hash << 5;
+        m_hash += p[i];
+    }
+}
+
 COutlineKey::COutlineKey(const CWord* word, CPoint org)
     : CTextDimsKey(word->m_str, word->m_style)
     , m_scalex(word->m_scalex)
