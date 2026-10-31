@@ -1935,6 +1935,11 @@ CRect Rasterizer::Draw(SubPicDesc& spd, CRect& clipRect, byte* pAlphaMask, int x
     bbox.SetRect(x, y, x + w, y + h);
     bbox &= CRect(0, 0, spd.w, spd.h);
 
+    // A single colour with zero alpha leaves dst unchanged in every blend path
+    if (switchpts[1] == DWORD_MAX && (switchpts[0] >> 24) == 0) {
+        return bbox;
+    }
+
     BYTE* srcBody = m_pOverlayData->mpOverlayBufferBody + m_pOverlayData->mOverlayPitch * yo + xo;
     BYTE* srcBorder = m_pOverlayData->mpOverlayBufferBorder + m_pOverlayData->mOverlayPitch * yo + xo;
     BYTE* alphaMask = pAlphaMask + spd.w * y + x;
