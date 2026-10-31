@@ -164,11 +164,12 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
                 m_lastHeader.assign(m_mt.pbFormat + dwOffset, m_mt.pbFormat + m_mt.cbFormat);
             }
 
-            if (dwOffset > 0 && m_mt.cbFormat - dwOffset > 0) {
+            if (dwOffset > 0 && m_mt.cbFormat > dwOffset) {
                 CMediaType mt = m_mt;
-                if (mt.pbFormat[dwOffset + 0] != 0xef
+                if (dwOffset >= 3 && mt.cbFormat - dwOffset >= 3
+                        && mt.pbFormat[dwOffset + 0] != 0xef
                         && mt.pbFormat[dwOffset + 1] != 0xbb
-                        && mt.pbFormat[dwOffset + 2] != 0xfb) {
+                        && mt.pbFormat[dwOffset + 2] != 0xbf) {
                     dwOffset -= 3;
                     mt.pbFormat[dwOffset + 0] = 0xef;
                     mt.pbFormat[dwOffset + 1] = 0xbb;
@@ -189,7 +190,9 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
                 return E_FAIL;
             }
             CVobSubStream* pVSS = (CVobSubStream*)(ISubStream*)m_pSubStream;
-            pVSS->Open(name, m_mt.pbFormat + dwOffset, m_mt.cbFormat - dwOffset);
+            if (m_mt.cbFormat >= dwOffset) {
+                pVSS->Open(name, m_mt.pbFormat + dwOffset, m_mt.cbFormat - dwOffset);
+            }
         } else if (IsRLECodedSub(&m_mt)) {
             if (m_mt.subtype == MEDIASUBTYPE_DVB_SUBTITLES) {
                 m_pSubStream = DEBUG_NEW CDVBSub(m_pSubLock, name, lcid);
