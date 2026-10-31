@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <CompileAs>CompileAsC</CompileAs>
-      <AdditionalIncludeDirectories>$(FFmpegCfg);$(FFmpegSrc);$(FFmpegSrc)compat\atomics\win32;$(SoxrSrc);$(MSBuildThisFileDirectory)..\LAVFilters\src\thirdparty\$(LavArch)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(FFmpegCfg);$(FFmpegSrc);$(FFmpegSrc)compat\atomics;$(FFmpegSrc)compat\atomics\win32;$(SoxrSrc);$(MSBuildThisFileDirectory)..\LAVFilters\src\thirdparty\$(LavArch)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_ISOC99_SOURCE;_FILE_OFFSET_BITS=64;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZLIB_CONST;HAVE_AV_CONFIG_H;_WIN32_WINNT=0x0600;WINVER=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">WIN64=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -70,6 +70,7 @@
       <DebugInformationFormat Condition="'$(Configuration)'=='Debug'">ProgramDatabase</DebugInformationFormat>
       <AdditionalOptions Condition="'$(Configuration)'=='Debug'">-Zo %(AdditionalOptions)</AdditionalOptions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -625,6 +626,9 @@
     </ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\dither.c">
       <ObjectFileName>$(IntDir)libswresample\dither.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\dsd2pcm.c">
+      <ObjectFileName>$(IntDir)libswresample\dsd2pcm.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\options.c">
       <ObjectFileName>$(IntDir)libswresample\options.obj</ObjectFileName>
