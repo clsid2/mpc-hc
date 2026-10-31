@@ -59,9 +59,15 @@ void alpha_mask_deleter::operator()(CAlphaMask* ptr) const noexcept
 
 void CMyFont::GetLogFont(const STSStyle& style, LOGFONT& lf)
 {
+    // What lf <<= style sets, without its GetDC for an lfHeight overwritten here
     ZeroMemory(&lf, sizeof(lf));
-    lf <<= style;
+    lf.lfCharSet = (BYTE)style.charSet;
+    wcsncpy_s(lf.lfFaceName, LF_FACESIZE, style.fontName, _TRUNCATE);
     lf.lfHeight = (LONG)(style.fontSize + 0.5);
+    lf.lfWeight = style.fontWeight;
+    lf.lfItalic = style.fItalic ? -1 : 0;
+    lf.lfUnderline = style.fUnderline ? -1 : 0;
+    lf.lfStrikeOut = style.fStrikeOut ? -1 : 0;
     lf.lfOutPrecision = OUT_TT_PRECIS;
     lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
     lf.lfQuality = ANTIALIASED_QUALITY;
