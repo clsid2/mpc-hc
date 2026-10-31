@@ -25,6 +25,8 @@
 #include "FavoriteOrganizeDlg.h"
 #include "mplayerc.h"
 #include "MainFrm.h"
+#include "OpenDlg.h"
+#include "PathUtils.h"
 #include "CMPCTheme.h"
 #undef SubclassWindow
 
@@ -116,6 +118,8 @@ BEGIN_MESSAGE_MAP(CFavoriteOrganizeDlg, CMPCThemeModelessResizableDialog)
     ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, OnTcnSelchangeTab1)
     ON_WM_DRAWITEM()
     ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST2, OnLvnItemchangedList2)
+    ON_BN_CLICKED(IDC_BUTTON5, OnBrowseBnClicked)
+    ON_UPDATE_COMMAND_UI(IDC_BUTTON5, OnUpdateBrowseBn)
     ON_BN_CLICKED(IDC_BUTTON1, OnRenameBnClicked)
     ON_UPDATE_COMMAND_UI(IDC_BUTTON1, OnUpdateRenameBn)
     ON_BN_CLICKED(IDC_BUTTON2, OnDeleteBnClicked)
@@ -190,6 +194,13 @@ void CFavoriteOrganizeDlg::ShowAndLoad()
 }
 
 void CFavoriteOrganizeDlg::AddItemToVisualList(int tabIndex, const CString& favoriteString) {
+    // Rebuilding the visual list from the in-memory one below would drop the renames,
+    // moves and deletions not applied yet, so bring those over first. This has to
+    // come before adding, as it rebuilds the in-memory list from the visual one.
+    if (m_tab.GetCurSel() == tabIndex) {
+        SetupList(true);
+    }
+
     // Add to the in-memory list
     m_sl[tabIndex].AddTail(favoriteString);
 
@@ -228,6 +239,7 @@ void CFavoriteOrganizeDlg::OnTcnSelchangeTab1(NMHDR* pNMHDR, LRESULT* pResult)
     SetupList(false);
 
     m_list.SetWindowPos(&wndTop, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    UpdateDialogControls(this, TRUE); // Browse is only available on the Files tab
 
     *pResult = 0;
 }
@@ -312,6 +324,50 @@ void CFavoriteOrganizeDlg::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStr
         CMPCThemeUtil::flushMemDC(pDC, dcMem, rectDC);
         pDC->RestoreDC(savedDC);
     }
+}
+
+void CFavoriteOrganizeDlg::OnBrowseBnClicked()
+{
+    // Pick a file, URL or playlist without opening it, in the same dialog as File > Open
+    COpenDlg dlg(this);
+    dlg.SetForFavorites(true);
+    if (dlg.DoModal() != IDOK || dlg.GetFileNames().IsEmpty() || dlg.GetFileNames().GetHead().IsEmpty()) {
+        return;
+    }
+
+    const CAppSettings& s = AfxGetAppSettings();
+    CString relativeDrive;
+    relativeDrive.Format(_T("%d"), s.bFavRelativeDrive);
+
+    // Same layout as CMainFrame::AddFavorite: name;position;relative drive;paths
+    auto addFavorite = [&](const CAtlList<CString>& paths) {
+        CString first = paths.GetHead();
+        CAtlList<CString> args;
+        // named after the file, which can be changed with Rename
+        args.AddTail(PathUtils::IsURL(first) ? first : PathUtils::StripPathOrUrl(first));
+        args.AddTail(_T("0")); // nothing has been played, so there is no position to remember
+        args.AddTail(relativeDrive);
+        args.AddTailList(&paths);
+        AddItemToVisualList(0, ImplodeEsc(args, _T(';')));
+    };
+
+    if (dlg.HasMultipleFiles()) {
+        // several files picked at once each become a favorite of their own
+        POSITION pos = dlg.GetFileNames().GetHeadPosition();
+        while (pos) {
+            CAtlList<CString> paths;
+            paths.AddTail(dlg.GetFileNames().GetNext(pos));
+            addFavorite(paths);
+        }
+    } else {
+        // a file with its dub, which are played together
+        addFavorite(dlg.GetFileNames());
+    }
+}
+
+void CFavoriteOrganizeDlg::OnUpdateBrowseBn(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(m_tab.GetCurSel() == 0); // Files
 }
 
 void CFavoriteOrganizeDlg::OnRenameBnClicked()
@@ -564,6 +620,7 @@ void CFavoriteOrganizeDlg::SetupAnchors()
 {
     AddAnchor(IDC_TAB1, TOP_LEFT, BOTTOM_RIGHT);
     AddAnchor(IDC_LIST2, TOP_LEFT, BOTTOM_RIGHT);
+    AddAnchor(IDC_BUTTON5, TOP_RIGHT);
     AddAnchor(IDC_BUTTON1, TOP_RIGHT);
     AddAnchor(IDC_BUTTON2, TOP_RIGHT);
     AddAnchor(IDC_BUTTON3, TOP_RIGHT);
