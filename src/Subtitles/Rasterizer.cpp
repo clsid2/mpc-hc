@@ -74,20 +74,25 @@ Rasterizer::Rasterizer()
     , mEdgeNext(0)
     , mpScanBuffer(nullptr)
 {
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 1);
-    //bool sse2    = cpuinfo[3] & (1 << 26);
-    //bool sse42   = cpuinfo[2] & (1 << 20);
-    bool avxflag = cpuinfo[2] & (1 << 28);
-    bool osxsave = cpuinfo[2] & (1 << 27);
-    bool xsave   = cpuinfo[2] & (1 << 26);
-    if (avxflag && osxsave && xsave) {
-        __cpuidex(cpuinfo, 7, 0);
-        if (cpuinfo[1] & (1 << 5)) {
-            unsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
-            m_bUseAVX2 = (xcrFeatureMask & 0x6) == 0x6;
+    // Every CWord has a rasterizer and cpuid is slow under a hypervisor, so detect once
+    static const bool bUseAVX2 = [] {
+        int cpuinfo[4];
+        __cpuid(cpuinfo, 1);
+        //bool sse2    = cpuinfo[3] & (1 << 26);
+        //bool sse42   = cpuinfo[2] & (1 << 20);
+        bool avxflag = cpuinfo[2] & (1 << 28);
+        bool osxsave = cpuinfo[2] & (1 << 27);
+        bool xsave   = cpuinfo[2] & (1 << 26);
+        if (avxflag && osxsave && xsave) {
+            __cpuidex(cpuinfo, 7, 0);
+            if (cpuinfo[1] & (1 << 5)) {
+                unsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+                return (xcrFeatureMask & 0x6) == 0x6;
+            }
         }
-    }
+        return false;
+    }();
+    m_bUseAVX2 = bUseAVX2;
 }
 
 Rasterizer::~Rasterizer()
