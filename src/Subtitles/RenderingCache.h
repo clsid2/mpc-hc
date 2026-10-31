@@ -153,6 +153,26 @@ public:
     }
 };
 
+class CFontKey
+{
+private:
+    ULONG m_hash;
+
+protected:
+    LOGFONT m_lf; // zero-initialized before filling, so it can be compared bytewise
+
+public:
+    CFontKey(const LOGFONT& lf);
+
+    ULONG GetHash() const { return m_hash; };
+
+    void UpdateHash();
+
+    bool operator==(const CFontKey& fontKey) const {
+        return memcmp(&m_lf, &fontKey.m_lf, sizeof(m_lf)) == 0;
+    }
+};
+
 class CWord;
 
 class COutlineKey : public CTextDimsKey
