@@ -457,6 +457,7 @@ class CSubtitle : public CAtlList<CLine*>
     int GetFullLineWidth(POSITION pos);
     int GetWrapWidth(POSITION pos, int maxwidth);
     CLine* GetNextLine(POSITION& pos, int maxwidth);
+    CSize GetRoundedBoxPadding() const;
     void AddRoundedBoxPadding(CLine* l) const;
 
 public:
@@ -482,6 +483,7 @@ public:
 
     bool m_allowLinePadding;
     bool m_roundedBox;
+    CSize m_roundedBoxPadding;
 
 public:
     CSubtitle(RenderingCaches& renderingCaches);
@@ -492,6 +494,7 @@ public:
     void CreateClippers(CSize size);
 
     void MakeLines(CSize size, const CRect& marginRect);
+    std::vector<CPoint> GetLinePositions(int orgX, int top) const;
 };
 
 class CScreenLayoutAllocator
