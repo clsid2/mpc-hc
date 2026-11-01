@@ -5060,6 +5060,12 @@ msgctxt "IDS_PPAGEADVANCED_PAUSE_WHILE_DRAGGING_SEEKBAR"
 msgid "Pause playback while dragging the seekbar."
 msgstr "Întrerupe redarea în timpul tragerii barei de căutare."
 
+msgctxt "IDS_PPAGEADVANCED_PAUSE_WHEN_MINIMIZED"
+msgid ""
+"Pause video playback when the player is minimized, and resume it when the "
+"player is restored. Audio files keep playing."
+msgstr ""
+
 msgctxt "IDS_PPAGEADVANCED_CONFIRM_FILE_DELETE"
 msgid "Show confirmation prompt before deleting file"
 msgstr "Afișați mesajul de confirmare înainte de a șterge fișierul"
@@ -5546,6 +5552,12 @@ msgstr ""
 
 msgctxt "IDS_MODERN_THEME_STYLE_WINDOWS11"
 msgid "Windows 11"
+msgstr ""
+
+msgctxt "IDS_PPAGEADVANCED_SUB_GLYPH_CACHE_MB"
+msgid ""
+"Subtitle glyph cache limit in MB. The internal subtitle renderer's cache "
+"grows up to this limit on scripts that need it."
 msgstr ""
 
 msgctxt "IDS_AUDIO_BOOST_WARNING"
