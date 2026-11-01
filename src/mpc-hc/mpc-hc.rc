@@ -4357,6 +4357,7 @@ BEGIN
     IDS_MODERN_THEME_STYLE_FOLLOW_OS "Follow Windows version"
     IDS_MODERN_THEME_STYLE_WINDOWS10 "Windows 10"
     IDS_MODERN_THEME_STYLE_WINDOWS11 "Windows 11"
+    IDS_PPAGEADVANCED_SUB_GLYPH_CACHE_MB "Subtitle glyph cache limit in MB. The internal subtitle renderer's cache grows up to this limit on scripts that need it."
     IDS_AUDIO_BOOST_WARNING "WARNING: Boosting audio volume can in some situations have a negative effect on audio quality due to overflow.\n\nThere are two better and safer methods for increasing volume:\n1) Enabling mixing in the internal audio decoder settings.\nInternal Filters > Audio Decoder > Mixing\nThis is recommended if you have stereo speakers or headphones.\nTo increase loudness of voices, set center mix level to 1.0 in the mixing settings.\n2) Enable Normalize"
 END
 
