@@ -25107,8 +25107,11 @@ bool CMainFrame::ProcessYoutubeDLURL(CString url, bool append, bool replace)
 
     m_wndStatusBar.SetStatusMessage(ResStr(IDS_CONTROLS_YOUTUBEDL));
 
-    if (!ydl.Run(url)) {
-        return false;
+    {
+        CDeferredActionScope actionScope(*this);
+        if (!ydl.Run(url)) {
+            return false;
+        }
     }
     if (!ydl.GetHttpStreams(streams, listinfo, useragent)) {
         return false;
