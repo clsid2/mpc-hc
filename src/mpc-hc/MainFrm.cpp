@@ -5345,7 +5345,7 @@ void CMainFrame::OnFileOpenmedia()
         dlg.SetForegroundWindow();
         return;
     }
-    if (dlg.DoModal() != IDOK || dlg.GetFileNames().IsEmpty()) {
+    if (dlg.DoModal() != IDOK || dlg.GetFileNames().IsEmpty() || AfxGetMyApp()->m_fClosingState) {
         return;
     }
 
