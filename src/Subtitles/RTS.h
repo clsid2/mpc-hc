@@ -76,6 +76,11 @@ struct CAlphaMask final : std::unique_ptr<BYTE[]> {
 };
 
 typedef std::shared_ptr<CPolygonPath> CPolygonPathSharedPtr;
+struct CTextPath {
+    std::vector<BYTE> types;
+    std::vector<POINT> points;
+};
+typedef std::shared_ptr<CTextPath> CTextPathSharedPtr;
 struct SSATag;
 typedef std::shared_ptr<CAtlList<SSATag>> SSATagsList;
 typedef std::shared_ptr<CAlphaMask> CAlphaMaskSharedPtr;
@@ -83,6 +88,7 @@ class CMyFont;
 typedef std::shared_ptr<CMyFont> CMyFontSharedPtr;
 
 typedef CRenderingCache<CTextDimsKey, CTextDims, CKeyTraits<CTextDimsKey>> CTextDimsCache;
+typedef CRenderingCache<CTextDimsKey, CTextPathSharedPtr, CKeyTraits<CTextDimsKey>> CTextPathCache;
 typedef CRenderingCache<CPolygonPathKey, CPolygonPathSharedPtr, CKeyTraits<CPolygonPathKey>> CPolygonCache;
 typedef CRenderingCache<CStringW, SSATagsList, CStringElementTraits<CStringW>> CSSATagsCache;
 typedef CRenderingCache<CEllipseKey, CEllipseSharedPtr, CKeyTraits<CEllipseKey>> CEllipseCache;
@@ -98,6 +104,7 @@ inline size_t CacheEntryBytes(const COverlayDataSharedPtr& overlay)
 
 struct RenderingCaches {
     CTextDimsCache textDimsCache;
+    CTextPathCache textPathCache;
     CPolygonCache polygonCache;
     CSSATagsCache SSATagsCache;
     CEllipseCache ellipseCache;
@@ -110,6 +117,7 @@ struct RenderingCaches {
 
     RenderingCaches()
         : textDimsCache(2048)
+        , textPathCache(2048)
         , polygonCache(2048)
         , SSATagsCache(2048)
         , ellipseCache(64)

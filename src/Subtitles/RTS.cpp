@@ -666,6 +666,13 @@ bool CText::Append(CWord* w)
 
 bool CText::CreatePath()
 {
+    // The path only depends on the text and font, not on the transforms animated afterwards
+    CTextDimsKey pathKey(m_str, m_style);
+    CTextPathSharedPtr path;
+    if (m_renderingCaches.textPathCache.Lookup(pathKey, path)) {
+        return SetPath(path->types.data(), path->points.data(), (int)path->points.size());
+    }
+
     CMyFontSharedPtr font = CMyFont::Get(m_style, m_renderingCaches);
 
     HFONT hOldFont = SelectFont(g_hDC, *font);
@@ -795,6 +802,11 @@ bool CText::CreatePath()
     }
 
     SelectFont(g_hDC, hOldFont);
+
+    path = std::make_shared<CTextPath>();
+    path->types.assign(mpPathTypes, mpPathTypes + mPathPoints);
+    path->points.assign(mpPathPoints, mpPathPoints + mPathPoints);
+    m_renderingCaches.textPathCache.SetAt(pathKey, path);
 
     return true;
 }
