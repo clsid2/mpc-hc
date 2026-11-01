@@ -246,7 +246,7 @@ static unsigned int AdaptUnit(double& val, size_t unitsNb)
 {
     unsigned int unit = 0;
 
-    while (val > 1024 && unit < unitsNb) {
+    while (val > 1024 && unit + 1 < unitsNb) {
         val /= 1024;
         unit++;
     }
