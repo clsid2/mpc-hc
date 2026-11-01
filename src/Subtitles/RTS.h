@@ -91,6 +91,11 @@ typedef CRenderingCache<COverlayKey, COverlayDataSharedPtr, CKeyTraits<COverlayK
 typedef CRenderingCache<CClipperKey, CAlphaMaskSharedPtr, CKeyTraits<CClipperKey>> CAlphaMaskCache;
 typedef CRenderingCache<CFontKey, CMyFontSharedPtr, CKeyTraits<CFontKey>> CFontCache;
 
+inline size_t CacheEntryBytes(const COverlayDataSharedPtr& overlay)
+{
+    return overlay ? 2 * size_t(overlay->mOverlayPitch) * overlay->mOverlayHeight : 0;
+}
+
 struct RenderingCaches {
     CTextDimsCache textDimsCache;
     CPolygonCache polygonCache;

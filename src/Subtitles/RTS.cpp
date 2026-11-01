@@ -3195,6 +3195,7 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
     }
 
     const CRenderersSettings& r = GetRenderersSettings();
+    m_renderingCaches.overlayCache.SetMaxBytes(size_t(r.iSubGlyphCacheMB) << 20);
     if (r.fontScaleOverride != 1.0) {
         stss.fontSize *= r.fontScaleOverride;
     }

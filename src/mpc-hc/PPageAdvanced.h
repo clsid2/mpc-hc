@@ -256,6 +256,7 @@ private:
         HISTORY_IN_APPDATA,
         HISTORY_EXCLUDE_FILTER,
         HISTORY_MAX_AGE_DAYS,
+        SUB_GLYPH_CACHE_MB,
     };
 
     static constexpr DWORD_PTR HEADER_ITEM_DATA = (DWORD_PTR)-1;
