@@ -3462,7 +3462,9 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
     }
 
     sub->m_allowLinePadding = (m_subtitleType != Subtitle::ASS && m_subtitleType != Subtitle::SSA);
-    sub->m_roundedBox = m_bRoundedOpaqueBox && m_bUsingPlayerDefaultStyle && GetAt(entry).style == _T("Default");
+    // SetOverride replaces the Default style with the player's, so those entries use it too
+    sub->m_roundedBox = m_bRoundedOpaqueBox && (m_SubRendererSettings.overrideAllStyles
+                        || (m_bUsingPlayerDefaultStyle || m_bStyleOverrideActive) && GetAt(entry).style == _T("Default"));
 
     STSStyle stss;
     if (m_SubRendererSettings.overrideAllStyles) {
