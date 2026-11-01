@@ -841,6 +841,7 @@ public:
 
     // Default Style
     STSStyle        subtitlesDefStyle;
+    bool            bSubtitleRoundedOpaqueBox;
 
     // Misc
     bool            bPreferDefaultForcedSubtitles;

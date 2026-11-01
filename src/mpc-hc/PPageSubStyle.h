@@ -51,6 +51,7 @@ private:
     int m_scaley;
     CMPCThemeSpinButtonCtrl m_scaleySpin;
     int m_borderStyle;
+    BOOL m_bRoundedOpaqueBox;
     CMPCThemeFloatEdit m_borderWidth;
     CMPCThemeFloatEdit m_shadowDepth;
     int m_screenAlignment;
@@ -95,6 +96,7 @@ protected:
     afx_msg void OnChooseShadowColor();
     afx_msg void OnLinkAlphaSlidersChanged();
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    afx_msg void OnUpdateRoundedBox(CCmdUI* pCmdUI);
     void AdjustDynamicWidgets();
     afx_msg BOOL OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 };
