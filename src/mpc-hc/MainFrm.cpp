@@ -948,8 +948,8 @@ CMainFrame::CMainFrame()
     , m_bHasBDMeta(false)
     , delayingFullScreen(false)
     , restoringWindowRect(false)
-    , mediaTypesErrorDlg(nullptr)
-    , rarEntrySelectorDlg(nullptr)
+    , openingModalDlg(nullptr)
+    , openingModalDlgThread(0)
     , m_iStreamPosPollerInterval(100)
     , currentAudioLang(_T(""))
     , currentSubLang(_T(""))
@@ -14824,15 +14824,56 @@ CWnd* CMainFrame::GetModalParent()
     return pParentWnd;
 }
 
+INT_PTR CMainFrame::DoOpeningModalDialog(CDialog& dlg)
+{
+    {
+        CAutoLock lck(&lockModalDialog);
+        // checked under the lock, CloseOpeningModalDialog runs after the flag is set
+        if (m_fOpeningAborted) {
+            return IDCANCEL;
+        }
+        openingModalDlg = &dlg;
+        openingModalDlgThread = GetCurrentThreadId();
+    }
+
+    INT_PTR ret = dlg.DoModal();
+
+    CAutoLock lck(&lockModalDialog);
+    openingModalDlg = nullptr;
+    return ret;
+}
+
+void CMainFrame::CloseOpeningModalDialog()
+{
+    bool bPosted = false;
+    for (;;) {
+        {
+            CAutoLock lck(&lockModalDialog);
+            if (!openingModalDlg) {
+                return;
+            }
+            if (!bPosted && ::IsWindow(openingModalDlg->GetSafeHwnd())) {
+                // posted, a send would wait on the dialog's thread with the lock held
+                bPosted = !!openingModalDlg->PostMessage(WM_EXTERNALCLOSE);
+            }
+            if (openingModalDlgThread == GetCurrentThreadId()) {
+                // the dialog is below us on this stack and can only end once we return
+                return;
+            }
+        }
+        // DoModal on the other thread needs this one to answer sent messages
+        MsgWaitForMultipleObjects(0, nullptr, FALSE, 10, QS_SENDMESSAGE);
+        MSG msg;
+        PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE | PM_QS_SENDMESSAGE);
+    }
+}
+
 void CMainFrame::ShowMediaTypesDialog() {
     if (!m_fOpeningAborted) {
-        CAutoLock lck(&lockModalDialog);
         CComQIPtr<IGraphBuilderDeadEnd> pGBDE = m_pGB;
         if (pGBDE && pGBDE->GetCount()) {
-            mediaTypesErrorDlg = DEBUG_NEW CMediaTypesDlg(pGBDE, GetModalParent());
-            mediaTypesErrorDlg->DoModal();
-            delete mediaTypesErrorDlg;
-            mediaTypesErrorDlg = nullptr;
+            CMediaTypesDlg dlg(pGBDE, GetModalParent());
+            DoOpeningModalDialog(dlg);
         }
     }
 }
@@ -15055,16 +15096,13 @@ HRESULT CMainFrame::HandleMultipleEntryRar(CStringW fn, int* pEntryIndex) {
             }
         } else if (!m_fOpeningAborted) {
             // Show dialog to select entry
-            CAutoLock lck(&lockModalDialog);
-            rarEntrySelectorDlg = DEBUG_NEW RarEntrySelectorDialog(&file_list, GetModalParent());
-            if (IDOK == rarEntrySelectorDlg->DoModal()) {
-                entryName = rarEntrySelectorDlg->GetCurrentEntry();
+            RarEntrySelectorDialog dlg(&file_list, GetModalParent());
+            if (IDOK == DoOpeningModalDialog(dlg)) {
+                entryName = dlg.GetCurrentEntry();
                 if (pEntryIndex) {
-                    *pEntryIndex = rarEntrySelectorDlg->GetCurrentIndex();
+                    *pEntryIndex = dlg.GetCurrentIndex();
                 }
             }
-            delete rarEntrySelectorDlg;
-            rarEntrySelectorDlg = nullptr;
         }
 
         if (entryName.GetLength() > 0) {
@@ -21477,19 +21515,8 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
             PLAYER_LOG(_T("CMainFrame::CloseMedia - Need to abort graph creation"));
         }
 
-        // close pin connection error dialog
-        if (mediaTypesErrorDlg) {
-            mediaTypesErrorDlg->SendMessage(WM_EXTERNALCLOSE, 0, 0);
-            // wait till error dialog has been closed
-            CAutoLock lck(&lockModalDialog);
-        }
-
-        // close RAR entry selector dialog
-        if (rarEntrySelectorDlg) {
-            rarEntrySelectorDlg->SendMessage(WM_EXTERNALCLOSE, 0, 0);
-            // wait till dialog has been closed
-            CAutoLock lck(&lockModalDialog);
-        }
+        // close the pin connection error or RAR entry selector dialog
+        CloseOpeningModalDialog();
 
         // abort current graph task
         if (m_pGB) {

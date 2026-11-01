@@ -64,8 +64,6 @@ class CHistoryDlg;
 class CFullscreenWnd;
 struct DisplayMode;
 enum MpcCaptionState;
-class CMediaTypesDlg;
-class RarEntrySelectorDialog;
 
 interface IDSMChapterBag;
 interface IGraphBuilder2;
@@ -746,9 +744,11 @@ protected:
 
     CWnd* GetModalParent();
 
-    CCritSec lockModalDialog;
-    CMediaTypesDlg* mediaTypesErrorDlg;
-    RarEntrySelectorDialog* rarEntrySelectorDlg;
+    CCritSec lockModalDialog; // guards the two members below, never held across a modal loop
+    CDialog* openingModalDlg;
+    DWORD openingModalDlgThread;
+    INT_PTR DoOpeningModalDialog(CDialog& dlg);
+    void CloseOpeningModalDialog();
     void ShowMediaTypesDialog();
 
     void OpenCreateGraphObject(OpenMediaData* pOMD);
