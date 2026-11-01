@@ -2796,6 +2796,10 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     SetHasActivePopup(false);
     m_list.SetFocus();
 
+    if (nID == 0) {
+        return;
+    }
+
     //the lock is not held while the menu is up, so the playlist may have changed meanwhile.
     //find the clicked item again by its id and drop the command when it is gone.
     {
