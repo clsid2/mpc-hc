@@ -132,6 +132,7 @@ BEGIN_MESSAGE_MAP(CPPageSubStyle, CMPCThemePPageBase)
     ON_BN_CLICKED(IDC_CHECK1, OnLinkAlphaSlidersChanged)
     ON_WM_HSCROLL()
     ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnToolTipNotify)
+    ON_UPDATE_COMMAND_UI(IDC_CHECK_ROUNDEDBOX, OnUpdateRoundedBox)
 END_MESSAGE_MAP()
 
 
@@ -373,6 +374,11 @@ void CPPageSubStyle::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
     SetModified();
 
     __super::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CPPageSubStyle::OnUpdateRoundedBox(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(IsDlgButtonChecked(IDC_RADIO2));
 }
 
 void CPPageSubStyle::AdjustDynamicWidgets() {

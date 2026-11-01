@@ -96,6 +96,7 @@ protected:
     afx_msg void OnChooseShadowColor();
     afx_msg void OnLinkAlphaSlidersChanged();
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    afx_msg void OnUpdateRoundedBox(CCmdUI* pCmdUI);
     void AdjustDynamicWidgets();
     afx_msg BOOL OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 };
