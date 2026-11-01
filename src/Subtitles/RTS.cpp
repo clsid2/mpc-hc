@@ -836,16 +836,16 @@ static double GetRoundedBoxRadius(const CLine* l)
 }
 
 // Height of the capital letters above the baseline, in the same units as CWord::m_ascent
-static int GetCapHeight(const CWord* w)
+static int GetCapHeight(const CWord* w, RenderingCaches& renderingCaches)
 {
     if (!dynamic_cast<const CText*>(w)) {
         return w->m_ascent;
     }
 
-    CMyFont font(w->m_style);
-    int capHeight = font.m_ascent;
+    CMyFontSharedPtr font = CMyFont::Get(w->m_style, renderingCaches);
+    int capHeight = font->m_ascent;
 
-    HFONT hOldFont = SelectFont(g_hDC, font);
+    HFONT hOldFont = SelectFont(g_hDC, *font);
     GLYPHMETRICS gm;
     const MAT2 identity = { {0, 1}, {0, 0}, {0, 0}, {0, 1} };
     if (GetGlyphOutlineW(g_hDC, L'H', GGO_METRICS, &gm, 0, nullptr, &identity) != GDI_ERROR) {
@@ -2021,7 +2021,7 @@ void CSubtitle::AddRoundedBoxPadding(CLine* l) const
     }
 
     const double r = GetRoundedBoxRadius(l);
-    const double side = ((l->m_ascent - GetCapHeight(l->GetHead())) + l->m_descent) / 2.0;
+    const double side = ((l->m_ascent - GetCapHeight(l->GetHead(), m_renderingCaches)) + l->m_descent) / 2.0;
 
     // Distance of the text's corner from the center of the corner's arc, without extra padding
     const double u = r - (l->m_borderX + side), v = r - l->m_borderY;
