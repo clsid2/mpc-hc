@@ -200,6 +200,16 @@ public:
     bool EndPath(HDC hdc);
     bool PartialBeginPath(HDC hdc, bool bClearPath);
     bool PartialEndPath(HDC hdc, long dx, long dy);
+    bool SetPath(const BYTE* pTypes, const POINT* pPoints, int nPoints) {
+        _TrashPath();
+        if (!ResizePath(nPoints)) {
+            return false;
+        }
+        memcpy(mpPathTypes, pTypes, nPoints * sizeof(BYTE));
+        memcpy(mpPathPoints, pPoints, nPoints * sizeof(POINT));
+        mPathPoints = nPoints;
+        return true;
+    }
     bool ScanConvert();
     bool CreateWidenedRegion(int borderX, int borderY);
     bool Rasterize(int xsub, int ysub, int fBlur, double fGaussianBlur);
