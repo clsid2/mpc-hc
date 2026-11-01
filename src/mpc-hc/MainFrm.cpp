@@ -4957,7 +4957,9 @@ void CMainFrame::OnFilePostClosemedia(bool bNextIsQueued/* = false*/)
         OpenSetupWindowTitle(true);
     //}
 
-    SetAlwaysOnTop(s.iOnTop);
+    if (!m_OnClose_called) {
+        SetAlwaysOnTop(s.iOnTop);
+    }
 
     // try to release external objects
     UnloadUnusedExternalObjects();
