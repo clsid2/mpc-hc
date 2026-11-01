@@ -822,13 +822,26 @@ static bool HaveSameBoxStyle(const STSStyle& s1, STSStyle s2)
     return s2 == s1;
 }
 
-// The rounded box is painted apart from the text, so unlike HaveSameBoxStyle this ignores the text's own colors
+// The rounded box is one polygon built from the metrics of the lines and painted apart from the text, so unlike
+// HaveSameBoxStyle this ignores the text's own colors and font, and the border width, except for whether there
+// is a border: that decides the box's color.
 static bool HaveSameRoundedBoxStyle(const STSStyle& s1, STSStyle s2)
 {
+    if ((s1.outlineWidthX + s1.outlineWidthY > 0.0) != (s2.outlineWidthX + s2.outlineWidthY > 0.0)) {
+        return false;
+    }
     s2.colors[0] = s1.colors[0];
     s2.colors[1] = s1.colors[1];
     s2.alpha[0] = s1.alpha[0];
     s2.alpha[1] = s1.alpha[1];
+    s2.outlineWidthX = s1.outlineWidthX;
+    s2.outlineWidthY = s1.outlineWidthY;
+    s2.charSet = s1.charSet;
+    s2.fontName = s1.fontName;
+    s2.fontSize = s1.fontSize;
+    s2.fontScaleX = s1.fontScaleX;
+    s2.fontScaleY = s1.fontScaleY;
+    s2.fontSpacing = s1.fontSpacing;
     return HaveSameBoxStyle(s1, s2);
 }
 
@@ -978,6 +991,7 @@ std::unique_ptr<CSubtitleBG> CSubtitleBG::Create(const CSubtitle* s, const std::
 
     auto bg = std::make_unique<CSubtitleBG>();
     const CWord* first = nullptr;
+    int minLineHeight = INT_MAX;
     std::vector<CRect> boxes; // in pixels, relative to the first line
 
     POSITION pos = s->GetHeadPosition();
@@ -1000,11 +1014,11 @@ std::unique_ptr<CSubtitleBG> CSubtitleBG::Create(const CSubtitle* s, const std::
                 bg->m_kstart = w->m_kstart;
             } else if (w->m_scalex != first->m_scalex || w->m_scaley != first->m_scaley
                        || w->m_ktype != first->m_ktype || w->m_kstart != first->m_kstart || w->m_kend != first->m_kend
-                       || w->m_ascent != l->GetHead()->m_ascent || w->m_descent != l->GetHead()->m_descent
                        || !HaveSameRoundedBoxStyle(first->m_style, w->m_style)) {
                 return nullptr;
             }
         }
+        minLineHeight = std::min(minLineHeight, l->m_ascent + l->m_descent);
 
         // The line's border includes the padding added by CSubtitle::AddRoundedBoxPadding
         const CPoint d = linePos[boxes.size()] - linePos[0];
@@ -1046,8 +1060,7 @@ std::unique_ptr<CSubtitleBG> CSubtitleBG::Create(const CSubtitle* s, const std::
 
     // Round every corner with a cubic bezier approximating a quarter circle. The same curve rounds
     // the outer corners and fills in the inner ones, where a narrower line meets a wider one.
-    const CLine* firstLine = s->GetHead();
-    const double r = GetRoundedBoxRadius(firstLine->m_ascent + firstLine->m_descent) / 8.0;
+    const double r = GetRoundedBoxRadius(minLineHeight) / 8.0;
     const double k = 1.0 - 0.5523; // distance of the control points from the corner, relative to the radius
     auto sign = [](LONG a) { return double((a > 0) - (a < 0)); };
 
@@ -2025,34 +2038,45 @@ CLine* CSubtitle::GetNextLine(POSITION& pos, int maxwidth)
 // The border of an opaque box pads the whole line box, but its sides look tighter than its top and bottom,
 // because the line box also has empty space above the capital letters and below the baseline. Widen the
 // sides by that space on average, then add whatever room the rounded corners still need to keep text in a
-// corner, such as an accented capital, inside the box.
+// corner, such as an accented capital, inside the box. All lines get the padding of the word that needs the
+// most, so that the sides of the box don't jog with the font size.
 CSize CSubtitle::GetRoundedBoxPadding() const
 {
-    const CWord* w = nullptr;
+    // The lines are only known after wrapping, which needs this padding, so go by the smallest word
+    int minHeight = INT_MAX;
     POSITION pos = m_words.GetHeadPosition();
-    while (pos && !w) {
-        const CWord* word = m_words.GetNext(pos);
-        if (!word->m_fWhiteSpaceChar) {
-            w = word;
+    while (pos) {
+        const CWord* w = m_words.GetNext(pos);
+        if (!w->m_fWhiteSpaceChar) {
+            minHeight = std::min(minHeight, w->m_ascent + w->m_descent);
         }
     }
-    if (!w) {
-        return CSize(0, 0);
+    const double r = GetRoundedBoxRadius(minHeight);
+
+    CSize padding(0, 0);
+    pos = m_words.GetHeadPosition();
+    while (pos) {
+        const CWord* w = m_words.GetNext(pos);
+        if (w->m_fWhiteSpaceChar) {
+            continue;
+        }
+
+        const int borderX = (int)(w->m_style.outlineWidthX + 0.5), borderY = (int)(w->m_style.outlineWidthY + 0.5);
+        const double side = ((w->m_ascent - GetCapHeight(w, m_renderingCaches)) + w->m_descent) / 2.0;
+
+        // Distance of the text's corner from the center of the corner's arc, without extra padding
+        const double u = r - (borderX + side), v = r - borderY;
+        double extra = 0.0;
+        if (u > 0.0 && v > 0.0 && u * u + v * v > r * r) {
+            // smallest extra padding for which (u - extra)^2 + (v - extra)^2 <= r^2
+            extra = (u + v - std::sqrt(2.0 * r * r - (u - v) * (u - v))) / 2.0;
+        }
+
+        padding.cx = std::max<LONG>(padding.cx, std::lround(side + extra));
+        padding.cy = std::max<LONG>(padding.cy, std::lround(extra));
     }
 
-    const int borderX = (int)(w->m_style.outlineWidthX + 0.5), borderY = (int)(w->m_style.outlineWidthY + 0.5);
-    const double r = GetRoundedBoxRadius(w->m_ascent + w->m_descent);
-    const double side = ((w->m_ascent - GetCapHeight(w, m_renderingCaches)) + w->m_descent) / 2.0;
-
-    // Distance of the text's corner from the center of the corner's arc, without extra padding
-    const double u = r - (borderX + side), v = r - borderY;
-    double extra = 0.0;
-    if (u > 0.0 && v > 0.0 && u * u + v * v > r * r) {
-        // smallest extra padding for which (u - extra)^2 + (v - extra)^2 <= r^2
-        extra = (u + v - std::sqrt(2.0 * r * r - (u - v) * (u - v))) / 2.0;
-    }
-
-    return CSize(std::lround(side + extra), std::lround(extra));
+    return padding;
 }
 
 void CSubtitle::AddRoundedBoxPadding(CLine* l) const
