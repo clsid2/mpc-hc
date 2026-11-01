@@ -1028,7 +1028,7 @@ HRESULT CFGManager::Connect(IPin* pPinOut, IPin* pPinIn, bool bContinueRender)
                 if (!m_bIsCapture) {
                     // Check if selected video renderer fails to load
                     CLSID filter = pFGF->GetCLSID();
-                    if (filter == CLSID_MPCVRAllocatorPresenter || filter == CLSID_madVRAllocatorPresenter || filter == CLSID_DXRAllocatorPresenter) {
+                    if (filter == CLSID_FrankyRenderer || filter == CLSID_MPCVRAllocatorPresenter || filter == CLSID_madVRAllocatorPresenter || filter == CLSID_DXRAllocatorPresenter) {
                         if (IDYES == AfxMessageBox(_T("The selected video renderer has failed to load.\n\nThe player will now fallback to using a basic video renderer, which has reduced performance and quality. Subtitles may also fail to load.\n\nDo you want to change settings to use the default video renderer (EVR-CP/VMR9)? (player restart required)"), MB_ICONEXCLAMATION | MB_YESNO, 0)) {
                             CAppSettings& s2 = AfxGetAppSettings();
                             s2.iDSVideoRendererType = IsCLSIDRegistered(CLSID_EnhancedVideoRenderer) ? VIDRNDT_DS_EVR_CUSTOM : VIDRNDT_DS_VMR9RENDERLESS;
@@ -2990,6 +2990,11 @@ CFGManagerPlayer::CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HW
             case VIDRNDT_DS_SYNC:
                 m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_SyncAllocatorPresenter, StrRes(IDS_PPAGE_OUTPUT_SYNC), renderer_merit));
                 break;
+            case VIDRNDT_DS_FRANKY:
+                if (!m_bIsCapture) {
+                    m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_FrankyRenderer, StrRes(IDS_PPAGE_OUTPUT_FRANKY), renderer_merit));
+                }
+                break;
             case VIDRNDT_DS_MPCVR:
                 if (!m_bIsCapture) {
                     m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_MPCVRAllocatorPresenter, StrRes(IDS_PPAGE_OUTPUT_MPCVR), renderer_merit));
@@ -3011,7 +3016,7 @@ CFGManagerPlayer::CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HW
                 break;
         }
         // add fallback
-        if (s.iDSVideoRendererType == VIDRNDT_DS_MPCVR || s.iDSVideoRendererType == VIDRNDT_DS_MADVR) {
+        if (s.iDSVideoRendererType == VIDRNDT_DS_FRANKY || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR || s.iDSVideoRendererType == VIDRNDT_DS_MADVR) {
             if (IsCLSIDRegistered(CLSID_EnhancedVideoRenderer)) {
                 m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_EnhancedVideoRenderer, StrRes(IDS_PPAGE_OUTPUT_EVR), renderer_merit - 1));
             } else {
@@ -3019,7 +3024,7 @@ CFGManagerPlayer::CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HW
             }
         }
     } else {
-        bool preview_evrcp = (s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM) || (s.iDSVideoRendererType == VIDRNDT_DS_SYNC) || (s.iDSVideoRendererType == VIDRNDT_DS_MADVR) || (s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
+        bool preview_evrcp = (s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM) || (s.iDSVideoRendererType == VIDRNDT_DS_SYNC) || (s.iDSVideoRendererType == VIDRNDT_DS_MADVR) || (s.iDSVideoRendererType == VIDRNDT_DS_FRANKY) || (s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
         if (preview_evrcp && CAppSettings::IsVideoRendererAvailable(VIDRNDT_DS_EVR_CUSTOM)) {
             m_transform.AddTail(DEBUG_NEW CFGFilterVideoRenderer(m_hWnd, CLSID_EVRAllocatorPresenter, L"EVRCP - Preview Window", MERIT64_ABOVE_DSHOW + 2, true));
             m_bPreviewSupportsRotation = true;

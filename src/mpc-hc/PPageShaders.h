@@ -79,6 +79,7 @@ protected:
     CMPCThemeComboBox m_PresetsBox;
     ShaderSelection::ShaderPresetMap m_Presets;
     CMPCThemeStatic mpcvrNote;
+    CString m_mpcvrNoteText;
 
     virtual void DoDataExchange(CDataExchange* pDX) override;
     virtual BOOL OnInitDialog() override;

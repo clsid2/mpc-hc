@@ -246,7 +246,12 @@ void CPPageShaders::DoDataExchange(CDataExchange* pDX)
 
 void CPPageShaders::CheckRenderer()
 {
-    if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_MPCVR) {
+    const int renderer = AfxGetAppSettings().iDSVideoRendererType;
+    if (renderer == VIDRNDT_DS_FRANKY) {
+        mpcvrNote.SetWindowTextW(L"FrankyRenderer does not support MPC-HC pixel shaders. Configure shaders in the renderer settings.");
+        mpcvrNote.ShowWindow(TRUE);
+    } else if (renderer == VIDRNDT_DS_MPCVR) {
+        mpcvrNote.SetWindowTextW(m_mpcvrNoteText);
         mpcvrNote.ShowWindow(TRUE);
     } else {
         mpcvrNote.ShowWindow(FALSE);
@@ -257,6 +262,7 @@ void CPPageShaders::CheckRenderer()
 BOOL CPPageShaders::OnInitDialog()
 {
     __super::OnInitDialog();
+    mpcvrNote.GetWindowTextW(m_mpcvrNoteText);
     const auto& s = AfxGetAppSettings();
 
     m_Shaders.SetList(ShaderList::GetDefaultShaders());

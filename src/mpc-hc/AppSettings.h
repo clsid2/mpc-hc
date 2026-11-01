@@ -123,6 +123,7 @@ enum {
     VIDRNDT_DS_MADVR          = 12,
     VIDRNDT_DS_SYNC           = 13,
     VIDRNDT_DS_MPCVR          = 14,
+    VIDRNDT_DS_FRANKY         = 15,
 };
 
 // Enumeration for MCE remote control (careful : add 0x010000 for all keys!)
@@ -1008,6 +1009,7 @@ public:
     static bool IsSubtitleRendererRegistered(SubtitleRenderer eSubtitleRenderer);
 
     static bool IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRenderer, int videoRenderer);
+    bool RequiresDecoderCopyback(SubtitleRenderer subtitleRenderer) const;
 
     CSize GetAspectRatioOverride() const {
         ASSERT(fKeepAspectRatio && "Keep Aspect Ratio option have to be enabled if override value is used.");
