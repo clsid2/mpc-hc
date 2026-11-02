@@ -25286,12 +25286,13 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
     __super::OnSettingChange(uFlags, lpszSection);
     if (SPI_SETHIGHCONTRAST == uFlags) {
-        ApplyThemeChange(); //the modern theme steps aside while a contrast theme is on
+        AfxGetAppSettings().ReadWindowsColorSettings(); //brings back the dark flag when contrast goes off
+        ApplyThemeChange(); //a contrast theme forces the modern dark theme
     } else if (lpszSection && 0 == _tcscmp(lpszSection, _T("ImmersiveColorSet"))) {
         CAppSettings& s = AfxGetAppSettings();
         bool wasDark = s.bWindows10DarkThemeActive;
         s.ReadWindowsColorSettings();
-        if (!AppIsThemeLoaded()) {
+        if (!AppIsThemeLoaded() || CMPCTheme::IsHighContrast()) {
             s.UpdateThemeState(); //nothing on screen follows the windows colours, but a contrast theme still clears the dark flag
         } else if (s.bWindows10DarkThemeActive != wasDark && s.eModernThemeMode == CMPCTheme::ModernThemeMode::WINDOWSDEFAULT) {
             ApplyThemeChange(); //windows switched between light and dark, which the default theme mode follows
