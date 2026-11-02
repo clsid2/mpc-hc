@@ -412,7 +412,7 @@ void CPGSSub::ParsePalette(CGolombBuffer* pGBuffer, size_t nSize)  // #497
     }
 }
 
-void CPGSSub::ParseObject(CGolombBuffer* pGBuffer, size_t nUnitSize)   // #498
+void CPGSSub::ParseObject(CGolombBuffer* pGBuffer, size_t nUnitSize)
 {
     if (nUnitSize <= 4) {
         return;
@@ -429,18 +429,20 @@ void CPGSSub::ParseObject(CGolombBuffer* pGBuffer, size_t nUnitSize)   // #498
     BYTE m_sequence_desc = pGBuffer->ReadByte();
 
     if (m_sequence_desc & 0x80) {
-        if (nUnitSize <= 8) {
+        if (nUnitSize <= 11) {
+            ASSERT(FALSE);
             return;
         }
 
-        int object_data_length = (int)pGBuffer->BitRead(24);
+        UINT64 object_data_length = pGBuffer->BitRead(24);
+        ASSERT(object_data_length > 4);
 
         pObject.m_width = pGBuffer->ReadShort();
         pObject.m_height = pGBuffer->ReadShort();
 
-        pObject.SetRLEData(pGBuffer->GetBufferPos(), nUnitSize - 11, object_data_length - 4);
+        pObject.SetRLEData(pGBuffer->GetBufferPos(), nUnitSize - 11, object_data_length > 4 ? object_data_length - 4 : 0);
 
-        TRACE_PGSSUB(_T("CPGSSub:ParseObject %d (size=%ld, %dx%d)\n"), object_id, object_data_length, pObject.m_width, pObject.m_height);
+        TRACE_PGSSUB(_T("CPGSSub:ParseObject %d (size=%ld, %dx%d)\n"), object_id, (long)object_data_length, pObject.m_width, pObject.m_height);
     } else {
         pObject.AppendRLEData(pGBuffer->GetBufferPos(), nUnitSize - 4);
     }
