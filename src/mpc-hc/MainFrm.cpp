@@ -24389,6 +24389,12 @@ void CMainFrame::UpdateControlState(UpdateControlTarget target)
 }
 
 void CMainFrame::ReloadMenus() {
+    // deleting the old menu frees the item data Windows hands back to MeasureItem and
+    // DrawItem, and a settings, theme or dpi change can arrive while a menu is up
+    if (DeferIfNested(DeferredActionType::Other, [this] { ReloadMenus(); })) {
+        return;
+    }
+
     //    CMenu  defaultMenu;
     CMenu* oldMenu;
 
