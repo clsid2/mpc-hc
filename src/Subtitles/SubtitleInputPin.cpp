@@ -108,16 +108,19 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
         CString name;
         LCID    lcid = 0;
 
-        if (psi != nullptr) {
+        if (psi != nullptr && m_mt.cbFormat >= sizeof(SUBTITLEINFO)) {
             dwOffset = psi->dwOffset;
 
-            lcid = ISOLang::ISO6392ToLcid(psi->IsoLang);
-            if (0 == lcid) { //try 639-1 in case it comes from BCP-47 (contains mix of 639-1 and 639-2)
-                lcid = ISOLang::ISO6391ToLcid(psi->IsoLang);
-            }
-            name = ISOLang::ISO639XToLanguage(psi->IsoLang);
+            CHAR isoLang[_countof(psi->IsoLang) + 1] = {};
+            memcpy(isoLang, psi->IsoLang, sizeof(psi->IsoLang));
 
-            CString trackName(psi->TrackName);
+            lcid = ISOLang::ISO6392ToLcid(isoLang);
+            if (0 == lcid) { //try 639-1 in case it comes from BCP-47 (contains mix of 639-1 and 639-2)
+                lcid = ISOLang::ISO6391ToLcid(isoLang);
+            }
+            name = ISOLang::ISO639XToLanguage(isoLang);
+
+            CString trackName(psi->TrackName, (int)wcsnlen(psi->TrackName, _countof(psi->TrackName)));
             trackName.Trim();
             if (!trackName.IsEmpty()) {
                 if (!name.IsEmpty()) {
@@ -128,9 +131,9 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
                 }
                 name += trackName;
             }
-            if (name.IsEmpty()) {
-                name = _T("Unknown");
-            }
+        }
+        if (psi != nullptr && name.IsEmpty()) {
+            name = _T("Unknown");
         }
 
         name.Replace(_T(""), _T(""));
