@@ -2508,11 +2508,9 @@ void CAppSettings::ReadWindowsColorSettings()
 // whenever a theme setting or the windows colour settings change, so all of it must be safe to redo
 void CAppSettings::UpdateThemeState()
 {
-    // a contrast theme brings its own colours, which the modern palette cannot follow;
-    // step aside while one is on and let the classic path draw with the system colours
-    HIGHCONTRAST hc = { sizeof(hc) };
-    bool bHighContrast = SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) && (hc.dwFlags & HCF_HIGHCONTRASTON);
-    bool bThemeLoaded = bMPCTheme && !bHighContrast;
+    // a contrast theme forces the modern dark theme (see EffectiveThemeMode), whatever the saved settings say
+    bool bHighContrast = CMPCTheme::IsHighContrast();
+    bool bThemeLoaded = bMPCTheme || bHighContrast;
     if (bHighContrast) {
         bWindows10DarkThemeActive = false; //also stops the dark file dialog workaround, which runs even without the theme
     }

@@ -576,7 +576,15 @@ const std::vector<CMPCTheme::pathPoint> CMPCTheme::hideIcon192({
     {13, 0, linePath},
 });
 
+bool CMPCTheme::IsHighContrast() {
+    HIGHCONTRAST hc = { sizeof(hc) };
+    return SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) && (hc.dwFlags & HCF_HIGHCONTRASTON);
+}
+
 CMPCTheme::ModernThemeMode CMPCTheme::EffectiveThemeMode() {
+    if (IsHighContrast()) {
+        return ModernThemeMode::DARK;
+    }
     ModernThemeMode themeMode = AfxGetAppSettings().eModernThemeMode;
     if (themeMode == ModernThemeMode::WINDOWSDEFAULT) {
         if (AfxGetAppSettings().bWindows10DarkThemeActive) {

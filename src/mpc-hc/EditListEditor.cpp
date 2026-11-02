@@ -19,6 +19,7 @@
  */
 
 #include "stdafx.h"
+#include "mplayerc.h"
 #include "resource.h"
 #include "EditListEditor.h"
 #include "DSUtil.h"
@@ -401,16 +402,22 @@ void CEditListEditor::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 
         CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
 
+        bool fThemed = AppNeedsThemedControls();
+        COLORREF rowcolor = fThemed ? CMPCTheme::ContentBGColor : GetSysColor(COLOR_WINDOW);
         if (!!m_list.GetItemState(nItem, LVIS_SELECTED)) {
-            FillRect(pDC->m_hDC, rcItem, CBrush(0xf1dacc));
+            rowcolor = fThemed ? CMPCTheme::ContentSelectedColor : 0xf1dacc;
+            FillRect(pDC->m_hDC, rcItem, CBrush(rowcolor));
             FrameRect(pDC->m_hDC, rcItem, CBrush(0xc56a31));
         } else {
-            FillRect(pDC->m_hDC, rcItem, CBrush(GetSysColor(COLOR_WINDOW)));
+            FillRect(pDC->m_hDC, rcItem, CBrush(rowcolor));
         }
 
-        COLORREF textcolor = RGB(0, 0, 0);
+        COLORREF textcolor = fThemed ? CMPCTheme::TextFGColor : RGB(0, 0, 0);
         if (!curClip.HaveIn() || !curClip.HaveOut()) {
-            textcolor = RGB(255, 0, 0);
+            textcolor = fThemed ? CMPCTheme::EnsureContrast(RGB(255, 0, 0), rowcolor, 4.5) : RGB(255, 0, 0); //plain red is lost on the grey selections
+        }
+        if (fThemed) {
+            pDC->SetBkMode(TRANSPARENT);
         }
 
         for (int i = 0; i < COL_MAX; i++) {
