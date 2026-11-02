@@ -1256,6 +1256,20 @@ msgctxt "IDS_FAVORITES_ADD"
 msgid "&Add to Favorites..."
 msgstr "즐겨찾기에 추가(&A)..."
 
+msgctxt "IDS_FAVORITES_ADD_TITLE"
+msgid "Add to Favorites"
+msgstr ""
+
+msgctxt "IDS_FAVORITES_ADD_PROMPT"
+msgid ""
+"Enter a file, folder, playlist or URL to add to Favorites without opening "
+"it."
+msgstr ""
+
+msgctxt "IDS_FAVORITES_ADD_PATH"
+msgid "File, folder, playlist or URL:"
+msgstr ""
+
 msgctxt "IDS_FAVORITES_ORGANIZE"
 msgid "Organize Favorites..."
 msgstr "즐겨찾기 구성..."

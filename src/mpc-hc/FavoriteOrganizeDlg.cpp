@@ -201,6 +201,11 @@ void CFavoriteOrganizeDlg::AddItemToVisualList(int tabIndex, const CString& favo
         SetupList(true);
     }
 
+    // Match CAppSettings::AddFav, using the list including unapplied edits.
+    if (m_sl[tabIndex].Find(favoriteString)) {
+        return;
+    }
+
     // Add to the in-memory list
     m_sl[tabIndex].AddTail(favoriteString);
 

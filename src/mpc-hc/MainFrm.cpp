@@ -12600,8 +12600,9 @@ void CMainFrame::PlayFavoriteFile(const CString& fav)
         }
     }
 
-    // A playlist's items keep their own names: the favorite names the playlist, not its first item
-    if (!IsPlaylistFile(CString(firstFile).MakeLower())) {
+    // Keep a playlist's restored current item label, but retain favorite names for URLs
+    // such as HLS streams, which are played as a single item rather than expanded.
+    if (!IsPlaylistFile(CString(firstFile).MakeLower()) || PathUtils::IsURL(firstFile)) {
         m_wndPlaylistBar.SetCurLabel(ff.Name);
     }
 

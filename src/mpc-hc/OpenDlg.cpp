@@ -110,10 +110,9 @@ BOOL COpenDlg::OnInitDialog()
     if (m_bForFavorites) {
         // nothing is opened, so there is no playlist to add to
         GetDlgItem(IDC_CHECK1)->ShowWindow(SW_HIDE);
-        CString title = ResStr(IDS_FAVORITES_ADD); // "&Add to Favorites..."
-        title.Remove(_T('&'));
-        title.TrimRight(_T('.'));
-        SetWindowText(title);
+        SetWindowText(ResStr(IDS_FAVORITES_ADD_TITLE));
+        SetDlgItemText(IDC_STATIC2, ResStr(IDS_FAVORITES_ADD_PROMPT));
+        SetDlgItemText(IDC_STATIC3, ResStr(IDS_FAVORITES_ADD_PATH));
     }
 
     SetupAnchors();
