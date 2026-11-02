@@ -225,6 +225,7 @@ public:
     static bool drawThemedControls;
     static bool isWindows11Style; //set by InitializeColors, so drawing code can test it cheaply
 
+    static bool IsHighContrast();
     static CMPCTheme::ModernThemeMode EffectiveThemeMode();
     static CMPCTheme::ModernThemeStyle EffectiveThemeStyle();
 

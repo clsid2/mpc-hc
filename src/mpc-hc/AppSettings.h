@@ -841,6 +841,7 @@ public:
 
     // Default Style
     STSStyle        subtitlesDefStyle;
+    bool            bSubtitleRoundedOpaqueBox;
 
     // Misc
     bool            bPreferDefaultForcedSubtitles;
@@ -1043,6 +1044,7 @@ public:
     bool bUseFreeType;
     bool bUseMediainfoLoadFileDuration;
     bool bPauseWhileDraggingSeekbar;
+    bool bPauseWhenMinimized;
     CStringA strOpenTypeLangHint;
 
     CStringW lastQuickOpenPath;

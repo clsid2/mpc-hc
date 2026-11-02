@@ -173,7 +173,7 @@ CString GetStackTrace(LPEXCEPTION_POINTERS exp)
 }
 
 
-LPCWSTR GetExceptionName(DWORD code)
+CString GetExceptionName(DWORD code)
 {
     switch (code) {
         case EXCEPTION_ACCESS_VIOLATION:
@@ -228,7 +228,7 @@ LPCWSTR GetExceptionName(DWORD code)
 
     CString res;
     res.Format(L"0x%08X", code);
-    return res.GetString();
+    return res;
 }
 
 LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)
@@ -260,7 +260,7 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)
     offset = uintptr_t(exceptionInfo->ExceptionRecord->ExceptionAddress) - moduleBase;
 
     CString errmsg = L"An error has occurred. MPC-HC will close now.\n\n";
-    errmsg.AppendFormat(L"Exception:\n%s\n\nCrashing module:\n%s\nOffset: 0x%" PRIXPTR, GetExceptionName(exceptionInfo->ExceptionRecord->ExceptionCode), moduleName.GetString(), offset);
+    errmsg.AppendFormat(L"Exception:\n%s\n\nCrashing module:\n%s\nOffset: 0x%" PRIXPTR, GetExceptionName(exceptionInfo->ExceptionRecord->ExceptionCode).GetString(), moduleName.GetString(), offset);
 
     if (exceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
         const wchar_t* accessType;

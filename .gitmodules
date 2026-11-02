@@ -58,3 +58,7 @@
 [submodule "src/thirdparty/LAVFilters/msvc/libs/speex/speex"]
 	path = src/thirdparty/LAVFilters/msvc/libs/speex/speex
 	url = https://github.com/xiph/speex.git
+[submodule "tests"]
+	path = tests
+	url = https://github.com/adipose/mpc-hc-tests.git
+	update = none

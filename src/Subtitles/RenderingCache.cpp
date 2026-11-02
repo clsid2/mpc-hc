@@ -21,6 +21,13 @@
 #include "stdafx.h"
 #include "RenderingCache.h"
 #include "RTS.h"
+#include <cmath>
+
+// Hash doubles with fractional resolution, or animated values like \fr12.3 and \fr12.4 collide and look like re-misses
+static inline ULONG HashDouble(double x)
+{
+    return ULONG(std::llround(x * 1e3));
+}
 
 CTextDimsKey::CTextDimsKey(const CStringW& str, const STSStyle& style)
     : m_str(str)
@@ -44,9 +51,9 @@ void CTextDimsKey::UpdateHash()
     m_hash += m_hash << 5;
     m_hash += CStringElementTraits<CString>::Hash(m_style->fontName);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontSize);
+    m_hash += HashDouble(m_style->fontSize);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontSpacing);
+    m_hash += HashDouble(m_style->fontSpacing);
     m_hash += m_hash << 5;
     m_hash += m_style->fontWeight;
     m_hash += m_hash << 5;
@@ -102,6 +109,22 @@ bool CPolygonPathKey::operator==(const CPolygonPathKey& polygonPathKey) const
            && IsNearlyEqual(m_scaley, polygonPathKey.m_scaley, 1e-6);
 }
 
+CFontKey::CFontKey(const LOGFONT& lf)
+    : m_lf(lf)
+{
+    UpdateHash();
+}
+
+void CFontKey::UpdateHash()
+{
+    m_hash = 0;
+    const BYTE* p = reinterpret_cast<const BYTE*>(&m_lf);
+    for (size_t i = 0; i < sizeof(m_lf); i++) {
+        m_hash += m_hash << 5;
+        m_hash += p[i];
+    }
+}
+
 COutlineKey::COutlineKey(const CWord* word, CPoint org)
     : CTextDimsKey(word->m_str, word->m_style)
     , m_scalex(word->m_scalex)
@@ -130,28 +153,28 @@ void COutlineKey::UpdateHash()
     m_hash += int(m_scaley * 1e6);
     m_hash += m_hash << 5;
     // Transform
-    m_hash += int(m_style->fontScaleX);
+    m_hash += HashDouble(m_style->fontScaleX);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontScaleY);
+    m_hash += HashDouble(m_style->fontScaleY);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontAngleX);
+    m_hash += HashDouble(m_style->fontAngleX);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontAngleY);
+    m_hash += HashDouble(m_style->fontAngleY);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontAngleZ);
+    m_hash += HashDouble(m_style->fontAngleZ);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontShiftX);
+    m_hash += HashDouble(m_style->fontShiftX);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fontShiftY);
+    m_hash += HashDouble(m_style->fontShiftY);
     m_hash += m_hash << 5;
     m_hash += m_org.x + (m_org.y << 16);
     m_hash += m_hash << 5;
     // CreateWidenedRegion
     m_hash += m_style->borderStyle;
     m_hash += m_hash << 5;
-    m_hash += int(m_style->outlineWidthX);
+    m_hash += HashDouble(m_style->outlineWidthX);
     m_hash += m_hash << 5;
-    m_hash += int(m_style->outlineWidthY);
+    m_hash += HashDouble(m_style->outlineWidthY);
     m_hash += m_hash << 5;
     m_hash += int(m_style->shadowDepthX);
     m_hash += m_hash << 5;
@@ -200,7 +223,7 @@ void COverlayKey::UpdateHash()
     m_hash += m_hash << 5;
     m_hash += m_style->fBlur;
     m_hash += m_hash << 5;
-    m_hash += int(m_style->fGaussianBlur);
+    m_hash += HashDouble(m_style->fGaussianBlur);
 }
 
 bool COverlayKey::operator==(const COverlayKey& overlayKey) const

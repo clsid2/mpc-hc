@@ -81,6 +81,9 @@ void CPPageAudioSwitcher::DoDataExchange(CDataExchange* pDX)
     if (m_nChannels > AS_MAX_CHANNELS) {
         m_nChannels = AS_MAX_CHANNELS;
         SetDlgItemText(IDC_EDIT1, L"18");
+    } else if (m_nChannels < 1) {
+        m_nChannels = 1;
+        SetDlgItemText(IDC_EDIT1, L"1");
     }
     DDX_Control(pDX, IDC_SPIN1, m_nChannelsSpinCtrl);
     DDX_Control(pDX, IDC_LIST1, m_list);

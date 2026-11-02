@@ -21,6 +21,12 @@
 #pragma once
 
 #include <atlcoll.h>
+#include <bitset>
+#include <memory>
+
+// Overload for a value type that counts against SetMaxBytes.
+template<typename V>
+size_t CacheEntryBytes(const V&) { return 0; }
 
 template<typename K, typename V, class KTraits = CElementTraits<K>, class VTraits = CElementTraits<V>>
 class CRenderingCache : private CAtlMap<K, POSITION, KTraits>
@@ -33,8 +39,21 @@ private:
     };
     CAtlList<CPositionValue> m_list;
 
+    // Once SetMaxBytes is called, evicted keys leave a bit here. Too many of
+    // them coming back means the cache is too small for the script, so it grows.
+    typedef std::bitset<1 << 20> CEvictedKeys;
+    std::unique_ptr<CEvictedKeys> m_evicted;
+    size_t m_maxBytes = 0, m_bytes = 0, m_inserts = 0, m_reMisses = 0;
+
 public:
     CRenderingCache(size_t maxSize) : m_maxSize(maxSize) {};
+
+    void SetMaxBytes(size_t maxBytes) {
+        m_maxBytes = maxBytes;
+        if (!m_evicted) {
+            m_evicted = std::make_unique<CEvictedKeys>();
+        }
+    }
 
     bool Lookup(typename KTraits::INARGTYPE key, _Out_ typename VTraits::OUTARGTYPE value) {
         POSITION pos = nullptr;
@@ -56,16 +75,37 @@ public:
             m_list.MoveToHead(pos);
             CPositionValue& posVal = m_list.GetHead();
             pos = posVal.pos;
+            m_bytes += CacheEntryBytes(value) - CacheEntryBytes(posVal.value);
             posVal.value = value;
         } else {
-            if (m_list.GetCount() >= m_maxSize) {
-                __super::RemoveAtPos(m_list.GetTail().pos);
-                m_list.RemoveTailNoReturn();
+            if (m_evicted) {
+                const size_t bit = KTraits::Hash(key) % m_evicted->size();
+                m_reMisses += (*m_evicted)[bit];
+                m_evicted->reset(bit);
+                const bool bGrow = m_reMisses > m_maxSize / 8;
+                if (bGrow) {
+                    m_maxSize *= 2;
+                }
+                if (bGrow || ++m_inserts >= 8 * m_maxSize) {
+                    m_inserts = m_reMisses = 0;
+                    m_evicted->reset();
+                }
             }
             pos = __super::SetAt(key, m_list.AddHead());
             CPositionValue& posVal = m_list.GetHead();
             posVal.pos = pos;
             posVal.value = value;
+            m_bytes += CacheEntryBytes(value);
+        }
+
+        while (m_list.GetCount() > 1 && (m_list.GetCount() > m_maxSize || (m_maxBytes && m_bytes > m_maxBytes))) {
+            const CPositionValue& tail = m_list.GetTail();
+            if (m_evicted) {
+                m_evicted->set(KTraits::Hash(__super::GetKeyAt(tail.pos)) % m_evicted->size());
+            }
+            m_bytes -= CacheEntryBytes(tail.value);
+            __super::RemoveAtPos(tail.pos);
+            m_list.RemoveTailNoReturn();
         }
 
         return pos;
@@ -74,6 +114,10 @@ public:
     void Clear() {
         m_list.RemoveAll();
         __super::RemoveAll();
+        m_bytes = m_inserts = m_reMisses = 0;
+        if (m_evicted) {
+            m_evicted->reset();
+        }
     }
 };
 
@@ -150,6 +194,26 @@ public:
 
     bool operator==(const CEllipseKey& ellipseKey) const {
         return (m_rx == ellipseKey.m_rx && m_ry == ellipseKey.m_ry);
+    }
+};
+
+class CFontKey
+{
+private:
+    ULONG m_hash;
+
+protected:
+    LOGFONT m_lf; // zero-initialized before filling, so it can be compared bytewise
+
+public:
+    CFontKey(const LOGFONT& lf);
+
+    ULONG GetHash() const { return m_hash; };
+
+    void UpdateHash();
+
+    bool operator==(const CFontKey& fontKey) const {
+        return memcmp(&m_lf, &fontKey.m_lf, sizeof(m_lf)) == 0;
     }
 };
 

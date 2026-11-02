@@ -119,6 +119,7 @@ public:
 
     int         subPicVerticalShift;
     double      fontScaleOverride;
+    int         iSubGlyphCacheMB = 64;
 
     CString     D3D9RenderDevice;
     void        UpdateData(bool fSave);

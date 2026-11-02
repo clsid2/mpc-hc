@@ -1320,7 +1320,7 @@ HRESULT CFGManagerBDA::SwitchStream(BDA_STREAM_TYPE nOldType, BDA_STREAM_TYPE nN
                     hr = pDemux->SetOutputPinMediaType(const_cast<LPWSTR>(L"eac3"), const_cast<AM_MEDIA_TYPE*>(&mt_Eac3));
                     break;
                 case BDA_ADTS:
-                    hr = pDemux->SetOutputPinMediaType(const_cast<LPWSTR>(L"adts"), const_cast<AM_MEDIA_TYPE*>(&mt_latm));
+                    hr = pDemux->SetOutputPinMediaType(const_cast<LPWSTR>(L"adts"), const_cast<AM_MEDIA_TYPE*>(&mt_adts));
                     break;
                 case BDA_LATM:
                     hr = pDemux->SetOutputPinMediaType(const_cast<LPWSTR>(L"latm"), const_cast<AM_MEDIA_TYPE*>(&mt_latm));

@@ -174,6 +174,7 @@ CAppSettings::CAppSettings()
     , fCustomChannelMapping(false)
     , nSpeakerChannels(2)
     , pSpeakerToChannelMap()
+    , bSubtitleRoundedOpaqueBox(false)
     , fOverridePlacement(false)
     , nHorPos(50)
     , nVerPos(90)
@@ -306,6 +307,7 @@ CAppSettings::CAppSettings()
     , bUseMediainfoLoadFileDuration(false)
     , bCaptureDeinterlace(false)
     , bPauseWhileDraggingSeekbar(true)
+    , bPauseWhenMinimized(false)
     , bConfirmFileDelete(true)
     , bShowVolumePercentage(true)
     , bHistoryInAppData(false)
@@ -1074,6 +1076,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CLOSEDCAPTIONS, fClosedCaptions);
     CString style;
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_SPSTYLE, style <<= subtitlesDefStyle);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPROUNDEDOPAQUEBOX, bSubtitleRoundedOpaqueBox);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, fOverridePlacement);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, nHorPos);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, nVerPos);
@@ -1436,6 +1439,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_MOUSE_LEFTUP_DELAY, iMouseLeftUpDelay);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, bCaptureDeinterlace);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, bPauseWhileDraggingSeekbar);
+    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, bPauseWhenMinimized);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, bConfirmFileDelete);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, bShowVolumePercentage);
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, bHistoryInAppData);
@@ -1921,6 +1925,7 @@ void CAppSettings::LoadSettings()
     bUseMediainfoLoadFileDuration = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_USE_MEDIAINFO_LOAD_FILE_DURATION, FALSE);
     bCaptureDeinterlace = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CAPTURE_DEINTERLACE, FALSE);
     bPauseWhileDraggingSeekbar = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHILE_DRAGGING_SEEKBAR, TRUE);
+    bPauseWhenMinimized = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_PAUSE_WHEN_MINIMIZED, FALSE);
     bConfirmFileDelete = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_CONFIRM_FILE_DELETE, TRUE);
     bShowVolumePercentage = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SHOW_VOLUME_PERCENTAGE, TRUE);
     bHistoryInAppData = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_HISTORY_IN_APPDATA, FALSE);
@@ -1934,6 +1939,7 @@ void CAppSettings::LoadSettings()
             subtitlesDefStyle.relativeTo = STSStyle::AUTO;
         }
     }
+    bSubtitleRoundedOpaqueBox = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPROUNDEDOPAQUEBOX, FALSE);
     fOverridePlacement = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPOVERRIDEPLACEMENT, FALSE);
     nHorPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPHORPOS, 50);
     nVerPos = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPVERPOS, 90);
@@ -2505,11 +2511,9 @@ void CAppSettings::ReadWindowsColorSettings()
 // whenever a theme setting or the windows colour settings change, so all of it must be safe to redo
 void CAppSettings::UpdateThemeState()
 {
-    // a contrast theme brings its own colours, which the modern palette cannot follow;
-    // step aside while one is on and let the classic path draw with the system colours
-    HIGHCONTRAST hc = { sizeof(hc) };
-    bool bHighContrast = SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) && (hc.dwFlags & HCF_HIGHCONTRASTON);
-    bool bThemeLoaded = bMPCTheme && !bHighContrast;
+    // a contrast theme forces the modern dark theme (see EffectiveThemeMode), whatever the saved settings say
+    bool bHighContrast = CMPCTheme::IsHighContrast();
+    bool bThemeLoaded = bMPCTheme || bHighContrast;
     if (bHighContrast) {
         bWindows10DarkThemeActive = false; //also stops the dark file dialog workaround, which runs even without the theme
     }
@@ -2584,6 +2588,7 @@ void CAppSettings::UpdateRenderersData(bool fSave)
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_RENDER_AT_WHEN_ANIM_DISABLED, r.subPicQueueSettings.nRenderAtWhenAnimationIsDisabled);
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_ANIMATION_RATE, r.subPicQueueSettings.nAnimationRate);
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_ALLOW_DROPPING_SUBPIC, r.subPicQueueSettings.bAllowDroppingSubpic);
+        pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SUB_GLYPH_CACHE_MB, r.iSubGlyphCacheMB);
 
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_EVR_BUFFERS, r.iEvrBuffers);
 
@@ -2668,6 +2673,7 @@ void CAppSettings::UpdateRenderersData(bool fSave)
         r.subPicQueueSettings.nRenderAtWhenAnimationIsDisabled = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_RENDER_AT_WHEN_ANIM_DISABLED, 50);
         r.subPicQueueSettings.nAnimationRate = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUBTITLE_ANIMATION_RATE, 100);
         r.subPicQueueSettings.bAllowDroppingSubpic = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_ALLOW_DROPPING_SUBPIC, TRUE);
+        r.iSubGlyphCacheMB = std::clamp((int)pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SUB_GLYPH_CACHE_MB, 64), 16, 1024);
 
         r.subPicVerticalShift = 0;
         r.fontScaleOverride = 1.0;
@@ -2683,8 +2689,9 @@ __int64 CAppSettings::ConvertTimeToMSec(const CString& time) const
     __int64 mSec = 0;
     __int64 mult = 1;
 
+    // short values such as "90" or "5:00" are plain seconds and minutes:seconds
     int pos = time.GetLength() - 1;
-    if (pos < 3) {
+    if (pos < 0) {
         return 0;
     }
 

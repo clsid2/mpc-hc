@@ -192,9 +192,10 @@ bool CPixelShaderCache::LoadCache(const CString& FileName, const CString& FilePa
             if (file.Read(&size, sizeof(size)) == sizeof(size)) {
                 CAutoVectorPtr<DWORD> buffer;
                 if (buffer.Allocate(size)) {
-                    ret = (file.Read(buffer.m_p, UINT(size)) == size);
-
-                    m_PixelShaders.SetAt(hash, buffer);
+                    if (file.Read(buffer.m_p, UINT(size)) == size) {
+                        ret = true;
+                        m_PixelShaders.SetAt(hash, buffer);
+                    }
                 }
             }
         }

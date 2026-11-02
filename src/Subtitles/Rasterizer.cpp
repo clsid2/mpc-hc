@@ -74,20 +74,25 @@ Rasterizer::Rasterizer()
     , mEdgeNext(0)
     , mpScanBuffer(nullptr)
 {
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 1);
-    //bool sse2    = cpuinfo[3] & (1 << 26);
-    //bool sse42   = cpuinfo[2] & (1 << 20);
-    bool avxflag = cpuinfo[2] & (1 << 28);
-    bool osxsave = cpuinfo[2] & (1 << 27);
-    bool xsave   = cpuinfo[2] & (1 << 26);
-    if (avxflag && osxsave && xsave) {
-        __cpuidex(cpuinfo, 7, 0);
-        if (cpuinfo[1] & (1 << 5)) {
-            unsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
-            m_bUseAVX2 = (xcrFeatureMask & 0x6) == 0x6;
+    // Every CWord has a rasterizer and cpuid is slow under a hypervisor, so detect once
+    static const bool bUseAVX2 = [] {
+        int cpuinfo[4];
+        __cpuid(cpuinfo, 1);
+        //bool sse2    = cpuinfo[3] & (1 << 26);
+        //bool sse42   = cpuinfo[2] & (1 << 20);
+        bool avxflag = cpuinfo[2] & (1 << 28);
+        bool osxsave = cpuinfo[2] & (1 << 27);
+        bool xsave   = cpuinfo[2] & (1 << 26);
+        if (avxflag && osxsave && xsave) {
+            __cpuidex(cpuinfo, 7, 0);
+            if (cpuinfo[1] & (1 << 5)) {
+                unsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+                return (xcrFeatureMask & 0x6) == 0x6;
+            }
         }
-    }
+        return false;
+    }();
+    m_bUseAVX2 = bUseAVX2;
 }
 
 Rasterizer::~Rasterizer()
@@ -1929,6 +1934,11 @@ CRect Rasterizer::Draw(SubPicDesc& spd, CRect& clipRect, byte* pAlphaMask, int x
 
     bbox.SetRect(x, y, x + w, y + h);
     bbox &= CRect(0, 0, spd.w, spd.h);
+
+    // A single colour with zero alpha leaves dst unchanged in every blend path
+    if (switchpts[1] == DWORD_MAX && (switchpts[0] >> 24) == 0) {
+        return bbox;
+    }
 
     BYTE* srcBody = m_pOverlayData->mpOverlayBufferBody + m_pOverlayData->mOverlayPitch * yo + xo;
     BYTE* srcBorder = m_pOverlayData->mpOverlayBufferBorder + m_pOverlayData->mOverlayPitch * yo + xo;
