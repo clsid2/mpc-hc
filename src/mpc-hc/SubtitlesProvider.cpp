@@ -544,7 +544,7 @@ SRESULT OpenSubtitles2::Download(SubtitlesInfo& pSubtitlesInfo)
             rapidjson::Document doc;
             doc.Parse(response.text.c_str());
             if (!doc.HasParseError()) {
-                if (doc.HasMember("file_name") && doc["file_name"].IsString())
+                if (doc.IsObject() && doc.HasMember("link") && doc["link"].IsString())
                 {
                     std::string downloadLink = doc["link"].GetString();
                     LOG(LOG_INPUT, downloadLink.c_str());
