@@ -952,6 +952,10 @@ msgctxt "IDD_PPAGESUBSTYLE_IDC_RADIO2"
 msgid "Opaque box"
 msgstr "不透明外框"
 
+msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK_ROUNDEDBOX"
+msgid "Rounded corners"
+msgstr ""
+
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC5"
 msgid "Width"
 msgstr "寬度"
