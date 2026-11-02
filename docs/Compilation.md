@@ -15,10 +15,7 @@ with MinGW-w64 GCC, which needs MSYS2 and is only for those who want it.
     - C++ ATL
     - C++ MFC
     - Windows 10 SDK (10.0.17763.0 or any other version)
-2. Install the Windows 8.1 SDK → <https://go.microsoft.com/fwlink/p/?LinkId=323507>
-    - When choosing which features to install you only need to select "Windows Software Development Kit".
-    - Alternatively you can use Windows 10 SDK, but then resulting binaries will require at least Windows 7 SP1, so you lose compatibility with Windows 7 RTM.
-3. Optional but recommended: also select **C++ Clang Compiler for Windows** and **MSBuild support
+2. Optional but recommended: also select **C++ Clang Compiler for Windows** and **MSBuild support
    for LLVM (clang-cl) toolset**. When they are present, LAV Filters' ffmpeg is compiled with clang,
    which can compile ffmpeg's inline assembly (cl cannot) and decodes about 10% faster as a result.
    Without them ffmpeg is compiled with cl and everything still works.
@@ -66,7 +63,7 @@ SET "MPCHC_VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community"
 REM [Optional] Python, only for building the translations (Part F)
 SET "MPCHC_PYTHON=C:\Program Files\Python38"
 REM [Optional] Windows SDK version to use
-SET "MPCHC_WINSDK_VER=8.1"
+SET "MPCHC_WINSDK_VER=10.0.22621.0"
 ```
 
 If you don't have Git installed the build still works, but the revision number will be zero.
