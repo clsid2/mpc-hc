@@ -163,6 +163,7 @@ class CWord : public Rasterizer
     void Transform_quick_C(const CPoint& org);
     void Transform_quick_SSE2(const CPoint& org);
     bool CreateOpaqueBox();
+    bool OpaqueBoxKeepsFontScale() const { return m_str.GetLength() <= 2; }
 
 protected:
     RenderingCaches& m_renderingCaches;
@@ -251,13 +252,15 @@ class CSubtitleBG
 {
     STSStyle m_style;
     int m_ktype = 0, m_kstart = 0;
-    CPoint m_p;
     std::unique_ptr<CPolygon> m_pBox;
+
+    static bool HasLineBox(const CWord* w, const CLine* l);
 
 public:
     static std::unique_ptr<CSubtitleBG> Create(const CSubtitle* s, const std::vector<CPoint>& linePos, RenderingCaches& renderingCaches);
-    CRect PaintShadow(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int alpha);
-    CRect PaintOutline(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint org, int time, int alpha);
+    // p is the position of the first line
+    CRect PaintShadow(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint p, CPoint org, int alpha);
+    CRect PaintOutline(SubPicDesc& spd, CRect& clipRect, BYTE* pAlphaMask, CPoint p, CPoint org, int time, int alpha);
 };
 
 class Effect
@@ -484,6 +487,7 @@ public:
     bool m_allowLinePadding;
     bool m_roundedBox;
     CSize m_roundedBoxPadding;
+    std::unique_ptr<CSubtitleBG> m_pBG; // the opaque box of all lines as one shape, when there is one
 
 public:
     CSubtitle(RenderingCaches& renderingCaches);
