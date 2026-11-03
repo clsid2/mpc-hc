@@ -605,6 +605,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_FILE_CLOSE_AND_RESTORE,          'C', FCONTROL,          IDS_AG_CLOSE },
     { ID_FILE_PROPERTIES,              VK_F10, FSHIFT,            IDS_AG_PROPERTIES },
     { ID_FILE_OPEN_LOCATION,           VK_F10, FCONTROL | FSHIFT, IDS_AG_OPEN_FILE_LOCATION },
+    { ID_RECENT_FILES_SHOW_HISTORY,        0, 0,                 IDS_PPAGEADVANCED_GRP_HISTORY },
     { ID_FILE_EXIT,                       'X', FALT,              IDS_AG_EXIT },
     { ID_PLAY_PLAYPAUSE,             VK_SPACE, 0,                 IDS_AG_PLAYPAUSE,   APPCOMMAND_MEDIA_PLAY_PAUSE, wmcmd::LUP },
     { ID_PLAY_PLAY,                         0, 0,                 IDS_AG_PLAY,        APPCOMMAND_MEDIA_PLAY },
