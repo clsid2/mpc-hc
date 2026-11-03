@@ -40,49 +40,57 @@ static CString NormalizeMediaName(const CString& displayName)
 
 static bool LoadMediaType(CStringW displayName, AM_MEDIA_TYPE** ppmt)
 {
-    bool fRet = false;
-
     if (!ppmt) {
-        return fRet;
+        return false;
     }
 
-    *ppmt = (AM_MEDIA_TYPE*)CoTaskMemAlloc(sizeof(AM_MEDIA_TYPE));
-    if (!*ppmt) {
-        return fRet;
-    }
-
-    ZeroMemory(*ppmt, sizeof(AM_MEDIA_TYPE));
+    *ppmt = nullptr;
 
     CString storeName(NormalizeMediaName(CString(displayName)));
     BYTE* pData;
     UINT len;
-    if (AfxGetApp()->GetProfileBinary(IDS_R_CAPTURE _T("\\") + storeName, _T("MediaType"), &pData, &len)) {
-        if (len != sizeof(AM_MEDIA_TYPE)) {
-            CoTaskMemFree(*ppmt);
-            delete [] pData;
-            return fRet;
-        }
-        memcpy(*ppmt, pData, len);
+    if (!AfxGetApp()->GetProfileBinary(IDS_R_CAPTURE _T("\\") + storeName, _T("MediaType"), &pData, &len)) {
+        return false;
+    }
+    if (len != sizeof(AM_MEDIA_TYPE)) {
         delete [] pData;
-
-        (*ppmt)->cbFormat = 0;
-        (*ppmt)->pbFormat = nullptr;
-
-        fRet = true;
-
-        if (AfxGetApp()->GetProfileBinary(IDS_R_CAPTURE _T("\\") + storeName, _T("Format"), &pData, &len)) {
-            if (!len) {
-                delete [] pData;
-                return fRet;
-            }
-            (*ppmt)->cbFormat = len;
-            (*ppmt)->pbFormat = (BYTE*)CoTaskMemAlloc(len);
-            memcpy((*ppmt)->pbFormat, pData, len);
-            delete [] pData;
-        }
+        return false;
     }
 
-    return fRet;
+    AM_MEDIA_TYPE* pmt = (AM_MEDIA_TYPE*)CoTaskMemAlloc(sizeof(AM_MEDIA_TYPE));
+    if (!pmt) {
+        delete [] pData;
+        return false;
+    }
+    memcpy(pmt, pData, len);
+    delete [] pData;
+
+    // the saved struct holds pointers from the process that wrote it
+    pmt->cbFormat = 0;
+    pmt->pbFormat = nullptr;
+    pmt->pUnk = nullptr;
+
+    if (!AfxGetApp()->GetProfileBinary(IDS_R_CAPTURE _T("\\") + storeName, _T("Format"), &pData, &len)) {
+        CoTaskMemFree(pmt);
+        return false;
+    }
+    if (!len) {
+        delete [] pData;
+        CoTaskMemFree(pmt);
+        return false;
+    }
+    pmt->pbFormat = (BYTE*)CoTaskMemAlloc(len);
+    if (!pmt->pbFormat) {
+        delete [] pData;
+        CoTaskMemFree(pmt);
+        return false;
+    }
+    pmt->cbFormat = len;
+    memcpy(pmt->pbFormat, pData, len);
+    delete [] pData;
+
+    *ppmt = pmt;
+    return true;
 }
 
 static void SaveMediaType(CStringW displayName, AM_MEDIA_TYPE* pmt)
@@ -158,12 +166,13 @@ static void SetupDefaultCaps(AM_MEDIA_TYPE* pmt, VIDEO_STREAM_CONFIG_CAPS& caps)
         return;
     }
 
-    VIDEOINFOHEADER* vih = (VIDEOINFOHEADER*)pmt->pbFormat;
-    UNREFERENCED_PARAMETER(vih);
+    if (!pmt->pbFormat) {
+        return;
+    }
 
-    BITMAPINFOHEADER* bih = (pmt->formattype == FORMAT_VideoInfo)
+    BITMAPINFOHEADER* bih = (pmt->formattype == FORMAT_VideoInfo && pmt->cbFormat >= sizeof(VIDEOINFOHEADER))
                             ? &((VIDEOINFOHEADER*)pmt->pbFormat)->bmiHeader
-                            : (pmt->formattype == FORMAT_VideoInfo2)
+                            : (pmt->formattype == FORMAT_VideoInfo2 && pmt->cbFormat >= sizeof(VIDEOINFOHEADER2))
                             ? &((VIDEOINFOHEADER2*)pmt->pbFormat)->bmiHeader
                             : nullptr;
     if (!bih) {
@@ -192,7 +201,8 @@ static void SetupDefaultCaps(AM_MEDIA_TYPE* pmt, AUDIO_STREAM_CONFIG_CAPS& caps)
 {
     ZeroMemory(&caps, sizeof(caps));
 
-    if (!pmt) {
+    if (!pmt || pmt->formattype != FORMAT_WaveFormatEx
+            || !pmt->pbFormat || pmt->cbFormat < sizeof(WAVEFORMATEX)) {
         return;
     }
 
