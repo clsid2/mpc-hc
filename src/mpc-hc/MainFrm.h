@@ -61,6 +61,7 @@
 class CDebugShadersDlg;
 class CColorControlsDlg;
 class CHistoryDlg;
+class UpdateCheckerDlg;
 class CFullscreenWnd;
 struct DisplayMode;
 enum MpcCaptionState;
@@ -1005,6 +1006,7 @@ protected:  // control bar embedded members
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
     std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
+    std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
 
     LPCTSTR GetRecentFile() const;
 
@@ -1088,6 +1090,7 @@ public:
     afx_msg LRESULT OnFilePostOpenmedia(WPARAM wParam, LPARAM lparam);
     afx_msg LRESULT OnOpenMediaFailed(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnUpdateCheckDone(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUIRequest(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to

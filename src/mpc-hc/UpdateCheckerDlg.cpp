@@ -29,6 +29,7 @@ IMPLEMENT_DYNAMIC(UpdateCheckerDlg, CMPCThemeDialog)
 UpdateCheckerDlg::UpdateCheckerDlg(Update_Status updateStatus, const Version& latestVersion, CWnd* pParent /*=nullptr*/)
     : CMPCThemeDialog(UpdateCheckerDlg::IDD, pParent)
     , m_updateStatus(updateStatus)
+    , m_latestVersion(latestVersion)
 {
     switch (updateStatus) {
         case UPDATER_UPDATE_AVAILABLE:
@@ -118,15 +119,31 @@ void UpdateCheckerDlg::OnOpenDownloadPage()
 {
     ShellExecute(nullptr, _T("open"), DOWNLOAD_URL, nullptr, nullptr, SW_SHOWNORMAL);
 
-    EndDialog(IDC_UPDATE_DL_BUTTON);
+    DestroyWindow();
 }
 
 void UpdateCheckerDlg::OnUpdateLater()
 {
-    EndDialog(IDC_UPDATE_LATER_BUTTON);
+    DestroyWindow();
 }
 
 void UpdateCheckerDlg::OnIgnoreUpdate()
 {
-    EndDialog((m_updateStatus == UPDATER_UPDATE_AVAILABLE) ? IDC_UPDATE_IGNORE_BUTTON : 0);
+    if (m_updateStatus == UPDATER_UPDATE_AVAILABLE) {
+        UpdateChecker::IgnoreLatestVersion(m_latestVersion);
+    }
+
+    DestroyWindow();
+}
+
+// modeless and owned by CMainFrame, so Enter, Escape and the close box destroy
+// the window instead of ending a modal loop
+void UpdateCheckerDlg::OnOK()
+{
+    DestroyWindow();
+}
+
+void UpdateCheckerDlg::OnCancel()
+{
+    DestroyWindow();
 }
