@@ -16775,6 +16775,7 @@ int CMainFrame::SetupAudioStreams()
 
                 if (dwGroup != 1) {
                     ASSERT(bIsSplitter);
+                    DeleteMediaType(pmt);
                     continue;
                 }
 
@@ -16802,6 +16803,7 @@ int CMainFrame::SetupAudioStreams()
                     }
 
                     if (bSkipTrack) {
+                        DeleteMediaType(pmt);
                         id++;
                         continue;
                     }
@@ -16854,7 +16856,7 @@ int CMainFrame::SetupAudioStreams()
             if (desiredTrackIndex >= 0 && desiredTrackIndex < m_audioTrackCount) {
                 selected = desiredTrackIndex;
             }
-            return m_audioTrackCount > 1 ? selected + !bIsSplitter : -1;
+            return (m_audioTrackCount > 1 && selected >= 0) ? selected + !bIsSplitter : -1;
         } else if (cStreams == 1) {
             DWORD dwFlags, dwGroup;
             LCID lcid = 0;
