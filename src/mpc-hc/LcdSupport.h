@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <atomic>
 #include "lglcd/lglcd.h"
 #include "LCDUI/LCDUI.h"
 
@@ -119,7 +120,7 @@ public:
     CLCDOutput*           m_ColorOutput;
     CLCDMyMonoPage        m_MonoPage;
     CLCDMyColorPage       m_ColorPage;
-    bool                  Thread_Loop;
+    std::atomic<bool>     Thread_Loop;
     __time64_t            nThread_tTimeout;
     CRITICAL_SECTION      cs;
 
