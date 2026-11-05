@@ -61,6 +61,7 @@
 #include "KeyProvider.h"
 #include "Translations.h"
 #include "UpdateChecker.h"
+#include "UpdateCheckerDlg.h"
 #include "WebServer.h"
 #include <ISOLang.h>
 #include <PathUtils.h>
@@ -333,6 +334,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_POSTOPEN, OnFilePostOpenmedia)
     ON_MESSAGE(WM_OPENFAILED, OnOpenMediaFailed)
     ON_MESSAGE(WM_MPC_RUN_DEFERRED, OnRunDeferredActions)
+    ON_MESSAGE(WM_MPC_UPDATE_CHECK_DONE, OnUpdateCheckDone)
     ON_MESSAGE(WM_MPC_UI_REQUEST, OnUIRequest)
     ON_MESSAGE(WM_TUNER_NEW_CHANNEL, OnHeadlessScanNewChannel)
     ON_MESSAGE(WM_TUNER_SCAN_END, OnHeadlessScanEnd)
@@ -1283,6 +1285,10 @@ void CMainFrame::OnDestroy()
 
     if (m_pHistoryDlg && IsWindow(m_pHistoryDlg->m_hWnd)) {
         VERIFY(m_pHistoryDlg->DestroyWindow());
+    }
+
+    if (m_pUpdateCheckerDlg && IsWindow(m_pUpdateCheckerDlg->m_hWnd)) {
+        VERIFY(m_pUpdateCheckerDlg->DestroyWindow());
     }
 
     if (m_pGraphThread && m_pGraphThread->m_hThread) {
@@ -12823,6 +12829,15 @@ void CMainFrame::OnHelpHomepage()
 void CMainFrame::OnHelpCheckForUpdate()
 {
     UpdateChecker::CheckForUpdate();
+}
+
+LRESULT CMainFrame::OnUpdateCheckDone(WPARAM wParam, LPARAM lParam)
+{
+    std::unique_ptr<UpdateCheckResult> result(reinterpret_cast<UpdateCheckResult*>(lParam));
+    if (!m_OnClose_called && !AfxGetMyApp()->m_fClosingState) {
+        UpdateChecker::HandleCheckResult(*result, this, m_pUpdateCheckerDlg);
+    }
+    return 0;
 }
 
 void CMainFrame::OnHelpToolbarImages()

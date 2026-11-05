@@ -39,6 +39,8 @@ public:
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     afx_msg virtual BOOL OnInitDialog();
+    virtual void OnOK();
+    virtual void OnCancel();
     afx_msg void OnOpenDownloadPage();
     afx_msg void OnUpdateLater();
     afx_msg void OnIgnoreUpdate();
@@ -46,6 +48,7 @@ protected:
     DECLARE_MESSAGE_MAP()
 private:
     Update_Status m_updateStatus;
+    Version m_latestVersion;
     CString m_text;
     CStatic m_icon;
     CMPCThemeButton m_dlButton;

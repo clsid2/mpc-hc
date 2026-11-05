@@ -41,9 +41,11 @@ const LPCTSTR UpdateChecker::MPC_HC_UPDATE_URL = UPDATE_URL;
 bool UpdateChecker::bIsCheckingForUpdate = false;
 CCritSec UpdateChecker::csIsCheckingForUpdate;
 
-UpdateChecker::UpdateChecker(CString versionFileURL)
+UpdateChecker::UpdateChecker(CString versionFileURL, CString agent)
     : versionFileURL(versionFileURL)
+    , agent(agent)
     , latestVersion()
+    , versionParsed(false)
 {
 }
 
@@ -63,7 +65,7 @@ Update_Status UpdateChecker::IsUpdateAvailable(const Version& currentVersion, bo
     Update_Status updateAvailable = UPDATER_LATEST_STABLE;
 
     try {
-        CInternetSession internet;
+        CInternetSession internet(agent);
         internet.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
         internet.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 5000);
         internet.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 5000);
@@ -123,21 +125,14 @@ Update_Status UpdateChecker::IsUpdateAvailable(const Version& currentVersion, bo
             if (!ParseVersion(latestVersionStr, latestVersion)) {
                 updateAvailable = UPDATER_ERROR;
             } else {
-                time_t lastCheck = time(nullptr);
-                AfxGetApp()->WriteProfileBinary(IDS_R_SETTINGS, IDS_RS_UPDATER_LAST_CHECK, (LPBYTE)&lastCheck, sizeof(time_t));
+                // runs on the check thread: the last check time and the ignored
+                // version are handled on the main thread by HandleCheckResult
+                versionParsed = true;
 
                 int comp = CompareVersion(currentVersion, latestVersion);
 
                 if (comp < 0) {
-                    CString ignoredVersionStr = AfxGetApp()->GetProfileString(IDS_R_SETTINGS, IDS_RS_UPDATER_IGNORE_VERSION, _T("0.0.0.0"));
-                    Version ignoredVersion;
-                    bool ignored = false;
-
-                    if (ParseVersion(ignoredVersionStr, ignoredVersion)) {
-                        ignored = (CompareVersion(ignoredVersion, latestVersion) >= 0);
-                    }
-
-                    updateAvailable = ignored ? UPDATER_UPDATE_AVAILABLE_IGNORED : UPDATER_UPDATE_AVAILABLE;
+                    updateAvailable = UPDATER_UPDATE_AVAILABLE;
                 } else if (comp > 0) {
                     updateAvailable = UPDATER_NEWER_VERSION;
                 }
@@ -161,10 +156,10 @@ Update_Status UpdateChecker::IsUpdateAvailable()
     return IsUpdateAvailable(MPC_HC_VERSION);
 }
 
-void UpdateChecker::IgnoreLatestVersion()
+void UpdateChecker::IgnoreLatestVersion(const Version& version)
 {
     CString ignoredVersionStr;
-    ignoredVersionStr.Format(_T("%u.%u.%u.%u"), latestVersion.major, latestVersion.minor, latestVersion.patch, latestVersion.revision);
+    ignoredVersionStr.Format(_T("%u.%u.%u.%u"), version.major, version.minor, version.patch, version.revision);
 
     AfxGetApp()->WriteProfileString(IDS_R_SETTINGS, IDS_RS_UPDATER_IGNORE_VERSION, ignoredVersionStr);
 }
@@ -257,28 +252,32 @@ bool UpdateChecker::IsTimeToAutoUpdate()
     return isTimeToAutoUpdate;
 }
 
+struct UpdateCheckParams {
+    HWND hNotifyWnd;
+    bool autoCheck;
+    CString agent;
+};
+
+// The player can exit while this thread waits on the network, so it must not
+// touch the app, its settings or any window other than posting the result.
 static UINT RunCheckForUpdateThread(LPVOID pParam)
 {
-    bool autoCheck = !!pParam;
+    std::unique_ptr<UpdateCheckParams> params(static_cast<UpdateCheckParams*>(pParam));
 
-    if (!autoCheck || UpdateChecker::IsTimeToAutoUpdate()) {
-        UpdateChecker updateChecker(UpdateChecker::MPC_HC_UPDATE_URL);
+    UpdateChecker updateChecker(UpdateChecker::MPC_HC_UPDATE_URL, params->agent);
 
-        Update_Status status = updateChecker.IsUpdateAvailable();
+    auto result = std::make_unique<UpdateCheckResult>();
+    result->status = updateChecker.IsUpdateAvailable();
+    result->latestVersion = updateChecker.GetLatestVersion();
+    result->versionParsed = updateChecker.IsVersionParsed();
+    result->autoCheck = params->autoCheck;
 
-        if (!autoCheck || status == UPDATER_UPDATE_AVAILABLE) {
-            UpdateCheckerDlg dlg(status, updateChecker.GetLatestVersion());
-
-            try {
-                if (dlg.DoModal() == IDC_UPDATE_IGNORE_BUTTON) {
-                    updateChecker.IgnoreLatestVersion();
-                }
-            } catch (...) {
-                AfxGetAppSettings().nUpdaterAutoCheck = AUTOUPDATE_DISABLE;
-            }
-        }
+    if (::PostMessage(params->hNotifyWnd, WM_MPC_UPDATE_CHECK_DONE, 0, (LPARAM)result.get())) {
+        result.release(); // owned by CMainFrame::OnUpdateCheckDone now
     }
 
+    // no lock here: csIsCheckingForUpdate is a static the CRT may already have
+    // destroyed if the player exited while this thread was on the network
     UpdateChecker::bIsCheckingForUpdate = false;
 
     return 0;
@@ -286,10 +285,54 @@ static UINT RunCheckForUpdateThread(LPVOID pParam)
 
 void UpdateChecker::CheckForUpdate(bool autoCheck /*= false*/)
 {
+    if (autoCheck && !IsTimeToAutoUpdate()) {
+        return;
+    }
+
+    CWnd* pMainWnd = AfxGetMainWnd();
+    HWND hNotifyWnd = pMainWnd ? pMainWnd->GetSafeHwnd() : nullptr;
+    if (!hNotifyWnd) {
+        return;
+    }
+
     CAutoLock lock(&csIsCheckingForUpdate);
 
     if (!bIsCheckingForUpdate) {
+        // CInternetSession's default agent is AfxGetAppName(), which lives in theApp
+        UpdateCheckParams* params = new UpdateCheckParams{ hNotifyWnd, autoCheck, AfxGetAppName() };
         bIsCheckingForUpdate = true;
-        AfxBeginThread(RunCheckForUpdateThread, (LPVOID)autoCheck);
+        if (!AfxBeginThread(RunCheckForUpdateThread, params)) {
+            delete params;
+            bIsCheckingForUpdate = false;
+        }
+    }
+}
+
+void UpdateChecker::HandleCheckResult(const UpdateCheckResult& result, CWnd* pParent, std::unique_ptr<UpdateCheckerDlg>& pDlg)
+{
+    Update_Status status = result.status;
+
+    if (result.versionParsed) {
+        time_t lastCheck = time(nullptr);
+        AfxGetApp()->WriteProfileBinary(IDS_R_SETTINGS, IDS_RS_UPDATER_LAST_CHECK, (LPBYTE)&lastCheck, sizeof(time_t));
+    }
+
+    if (status == UPDATER_UPDATE_AVAILABLE) {
+        CString ignoredVersionStr = AfxGetApp()->GetProfileString(IDS_R_SETTINGS, IDS_RS_UPDATER_IGNORE_VERSION, _T("0.0.0.0"));
+        Version ignoredVersion;
+
+        if (ParseVersion(ignoredVersionStr, ignoredVersion) && CompareVersion(ignoredVersion, result.latestVersion) >= 0) {
+            status = UPDATER_UPDATE_AVAILABLE_IGNORED;
+        }
+    }
+
+    if (!result.autoCheck || status == UPDATER_UPDATE_AVAILABLE) {
+        if (pDlg && IsWindow(pDlg->m_hWnd)) {
+            VERIFY(pDlg->DestroyWindow());
+        }
+        pDlg = std::make_unique<UpdateCheckerDlg>(status, result.latestVersion, pParent);
+        if (pDlg->Create(UpdateCheckerDlg::IDD, pParent)) {
+            pDlg->ShowWindow(SW_SHOW);
+        }
     }
 }

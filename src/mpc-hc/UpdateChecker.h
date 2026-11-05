@@ -21,6 +21,9 @@
 #pragma once
 
 #include <afxwin.h>
+#include <memory>
+
+class UpdateCheckerDlg;
 
 struct Version {
     UINT major;
@@ -54,31 +57,45 @@ enum AutoUpdate_Status {
     AUTOUPDATE_ENABLE
 };
 
+// Posted to the main frame with WM_MPC_UPDATE_CHECK_DONE by the check thread,
+// which does network work only. Settings, profile and UI are handled on the
+// main thread by UpdateChecker::HandleCheckResult.
+struct UpdateCheckResult {
+    Update_Status status = UPDATER_ERROR;
+    Version latestVersion = {};
+    bool versionParsed = false;
+    bool autoCheck = false;
+};
+
 class UpdateChecker
 {
 public:
     static const Version MPC_HC_VERSION;
     static const LPCTSTR MPC_HC_UPDATE_URL;
 
-    UpdateChecker(CString versionFileURL);
+    UpdateChecker(CString versionFileURL, CString agent);
     ~UpdateChecker();
 
     Update_Status IsUpdateAvailable(const Version& currentVersion, bool useBackupURL);
     Update_Status IsUpdateAvailable(const Version& currentVersion);
     Update_Status IsUpdateAvailable();
     const Version& GetLatestVersion() const { return latestVersion; };
-    void IgnoreLatestVersion();
+    bool IsVersionParsed() const { return versionParsed; };
+    static void IgnoreLatestVersion(const Version& version);
 
     static bool IsAutoUpdateEnabled();
     static bool IsTimeToAutoUpdate();
     static void CheckForUpdate(bool autoCheck = false);
+    static void HandleCheckResult(const UpdateCheckResult& result, CWnd* pParent, std::unique_ptr<UpdateCheckerDlg>& pDlg);
 
 private:
     static bool bIsCheckingForUpdate;
     static CCritSec csIsCheckingForUpdate;
 
     CString versionFileURL;
+    CString agent;
     Version latestVersion;
+    bool versionParsed;
 
     static bool ParseVersion(const CString& versionStr, Version& version);
     static int CompareVersion(const Version& v1, const Version& v2);
