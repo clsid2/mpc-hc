@@ -6425,6 +6425,10 @@ static void stbi_write_to_vector(void* context, void* data, int size) {
 
 BYTE* CMainFrame::ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch)
 {
+    if (!pData || size < (long)sizeof(BITMAPINFOHEADER)) {
+        return nullptr;
+    }
+
     PBITMAPINFO bi = reinterpret_cast<PBITMAPINFO>(pData);
     PBITMAPINFOHEADER bih = &bi->bmiHeader;
     int bpp = bih->biBitCount;
@@ -6437,6 +6441,11 @@ BYTE* CMainFrame::ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, in
     int w = bih->biWidth;
     int h = abs(bih->biHeight);
     int srcpitch = w * (bpp >> 3);
+
+    // biSizeImage may be 0 or too small for BI_RGB, so the pixels the copy below reads must fit in what we were given
+    if (w <= 0 || h <= 0 || (LONGLONG)sizeof(BITMAPINFOHEADER) + (LONGLONG)w * (bpp >> 3) * h > size) {
+        return nullptr;
+    }
     int dstpitch = (w * 3 + 3) / 4 * 4; // round w * 3 to next multiple of 4
 
     BYTE* p = DEBUG_NEW BYTE[dstpitch * h];
@@ -6677,6 +6686,8 @@ HRESULT CMainFrame::GetDisplayedImage(std::vector<BYTE>& dib, CString& errmsg) {
 			dib.resize(sizeof(BITMAPINFOHEADER) + bih->biSizeImage);
 			memcpy(dib.data(), dibImage, sizeof(BITMAPINFOHEADER) + bih->biSizeImage);
 			LocalFree(dibImage);
+		} else if (S_OK == hr) {
+			hr = E_FAIL;
 		}
 	}
 	else if (m_pMFVDC) {
@@ -6843,7 +6854,7 @@ void CMainFrame::SaveImage(LPCWSTR fn, bool displayed, bool includeSubtitles) {
         }
     }
 
-    if (hr == S_OK) {
+    if (hr == S_OK && !dib.empty()) {
         SaveDIB(fn, dib.data(), (long)dib.size());
         m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_OSD_IMAGE_SAVED), 3000);
     } else {
