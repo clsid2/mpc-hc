@@ -11744,7 +11744,7 @@ void CMainFrame::OnUpdateAfterplayback(CCmdUI* pCmdUI)
             return;
     }
 
-    if (IsMenu(*pCmdUI->m_pMenu)) {
+    if (pCmdUI->m_pMenu && IsMenu(*pCmdUI->m_pMenu)) {
         MENUITEMINFO mii, cii;
         ZeroMemory(&cii, sizeof(MENUITEMINFO));
         cii.cbSize = sizeof(cii);
