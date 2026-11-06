@@ -394,15 +394,16 @@ void CFGFilterRegistry::ExtractFilterData(BYTE* p, UINT len)
                 p += 4;
 
                 ChkLen(8)
-                if (*(DWORD*)p < (DWORD)(p - base + 8) || *(DWORD*)p >= len
-                        || *(DWORD*)(p + 4) < (DWORD)(p - base + 8) || *(DWORD*)(p + 4) >= len) {
+                if (*(DWORD*)p < (DWORD)(p - base + 8) || (UINT64)*(DWORD*)p + sizeof(GUID) > len
+                        || *(DWORD*)(p + 4) < (DWORD)(p - base + 8) || (UINT64)*(DWORD*)(p + 4) + sizeof(GUID) > len) {
                     p += 8;
                     continue;
                 }
 
                 GUID majortype, subtype;
                 memcpy(&majortype, &base[*(DWORD*)p], sizeof(GUID));
-                p += 4;
+                memcpy(&subtype, &base[*(DWORD*)(p + 4)], sizeof(GUID));
+                p += 8;
                 if (!fOutput) {
                     AddType(majortype, subtype);
                 }
