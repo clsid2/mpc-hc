@@ -956,7 +956,7 @@ bool CWebClientSocket::OnSnapshotJpeg(CStringA& hdr, CStringA& body, CStringA& m
     if (!AfxGetAppSettings().bWebUIEnablePreview) {
         hdr = "HTTP/1.0 403 Forbidden\r\n";
         bRet = true;
-    } else if (m_pMainFrame->GetDIB(&pData, size, true)) {
+    } else if (m_pMainFrame->m_snapshot.GetDIB(&pData, size, true)) {
         PBITMAPINFO bi = reinterpret_cast<PBITMAPINFO>(pData);
         PBITMAPINFOHEADER bih = &bi->bmiHeader;
 
