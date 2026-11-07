@@ -1215,7 +1215,7 @@ void CPlayerSeekBar::OnMButtonDown(UINT nFlags, CPoint point) {
             }
             m_pMainFrame->m_bUseSeekPreview = false;
         } else {
-            m_pMainFrame->m_bUseSeekPreview = (m_pMainFrame->m_pGB_preview != nullptr);
+            m_pMainFrame->m_bUseSeekPreview = (m_pMainFrame->m_previewGraph.m_pGB != nullptr);
         }
     }
 }
