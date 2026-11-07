@@ -18134,9 +18134,17 @@ void CMainFrame::SetupFiltersSubMenu()
             CLSID clsid = GetCLSID(pBF);
             if (clsid == CLSID_AVIDec) {
                 CComPtr<IPin> pPin = GetFirstPin(pBF);
-                AM_MEDIA_TYPE mt;
-                if (pPin && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
-                    DWORD c = ((VIDEOINFOHEADER*)mt.pbFormat)->bmiHeader.biCompression;
+                CMediaType mt;
+                const BITMAPINFOHEADER* bih = nullptr;
+                if (pPin && SUCCEEDED(pPin->ConnectionMediaType(&mt)) && mt.pbFormat) {
+                    if (mt.formattype == FORMAT_VideoInfo && mt.cbFormat >= sizeof(VIDEOINFOHEADER)) {
+                        bih = &((VIDEOINFOHEADER*)mt.pbFormat)->bmiHeader;
+                    } else if (mt.formattype == FORMAT_VideoInfo2 && mt.cbFormat >= sizeof(VIDEOINFOHEADER2)) {
+                        bih = &((VIDEOINFOHEADER2*)mt.pbFormat)->bmiHeader;
+                    }
+                }
+                if (bih) {
+                    DWORD c = bih->biCompression;
                     switch (c) {
                         case BI_RGB:
                             filterName += _T(" (RGB)");
@@ -18161,8 +18169,9 @@ void CMainFrame::SetupFiltersSubMenu()
                 }
             } else if (clsid == CLSID_ACMWrapper) {
                 CComPtr<IPin> pPin = GetFirstPin(pBF);
-                AM_MEDIA_TYPE mt;
-                if (pPin && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
+                CMediaType mt;
+                if (pPin && SUCCEEDED(pPin->ConnectionMediaType(&mt)) && mt.pbFormat
+                        && mt.formattype == FORMAT_WaveFormatEx && mt.cbFormat >= sizeof(WAVEFORMATEX)) {
                     WORD c = ((WAVEFORMATEX*)mt.pbFormat)->wFormatTag;
                     filterName.AppendFormat(_T(" (0x%04x)"), (int)c);
                 }
