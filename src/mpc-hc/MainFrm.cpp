@@ -11344,17 +11344,8 @@ void CMainFrame::OnFavoritesOrganize()
 
 void CMainFrame::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)
 {
-    const CAppSettings& s = AfxGetAppSettings();
-    CAtlList<CString> sl;
-    s.GetFav(FAV_FILE, sl);
-    bool enable = !sl.IsEmpty();
-
-    if (!enable) {
-        s.GetFav(FAV_DVD, sl);
-        enable = !sl.IsEmpty();
-    }
-
-    pCmdUI->Enable(enable);
+    // always available, also without favorites: the dialog can add them
+    pCmdUI->Enable(TRUE);
 }
 
 void CMainFrame::OnRecentFileClear()
@@ -11409,7 +11400,11 @@ void CMainFrame::PlayFavoriteFile(const CString& fav)
         }
     }
 
-    m_wndPlaylistBar.SetCurLabel(ff.Name);
+    // Keep a playlist's restored current item label, but retain favorite names for URLs
+    // such as HLS streams, which are played as a single item rather than expanded.
+    if (!IsPlaylistFile(CString(firstFile).MakeLower()) || PathUtils::IsURL(firstFile)) {
+        m_wndPlaylistBar.SetCurLabel(ff.Name);
+    }
 
     if (IsStateLoaded() && GetPlaybackMode() == PM_FILE && m_lastOMD && args.GetHead() == m_lastOMD->title) {
         m_wndSeekBar.Invalidate();

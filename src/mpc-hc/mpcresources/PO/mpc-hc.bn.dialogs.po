@@ -170,7 +170,7 @@ msgctxt "IDD_OPEN_DLG_CAPTION"
 msgid "Open"
 msgstr "খুলি"
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC2"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
@@ -178,7 +178,7 @@ msgstr ""
 "চলচ্চিত্র বা অডিও ফাইলের ঠিকানা (ইন্টারনেট কিংবা কম্পিউটার থেকে) প্রবেশ করুন"
 " আর এই প্লেয়ারটি তা আপনার জন্য চালনা করবে।"
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC3"
 msgid "Open:"
 msgstr "যা খুলবেন:"
 
@@ -802,6 +802,10 @@ msgstr "বাতিল করি"
 msgctxt "IDD_FAVORGANIZE_CAPTION"
 msgid "Organize Favorites"
 msgstr "পছন্দেরতালিকা বিন্যস্তকরণ"
+
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON5"
+msgid "Browse..."
+msgstr ""
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON1"
 msgid "Rename"

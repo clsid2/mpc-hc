@@ -164,8 +164,8 @@ CAPTION "Open"
 FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
     ICON            "",IDR_MAINFRAME,5,5,21,20
-    LTEXT           "Type the address of a movie or audio file (on the Internet or your computer) and the player will open it for you.",IDC_STATIC,35,5,213,25
-    LTEXT           "Open:",IDC_STATIC,10,32,245,8
+    LTEXT           "Type the address of a movie or audio file (on the Internet or your computer) and the player will open it for you.",IDC_STATIC2,35,5,213,25
+    LTEXT           "Open:",IDC_STATIC3,10,32,245,8
     COMBOBOX        IDC_COMBO1,10,42,188,65,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Browse...",IDC_BUTTON1,205,42,50,14
     LTEXT           "Dub:",IDC_STATIC1,10,58,245,8
@@ -514,10 +514,11 @@ FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TAB1,"SysTabControl32",WS_TABSTOP,5,5,205,160
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_EDITLABELS | LVS_OWNERDRAWFIXED | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,8,21,199,141,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Rename",IDC_BUTTON1,214,17,58,14
-    PUSHBUTTON      "Move Up",IDC_BUTTON3,214,43,58,14
-    PUSHBUTTON      "Move Down",IDC_BUTTON4,214,58,58,14
-    PUSHBUTTON      "Delete",IDC_BUTTON2,214,84,58,14
+    PUSHBUTTON      "Browse...",IDC_BUTTON5,214,17,58,14
+    PUSHBUTTON      "Rename",IDC_BUTTON1,214,32,58,14
+    PUSHBUTTON      "Move Up",IDC_BUTTON3,214,51,58,14
+    PUSHBUTTON      "Move Down",IDC_BUTTON4,214,66,58,14
+    PUSHBUTTON      "Delete",IDC_BUTTON2,214,85,58,14
     DEFPUSHBUTTON   "OK",IDOK,214,112,58,14
     PUSHBUTTON      "Cancel",IDCANCEL,214,130,58,14
     PUSHBUTTON      "Apply",ID_APPLY_NOW,214,148,58,14
@@ -3004,6 +3005,9 @@ END
 STRINGTABLE
 BEGIN
     IDS_FAVORITES_ADD       "&Add to Favorites..."
+    IDS_FAVORITES_ADD_TITLE "Add to Favorites"
+    IDS_FAVORITES_ADD_PROMPT "Enter a file, folder, playlist or URL to add to Favorites without opening it."
+    IDS_FAVORITES_ADD_PATH  "File, folder, playlist or URL:"
     IDS_FAVORITES_ORGANIZE  "Organize Favorites..."
     IDS_PLAYLIST_SHUFFLE    "Sh&uffle"
     IDS_PLAYLIST_SHOWFOLDER "Ope&n file location"
