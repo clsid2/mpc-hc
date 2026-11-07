@@ -472,6 +472,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="PlayerBarDockContext.h" />
     <ClInclude Include="PlayerCaptureBar.h" />
     <ClInclude Include="PlayerCaptureDialog.h" />
+    <ClInclude Include="PlayerGraph.h" />
     <ClInclude Include="PlayerInfoBar.h" />
     <ClInclude Include="PlayerListCtrl.h" />
     <ClInclude Include="PlayerNavigationBar.h" />

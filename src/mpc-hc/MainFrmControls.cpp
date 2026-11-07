@@ -389,10 +389,10 @@ void CMainFrameControls::UpdateToolbarsVisibility()
     bool bRecalcLayout = false;
 
     bool bExclSeekbar = false;
-    if (m_pMainFrame->IsFullScreenMainFrame() && (mls == MLS::LOADED) && m_pMainFrame->m_pMVRS) {
+    if (m_pMainFrame->IsFullScreenMainFrame() && (mls == MLS::LOADED) && m_pMainFrame->m_graph.m_pMVRS) {
         BOOL bOptExcl = FALSE, bOptExclSeekbar = FALSE;
-        VERIFY(m_pMainFrame->m_pMVRS->SettingsGetBoolean(L"enableExclusive", &bOptExcl));
-        VERIFY(m_pMainFrame->m_pMVRS->SettingsGetBoolean(L"enableSeekbar", &bOptExclSeekbar));
+        VERIFY(m_pMainFrame->m_graph.m_pMVRS->SettingsGetBoolean(L"enableExclusive", &bOptExcl));
+        VERIFY(m_pMainFrame->m_graph.m_pMVRS->SettingsGetBoolean(L"enableSeekbar", &bOptExclSeekbar));
         bExclSeekbar = (bOptExcl && bOptExclSeekbar);
     } else if (m_bDelayShowNotLoaded && st.bLastHaveExclusiveSeekbar) {
         bExclSeekbar = true;
@@ -461,8 +461,8 @@ void CMainFrameControls::UpdateToolbarsVisibility()
                     m_pMainFrame->GetClientRect(clientRect);
                     CRect exclSeekbarRect;
                     if (bExclSeekbar) {
-                        if (!m_pMainFrame->m_pMVRI
-                                || FAILED(m_pMainFrame->m_pMVRI->GetRect("seekbarRect", exclSeekbarRect))) {
+                        if (!m_pMainFrame->m_graph.m_pMVRI
+                                || FAILED(m_pMainFrame->m_graph.m_pMVRI->GetRect("seekbarRect", exclSeekbarRect))) {
                             exclSeekbarRect = clientRect;
                             exclSeekbarRect.top = 56;
                         }
