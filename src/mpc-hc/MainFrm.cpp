@@ -9470,8 +9470,8 @@ void CMainFrame::OnPlayChangeRate(UINT nID)
         } else if (nID > ID_PLAY_PLAYBACKRATE_START && nID < ID_PLAY_PLAYBACKRATE_END) {
             if (filePlaybackRates.count(nID) != 0) {
                 SetPlayingRate(filePlaybackRates[nID]);
-            } else if (nID >= ID_PLAY_PLAYBACKRATE_FPS23 || nID <= ID_PLAY_PLAYBACKRATE_FPS59) {
-                if (m_pCAP) {
+            } else if (nID >= ID_PLAY_PLAYBACKRATE_FPS23 && nID <= ID_PLAY_PLAYBACKRATE_FPS59) {
+                if (m_pCAP && m_pCAP->GetFPS() > 0) {
                     float target = 25.0f;
                     if (nID == ID_PLAY_PLAYBACKRATE_FPS24) target = 24.0f;
                     else if (nID == ID_PLAY_PLAYBACKRATE_FPS23) target = 23.976f;
@@ -9559,9 +9559,9 @@ void CMainFrame::OnUpdatePlayChangeRate(CCmdUI* pCmdUI)
                     if (filePlaybackRates[pCmdUI->m_nID] == m_dSpeedRate) {
                         pCmdUI->m_pMenu->CheckMenuRadioItem(ID_PLAY_PLAYBACKRATE_START, ID_PLAY_PLAYBACKRATE_END, pCmdUI->m_nID, MF_BYCOMMAND);
                     }
-                } else if (pCmdUI->m_nID >= ID_PLAY_PLAYBACKRATE_FPS23 || pCmdUI->m_nID <= ID_PLAY_PLAYBACKRATE_FPS59) {
-                    fEnable = true;
-                    if (m_pCAP) {
+                } else if (pCmdUI->m_nID >= ID_PLAY_PLAYBACKRATE_FPS23 && pCmdUI->m_nID <= ID_PLAY_PLAYBACKRATE_FPS59) {
+                    if (m_pCAP && m_pCAP->GetFPS() > 0) {
+                        fEnable = true;
                         float target = 25.0f;
                         if (pCmdUI->m_nID == ID_PLAY_PLAYBACKRATE_FPS24) target = 24.0f;
                         else if (pCmdUI->m_nID == ID_PLAY_PLAYBACKRATE_FPS23) target = 23.976f;
