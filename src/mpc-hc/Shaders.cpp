@@ -247,15 +247,23 @@ void __stdcall FileChangeNotifier::NotifierWinapiCallback(DWORD, DWORD, LPOVERLA
     item->pApcThis = nullptr;
     if (item->pOwner) {
         FileSet changes;
-        DWORD dwOut;
+        DWORD dwOut = 0;
         // get notifications
-        if (GetOverlappedResult(item->hDir, &item->overlapped, &dwOut, FALSE)) {
+        BOOL bResult = GetOverlappedResult(item->hDir, &item->overlapped, &dwOut, FALSE);
+        if (bResult && dwOut) {
             auto buffer = (BYTE*)item->buffer;
+            const size_t headerSize = offsetof(FILE_NOTIFY_INFORMATION, FileName);
             PFILE_NOTIFY_INFORMATION pInfo;
             size_t offset = 0;
             // loop through all notifications
             do {
+                if (offset + headerSize > dwOut) {
+                    break;
+                }
                 pInfo = (PFILE_NOTIFY_INFORMATION)(buffer + offset);
+                if (pInfo->FileNameLength > dwOut - offset - headerSize) {
+                    break;
+                }
                 // filter out notifications by type
                 switch (pInfo->Action) {
                     case FILE_ACTION_MODIFIED:
@@ -272,9 +280,12 @@ void __stdcall FileChangeNotifier::NotifierWinapiCallback(DWORD, DWORD, LPOVERLA
                 }
                 offset += pInfo->NextEntryOffset;
             } while (pInfo->NextEntryOffset);
-        } else if (GetLastError() == ERROR_MORE_DATA) {
-            // notification buffer was overflown, we assume all files as modified
-            changes.insert(item->filter.cbegin(), item->filter.cend());
+        } else if (bResult || GetLastError() == ERROR_MORE_DATA) {
+            // notification buffer was overflown (a completion with no data means the changes were discarded),
+            // we assume all files as modified
+            for (const auto& file : item->filter) {
+                changes.insert(PathUtils::CombinePaths(item->path, file));
+            }
         } else {
             return;
         }
