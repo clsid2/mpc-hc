@@ -189,7 +189,7 @@ struct FileFavorite {
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-class CMainFrame : public CFrameWnd, public CDropClient, private CPlayerGraph
+class CMainFrame : public CFrameWnd, public CDropClient
 {
 public:
 
@@ -251,37 +251,18 @@ private:
     friend class CPPageFileInfoSheet;
     friend class CPPageLogo;
     friend class CMouse;
-    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_pGB_preview
+    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_previewGraph
     friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
     friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
     friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
     friend class SubtitlesProvider;
 
+    CPlayerGraph m_graph;
     // SmarkSeek
-    CComPtr<IGraphBuilder2>         m_pGB_preview;
-    CComQIPtr<IMediaControl>        m_pMC_preview;
-    //CComQIPtr<IMediaEventEx>        m_pME_preview;
-    CComQIPtr<IMediaSeeking>        m_pMS_preview;
-    CComQIPtr<IVideoWindow>         m_pVW_preview;
-    CComQIPtr<IBasicVideo>          m_pBV_preview;
-    //CComQIPtr<IVideoFrameStep>      m_pFS_preview;
-    CComQIPtr<IDvdControl2>         m_pDVDC_preview;
-    CComQIPtr<IDvdInfo2>            m_pDVDI_preview; // VtX: usually not necessary but may sometimes be necessary.
-    CComPtr<IMFVideoDisplayControl> m_pMFVDC_preview;
-    CComPtr<IVMRWindowlessControl9> m_pVMR9C_preview;
-    CComPtr<IMFVideoProcessor>      m_pMFVP_preview;
-    CComPtr<ISubPicAllocatorPresenter2> m_pCAP2_preview;
+    CPlayerGraph m_previewGraph;
     int defaultVideoAngle;
-    //
 
-    CComPtr<ICaptureGraphBuilder2> m_pCGB;
     CStringW m_VidDispName, m_AudDispName;
-    CComPtr<IBaseFilter> m_pVidCap, m_pAudCap;
-    CComPtr<IAMVideoCompression> m_pAMVCCap, m_pAMVCPrev;
-    CComPtr<IAMStreamConfig> m_pAMVSCCap, m_pAMVSCPrev, m_pAMASC;
-    CComPtr<IAMCrossbar> m_pAMXBar;
-    CComPtr<IAMTVTuner> m_pAMTuner;
-    CComPtr<IAMDroppedFrames> m_pAMDF;
 
     CComPtr<IUnknown> m_pProv;
 
@@ -625,7 +606,7 @@ public:
     }
 
     CPlayerGraph& Graph() {
-        return *this;
+        return m_graph;
     }
 
 public:

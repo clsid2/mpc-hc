@@ -39,9 +39,9 @@ interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
 DECLARE_INTERFACE_IID(IAMLine21Decoder_2, "6E8D4A21-310C-11d0-B79A-00AA003767A7");
 
-// The interfaces of the main playback graph, its video renderer and DVD
-// navigator. CMainFrame inherits this privately, so the members keep their
-// names there; feature classes reach them through CMainFrame::Graph().
+// The interfaces of a playback graph: the graph itself, its video renderer,
+// the DVD navigator and the capture devices. CMainFrame holds one for playback
+// and one for the seekbar preview.
 struct CPlayerGraph {
     CComPtr<IGraphBuilder2> m_pGB;
     CComQIPtr<IMediaControl> m_pMC;
@@ -87,4 +87,12 @@ struct CPlayerGraph {
     CComQIPtr<IDvdControl2> m_pDVDC;
     CComQIPtr<IDvdInfo2> m_pDVDI;
     CComPtr<IAMLine21Decoder_2> m_pLN21;
+
+    CComPtr<ICaptureGraphBuilder2> m_pCGB;
+    CComPtr<IBaseFilter> m_pVidCap, m_pAudCap;
+    CComPtr<IAMVideoCompression> m_pAMVCCap, m_pAMVCPrev;
+    CComPtr<IAMStreamConfig> m_pAMVSCCap, m_pAMVSCPrev, m_pAMASC;
+    CComPtr<IAMCrossbar> m_pAMXBar;
+    CComPtr<IAMTVTuner> m_pAMTuner;
+    CComPtr<IAMDroppedFrames> m_pAMDF;
 };
