@@ -581,6 +581,10 @@ private:
     // since an open from in there is fine, but an exit would delete the frame under
     // ShowOptions, so OnClose defers that one and cancels the sheet
     CWnd* m_pOptionsSheet = nullptr;
+    // set from the INI warning through the last sheet ShowOptions loops over. Both
+    // pump messages, and a hotkey, remote or modeless dialog reaching ShowOptions
+    // from there stacked a second sheet over the first, which crashed in comctl32
+    bool m_bInShowOptions = false;
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
 
     // Work the web server's thread needs done here, because it reads lists this
