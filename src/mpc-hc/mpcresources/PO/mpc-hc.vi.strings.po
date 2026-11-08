@@ -760,6 +760,10 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr "Trình Kết Xuất Video MPC"
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr "Trình Kết Xuất Trộn Video 7"
@@ -978,6 +982,10 @@ msgstr ""
 "Hỗ trợ tất cả các chức năng của trình phát như phụ đề, pixelshader và xoay. \n"
 "Có thể sử dụng D3D9 hoặc D3D11."
 
+msgctxt "IDC_DSFRANKY"
+msgid "Advanced video renderer that uses libplacebo."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
 msgstr "Đồng bộ kết xuất"
@@ -1041,6 +1049,10 @@ msgstr "Hỗ trợ đầy đủ các chức năng của trình phát, ngoại tr
 msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_LIMITED"
 msgid "Does not support all player functionality."
 msgstr "Không hỗ trợ đầy đủ chức năng của trình phát."
+
+msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_FRANKY"
+msgid "Supports all player functionality, except pixelshaders."
+msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"
 msgid "Null (anything)"

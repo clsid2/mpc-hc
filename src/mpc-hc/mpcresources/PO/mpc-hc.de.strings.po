@@ -767,6 +767,10 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr "MPC Video Renderer"
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr "Video Mixing Renderer 7"
@@ -989,6 +993,10 @@ msgstr ""
 "Untertitel, Pixel-Shader und Drehung. Kann entweder Direct3D 9 oder Direct3D"
 " 11 nutzen."
 
+msgctxt "IDC_DSFRANKY"
+msgid "Advanced video renderer that uses libplacebo."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
 msgstr "Sync-Renderer (EVR Custom Presenter)"
@@ -1052,6 +1060,10 @@ msgstr "Unterstützt alle Player-Funktionen (außer HDR-Video)."
 msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_LIMITED"
 msgid "Does not support all player functionality."
 msgstr "Unterstützt nicht alle Player-Funktionen."
+
+msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_FRANKY"
+msgid "Supports all player functionality, except pixelshaders."
+msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"
 msgid "Null (anything)"

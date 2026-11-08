@@ -752,6 +752,10 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr "MPC 영상 렌더러"
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr "영상 혼합 렌더러 7"
@@ -959,6 +963,10 @@ msgstr ""
 "자막, 픽셀 셰이더, 회전 등 재생기의 모든 기능을 지원합니다.\n"
 "Direct3D 9 또는 Direct3D 11을 사용할 수 있습니다."
 
+msgctxt "IDC_DSFRANKY"
+msgid "Advanced video renderer that uses libplacebo."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
 msgstr "동기화 렌더러"
@@ -1022,6 +1030,10 @@ msgstr "HDR 영상을 제외한 재생기의 모든 기능을 지원합니다."
 msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_LIMITED"
 msgid "Does not support all player functionality."
 msgstr "재생기의 모든 기능을 지원하지 않습니다."
+
+msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_FRANKY"
+msgid "Supports all player functionality, except pixelshaders."
+msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"
 msgid "Null (anything)"

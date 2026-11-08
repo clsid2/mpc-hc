@@ -762,6 +762,10 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr "MPC Videó renderelő"
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr "Videó Mixing renderelő 7"
@@ -983,6 +987,10 @@ msgstr ""
 "Támogatja az összes lejátszó funkciót, például a feliratokat, a pixel-shadereket és a forgatást..\n"
 "Használhatja akár a D3D9-et, akár a D3D11-et."
 
+msgctxt "IDC_DSFRANKY"
+msgid "Advanced video renderer that uses libplacebo."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
 msgstr "Renderelő szinkronizálása"
@@ -1046,6 +1054,10 @@ msgstr "Támogatja az összes lejátszási funkciót, kivéve a HDR videókat."
 msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_LIMITED"
 msgid "Does not support all player functionality."
 msgstr "Nem támogatja a lejátszó összes funkcióját."
+
+msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_FRANKY"
+msgid "Supports all player functionality, except pixelshaders."
+msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"
 msgid "Null (anything)"
