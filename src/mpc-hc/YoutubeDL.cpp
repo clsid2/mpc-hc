@@ -821,7 +821,6 @@ bool CYoutubeDLInstance::GetHttpStreams(CAtlList<YDLStreamURL>& streams, YDLPlay
     CString url;
     CString extractor;
     YDLStreamDetails ydl_sd;
-    YDLStreamURL stream;
 
     if (pJSON->d.IsObject() && pJSON->d.HasMember(_T("extractor")) && pJSON->d[_T("extractor")].IsString()) {
         extractor = pJSON->d[_T("extractor")].GetString();
@@ -832,6 +831,8 @@ bool CYoutubeDLInstance::GetHttpStreams(CAtlList<YDLStreamURL>& streams, YDLPlay
     auto& s = AfxGetAppSettings();
 
     if (!bIsPlaylist) {
+        YDLStreamURL stream;
+
         if (pJSON->d.HasMember(_T("title")) && !pJSON->d[_T("title")].IsNull()) {
             stream.title = pJSON->d[_T("title")].GetString();
         }
@@ -904,6 +905,7 @@ bool CYoutubeDLInstance::GetHttpStreams(CAtlList<YDLStreamURL>& streams, YDLPlay
             for (rapidjson::SizeType i = 0; i < entries.Size(); i++) {
                 YDL_LOG(_T("Playlist entry %d"), i);
                 const Value& entry = entries[i];
+                YDLStreamURL stream;
 
                 if (!entry.HasMember(_T("formats")) || entry[_T("formats")].IsNull()) {
                     if (entry.HasMember(_T("url")) && !entry[_T("url")].IsNull()) {
