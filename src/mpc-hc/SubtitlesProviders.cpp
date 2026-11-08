@@ -246,7 +246,7 @@ HRESULT SubtitlesInfo::GetFileInfo(const std::string& sFileName /*= std::string(
     */
     if (sFileName.empty()) {
         CMainFrame& MainFrame = *(CMainFrame*)(AfxGetMyApp()->GetMainWnd());
-        if (CComQIPtr<IBaseFilter> pBF = MainFrame.m_pFSF) {
+        if (CComQIPtr<IBaseFilter> pBF = MainFrame.m_graph.m_pFSF) {
             BeginEnumPins(pBF, pEP, pPin) {
                 if (pAsyncReader = pPin) {
                     break;
@@ -255,9 +255,9 @@ HRESULT SubtitlesInfo::GetFileInfo(const std::string& sFileName /*= std::string(
             EndEnumPins;
         }
 
-        if (pAsyncReader && MainFrame.m_pFSF) {
+        if (pAsyncReader && MainFrame.m_graph.m_pFSF) {
             LPOLESTR name;
-            if (FAILED(MainFrame.m_pFSF->GetCurFile(&name, nullptr))) {
+            if (FAILED(MainFrame.m_graph.m_pFSF->GetCurFile(&name, nullptr))) {
                 return E_FAIL;
             }
             filePathW = name;

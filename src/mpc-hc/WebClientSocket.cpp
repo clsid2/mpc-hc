@@ -1189,14 +1189,14 @@ void CWebClientSocket::GetNavStreamTracksJSON(CMainFrame* pMainFrame, DWORD dwSe
         }
     };
 
-    if (pMainFrame->m_pSplitterSS) {
-        addStreamSelectFilter(pMainFrame->m_pSplitterSS);
+    if (pMainFrame->m_graph.m_pSplitterSS) {
+        addStreamSelectFilter(pMainFrame->m_graph.m_pSplitterSS);
     }
-    if (!count && pMainFrame->m_pOtherSS[0]) {
-        addStreamSelectFilter(pMainFrame->m_pOtherSS[0]);
+    if (!count && pMainFrame->m_graph.m_pOtherSS[0]) {
+        addStreamSelectFilter(pMainFrame->m_graph.m_pOtherSS[0]);
     }
-    if (!count && pMainFrame->m_pOtherSS[1]) {
-        addStreamSelectFilter(pMainFrame->m_pOtherSS[1]);
+    if (!count && pMainFrame->m_graph.m_pOtherSS[1]) {
+        addStreamSelectFilter(pMainFrame->m_graph.m_pOtherSS[1]);
     }
 }
 
@@ -1213,12 +1213,12 @@ CStringA CWebClientSocket::GetAudioTracksJSON(CMainFrame* pMainFrame)
 
         if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
-            if (pMainFrame->m_pDVDI
-                    && SUCCEEDED(pMainFrame->m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
+            if (pMainFrame->m_graph.m_pDVDI
+                    && SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
                     CString name;
-                    if (SUCCEEDED(pMainFrame->m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
+                    if (SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
                         GetLocaleString(lcid, LOCALE_SENGLANGUAGE, name);
                     } else {
                         name.Format(IDS_AG_UNKNOWN, int(i + 1));
@@ -1232,12 +1232,12 @@ CStringA CWebClientSocket::GetAudioTracksJSON(CMainFrame* pMainFrame)
                     AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + i, name);
                 }
             }
-        } else if (pMainFrame->m_pAudioSwitcherSS
-                   && SUCCEEDED(pMainFrame->m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
+        } else if (pMainFrame->m_graph.m_pAudioSwitcherSS
+                   && SUCCEEDED(pMainFrame->m_graph.m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
             for (long i = 0; i < (long)cStreams; i++) {
                 DWORD dwFlags;
                 CComHeapPtr<WCHAR> pszName;
-                if (FAILED(pMainFrame->m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
+                if (FAILED(pMainFrame->m_graph.m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
                     break;
                 }
 
@@ -1274,12 +1274,12 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
         if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
             BOOL bIsDisabled;
-            if (pMainFrame->m_pDVDI
-                    && SUCCEEDED(pMainFrame->m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
+            if (pMainFrame->m_graph.m_pDVDI
+                    && SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
                     && ulStreamsAvailable > 0) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
-                    if (FAILED(pMainFrame->m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
+                    if (FAILED(pMainFrame->m_graph.m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
                         continue;
                     }
 
@@ -1607,7 +1607,7 @@ CString CWebClientSocket::GetSize(CMainFrame* pMainFrame)
     CString sizeString;
     LONGLONG size = 0;
 
-    if (CComQIPtr<IBaseFilter> pBF = pMainFrame->m_pFSF) {
+    if (CComQIPtr<IBaseFilter> pBF = pMainFrame->m_graph.m_pFSF) {
         BeginEnumPins(pBF, pEP, pPin) {
             if (CComQIPtr<IAsyncReader> pAR = pPin) {
                 LONGLONG total, available;

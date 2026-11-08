@@ -270,7 +270,7 @@ void CMouse::EventCallback(MpcEvent ev)
 // madVR compatibility layer for exclusive mode seekbar
 bool CMouse::UsingMVR() const
 {
-    return !!m_pMainFrame->m_pMVRSR;
+    return !!m_pMainFrame->m_graph.m_pMVRSR;
 }
 void CMouse::MVRMove(UINT nFlags, const CPoint& point)
 {
@@ -278,7 +278,7 @@ void CMouse::MVRMove(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        m_pMainFrame->m_pMVRSR->ParentWindowProc(GetWnd(), WM_MOUSEMOVE, &wp, &lp, &lr);
+        m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_MOUSEMOVE, &wp, &lp, &lr);
     }
 }
 bool CMouse::MVRDown(UINT nFlags, const CPoint& point)
@@ -288,7 +288,7 @@ bool CMouse::MVRDown(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        ret = !!m_pMainFrame->m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONDOWN, &wp, &lp, &lr);
+        ret = !!m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONDOWN, &wp, &lp, &lr);
     }
     return ret;
 }
@@ -299,7 +299,7 @@ bool CMouse::MVRUp(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        ret = !!m_pMainFrame->m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONUP, &wp, &lp, &lr);
+        ret = !!m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONUP, &wp, &lp, &lr);
     }
     return ret;
 }
@@ -324,11 +324,11 @@ void CMouse::InternalOnLButtonDown(UINT nFlags, const CPoint& point)
     if (m_pMainFrame->GetLoadState() == MLS::LOADED && m_pMainFrame->GetPlaybackMode() == PM_DVD && (m_pMainFrame->IsD3DFullScreenMode() ^ m_bD3DFS) == 0) {
         ULONG ulButtonTotal = 0;
         ULONG ulButtonCurrent = 0;     
-        if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
+        if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
             ULONG ulButtonMousePos = 0;
             CPoint vp = GetVideoPoint(point);
-            if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
-                if (SUCCEEDED(m_pMainFrame->m_pDVDC->SelectAndActivateButton(ulButtonMousePos))) {
+            if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
+                if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDC->SelectAndActivateButton(ulButtonMousePos))) {
                     return;
                 }
             }
@@ -545,14 +545,14 @@ bool CMouse::SelectCursor(const CPoint& screenPoint, const CPoint& clientPoint, 
     if (m_pMainFrame->GetLoadState() == MLS::LOADED && m_pMainFrame->GetPlaybackMode() == PM_DVD && (m_pMainFrame->IsD3DFullScreenMode() ^ m_bD3DFS) == 0) {
         ULONG ulButtonTotal = 0;
         ULONG ulButtonCurrent = 0;     
-        if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
+        if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
             ULONG ulButtonMousePos = 0;
             CPoint vp = GetVideoPoint(clientPoint);
-            if (SUCCEEDED(m_pMainFrame->m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
+            if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
                 StopMouseHider();
                 m_cursor = Cursor::HAND;
                 if (ulButtonMousePos != ulButtonCurrent) {
-                    m_pMainFrame->m_pDVDC->SelectButton(ulButtonMousePos);
+                    m_pMainFrame->m_graph.m_pDVDC->SelectButton(ulButtonMousePos);
                 }
                 return true;
             }

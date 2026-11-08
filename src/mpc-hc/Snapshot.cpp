@@ -64,7 +64,7 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
     *ppData = nullptr;
     size = 0;
 
-    if (fs == State_Running && !m_frame.m_pCAP) {
+    if (fs == State_Running && !m_frame.Graph().m_pCAP) {
         m_frame.MediaControlPause(true); // wait for completion
     }
 
@@ -72,8 +72,8 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
     CString errmsg;
 
     do {
-        if (m_frame.m_pCAP) {
-            hr = m_frame.m_pCAP->GetDIB(nullptr, (DWORD*)&size);
+        if (m_frame.Graph().m_pCAP) {
+            hr = m_frame.Graph().m_pCAP->GetDIB(nullptr, (DWORD*)&size);
             if (FAILED(hr)) {
                 errmsg.Format(IDS_GETDIB_FAILED, hr);
                 break;
@@ -84,18 +84,18 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
                 return false;
             }
 
-            hr = m_frame.m_pCAP->GetDIB(*ppData, (DWORD*)&size);
+            hr = m_frame.Graph().m_pCAP->GetDIB(*ppData, (DWORD*)&size);
             if (FAILED(hr)) {
                 errmsg.Format(IDS_GETDIB_FAILED, hr);
                 break;
             }
-        } else if (m_frame.m_pMFVDC) {
+        } else if (m_frame.Graph().m_pMFVDC) {
             // Capture with EVR
             BITMAPINFOHEADER bih = {sizeof(BITMAPINFOHEADER)};
             BYTE* pDib;
             DWORD dwSize;
             REFERENCE_TIME rtImage = 0;
-            hr = m_frame.m_pMFVDC->GetCurrentImage(&bih, &pDib, &dwSize, &rtImage);
+            hr = m_frame.Graph().m_pMFVDC->GetCurrentImage(&bih, &pDib, &dwSize, &rtImage);
             if (FAILED(hr) || dwSize == 0) {
                 errmsg.Format(IDS_GETCURRENTIMAGE_FAILED, hr);
                 break;
@@ -110,7 +110,7 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
             memcpy_s(*ppData + sizeof(BITMAPINFOHEADER), size - sizeof(BITMAPINFOHEADER), pDib, dwSize);
             CoTaskMemFree(pDib);
         } else {
-            hr = m_frame.m_pBV->GetCurrentImage(&size, nullptr);
+            hr = m_frame.Graph().m_pBV->GetCurrentImage(&size, nullptr);
             if (FAILED(hr) || size == 0) {
                 errmsg.Format(IDS_GETCURRENTIMAGE_FAILED, hr);
                 break;
@@ -121,7 +121,7 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
                 return false;
             }
 
-            hr = m_frame.m_pBV->GetCurrentImage(&size, (long*)*ppData);
+            hr = m_frame.Graph().m_pBV->GetCurrentImage(&size, (long*)*ppData);
             if (FAILED(hr)) {
                 errmsg.Format(IDS_GETCURRENTIMAGE_FAILED, hr);
                 break;
@@ -411,9 +411,9 @@ HRESULT CSnapshot::GetDisplayedImage(std::vector<BYTE>& dib, CString& errmsg) {
     errmsg.Empty();
     HRESULT hr;
 
-	if (m_frame.m_pCAP) {
+	if (m_frame.Graph().m_pCAP) {
 		LPVOID dibImage = nullptr;
-		hr = m_frame.m_pCAP->GetDisplayedImage(&dibImage);
+		hr = m_frame.Graph().m_pCAP->GetDisplayedImage(&dibImage);
 
 		if (S_OK == hr && dibImage) {
 			const BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)dibImage;
@@ -424,10 +424,10 @@ HRESULT CSnapshot::GetDisplayedImage(std::vector<BYTE>& dib, CString& errmsg) {
 			hr = E_FAIL;
 		}
 	}
-	else if (m_frame.m_pMFVDC) {
-        hr = GetVideoDisplayControlFrame(m_frame.m_pMFVDC, dib);
-    } else if (m_frame.m_pMVRFG) {
-        hr = GetMadVRFrameGrabberFrame(m_frame.m_pMVRFG, dib, true);
+	else if (m_frame.Graph().m_pMFVDC) {
+        hr = GetVideoDisplayControlFrame(m_frame.Graph().m_pMFVDC, dib);
+    } else if (m_frame.Graph().m_pMVRFG) {
+        hr = GetMadVRFrameGrabberFrame(m_frame.Graph().m_pMVRFG, dib, true);
     } else {
         hr = E_NOINTERFACE;
     }
@@ -448,26 +448,26 @@ HRESULT CSnapshot::GetCurrentFrame(std::vector<BYTE>& dib, CString& errmsg) {
         return E_ABORT;
     }
 
-    if (fs == State_Running && !m_frame.m_pCAP) {
+    if (fs == State_Running && !m_frame.Graph().m_pCAP) {
         m_frame.MediaControlPause(true); //wait for completion
     }
 
-    if (m_frame.m_pCAP) {
+    if (m_frame.Graph().m_pCAP) {
         DWORD size;
-        hr = m_frame.m_pCAP->GetDIB(nullptr, &size);
+        hr = m_frame.Graph().m_pCAP->GetDIB(nullptr, &size);
 
         if (S_OK == hr) {
             dib.resize(size);
-            hr = m_frame.m_pCAP->GetDIB(dib.data(), &size);
+            hr = m_frame.Graph().m_pCAP->GetDIB(dib.data(), &size);
         }
 
         if (FAILED(hr)) {
             errmsg.Format(L"ISubPicAllocatorPresenter3::GetDIB() failed, 0x%08x", hr);
         }
-    } else if (m_frame.m_pBV) {
-        hr = GetBasicVideoFrame(m_frame.m_pBV, dib);
+    } else if (m_frame.Graph().m_pBV) {
+        hr = GetBasicVideoFrame(m_frame.Graph().m_pBV, dib);
 
-        if (hr == E_NOINTERFACE && m_frame.m_pMFVDC) {
+        if (hr == E_NOINTERFACE && m_frame.Graph().m_pMFVDC) {
             // hmm, EVR is not able to give the original frame, giving the displayed image
             hr = GetDisplayedImage(dib, errmsg);
         } else if (FAILED(hr)) {
@@ -489,8 +489,8 @@ HRESULT CSnapshot::GetOriginalFrame(std::vector<BYTE>& dib, CString& errmsg) {
     HRESULT hr = S_OK;
     errmsg.Empty();
 
-    if (m_frame.m_pMVRFG) {
-        hr = GetMadVRFrameGrabberFrame(m_frame.m_pMVRFG, dib, false);
+    if (m_frame.Graph().m_pMVRFG) {
+        hr = GetMadVRFrameGrabberFrame(m_frame.Graph().m_pMVRFG, dib, false);
         if (FAILED(hr)) {
             errmsg.Format(L"IMadVRFrameGrabber::GrabFrame() failed, 0x%08x", hr);
         }
@@ -502,7 +502,7 @@ HRESULT CSnapshot::GetOriginalFrame(std::vector<BYTE>& dib, CString& errmsg) {
 }
 
 HRESULT CSnapshot::RenderCurrentSubtitles(BYTE* pData) {
-    ASSERT(m_frame.m_pCAP && AfxGetAppSettings().bSnapShotSubtitles && !m_frame.m_pMVRFG && AfxGetAppSettings().fEnableSubtitles && AfxGetAppSettings().IsISRAutoLoadEnabled());
+    ASSERT(m_frame.Graph().m_pCAP && AfxGetAppSettings().bSnapShotSubtitles && !m_frame.Graph().m_pMVRFG && AfxGetAppSettings().fEnableSubtitles && AfxGetAppSettings().IsISRAutoLoadEnabled());
     CheckPointer(pData, E_FAIL);
     HRESULT hr = S_FALSE;
 
@@ -513,9 +513,9 @@ HRESULT CSnapshot::RenderCurrentSubtitles(BYTE* pData) {
         const bool topdown = bih->biHeight < 0;
 
         REFERENCE_TIME rtNow = 0;
-        m_frame.m_pMS->GetCurrentPosition(&rtNow);
+        m_frame.Graph().m_pMS->GetCurrentPosition(&rtNow);
 
-        int delay = m_frame.m_pCAP->GetSubtitleDelay();
+        int delay = m_frame.Graph().m_pCAP->GetSubtitleDelay();
         if (delay != 0) {
             if (delay > 0 && delay * 10000LL > rtNow) {
                 return S_FALSE;
@@ -553,7 +553,7 @@ HRESULT CSnapshot::RenderCurrentSubtitles(BYTE* pData) {
         memSubPic.ClearDirtyRect();
 
         RECT bbox = {};
-        hr = pSubPicProvider->Render(spdRender, rtNow, m_frame.m_pCAP->GetFPS(), bbox);
+        hr = pSubPicProvider->Render(spdRender, rtNow, m_frame.Graph().m_pCAP->GetFPS(), bbox);
         if (needsResize) {
             memSubPic.UnlockARGB();
         }
@@ -583,7 +583,7 @@ void CSnapshot::SaveImage(LPCWSTR fn, bool displayed, bool includeSubtitles) {
         hr = GetDisplayedImage(dib, errmsg);
     } else {
         hr = GetCurrentFrame(dib, errmsg);
-        if (includeSubtitles && m_frame.m_pCAP && hr == S_OK) {
+        if (includeSubtitles && m_frame.Graph().m_pCAP && hr == S_OK) {
             RenderCurrentSubtitles(dib.data());
         }
     }
@@ -598,7 +598,7 @@ void CSnapshot::SaveImage(LPCWSTR fn, bool displayed, bool includeSubtitles) {
 
 bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 {
-    if (!m_frame.m_pMC || !m_frame.m_pMS || m_frame.GetPlaybackMode() != PM_FILE /*&& m_frame.GetPlaybackMode() != PM_DVD*/) {
+    if (!m_frame.Graph().m_pMC || !m_frame.Graph().m_pMS || m_frame.GetPlaybackMode() != PM_FILE /*&& m_frame.GetPlaybackMode() != PM_DVD*/) {
         return false;
     }
 
@@ -618,15 +618,15 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
     CSize szVideoARCorrected, szVideo, szAR;
 
-    if (m_frame.m_pCAP) {
-        szVideo = m_frame.m_pCAP->GetVideoSize(false);
-        szAR = m_frame.m_pCAP->GetVideoSize(true);
-    } else if (m_frame.m_pMFVDC) {
-        VERIFY(SUCCEEDED(m_frame.m_pMFVDC->GetNativeVideoSize(&szVideo, &szAR)));
+    if (m_frame.Graph().m_pCAP) {
+        szVideo = m_frame.Graph().m_pCAP->GetVideoSize(false);
+        szAR = m_frame.Graph().m_pCAP->GetVideoSize(true);
+    } else if (m_frame.Graph().m_pMFVDC) {
+        VERIFY(SUCCEEDED(m_frame.Graph().m_pMFVDC->GetNativeVideoSize(&szVideo, &szAR)));
     } else {
-        VERIFY(SUCCEEDED(m_frame.m_pBV->GetVideoSize(&szVideo.cx, &szVideo.cy)));
+        VERIFY(SUCCEEDED(m_frame.Graph().m_pBV->GetVideoSize(&szVideo.cx, &szVideo.cy)));
 
-        CComQIPtr<IBasicVideo2> pBV2 = m_frame.m_pBV;
+        CComQIPtr<IBasicVideo2> pBV2 = m_frame.Graph().m_pBV;
         long lARx = 0, lARy = 0;
         if (pBV2 && SUCCEEDED(pBV2->GetPreferredAspectRatio(&lARx, &lARy)) && lARx > 0 && lARy > 0) {
             szAR.SetSize(lARx, lARy);
@@ -640,7 +640,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
     // with the overlay mixer IBasicVideo2 won't tell the new AR when changed dynamically
     DVD_VideoAttributes VATR;
-    if (m_frame.GetPlaybackMode() == PM_DVD && SUCCEEDED(m_frame.m_pDVDI->GetCurrentVideoAttributes(&VATR))) {
+    if (m_frame.GetPlaybackMode() == PM_DVD && SUCCEEDED(m_frame.Graph().m_pDVDI->GetCurrentVideoAttributes(&VATR))) {
         szAR.SetSize(VATR.ulAspectX, VATR.ulAspectY);
     }
 
@@ -727,8 +727,8 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
     }
 
     m_frame.m_nVolumeBeforeFrameStepping = m_frame.m_wndToolBar.Volume;
-    if (m_frame.m_pBA) {
-        m_frame.m_pBA->put_Volume(-10000);
+    if (m_frame.Graph().m_pBA) {
+        m_frame.Graph().m_pBA->put_Volume(-10000);
     }
 
     // Draw the thumbnails
@@ -746,10 +746,10 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         m_frame.DoSeekTo(rt, false);
         m_frame.UpdateWindow();
 
-        HRESULT hr = m_frame.m_pFS ? m_frame.m_pFS->Step(1, nullptr) : E_FAIL;
+        HRESULT hr = m_frame.Graph().m_pFS ? m_frame.Graph().m_pFS->Step(1, nullptr) : E_FAIL;
         if (FAILED(hr)) {
-            if (m_frame.m_pBA) {
-                m_frame.m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+            if (m_frame.Graph().m_pBA) {
+                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
             }
             AfxMessageBox(IDS_FRAME_STEP_ERROR_RENDERER, MB_ICONEXCLAMATION | MB_OK, 0);
             return false;
@@ -757,14 +757,14 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
         bool abortloop = false;
         HANDLE hGraphEvent = nullptr;
-        m_frame.m_pME->GetEventHandle((OAEVENT*)&hGraphEvent);
+        m_frame.Graph().m_pME->GetEventHandle((OAEVENT*)&hGraphEvent);
         while (hGraphEvent) {
             DWORD res = WaitForSingleObject(hGraphEvent, 5000);
             if (res == WAIT_OBJECT_0) {
                 LONG evCode = 0;
                 LONG_PTR evParam1, evParam2;
-                while (m_frame.m_pME && SUCCEEDED(m_frame.m_pME->GetEvent(&evCode, &evParam1, &evParam2, 0))) {
-                    m_frame.m_pME->FreeEventParams(evCode, evParam1, evParam2);
+                while (m_frame.Graph().m_pME && SUCCEEDED(m_frame.Graph().m_pME->GetEvent(&evCode, &evParam1, &evParam2, 0))) {
+                    m_frame.Graph().m_pME->FreeEventParams(evCode, evParam1, evParam2);
                     if (EC_STEP_COMPLETE == evCode) {
                         hGraphEvent = nullptr;
                     }
@@ -774,7 +774,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
                 if (res == WAIT_TIMEOUT) {
                     // Likely a seek failure has occurred. For example due to an incomplete file.
                     REFERENCE_TIME rtCur = 0;
-                    m_frame.m_pMS->GetCurrentPosition(&rtCur);
+                    m_frame.Graph().m_pMS->GetCurrentPosition(&rtCur);
                     if (rtCur >= rtDur) {
                         abortloop = true;
                     }
@@ -819,8 +819,8 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         BYTE* pData = nullptr;
         long size = 0;
         if (!GetDIB(&pData, size)) {
-            if (m_frame.m_pBA) {
-                m_frame.m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+            if (m_frame.Graph().m_pBA) {
+                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
             }
             return false;
         }
@@ -832,8 +832,8 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
             strTemp.Format(IDS_THUMBNAILS_INVALID_FORMAT, bi->bmiHeader.biBitCount);
             AfxMessageBox(strTemp);
             delete [] pData;
-            if (m_frame.m_pBA) {
-                m_frame.m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+            if (m_frame.Graph().m_pBA) {
+                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
             }
             return false;
         }
@@ -935,8 +935,8 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
     SaveDIB(fn, (BYTE*)dib, dibsize);
 
-    if (m_frame.m_pBA) {
-        m_frame.m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+    if (m_frame.Graph().m_pBA) {
+        m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
     }
 
     if (bWasStopped) {
@@ -1077,7 +1077,7 @@ void CSnapshot::OnFileSaveImage()
         psrc = CLongPath(MakeSnapshotFileName(FALSE));        
     }
 
-    bool subtitleOptionSupported = !m_frame.m_pMVRFG && s.fEnableSubtitles && s.IsISRAutoLoadEnabled();
+    bool subtitleOptionSupported = !m_frame.Graph().m_pMVRFG && s.fEnableSubtitles && s.IsISRAutoLoadEnabled();
 
     CSaveImageDialog fd(s.nJpegQuality, s.strSnapshotExt, (LPCTSTR)psrc,
                         _T("BMP - Windows Bitmap (*.bmp)|*.bmp|JPG - JPEG Image (*.jpg)|*.jpg|PNG - Portable Network Graphics (*.png)|*.png||"), m_frame.GetModalParent(), subtitleOptionSupported);
@@ -1141,7 +1141,7 @@ void CSnapshot::OnFileSaveImageAuto()
         return;
     }
 
-    bool includeSubtitles = s.bSnapShotSubtitles && !m_frame.m_pMVRFG && s.fEnableSubtitles && s.IsISRAutoLoadEnabled();
+    bool includeSubtitles = s.bSnapShotSubtitles && !m_frame.Graph().m_pMVRFG && s.fEnableSubtitles && s.IsISRAutoLoadEnabled();
 
     CString fn;
     fn.Format(_T("%s\\%s"), s.strSnapshotPath.GetString(), MakeSnapshotFileName(FALSE).GetString());

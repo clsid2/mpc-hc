@@ -48,6 +48,7 @@
 #include "../SubPic/MemSubPic.h"
 #include <initguid.h>
 #include <qnetwork.h>
+#include "PlayerGraph.h" // after initguid.h and qnetwork.h, so the qnetwork IIDs are defined here
 #include "../DSUtil/FontInstaller.h"
 #include "AppSettings.h"
 #include "../filters/transform/VSFilter/IDirectVobSub.h"
@@ -82,7 +83,6 @@ interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
 interface ISubStream;
 interface ISyncClock;
-DECLARE_INTERFACE_IID(IAMLine21Decoder_2, "6E8D4A21-310C-11d0-B79A-00AA003767A7");
 
 enum class MLS {
     CLOSED,
@@ -251,82 +251,18 @@ private:
     friend class CPPageFileInfoSheet;
     friend class CPPageLogo;
     friend class CMouse;
-    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_pGB_preview
+    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_previewGraph
     friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
     friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
     friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
     friend class SubtitlesProvider;
 
-    // TODO: wrap these graph objects into a class to make it look cleaner
-
-    CComPtr<IGraphBuilder2> m_pGB;
-    CComQIPtr<IMediaControl> m_pMC;
-    CComQIPtr<IMediaEventEx> m_pME;
-    CComQIPtr<IVideoWindow> m_pVW;
-    CComQIPtr<IBasicVideo> m_pBV;
-    CComQIPtr<IBasicAudio> m_pBA;
-    CComQIPtr<IMediaSeeking> m_pMS;
-    CComQIPtr<IVideoFrameStep> m_pFS;
-    CComQIPtr<IFileSourceFilter> m_pFSF;
-    CComQIPtr<IKeyFrameInfo> m_pKFI;
-    CComQIPtr<IQualProp, &IID_IQualProp> m_pQP;
-    CComQIPtr<IBufferInfo> m_pBI;
-    CComQIPtr<IAMOpenProgress> m_pAMOP;
-    CComQIPtr<IAMMediaContent, &IID_IAMMediaContent> m_pAMMC[2];
-    CComQIPtr<IAMNetworkStatus, &IID_IAMNetworkStatus> m_pAMNS;
-    CComQIPtr<IAMStreamSelect> m_pAudioSwitcherSS;
-    CComQIPtr<IAMStreamSelect> m_pSplitterSS;
-    CComQIPtr<IAMStreamSelect> m_pSplitterDubSS;
-    CComQIPtr<IAMStreamSelect> m_pOtherSS[2];
+    CPlayerGraph m_graph;
     // SmarkSeek
-    CComPtr<IGraphBuilder2>         m_pGB_preview;
-    CComQIPtr<IMediaControl>        m_pMC_preview;
-    //CComQIPtr<IMediaEventEx>        m_pME_preview;
-    CComQIPtr<IMediaSeeking>        m_pMS_preview;
-    CComQIPtr<IVideoWindow>         m_pVW_preview;
-    CComQIPtr<IBasicVideo>          m_pBV_preview;
-    //CComQIPtr<IVideoFrameStep>      m_pFS_preview;
-    CComQIPtr<IDvdControl2>         m_pDVDC_preview;
-    CComQIPtr<IDvdInfo2>            m_pDVDI_preview; // VtX: usually not necessary but may sometimes be necessary.
-    CComPtr<IMFVideoDisplayControl> m_pMFVDC_preview;
-    CComPtr<IVMRWindowlessControl9> m_pVMR9C_preview;
-    CComPtr<IMFVideoProcessor>      m_pMFVP_preview;
-    CComPtr<ISubPicAllocatorPresenter2> m_pCAP2_preview;
+    CPlayerGraph m_previewGraph;
     int defaultVideoAngle;
-    //
-    CComPtr<IVMRMixerControl9> m_pVMRMC;
-    CComPtr<IMFVideoDisplayControl> m_pMFVDC;
-    CComPtr<IMFVideoProcessor> m_pMFVP;
-    CComPtr<IVMRMixerBitmap9>    m_pVMB;
-    CComPtr<IMFVideoMixerBitmap>    m_pMFVMB;
-    CComPtr<IVMRWindowlessControl9> m_pVMRWC;
 
-    CComPtr<ISubPicAllocatorPresenter> m_pCAP;
-    CComPtr<ISubPicAllocatorPresenter2> m_pCAP2;
-    CComPtr<ISubPicAllocatorPresenter3> m_pCAP3;
-
-    CComPtr<IMadVRSettings> m_pMVRS;
-    CComPtr<IMadVRSubclassReplacement> m_pMVRSR;
-    CComPtr<IMPCVRSubclassReplacement> m_pMPCVRSR;
-    CComPtr<IMadVRCommand> m_pMVRC;
-    CComPtr<IMadVRInfo> m_pMVRI;
-    CComPtr<IMadVRFrameGrabber> m_pMVRFG;
-    CComPtr<IMadVRTextOsd> m_pMVTO;
-
-    CComPtr<ID3DFullscreenControl> m_pD3DFSC;
-
-    CComQIPtr<IDvdControl2> m_pDVDC;
-    CComQIPtr<IDvdInfo2> m_pDVDI;
-    CComPtr<IAMLine21Decoder_2> m_pLN21;
-
-    CComPtr<ICaptureGraphBuilder2> m_pCGB;
     CStringW m_VidDispName, m_AudDispName;
-    CComPtr<IBaseFilter> m_pVidCap, m_pAudCap;
-    CComPtr<IAMVideoCompression> m_pAMVCCap, m_pAMVCPrev;
-    CComPtr<IAMStreamConfig> m_pAMVSCCap, m_pAMVSCPrev, m_pAMASC;
-    CComPtr<IAMCrossbar> m_pAMXBar;
-    CComPtr<IAMTVTuner> m_pAMTuner;
-    CComPtr<IAMDroppedFrames> m_pAMDF;
 
     CComPtr<IUnknown> m_pProv;
 
@@ -529,7 +465,7 @@ private:
     void ShowOptions(int idPage = 0);
 
     CSnapshot m_snapshot;
-    friend class CSnapshot; // until the graph and renderer pointers move out of the frame
+    friend class CSnapshot; // for the load state, the bars, m_OSD and the frame stepping helpers
 
     //
 
@@ -667,6 +603,10 @@ public:
     }
     double GetPlayingRate() const {
         return m_dSpeedRate;
+    }
+
+    CPlayerGraph& Graph() {
+        return m_graph;
     }
 
 public:
