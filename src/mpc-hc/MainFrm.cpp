@@ -19703,6 +19703,16 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
         return;
     }
 
+    if (m_bInShowOptions) {
+        // re-entered from a pump below, by a hotkey, a remote or a modeless dialog.
+        // Raise the sheet already up rather than stacking a second one on it
+        if (m_pOptionsSheet && m_pOptionsSheet->GetSafeHwnd()) {
+            m_pOptionsSheet->SetForegroundWindow();
+        }
+        return;
+    }
+    m_bInShowOptions = true;
+
     // show warning when INI file is read-only
     CLongPath iniPath = AfxGetMyApp()->GetIniPath();
     if (PathUtils::Exists(iniPath)) {
@@ -19726,6 +19736,7 @@ void CMainFrame::ShowOptions(int idPage/* = 0*/)
         }
         // check if we exited the dialog so that the language or theme change can be applied
     } while (iRes == CPPageSheet::APPLY_UI_CHANGE && !m_bDeferredOnClose);
+    m_bInShowOptions = false;
 
     if (m_bDeferredOnClose) {
         // an exit arrived while the sheet was up (see OnClose). Under a holder, its
