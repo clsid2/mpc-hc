@@ -71,6 +71,9 @@
     <ClCompile Include="MPCVRAllocatorPresenter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FrankyAllocatorPresenter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -149,6 +152,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MPCVRAllocatorPresenter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrankyAllocatorPresenter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Variables.h">

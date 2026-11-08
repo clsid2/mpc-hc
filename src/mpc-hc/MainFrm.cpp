@@ -6763,10 +6763,11 @@ void CMainFrame::OnViewTearingTest()
 void CMainFrame::OnUpdateViewDisplayRendererStats(CCmdUI* pCmdUI)
 {
     const CAppSettings& s = AfxGetAppSettings();
-    bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
+    bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_MPCVR
                       || s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM
                       || s.iDSVideoRendererType == VIDRNDT_DS_SYNC
-                      || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
+                      || s.iDSVideoRendererType == VIDRNDT_DS_FRANKY
+                      || s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS);
 
     pCmdUI->Enable(supported && GetLoadState() == MLS::LOADED && !m_fAudioOnly);
     pCmdUI->SetCheck(supported && AfxGetMyApp()->m_Renderers.m_iDisplayStats > 0);
@@ -6780,10 +6781,11 @@ void CMainFrame::OnViewResetRendererStats()
 void CMainFrame::OnViewDisplayRendererStats()
 {
     const CAppSettings& s = AfxGetAppSettings();
-    bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS
+    bool supported = (s.iDSVideoRendererType == VIDRNDT_DS_MPCVR
                       || s.iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM
                       || s.iDSVideoRendererType == VIDRNDT_DS_SYNC
-                      || s.iDSVideoRendererType == VIDRNDT_DS_MPCVR);
+                      || s.iDSVideoRendererType == VIDRNDT_DS_FRANKY
+                      || s.iDSVideoRendererType == VIDRNDT_DS_VMR9RENDERLESS);
 
     if (supported) {
         if (m_pCAP3) {

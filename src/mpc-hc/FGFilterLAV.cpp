@@ -699,9 +699,10 @@ void CFGFilterLAVVideo::Settings::LoadSettings()
                  } else {
                      WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 0);
                  }
-             }
-             if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_MADVR) {
+             } else if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_MADVR) {
                  dwHWAccel = HWAccel_DXVA2CopyBack;
+             } else if (AfxGetAppSettings().iDSVideoRendererType == VIDRNDT_DS_FRANKY) {
+                 dwHWAccel = gpuinfo.SupportD3D11VA() ? HWAccel_D3D11 : HWAccel_DXVA2CopyBack;
              }
         }
         if (gpuinfo.IntelHEVCBlacklist()) {

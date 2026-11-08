@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "AllocatorCommon.h"
+#include <moreuuids.h>
 #include "../DSUtil/DSUtil.h"
 
 #include "VMR9AllocatorPresenter.h"
@@ -27,6 +28,7 @@
 #include "madVRAllocatorPresenter.h"
 #include "EVRAllocatorPresenter.h"
 #include "MPCVRAllocatorPresenter.h"
+#include "FrankyAllocatorPresenter.h"
 
 bool IsVMR9InGraph(IFilterGraph* pFG)
 {
@@ -59,6 +61,8 @@ HRESULT CreateAP9(const CLSID& clsid, HWND hWnd, bool bFullscreen, ISubPicAlloca
         *ppAP = DEBUG_NEW CmadVRAllocatorPresenter(hWnd, hr, Error);
     } else if (IsEqualCLSID(clsid, CLSID_MPCVRAllocatorPresenter)) {
         *ppAP = DEBUG_NEW CMPCVRAllocatorPresenter(hWnd, hr, Error);
+    } else if (IsEqualCLSID(clsid, CLSID_FrankyRenderer)) {
+        *ppAP = DEBUG_NEW CFrankyAllocatorPresenter(hWnd, hr, Error);
     } else {
         return E_FAIL;
     }

@@ -2844,6 +2844,7 @@ BEGIN
     IDS_NAVIGATE_TITLES     "&Titles"
     IDS_NAVIGATE_CHANNELS   "&Channels"
     IDS_PPAGE_OUTPUT_MPCVR  "MPC Video Renderer"
+    IDS_PPAGE_OUTPUT_FRANKY "FrankyRenderer"
     IDS_PPAGE_OUTPUT_VMR7   "Video Mixing Renderer 7"
 END
 
@@ -2892,6 +2893,7 @@ BEGIN
     IDC_DX9RESIZER_COMBO    "If there is no Pixel Shader 2.0 support, simple bilinear is used automatically."
     IDC_DSVMR9LOADMIXER     "Puts VMR-9 (renderless) into mixer mode, this means most of the controls on its property page will work and it will use a separate worker thread to renderer frames."
     IDC_DSMPCVR             "Advanced high quality video renderer. This is our recommended choice.\nSupports HDR video.\nSupports Dolby Vision input and can convert it to SDR or HDR output.\nSupports all player functionality such as subtitles, pixelshaders and rotation.\nCan utilize either D3D9 or D3D11."
+    IDC_DSFRANKY            "Advanced video renderer that uses libplacebo."
 END
 
 STRINGTABLE
@@ -2912,6 +2914,7 @@ BEGIN
     IDS_PPAGE_OUTPUT_SUPPORT_ALL_HDR "Supports all player functionality, including HDR video."
     IDS_PPAGE_OUTPUT_SUPPORT_NO_HDR "Supports all player functionality, except HDR video."
     IDS_PPAGE_OUTPUT_SUPPORT_LIMITED "Does not support all player functionality."
+    IDS_PPAGE_OUTPUT_SUPPORT_FRANKY "Supports all player functionality, except pixelshaders."
     IDS_PPAGE_OUTPUT_AUD_NULL_COMP "Null (anything)"
     IDS_PPAGE_OUTPUT_AUD_NULL_UNCOMP "Null (uncompressed)"
 END
