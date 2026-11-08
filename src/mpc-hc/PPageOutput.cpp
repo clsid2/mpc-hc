@@ -614,6 +614,9 @@ void CPPageOutput::UpdateSubtitleRendererList()
         if (!CAppSettings::IsSubtitleRendererSupported(nID, m_iDSVideoRendererType)) {
             return;
         }
+        if (!CAppSettings::IsSubtitleRendererRegistered(nID)) {
+            return;
+        }
 
         CString sName;
         switch (nID) {
@@ -634,9 +637,11 @@ void CPPageOutput::UpdateSubtitleRendererList()
                 break;
         }
 
+        /*
         if (!CAppSettings::IsSubtitleRendererRegistered(nID)) {
             sName.AppendFormat(_T("   %s"), ResStr(IDS_PPAGE_OUTPUT_UNAVAILABLE).GetString());
         }
+        */
 
         m_SubtitleRendererCtrl.SetItemData(m_SubtitleRendererCtrl.AddString(sName), static_cast<int>(nID));
     };
