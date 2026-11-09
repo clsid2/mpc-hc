@@ -1010,7 +1010,7 @@ CString CSnapshot::MakeSnapshotFileName(BOOL thumbnails)
             prefix = _T("dvd_snapshot");
         }
     } else if (m_frame.GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
-        prefix.Format(_T("%s_snapshot"), m_frame.m_pDVBState->sChannelName.GetString());
+        prefix.Format(_T("%s_snapshot"), m_frame.m_capture.m_pDVBState->sChannelName.GetString());
     } else {
         prefix = _T("snapshot");
     }

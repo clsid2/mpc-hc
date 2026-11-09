@@ -41,6 +41,7 @@
 #include "PlayerPreView.h"
 #include "PlayerToolBar.h"
 #include "Snapshot.h"
+#include "CaptureController.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -139,17 +140,6 @@ public:
     }
     CStringW DisplayName[2];
     int vinput, vchannel, ainput;
-};
-
-class TunerScanData
-{
-public:
-    ULONG FrequencyStart;
-    ULONG FrequencyStop;
-    ULONG Bandwidth;
-    ULONG SymbolRate;
-    LONG  Offset;
-    HWND  Hwnd;
 };
 
 struct SeekToCommand {
@@ -261,8 +251,6 @@ private:
     // SmarkSeek
     CPlayerGraph m_previewGraph;
     int defaultVideoAngle;
-
-    CStringW m_VidDispName, m_AudDispName;
 
     CComPtr<IUnknown> m_pProv;
 
@@ -466,6 +454,11 @@ private:
 
     CSnapshot m_snapshot;
     friend class CSnapshot; // for the load state, the bars, m_OSD and the frame stepping helpers
+
+public:
+    CCaptureController m_capture;
+private:
+    friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows and the graph thread
 
     //
 
@@ -672,7 +665,6 @@ protected:
     // Operations
     bool OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD);
     void CloseMediaPrivate();
-    void DoTunerScan(TunerScanData* pTSD);
 
     CWnd* GetModalParent();
 
@@ -686,8 +678,6 @@ protected:
     void OpenCreateGraphObject(OpenMediaData* pOMD);
     void OpenFile(OpenFileData* pOFD);
     void OpenDVD(OpenDVDData* pODD);
-    void OpenCapture(OpenDeviceData* pODD);
-    HRESULT OpenBDAGraph();
     void OpenCustomizeGraph();
     CSize OpenSetupGetVideoSize();
     void OpenSetupVideo();
@@ -698,7 +688,6 @@ protected:
     void CheckSelectedAudioStream();
     void CheckSelectedVideoStream();
     void OpenSetupStatusBar();
-    void OpenSetupCaptureBar();
     void OpenSetupWindowTitle(bool reset = false);
 
 public:
@@ -746,21 +735,6 @@ public:
     bool DisplayChange();
     bool CloseMediaBeforeOpen();
     void CloseMedia(bool bNextIsQueued = false, bool bPendingFileDelete = false);
-    void StartTunerScan(CAutoPtr<TunerScanData> pTSD);
-    void StopTunerScan();
-    HRESULT SetChannel(int nChannel);
-
-    // Headless tuner scan, driven by /dvbscan rather than CTunerScanDlg.
-    // DoTunerScan reports through window messages, so this listens for them
-    // instead of the dialog and writes the result out. The scan engine itself
-    // is unchanged and unaware of which listener it is talking to.
-    bool m_bHeadlessDVBScan = false;
-    std::vector<CBDAChannel> m_headlessDVBScanChannels;
-    void StartHeadlessDVBScan();
-    void FinishHeadlessDVBScan();
-
-    void AddCurDevToPlaylist();
-
     bool m_bTrayIcon;
     void ShowTrayIcon(bool bShow);
     void SetTrayTip(const CString& str);
@@ -823,7 +797,6 @@ public:
     void AddFavorite(bool fDisplayMessage = false, bool fShowDialog = true);
 
     CString GetFileName();
-    CString GetCaptureTitle();
 
     // shaders
     void SetShaders(bool bSetPreResize = true, bool bSetPostResize = true);
@@ -835,14 +808,6 @@ public:
 	bool SaveShaderFile(ShaderC* shader);
 	bool DeleteShaderFile(LPCWSTR label);
 	void TidyShaderCache();
-
-    // capturing
-    bool m_fCapturing;
-    HRESULT BuildCapture(IPin* pPin, IBaseFilter* pBF[3], const GUID& majortype, AM_MEDIA_TYPE* pmt); // pBF: 0 buff, 1 enc, 2 mux, pmt is for 1 enc
-    bool BuildToCapturePreviewPin(IBaseFilter* pVidCap, IPin** pVidCapPin, IPin** pVidPrevPin,
-                                  IBaseFilter* pAudCap, IPin** pAudCapPin, IPin** pAudPrevPin);
-    bool BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPreview, bool fACapture);
-    bool DoCapture(), StartCapture(), StopCapture();
 
     void DoAfterPlaybackEvent();
     bool SearchInDir(bool bDirForward, bool bLoop = false);
@@ -857,53 +822,11 @@ public:
     void EnableDocking(DWORD dwDockStyle);
 
     // DVB capture
-    void UpdateCurrentChannelInfo(bool bShowOSD = true, bool bShowInfoBar = false);
     LRESULT OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lParam);
 
     bool CheckABRepeat(REFERENCE_TIME& aPos, REFERENCE_TIME& bPos);
     void PerformABRepeat();
     void DisableABRepeat();
-
-    struct DVBState {
-        struct EITData {
-            HRESULT hr        = E_FAIL;
-            EventDescriptor NowNext;
-            bool bShowOSD     = true;
-            bool bShowInfoBar = false;
-        };
-
-        CString         sChannelName;                // Current channel name
-        CBDAChannel*    pChannel          = nullptr; // Pointer to current channel object
-        EventDescriptor NowNext;                     // Current channel EIT
-        bool            bActive           = false;   // True when channel is active
-        bool            bSetChannelActive = false;   // True when channel change is in progress
-        bool            bInfoActive       = false;   // True when EIT data update is in progress
-        bool            bAbortInfo        = true;    // True when aborting current EIT update
-        std::future<DVBState::EITData> infoData;
-
-        void Reset() {
-            sChannelName.Empty();
-            pChannel          = nullptr;
-            NowNext           = EventDescriptor();
-            bActive           = false;
-            bSetChannelActive = false;
-            bInfoActive       = false;
-            bAbortInfo        = true;
-        }
-
-        void Join() {
-            if (infoData.valid()) {
-                bAbortInfo = true;
-                infoData.wait();
-            }
-        }
-
-        ~DVBState() {
-            bAbortInfo = true;
-        }
-    };
-
-    std::unique_ptr<DVBState> m_pDVBState = nullptr;
 
     // Implementation
 public:
@@ -1106,8 +1029,6 @@ public:
     afx_msg void OnUpdateEDLNewClip(CCmdUI* pCmdUI);
     afx_msg void OnEDLSave();
     afx_msg void OnUpdateEDLSave(CCmdUI* pCmdUI);
-    afx_msg void OnViewCapture();
-    afx_msg void OnUpdateViewCapture(CCmdUI* pCmdUI);
     afx_msg void OnViewDebugShaders();
     afx_msg void OnUpdateViewDebugShaders(CCmdUI* pCmdUI);
     afx_msg void OnViewColorControls();
@@ -1296,8 +1217,6 @@ public:
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
-    afx_msg void OnTunerScan();
-    afx_msg void OnUpdateTunerScan(CCmdUI* pCmdUI);
 
     afx_msg void OnFavoritesAdd();
     afx_msg void OnUpdateFavoritesAdd(CCmdUI* pCmdUI);
@@ -1349,8 +1268,6 @@ public:
     int         m_nCurSubtitle;
     long        m_lSubtitleShift;
     REFERENCE_TIME m_rtCurSubPos;
-    bool        m_bScanDlgOpened;
-    bool        m_bStopTunerScan;
     bool        m_bLockedZoomVideoWindow;
     int         m_nLockedZoomVideoWindow;
 

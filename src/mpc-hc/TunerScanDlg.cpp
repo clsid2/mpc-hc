@@ -161,7 +161,7 @@ void CTunerScanDlg::OnBnClickedSave()
             e->Delete();
         }
     }
-    m_pMainFrame->SetChannel(0);
+    m_pMainFrame->m_capture.SetChannel(0);
 
     OnOK();
 }
@@ -180,20 +180,20 @@ void CTunerScanDlg::OnBnClickedStart()
         SaveScanSettings();
 
         m_ChannelList.DeleteAllItems();
-        m_pMainFrame->StartTunerScan(pTSD);
+        m_pMainFrame->m_capture.StartTunerScan(pTSD);
 
         SetProgress(true);
     } else {
-        m_pMainFrame->StopTunerScan();
+        m_pMainFrame->m_capture.StopTunerScan();
     }
 }
 
 void CTunerScanDlg::OnBnClickedCancel()
 {
     if (m_bInProgress) {
-        m_pMainFrame->StopTunerScan();
+        m_pMainFrame->m_capture.StopTunerScan();
     }
-    m_pMainFrame->SetChannel(AfxGetAppSettings().nDVBLastChannel);
+    m_pMainFrame->m_capture.SetChannel(AfxGetAppSettings().nDVBLastChannel);
 
     OnCancel();
 }

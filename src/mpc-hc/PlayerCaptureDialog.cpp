@@ -964,7 +964,7 @@ void CPlayerCaptureDialog::UpdateGraph()
 {
     UpdateMediaTypes();
 
-    m_pMainFrame->BuildGraphVideoAudio(m_fVidPreview, false, m_fAudPreview, false);
+    m_pMainFrame->m_capture.BuildGraphVideoAudio(m_fVidPreview, false, m_fAudPreview, false);
 
     UpdateUserDefinableControls();
 }
@@ -1634,7 +1634,7 @@ void CPlayerCaptureDialog::OnRecord()
 {
     UpdateData();
 
-    if (!m_pMainFrame->m_fCapturing) {
+    if (!m_pMainFrame->m_capture.m_fCapturing) {
         UpdateMuxer();
 
         CComQIPtr<IFileSinkFilter2> pFSF = m_pMux;
@@ -1693,14 +1693,14 @@ void CPlayerCaptureDialog::OnRecord()
 
         EnableControls(this, false);
 
-        m_pMainFrame->StartCapture();
+        m_pMainFrame->m_capture.StartCapture();
 
         m_nRecordTimerID = SetTimer(1, 100, nullptr);
     } else {
         KillTimer(m_nRecordTimerID);
         m_nRecordTimerID = 0;
 
-        m_pMainFrame->StopCapture();
+        m_pMainFrame->m_capture.StopCapture();
         EnableControls(this, true);
 
         m_pVidBuffer = nullptr;
@@ -1723,7 +1723,7 @@ void CPlayerCaptureDialog::OnChangeAudioBuffers()
 void CPlayerCaptureDialog::OnTimer(UINT_PTR nIDEvent)
 {
     if (nIDEvent == m_nRecordTimerID) {
-        if (m_pMainFrame->m_fCapturing) {
+        if (m_pMainFrame->m_capture.m_fCapturing) {
             ULARGE_INTEGER FreeBytesAvailable, TotalNumberOfBytes, TotalNumberOfFreeBytes;
             if (GetDiskFreeSpaceEx(m_file.Left(m_file.ReverseFind('\\') + 1), &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes)
                     && FreeBytesAvailable.QuadPart < 1024i64 * 1024 * 10) {
