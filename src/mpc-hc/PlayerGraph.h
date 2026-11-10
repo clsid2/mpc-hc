@@ -21,6 +21,7 @@
 #pragma once
 
 #include <qnetwork.h>
+#include <Il21dec.h>
 #include <mvrInterfaces.h>
 #include "IBufferInfo.h"
 #include "IKeyFrameInfo.h"
@@ -37,7 +38,8 @@ interface IMadVRSubclassReplacement;
 interface IMPCVRSubclassReplacement;
 interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
-DECLARE_INTERFACE_IID(IAMLine21Decoder_2, "6E8D4A21-310C-11d0-B79A-00AA003767A7");
+// IID_IAMLine21Decoder
+DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0-B79A-00AA003767A7") {};
 
 // The interfaces of a playback graph: the graph itself, its video renderer,
 // the DVD navigator and the capture devices. CMainFrame holds one for playback

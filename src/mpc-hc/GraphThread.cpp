@@ -103,6 +103,6 @@ void CGraphThread::OnTunerScan(WPARAM wParam, LPARAM lParam)
 {
     if (m_pMainFrame) {
         CAutoPtr<TunerScanData> pTSD((TunerScanData*)lParam);
-        m_pMainFrame->DoTunerScan(pTSD);
+        m_pMainFrame->m_capture.DoTunerScan(pTSD);
     }
 }
