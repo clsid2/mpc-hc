@@ -83,6 +83,8 @@ EXTRA_CFLAGS="-D_WIN32_WINNT=0x0601 -DWINVER=0x0601"
 if [ "$CC" = cl ]; then
   CCOPT=()
   EXTRA_CFLAGS="$EXTRA_CFLAGS -Zo -GS- -MD"
+  # sanm hits an MSVC compiler bug (disabled by hand in 3eb187d057); clang keeps it
+  OPTIONS="$OPTIONS --disable-decoder=sanm"
 else
   # clang's GNU-style driver targeting the MSVC ABI; -fms-runtime-lib=dll is clang's spelling of -MD
   CCOPT=("--cc=clang --target=$triple")
@@ -103,7 +105,7 @@ if [ "$CC" = clang ]; then
   # the same target features explicitly (ffmpeg.props does the same for the MSBuild build)
   for f in libavcodec/x86/hevc/intra_intrinsic.o libavcodec/x86/hevc/idct_intrinsic.o; do
     mkdir -p "$(dirname "$f")"
-    cmd=$(make -n V=1 "$f" | grep '^clang ' | tail -1)
+    cmd=$(make -n V=1 "$f" | sed -E 's#^ffbuild/mscl(\.exe)? ##' | grep '^clang ' | tail -1)
     [ -n "$cmd" ] || { echo "no compile command for $f"; exit 1; }
     eval "${cmd/ -c / -mssse3 -msse4.1 -c }"
   done
