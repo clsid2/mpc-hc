@@ -56,6 +56,7 @@ static const FFCodecParser * const parser_list[] = {
     &ff_prores_raw_parser,
     &ff_qoi_parser,
     &ff_rv34_parser,
+    &ff_rw2_parser,
     &ff_sbc_parser,
     &ff_sipr_parser,
     &ff_tak_parser,

@@ -43,6 +43,7 @@
     <ClCompile Include="$(FFmpegSrc)libavutil\float_fmul_reverse.c"><ObjectFileName>$(IntDir)libavutil\float_fmul_reverse.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavutil\float_scalarproduct.c"><ObjectFileName>$(IntDir)libavutil\float_scalarproduct.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavutil\frame.c"><ObjectFileName>$(IntDir)libavutil\frame.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavutil\gain_map.c"><ObjectFileName>$(IntDir)libavutil\gain_map.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavutil\hash.c"><ObjectFileName>$(IntDir)libavutil\hash.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavutil\hdr_dynamic_metadata.c"><ObjectFileName>$(IntDir)libavutil\hdr_dynamic_metadata.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavutil\hdr_dynamic_vivid_metadata.c"><ObjectFileName>$(IntDir)libavutil\hdr_dynamic_vivid_metadata.obj</ObjectFileName></ClCompile>

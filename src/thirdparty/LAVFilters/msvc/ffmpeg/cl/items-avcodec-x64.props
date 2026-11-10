@@ -135,6 +135,7 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\cabac.c"><ObjectFileName>$(IntDir)libavcodec\cabac.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\canopus.c"><ObjectFileName>$(IntDir)libavcodec\canopus.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\cavs.c"><ObjectFileName>$(IntDir)libavcodec\cavs.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\cavs_aec.c"><ObjectFileName>$(IntDir)libavcodec\cavs_aec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\cavs_parser.c"><ObjectFileName>$(IntDir)libavcodec\cavs_parser.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\cavsdata.c"><ObjectFileName>$(IntDir)libavcodec\cavsdata.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\cavsdec.c"><ObjectFileName>$(IntDir)libavcodec\cavsdec.obj</ObjectFileName></ClCompile>
@@ -284,7 +285,6 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\flashsv.c"><ObjectFileName>$(IntDir)libavcodec\flashsv.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\flicvideo.c"><ObjectFileName>$(IntDir)libavcodec\flicvideo.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\flvdec.c"><ObjectFileName>$(IntDir)libavcodec\flvdec.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\fmtconvert.c"><ObjectFileName>$(IntDir)libavcodec\fmtconvert.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\fmvc.c"><ObjectFileName>$(IntDir)libavcodec\fmvc.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\fraps.c"><ObjectFileName>$(IntDir)libavcodec\fraps.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\frwu.c"><ObjectFileName>$(IntDir)libavcodec\frwu.obj</ObjectFileName></ClCompile>
@@ -302,6 +302,7 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\g729_parser.c"><ObjectFileName>$(IntDir)libavcodec\g729_parser.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\g729dec.c"><ObjectFileName>$(IntDir)libavcodec\g729dec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\g729postfilter.c"><ObjectFileName>$(IntDir)libavcodec\g729postfilter.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\gain_map.c"><ObjectFileName>$(IntDir)libavcodec\gain_map.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\gdv.c"><ObjectFileName>$(IntDir)libavcodec\gdv.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\gemdec.c"><ObjectFileName>$(IntDir)libavcodec\gemdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\get_buffer.c"><ObjectFileName>$(IntDir)libavcodec\get_buffer.obj</ObjectFileName></ClCompile>
@@ -383,6 +384,7 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\imgconvert.c"><ObjectFileName>$(IntDir)libavcodec\imgconvert.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\imm4.c"><ObjectFileName>$(IntDir)libavcodec\imm4.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\imm5.c"><ObjectFileName>$(IntDir)libavcodec\imm5.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\imm6.c"><ObjectFileName>$(IntDir)libavcodec\imm6.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\imx.c"><ObjectFileName>$(IntDir)libavcodec\imx.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\indeo2.c"><ObjectFileName>$(IntDir)libavcodec\indeo2.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\indeo3.c"><ObjectFileName>$(IntDir)libavcodec\indeo3.obj</ObjectFileName></ClCompile>
@@ -620,6 +622,8 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\rv40dsp.c"><ObjectFileName>$(IntDir)libavcodec\rv40dsp.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\rv60dec.c"><ObjectFileName>$(IntDir)libavcodec\rv60dec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\rv60dsp.c"><ObjectFileName>$(IntDir)libavcodec\rv60dsp.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\rw2_parser.c"><ObjectFileName>$(IntDir)libavcodec\rw2_parser.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\rw2dec.c"><ObjectFileName>$(IntDir)libavcodec\rw2dec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\s302m.c"><ObjectFileName>$(IntDir)libavcodec\s302m.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\samidec.c"><ObjectFileName>$(IntDir)libavcodec\samidec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\sbc.c"><ObjectFileName>$(IntDir)libavcodec\sbc.obj</ObjectFileName></ClCompile>
@@ -795,6 +799,8 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\apv_dsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\apv_dsp_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\audiodsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\audiodsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\audiodsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\audiodsp_init.obj</ObjectFileName></ClCompile>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\bitpacked.asm"><ObjectFileName>$(IntDir)libavcodec\x86\bitpacked.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\bitpacked_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\bitpacked_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\blockdsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\blockdsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\blockdsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\blockdsp_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\bswapdsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\bswapdsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
@@ -818,8 +824,6 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\fdctdsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\fdctdsp_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\flacdsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\flacdsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\flacdsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\flacdsp_init.obj</ObjectFileName></ClCompile>
-    <Nasm Include="$(FFmpegSrc)libavcodec\x86\fmtconvert.asm"><ObjectFileName>$(IntDir)libavcodec\x86\fmtconvert.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
-    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\fmtconvert_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\fmtconvert_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\fpel.asm"><ObjectFileName>$(IntDir)libavcodec\x86\fpel.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\g722dsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\g722dsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\g722dsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\g722dsp_init.obj</ObjectFileName></ClCompile>
@@ -851,6 +855,8 @@
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\hevc\idct_intrinsic.c"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\idct_intrinsic.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\hevc\intra_intrinsic.c"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\intra_intrinsic.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\hevc\mc.asm"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\mc.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\hevc</ExtraInclude></Nasm>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\hevc\pred.asm"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\pred.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\hevc</ExtraInclude></Nasm>
+    <ClCompile Include="$(FFmpegSrc)libavcodec\x86\hevc\pred_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\pred_init.obj</ObjectFileName></ClCompile>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\hevc\sao.asm"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\sao.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\hevc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\hevc\sao_10bit.asm"><ObjectFileName>$(IntDir)libavcodec\x86\hevc\sao_10bit.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\hevc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\hpeldsp.asm"><ObjectFileName>$(IntDir)libavcodec\x86\hpeldsp.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86</ExtraInclude></Nasm>
@@ -937,6 +943,7 @@
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\alf.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\alf.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\dmvr.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\dmvr.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavcodec\x86\vvc\dsp_init.c"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\dsp_init.obj</ObjectFileName></ClCompile>
+    <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\intra.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\intra.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\mc.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\mc.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\of.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\of.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libavcodec\x86\vvc\sad.asm"><ObjectFileName>$(IntDir)libavcodec\x86\vvc\sad.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavcodec\x86\vvc</ExtraInclude></Nasm>

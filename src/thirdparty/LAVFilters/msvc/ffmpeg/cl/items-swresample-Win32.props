@@ -8,6 +8,7 @@
   <ItemGroup>
     <ClCompile Include="$(FFmpegSrc)libswresample\audioconvert.c"><ObjectFileName>$(IntDir)libswresample\audioconvert.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\dither.c"><ObjectFileName>$(IntDir)libswresample\dither.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\dsd2pcm.c"><ObjectFileName>$(IntDir)libswresample\dsd2pcm.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\options.c"><ObjectFileName>$(IntDir)libswresample\options.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\rematrix.c"><ObjectFileName>$(IntDir)libswresample\rematrix.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\resample.c"><ObjectFileName>$(IntDir)libswresample\resample.obj</ObjectFileName></ClCompile>
@@ -22,6 +23,7 @@
     <Nasm Include="$(FFmpegSrc)libswresample\x86\resample.asm"><ObjectFileName>$(IntDir)libswresample\x86\resample.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswresample\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libswresample\x86\resample_init.c"><ObjectFileName>$(IntDir)libswresample\x86\resample_init.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswresample\log2_tab.c"><ObjectFileName>$(IntDir)libswresample\log2_tab.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswresample\reverse.c"><ObjectFileName>$(IntDir)libswresample\reverse.obj</ObjectFileName></ClCompile>
     <ResourceCompile Include="$(FFmpegSrc)libswresample\swresampleres.rc"><ResourceOutputFileName>$(IntDir)libswresample\swresampleres.res</ResourceOutputFileName></ResourceCompile>
   </ItemGroup>
 </Project>
