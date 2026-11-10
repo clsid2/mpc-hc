@@ -14,7 +14,7 @@
     <ClCompile>
       <CompileAs>CompileAsC</CompileAs>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);$(FFmpegSrc)compat\atomics\win32;$(FFmpegSrc)compat\stdbit;$(ExtInclude);$(LavSrc)thirdparty\$(LavArch)\include;$(MpcRoot)src\thirdparty\zlib;$(LavMsvcDir)..\msvcInclude;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(FFmpegGen);$(FFmpegSrc);$(FFmpegSrc)compat\stdbit;$(ExtInclude);$(LavSrc)thirdparty\$(LavArch)\include;$(MpcRoot)src\thirdparty\zlib;$(LavMsvcDir)..\msvcInclude;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>HAVE_AV_CONFIG_H;PIC;WIN32_LEAN_AND_MEAN;WINVER=0x0601;_WIN32_WINNT=0x0601;ZLIB_CONST;_FILE_OFFSET_BITS=64;_ISOC11_SOURCE;_LARGEFILE_SOURCE;_USE_MATH_DEFINES;LIBXML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
@@ -31,7 +31,9 @@
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='cl'">
     <ClCompile>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalOptions>-Zo -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+      <!-- ffmpeg's stdatomic.h shim (generic header + win32 backend), as configure passes for cl; clang has its own -->
+      <AdditionalIncludeDirectories>$(FFmpegSrc)compat\atomics;$(FFmpegSrc)compat\atomics\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zo-utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">

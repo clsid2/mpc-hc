@@ -2,6 +2,7 @@ EXPORTS
     av_buffersink_get_alpha_mode
     av_buffersink_get_ch_layout
     av_buffersink_get_channels
+    av_buffersink_get_chroma_location
     av_buffersink_get_color_range
     av_buffersink_get_colorspace
     av_buffersink_get_format
@@ -54,6 +55,7 @@ EXPORTS
     avfilter_graph_segment_parse
     avfilter_graph_send_command
     avfilter_graph_set_auto_convert
+    avfilter_graph_set_max_buffered_frames
     avfilter_init_dict
     avfilter_init_str
     avfilter_inout_alloc

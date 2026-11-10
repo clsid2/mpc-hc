@@ -11,7 +11,6 @@
     <ClCompile Include="$(FFmpegSrc)libswscale\csputils.c"><ObjectFileName>$(IntDir)libswscale\csputils.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\filters.c"><ObjectFileName>$(IntDir)libswscale\filters.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\format.c"><ObjectFileName>$(IntDir)libswscale\format.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libswscale\framepool.c"><ObjectFileName>$(IntDir)libswscale\framepool.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\gamma.c"><ObjectFileName>$(IntDir)libswscale\gamma.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\graph.c"><ObjectFileName>$(IntDir)libswscale\graph.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\hscale.c"><ObjectFileName>$(IntDir)libswscale\hscale.obj</ObjectFileName></ClCompile>
@@ -48,6 +47,7 @@
     <Nasm Include="$(FFmpegSrc)libswscale\x86\yuv2yuvX.asm"><ObjectFileName>$(IntDir)libswscale\x86\yuv2yuvX.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswscale\x86</ExtraInclude></Nasm>
     <Nasm Include="$(FFmpegSrc)libswscale\x86\yuv_2_rgb.asm"><ObjectFileName>$(IntDir)libswscale\x86\yuv_2_rgb.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libswscale\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libswscale\yuv2rgb.c"><ObjectFileName>$(IntDir)libswscale\yuv2rgb.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libswscale\framepool.c"><ObjectFileName>$(IntDir)libswscale\framepool.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\half2float.c"><ObjectFileName>$(IntDir)libswscale\half2float.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libswscale\log2_tab.c"><ObjectFileName>$(IntDir)libswscale\log2_tab.obj</ObjectFileName></ClCompile>
     <ResourceCompile Include="$(FFmpegSrc)libswscale\swscaleres.rc"><ResourceOutputFileName>$(IntDir)libswscale\swscaleres.res</ResourceOutputFileName></ResourceCompile>

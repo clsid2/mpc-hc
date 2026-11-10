@@ -45,9 +45,9 @@
     <ClCompile Include="$(FFmpegSrc)libavformat\asf_tags.c"><ObjectFileName>$(IntDir)libavformat\asf_tags.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\asfcrypt.c"><ObjectFileName>$(IntDir)libavformat\asfcrypt.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\asfdec_f.c"><ObjectFileName>$(IntDir)libavformat\asfdec_f.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavformat\asfdec_o.c"><ObjectFileName>$(IntDir)libavformat\asfdec_o.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\assdec.c"><ObjectFileName>$(IntDir)libavformat\assdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\ast.c"><ObjectFileName>$(IntDir)libavformat\ast.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavformat\astcdec.c"><ObjectFileName>$(IntDir)libavformat\astcdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\astdec.c"><ObjectFileName>$(IntDir)libavformat\astdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\au.c"><ObjectFileName>$(IntDir)libavformat\au.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\av1.c"><ObjectFileName>$(IntDir)libavformat\av1.obj</ObjectFileName></ClCompile>
@@ -182,12 +182,15 @@
     <ClCompile Include="$(FFmpegSrc)libavformat\iv8.c"><ObjectFileName>$(IntDir)libavformat\iv8.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\ivfdec.c"><ObjectFileName>$(IntDir)libavformat\ivfdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\jacosubdec.c"><ObjectFileName>$(IntDir)libavformat\jacosubdec.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavformat\jpegmpfdec.c"><ObjectFileName>$(IntDir)libavformat\jpegmpfdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\jpegxl_anim_dec.c"><ObjectFileName>$(IntDir)libavformat\jpegxl_anim_dec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\jvdec.c"><ObjectFileName>$(IntDir)libavformat\jvdec.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavformat\ktxdec.c"><ObjectFileName>$(IntDir)libavformat\ktxdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\kvag.c"><ObjectFileName>$(IntDir)libavformat\kvag.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\lafdec.c"><ObjectFileName>$(IntDir)libavformat\lafdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\lc3.c"><ObjectFileName>$(IntDir)libavformat\lc3.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\lcevc.c"><ObjectFileName>$(IntDir)libavformat\lcevc.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavformat\lcevcdec.c"><ObjectFileName>$(IntDir)libavformat\lcevcdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\lmlm4.c"><ObjectFileName>$(IntDir)libavformat\lmlm4.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\loasdec.c"><ObjectFileName>$(IntDir)libavformat\loasdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\lrc.c"><ObjectFileName>$(IntDir)libavformat\lrc.obj</ObjectFileName></ClCompile>
@@ -352,6 +355,7 @@
     <ClCompile Include="$(FFmpegSrc)libavformat\segafilm.c"><ObjectFileName>$(IntDir)libavformat\segafilm.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\serdec.c"><ObjectFileName>$(IntDir)libavformat\serdec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\sga.c"><ObjectFileName>$(IntDir)libavformat\sga.obj</ObjectFileName></ClCompile>
+    <ClCompile Include="$(FFmpegSrc)libavformat\shared.c"><ObjectFileName>$(IntDir)libavformat\shared.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\shortendec.c"><ObjectFileName>$(IntDir)libavformat\shortendec.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\sierravmd.c"><ObjectFileName>$(IntDir)libavformat\sierravmd.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavformat\siff.c"><ObjectFileName>$(IntDir)libavformat\siff.obj</ObjectFileName></ClCompile>
