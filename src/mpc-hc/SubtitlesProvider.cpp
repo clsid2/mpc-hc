@@ -27,6 +27,8 @@
 #include "base64/base64.h"
 #include "tinyxml2/library/tinyxml2.h"
 #include "rapidjson/include/rapidjson/pointer.h"
+#include "rapidjson/include/rapidjson/stringbuffer.h"
+#include "rapidjson/include/rapidjson/writer.h"
 #include <wincrypt.h>
 #include <regex>
 
@@ -380,9 +382,15 @@ SRESULT OpenSubtitles2::Login(const std::string& sUserName, const std::string& s
         headers.AppendFormat(_T("Api-Key: %s\r\n"), APIKEY);
         headers.Append(_T("Accept: application/json\r\n"));
 
-        std::string body(R"({ "username": ")");
-        std::string escaped_pw = std::regex_replace(sPassword, std::regex("\""), "\\\"");
-        body = body + sUserName + R"(", "password": ")" + escaped_pw + R"(" })";
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        writer.StartObject();
+        writer.Key("username");
+        writer.String(sUserName.c_str(), static_cast<rapidjson::SizeType>(sUserName.size()));
+        writer.Key("password");
+        writer.String(sPassword.c_str(), static_cast<rapidjson::SizeType>(sPassword.size()));
+        writer.EndObject();
+        std::string body(buffer.GetString(), buffer.GetSize());
 
         Response response;
         if (CallAPI(httpFile, headers, body, response))
@@ -459,13 +467,14 @@ SRESULT OpenSubtitles2::Search(const SubtitlesInfo& pFileInfo)
             url.AppendFormat(_T("moviehash=%s&"), (LPCTSTR) CString(pFileInfo.fileHash.c_str()));
         }
 
-        CString query;
+        // fileName is already UTF-8, the manual search string is UTF-16
+        CStringA query;
         if (pFileInfo.manualSearchString.IsEmpty())
             query = pFileInfo.fileName.c_str();
         else
-            query = pFileInfo.manualSearchString;
+            query = UTF16To8(pFileInfo.manualSearchString);
 
-        url.AppendFormat(_T("query=%s"), (LPCTSTR)query);
+        url.AppendFormat(_T("query=%s"), (LPCTSTR)CString(UrlEncode(query)));
 
         CHttpFile* httpFile = con->OpenRequest(CHttpConnection::HTTP_VERB_GET, url, NULL, 1, NULL, NULL, INTERNET_FLAG_SECURE);
 

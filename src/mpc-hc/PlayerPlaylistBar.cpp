@@ -2821,7 +2821,7 @@ void CPlayerPlaylistBar::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             m_pMainFrame->PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
             break;
         case M_ADD:
-            m_pMainFrame->AddCurDevToPlaylist();
+            m_pMainFrame->m_capture.AddCurDevToPlaylist();
             {
                 CAutoLock pledit(&m_plEditLock);
                 m_pl.SetPos(m_pl.GetTailPosition());

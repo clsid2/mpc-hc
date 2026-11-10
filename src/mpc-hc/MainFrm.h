@@ -40,6 +40,8 @@
 #include "PlayerSubresyncBar.h"
 #include "PlayerPreView.h"
 #include "PlayerToolBar.h"
+#include "Snapshot.h"
+#include "CaptureController.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -47,6 +49,7 @@
 #include "../SubPic/MemSubPic.h"
 #include <initguid.h>
 #include <qnetwork.h>
+#include "PlayerGraph.h" // after initguid.h and qnetwork.h, so the qnetwork IIDs are defined here
 #include "../DSUtil/FontInstaller.h"
 #include "AppSettings.h"
 #include "../filters/transform/VSFilter/IDirectVobSub.h"
@@ -61,6 +64,7 @@
 class CDebugShadersDlg;
 class CColorControlsDlg;
 class CHistoryDlg;
+class UpdateCheckerDlg;
 class CFullscreenWnd;
 struct DisplayMode;
 enum MpcCaptionState;
@@ -80,7 +84,6 @@ interface ISubPicAllocatorPresenter2;
 interface ISubPicAllocatorPresenter;
 interface ISubStream;
 interface ISyncClock;
-DECLARE_INTERFACE_IID(IAMLine21Decoder_2, "6E8D4A21-310C-11d0-B79A-00AA003767A7");
 
 enum class MLS {
     CLOSED,
@@ -137,17 +140,6 @@ public:
     }
     CStringW DisplayName[2];
     int vinput, vchannel, ainput;
-};
-
-class TunerScanData
-{
-public:
-    ULONG FrequencyStart;
-    ULONG FrequencyStop;
-    ULONG Bandwidth;
-    ULONG SymbolRate;
-    LONG  Offset;
-    HWND  Hwnd;
 };
 
 struct SeekToCommand {
@@ -249,82 +241,16 @@ private:
     friend class CPPageFileInfoSheet;
     friend class CPPageLogo;
     friend class CMouse;
-    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_pGB_preview
+    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_previewGraph
     friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
     friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
     friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
     friend class SubtitlesProvider;
 
-    // TODO: wrap these graph objects into a class to make it look cleaner
-
-    CComPtr<IGraphBuilder2> m_pGB;
-    CComQIPtr<IMediaControl> m_pMC;
-    CComQIPtr<IMediaEventEx> m_pME;
-    CComQIPtr<IVideoWindow> m_pVW;
-    CComQIPtr<IBasicVideo> m_pBV;
-    CComQIPtr<IBasicAudio> m_pBA;
-    CComQIPtr<IMediaSeeking> m_pMS;
-    CComQIPtr<IVideoFrameStep> m_pFS;
-    CComQIPtr<IFileSourceFilter> m_pFSF;
-    CComQIPtr<IKeyFrameInfo> m_pKFI;
-    CComQIPtr<IQualProp, &IID_IQualProp> m_pQP;
-    CComQIPtr<IBufferInfo> m_pBI;
-    CComQIPtr<IAMOpenProgress> m_pAMOP;
-    CComQIPtr<IAMMediaContent, &IID_IAMMediaContent> m_pAMMC[2];
-    CComQIPtr<IAMNetworkStatus, &IID_IAMNetworkStatus> m_pAMNS;
-    CComQIPtr<IAMStreamSelect> m_pAudioSwitcherSS;
-    CComQIPtr<IAMStreamSelect> m_pSplitterSS;
-    CComQIPtr<IAMStreamSelect> m_pSplitterDubSS;
-    CComQIPtr<IAMStreamSelect> m_pOtherSS[2];
+    CPlayerGraph m_graph;
     // SmarkSeek
-    CComPtr<IGraphBuilder2>         m_pGB_preview;
-    CComQIPtr<IMediaControl>        m_pMC_preview;
-    //CComQIPtr<IMediaEventEx>        m_pME_preview;
-    CComQIPtr<IMediaSeeking>        m_pMS_preview;
-    CComQIPtr<IVideoWindow>         m_pVW_preview;
-    CComQIPtr<IBasicVideo>          m_pBV_preview;
-    //CComQIPtr<IVideoFrameStep>      m_pFS_preview;
-    CComQIPtr<IDvdControl2>         m_pDVDC_preview;
-    CComQIPtr<IDvdInfo2>            m_pDVDI_preview; // VtX: usually not necessary but may sometimes be necessary.
-    CComPtr<IMFVideoDisplayControl> m_pMFVDC_preview;
-    CComPtr<IVMRWindowlessControl9> m_pVMR9C_preview;
-    CComPtr<IMFVideoProcessor>      m_pMFVP_preview;
-    CComPtr<ISubPicAllocatorPresenter2> m_pCAP2_preview;
+    CPlayerGraph m_previewGraph;
     int defaultVideoAngle;
-    //
-    CComPtr<IVMRMixerControl9> m_pVMRMC;
-    CComPtr<IMFVideoDisplayControl> m_pMFVDC;
-    CComPtr<IMFVideoProcessor> m_pMFVP;
-    CComPtr<IVMRMixerBitmap9>    m_pVMB;
-    CComPtr<IMFVideoMixerBitmap>    m_pMFVMB;
-    CComPtr<IVMRWindowlessControl9> m_pVMRWC;
-
-    CComPtr<ISubPicAllocatorPresenter> m_pCAP;
-    CComPtr<ISubPicAllocatorPresenter2> m_pCAP2;
-    CComPtr<ISubPicAllocatorPresenter3> m_pCAP3;
-
-    CComPtr<IMadVRSettings> m_pMVRS;
-    CComPtr<IMadVRSubclassReplacement> m_pMVRSR;
-    CComPtr<IMPCVRSubclassReplacement> m_pMPCVRSR;
-    CComPtr<IMadVRCommand> m_pMVRC;
-    CComPtr<IMadVRInfo> m_pMVRI;
-    CComPtr<IMadVRFrameGrabber> m_pMVRFG;
-    CComPtr<IMadVRTextOsd> m_pMVTO;
-
-    CComPtr<ID3DFullscreenControl> m_pD3DFSC;
-
-    CComQIPtr<IDvdControl2> m_pDVDC;
-    CComQIPtr<IDvdInfo2> m_pDVDI;
-    CComPtr<IAMLine21Decoder_2> m_pLN21;
-
-    CComPtr<ICaptureGraphBuilder2> m_pCGB;
-    CStringW m_VidDispName, m_AudDispName;
-    CComPtr<IBaseFilter> m_pVidCap, m_pAudCap;
-    CComPtr<IAMVideoCompression> m_pAMVCCap, m_pAMVCPrev;
-    CComPtr<IAMStreamConfig> m_pAMVSCCap, m_pAMVSCPrev, m_pAMASC;
-    CComPtr<IAMCrossbar> m_pAMXBar;
-    CComPtr<IAMTVTuner> m_pAMTuner;
-    CComPtr<IAMDroppedFrames> m_pAMDF;
 
     CComPtr<IUnknown> m_pProv;
 
@@ -526,22 +452,13 @@ private:
 
     void ShowOptions(int idPage = 0);
 
-    HRESULT GetDisplayedImage(std::vector<BYTE>& dib, CString& errmsg);
-    HRESULT GetCurrentFrame(std::vector<BYTE>& dib, CString& errmsg);
-    HRESULT GetOriginalFrame(std::vector<BYTE>& dib, CString& errmsg);
-    HRESULT RenderCurrentSubtitles(BYTE* pData);
-    bool GetDIB(BYTE** ppData, long& size, bool fSilent = false);
-    BYTE* ConvertDIBTo24bppRGB(BYTE* pData, long size, int& outWidth, int& outHeight, int& outPitch);
-    void SaveDIB(LPCTSTR fn, BYTE* pData, long size);
-#if MPC_SMTC_VIDEO_THUMBNAIL
-    bool CaptureVideoThumbnail(std::vector<BYTE>& thumbnail);
-#endif
-    CString MakeSnapshotFileName(BOOL thumbnails);
-    BOOL IsRendererCompatibleWithSaveImage();
-    void SaveImage(LPCTSTR fn, bool displayed, bool includeSubtitles);
-    // False when no sheet was written, including the failures that report
-    // nothing at all. A headless /thumbnails run exits non-zero on it.
-    bool SaveThumbnails(LPCTSTR fn);
+    CSnapshot m_snapshot;
+    friend class CSnapshot; // for the load state, the bars, m_OSD and the frame stepping helpers
+
+public:
+    CCaptureController m_capture;
+private:
+    friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows and the graph thread
 
     //
 
@@ -593,6 +510,10 @@ private:
     // since an open from in there is fine, but an exit would delete the frame under
     // ShowOptions, so OnClose defers that one and cancels the sheet
     CWnd* m_pOptionsSheet = nullptr;
+    // set from the INI warning through the last sheet ShowOptions loops over. Both
+    // pump messages, and a hotkey, remote or modeless dialog reaching ShowOptions
+    // from there stacked a second sheet over the first, which crashed in comctl32
+    bool m_bInShowOptions = false;
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
 
     // Work the web server's thread needs done here, because it reads lists this
@@ -677,6 +598,10 @@ public:
         return m_dSpeedRate;
     }
 
+    CPlayerGraph& Graph() {
+        return m_graph;
+    }
+
 public:
     CMainFrame();
     DECLARE_DYNAMIC(CMainFrame)
@@ -740,7 +665,6 @@ protected:
     // Operations
     bool OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD);
     void CloseMediaPrivate();
-    void DoTunerScan(TunerScanData* pTSD);
 
     CWnd* GetModalParent();
 
@@ -754,8 +678,6 @@ protected:
     void OpenCreateGraphObject(OpenMediaData* pOMD);
     void OpenFile(OpenFileData* pOFD);
     void OpenDVD(OpenDVDData* pODD);
-    void OpenCapture(OpenDeviceData* pODD);
-    HRESULT OpenBDAGraph();
     void OpenCustomizeGraph();
     CSize OpenSetupGetVideoSize();
     void OpenSetupVideo();
@@ -766,7 +688,6 @@ protected:
     void CheckSelectedAudioStream();
     void CheckSelectedVideoStream();
     void OpenSetupStatusBar();
-    void OpenSetupCaptureBar();
     void OpenSetupWindowTitle(bool reset = false);
 
 public:
@@ -814,21 +735,6 @@ public:
     bool DisplayChange();
     bool CloseMediaBeforeOpen();
     void CloseMedia(bool bNextIsQueued = false, bool bPendingFileDelete = false);
-    void StartTunerScan(CAutoPtr<TunerScanData> pTSD);
-    void StopTunerScan();
-    HRESULT SetChannel(int nChannel);
-
-    // Headless tuner scan, driven by /dvbscan rather than CTunerScanDlg.
-    // DoTunerScan reports through window messages, so this listens for them
-    // instead of the dialog and writes the result out. The scan engine itself
-    // is unchanged and unaware of which listener it is talking to.
-    bool m_bHeadlessDVBScan = false;
-    std::vector<CBDAChannel> m_headlessDVBScanChannels;
-    void StartHeadlessDVBScan();
-    void FinishHeadlessDVBScan();
-
-    void AddCurDevToPlaylist();
-
     bool m_bTrayIcon;
     void ShowTrayIcon(bool bShow);
     void SetTrayTip(const CString& str);
@@ -891,7 +797,6 @@ public:
     void AddFavorite(bool fDisplayMessage = false, bool fShowDialog = true);
 
     CString GetFileName();
-    CString GetCaptureTitle();
 
     // shaders
     void SetShaders(bool bSetPreResize = true, bool bSetPostResize = true);
@@ -903,14 +808,6 @@ public:
 	bool SaveShaderFile(ShaderC* shader);
 	bool DeleteShaderFile(LPCWSTR label);
 	void TidyShaderCache();
-
-    // capturing
-    bool m_fCapturing;
-    HRESULT BuildCapture(IPin* pPin, IBaseFilter* pBF[3], const GUID& majortype, AM_MEDIA_TYPE* pmt); // pBF: 0 buff, 1 enc, 2 mux, pmt is for 1 enc
-    bool BuildToCapturePreviewPin(IBaseFilter* pVidCap, IPin** pVidCapPin, IPin** pVidPrevPin,
-                                  IBaseFilter* pAudCap, IPin** pAudCapPin, IPin** pAudPrevPin);
-    bool BuildGraphVideoAudio(int fVPreview, bool fVCapture, int fAPreview, bool fACapture);
-    bool DoCapture(), StartCapture(), StopCapture();
 
     void DoAfterPlaybackEvent();
     bool SearchInDir(bool bDirForward, bool bLoop = false);
@@ -925,53 +822,11 @@ public:
     void EnableDocking(DWORD dwDockStyle);
 
     // DVB capture
-    void UpdateCurrentChannelInfo(bool bShowOSD = true, bool bShowInfoBar = false);
     LRESULT OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lParam);
 
     bool CheckABRepeat(REFERENCE_TIME& aPos, REFERENCE_TIME& bPos);
     void PerformABRepeat();
     void DisableABRepeat();
-
-    struct DVBState {
-        struct EITData {
-            HRESULT hr        = E_FAIL;
-            EventDescriptor NowNext;
-            bool bShowOSD     = true;
-            bool bShowInfoBar = false;
-        };
-
-        CString         sChannelName;                // Current channel name
-        CBDAChannel*    pChannel          = nullptr; // Pointer to current channel object
-        EventDescriptor NowNext;                     // Current channel EIT
-        bool            bActive           = false;   // True when channel is active
-        bool            bSetChannelActive = false;   // True when channel change is in progress
-        bool            bInfoActive       = false;   // True when EIT data update is in progress
-        bool            bAbortInfo        = true;    // True when aborting current EIT update
-        std::future<DVBState::EITData> infoData;
-
-        void Reset() {
-            sChannelName.Empty();
-            pChannel          = nullptr;
-            NowNext           = EventDescriptor();
-            bActive           = false;
-            bSetChannelActive = false;
-            bInfoActive       = false;
-            bAbortInfo        = true;
-        }
-
-        void Join() {
-            if (infoData.valid()) {
-                bAbortInfo = true;
-                infoData.wait();
-            }
-        }
-
-        ~DVBState() {
-            bAbortInfo = true;
-        }
-    };
-
-    std::unique_ptr<DVBState> m_pDVBState = nullptr;
 
     // Implementation
 public:
@@ -1005,6 +860,7 @@ protected:  // control bar embedded members
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
     std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
+    std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
 
     LPCTSTR GetRecentFile() const;
 
@@ -1088,6 +944,7 @@ public:
     afx_msg LRESULT OnFilePostOpenmedia(WPARAM wParam, LPARAM lparam);
     afx_msg LRESULT OnOpenMediaFailed(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnUpdateCheckDone(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUIRequest(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to
@@ -1134,12 +991,6 @@ public:
     afx_msg void OnFileRecycle();
     afx_msg void OnFileSaveAs();
     afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
-    afx_msg void OnFileSaveImage();
-    afx_msg void OnFileSaveImageAuto();
-    afx_msg void OnUpdateFileSaveImage(CCmdUI* pCmdUI);
-    afx_msg void OnCmdLineSaveThumbnails();
-    afx_msg void OnFileSaveThumbnails();
-    afx_msg void OnUpdateFileSaveThumbnails(CCmdUI* pCmdUI);
     afx_msg void OnFileSubtitlesLoad();
     afx_msg void OnUpdateFileSubtitlesLoad(CCmdUI* pCmdUI);
     afx_msg void OnFileSubtitlesSave() { SubtitlesSave(); }
@@ -1178,8 +1029,6 @@ public:
     afx_msg void OnUpdateEDLNewClip(CCmdUI* pCmdUI);
     afx_msg void OnEDLSave();
     afx_msg void OnUpdateEDLSave(CCmdUI* pCmdUI);
-    afx_msg void OnViewCapture();
-    afx_msg void OnUpdateViewCapture(CCmdUI* pCmdUI);
     afx_msg void OnViewDebugShaders();
     afx_msg void OnUpdateViewDebugShaders(CCmdUI* pCmdUI);
     afx_msg void OnViewColorControls();
@@ -1368,8 +1217,6 @@ public:
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
-    afx_msg void OnTunerScan();
-    afx_msg void OnUpdateTunerScan(CCmdUI* pCmdUI);
 
     afx_msg void OnFavoritesAdd();
     afx_msg void OnUpdateFavoritesAdd(CCmdUI* pCmdUI);
@@ -1421,8 +1268,6 @@ public:
     int         m_nCurSubtitle;
     long        m_lSubtitleShift;
     REFERENCE_TIME m_rtCurSubPos;
-    bool        m_bScanDlgOpened;
-    bool        m_bStopTunerScan;
     bool        m_bLockedZoomVideoWindow;
     int         m_nLockedZoomVideoWindow;
 
@@ -1468,8 +1313,6 @@ public:
     void        SendCurrentMuteToApi(bool force = false);
     void        ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData);
     void        JumpOfNSeconds(int seconds);
-
-    CString GetVidPos() const;
 
     CComPtr<ITaskbarList3> m_pTaskbarList;
     HRESULT CreateThumbnailToolbar();

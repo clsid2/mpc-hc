@@ -753,6 +753,10 @@ msgctxt "IDS_PPAGE_OUTPUT_MPCVR"
 msgid "MPC Video Renderer"
 msgstr ""
 
+msgctxt "IDS_PPAGE_OUTPUT_FRANKY"
+msgid "FrankyRenderer"
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_VMR7"
 msgid "Video Mixing Renderer 7"
 msgstr ""
@@ -938,6 +942,10 @@ msgid ""
 "Can utilize either D3D9 or D3D11."
 msgstr ""
 
+msgctxt "IDC_DSFRANKY"
+msgid "Advanced video renderer that uses libplacebo."
+msgstr ""
+
 msgctxt "IDS_PPAGE_OUTPUT_SYNC"
 msgid "Sync Renderer"
 msgstr "Sinhronizacioni Renderer"
@@ -1000,6 +1008,10 @@ msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_LIMITED"
 msgid "Does not support all player functionality."
+msgstr ""
+
+msgctxt "IDS_PPAGE_OUTPUT_SUPPORT_FRANKY"
+msgid "Supports all player functionality, except pixelshaders."
 msgstr ""
 
 msgctxt "IDS_PPAGE_OUTPUT_AUD_NULL_COMP"

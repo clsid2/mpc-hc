@@ -355,8 +355,8 @@ void CPPageExternalFilters::OnUpdateDeleteType(CCmdUI* pCmdUI)
 
 bool IsExternalVideoRenderer(CLSID clsid)
 {
-    return clsid == CLSID_MPCVR || clsid == CLSID_MadVR || clsid == CLSID_DXR || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_VideoMixingRenderer9 || clsid == CLSID_VideoMixingRenderer || \
-        clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_OverlayMixer || clsid == CLSID_OverlayMixer2 || clsid == CLSID_NullRenderer;
+    return clsid == CLSID_MPCVR || clsid == CLSID_MadVR || clsid == CLSID_DXR || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_FrankyRenderer || clsid == CLSID_VideoMixingRenderer9 || \
+        clsid == CLSID_VideoMixingRenderer || clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_OverlayMixer || clsid == CLSID_OverlayMixer2 || clsid == CLSID_NullRenderer;
 }
 
 bool IgnoreExternalFilter(CLSID clsid)

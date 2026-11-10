@@ -105,7 +105,7 @@ bool IsStreamEnd(IBaseFilter* pBF)
 bool IsVideoRenderer(IBaseFilter* pBF)
 {
     CLSID clsid = GetCLSID(pBF);
-    if (clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_VideoMixingRenderer9 || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_madVR || clsid == CLSID_DXR || clsid == CLSID_MPCVR) {
+    if (clsid == CLSID_VideoRenderer || clsid == CLSID_VideoRendererDefault || clsid == CLSID_VideoMixingRenderer9 || clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_madVR || clsid == CLSID_DXR || clsid == CLSID_MPCVR || clsid == CLSID_FrankyRenderer) {
         return true;
     }
 
@@ -164,6 +164,7 @@ bool IsAudioWaveRenderer(IBaseFilter* pBF)
            clsid == GUIDFromCString(L"{50063380-2B2F-4855-9A1E-40FCA344C7AC}") || // Surodev ASIO Renderer
            clsid == GUIDFromCString(L"{8DE31E85-10FC-4088-8861-E0EC8E70744A}") || // MultiChannel ASIO Renderer
            clsid == GUIDFromCString(L"{205F9417-8EEF-40B4-91CF-C7C6A96936EF}") || // MBSE MultiChannel ASIO Renderer
+           clsid == GUIDFromCString(L"{8A793BA1-CF7E-4F24-939F-288D13CA5787}") || // ARE Audio Renderer
            clsid == __uuidof(CNullAudioRenderer) ||
            clsid == __uuidof(CNullUAudioRenderer);
 }

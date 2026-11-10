@@ -605,6 +605,7 @@ static constexpr wmcmd_base default_wmcmds[] = {
     { ID_FILE_CLOSE_AND_RESTORE,          'C', FCONTROL,          IDS_AG_CLOSE },
     { ID_FILE_PROPERTIES,              VK_F10, FSHIFT,            IDS_AG_PROPERTIES },
     { ID_FILE_OPEN_LOCATION,           VK_F10, FCONTROL | FSHIFT, IDS_AG_OPEN_FILE_LOCATION },
+    { ID_RECENT_FILES_SHOW_HISTORY,        0, 0,                 IDS_PPAGEADVANCED_GRP_HISTORY },
     { ID_FILE_EXIT,                       'X', FALT,              IDS_AG_EXIT },
     { ID_PLAY_PLAYPAUSE,             VK_SPACE, 0,                 IDS_AG_PLAYPAUSE,   APPCOMMAND_MEDIA_PLAY_PAUSE, wmcmd::LUP },
     { ID_PLAY_PLAY,                         0, 0,                 IDS_AG_PLAY,        APPCOMMAND_MEDIA_PLAY },
@@ -887,6 +888,7 @@ bool CAppSettings::IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRendere
                 case VIDRNDT_DS_SYNC:
                 case VIDRNDT_DS_MADVR:
                 case VIDRNDT_DS_MPCVR:
+                case VIDRNDT_DS_FRANKY:
                     return true;
             }
             break;
@@ -901,6 +903,7 @@ bool CAppSettings::IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRendere
                 case VIDRNDT_DS_SYNC:
                 case VIDRNDT_DS_MADVR:
                 case VIDRNDT_DS_MPCVR:
+                case VIDRNDT_DS_FRANKY:
                     return true;
             }
             break;
@@ -911,6 +914,23 @@ bool CAppSettings::IsSubtitleRendererSupported(SubtitleRenderer eSubtitleRendere
             ASSERT(FALSE);
     }
 
+    return false;
+}
+
+bool CAppSettings::RequiresDecoderCopyback(SubtitleRenderer subtitleRenderer) const
+{
+    if (subtitleRenderer == SubtitleRenderer::VS_FILTER) {
+        return true;
+    }
+    POSITION pos = m_filters.GetHeadPosition();
+    while (pos) {
+        const FilterOverride fo = m_filters.GetNext(pos);
+        if (!fo.fDisabled && fo.dwMerit > MERIT_DO_NOT_USE &&
+            (fo.clsid == CLSID_VSFilter || fo.clsid == CLSID_VSFilter2 || fo.clsid == CLSID_FFDShowRawVideo ||
+             fo.clsid == CLSID_AviSynthFilter || fo.clsid == CLSID_VapourSynthFilter)) {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -927,6 +947,8 @@ bool CAppSettings::IsVideoRendererAvailable(int iVideoRendererType)
             return IsCLSIDRegistered(CLSID_madVR);
         case VIDRNDT_DS_MPCVR:
             return IsCLSIDRegistered(CLSID_MPCVR) || DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter();
+        case VIDRNDT_DS_FRANKY:
+            return IsCLSIDRegistered(CLSID_FrankyRenderer);
 #ifdef _WIN64
         case VIDRNDT_DS_OVERLAYMIXER:
             return false;
@@ -2450,7 +2472,7 @@ void CAppSettings::LoadSettings()
         }
 
         bool gpu_changed = previous_gpuid1 != gpuid1;
-        if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC) {
+        if (iDSVideoRendererType != VIDRNDT_DS_MPCVR && iDSVideoRendererType != VIDRNDT_DS_MADVR && iDSVideoRendererType != VIDRNDT_DS_SYNC && iDSVideoRendererType != VIDRNDT_DS_FRANKY) {
             // adjust settings if detection changed
             if (gpu_changed && gpuinfo.UseMPCVR() && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter() && HasD3DCompiler47()) {
                 iDSVideoRendererType = VIDRNDT_DS_MPCVR;

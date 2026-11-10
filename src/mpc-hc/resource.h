@@ -548,6 +548,7 @@
 #define IDC_STATUSBAR                   12139
 #define IDC_PPAGECAPTURE_DESC1          12140
 #define IDC_DSMPCVR                     12141
+#define IDC_DSFRANKY                    12142
 #define IDS_SRC_VTS                     14002
 #define IDS_SRC_RFS                     14003
 #define IDS_INTERNAL_LAVF               14004
@@ -1530,6 +1531,7 @@
 #define IDS_NAVIGATE_CHANNELS           41465
 #define IDS_PPAGE_OUTPUT_MPCVR          41466
 #define IDS_PPAGE_OUTPUT_VMR7           41467
+#define IDS_PPAGE_OUTPUT_FRANKY         41468
 #define IDS_MOUSE_CLICK_MIDDLE          41702
 #define IDS_MOUSE_CLICK_X1              41703
 #define IDS_MOUSE_CLICK_X2              41704
@@ -1545,6 +1547,7 @@
 #define IDS_PPAGE_OUTPUT_SUPPORT_ALL_HDR 41715
 #define IDS_PPAGE_OUTPUT_SUPPORT_NO_HDR 41716
 #define IDS_PPAGE_OUTPUT_SUPPORT_LIMITED 41717
+#define IDS_PPAGE_OUTPUT_SUPPORT_FRANKY 41718
 #define IDS_PPAGE_CAPTURE_FG0           57345
 #define IDS_PPAGE_CAPTURE_FG1           57346
 #define IDS_PPAGE_CAPTURE_FG2           57347
