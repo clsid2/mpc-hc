@@ -42,6 +42,7 @@
 #include "PlayerToolBar.h"
 #include "Snapshot.h"
 #include "CaptureController.h"
+#include "DiscController.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -60,6 +61,8 @@
 #include <functional>
 #include <optional>
 #include <vector>
+
+#define PREV_CHAP_THRESHOLD 2 // used by the file and the DVD chapter skip
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -379,11 +382,7 @@ private:
     void SetupChapters();
     void SetupCueChapters(CString fn);
 
-    // chapters (DVD mode)
-    void SetupDVDChapters();
-
     bool SeekToFileChapter(int iChapter, bool bRelative = false);
-    bool SeekToDVDChapter(int iChapter, bool bRelative = false);
 
     void AddTextPassThruFilter();
 
@@ -459,6 +458,11 @@ public:
     CCaptureController m_capture;
 private:
     friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows and the graph thread
+
+public:
+    CDiscController m_disc;
+private:
+    friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph, m_pDVS and the modal parent
 
     //
 
@@ -643,13 +647,8 @@ protected:
     bool restoringWindowRect;
 
     bool m_fAudioOnly;
-    bool m_fValidDVDOpen;
-    CString m_LastOpenBDPath;
     CAutoPtr<OpenMediaData> m_lastOMD;
 
-    DVD_DOMAIN  m_iDVDDomain;
-    DWORD       m_iDVDTitle;
-    bool        m_bDVDStillOn;
     int         m_loadedAudioTrackIndex = -1;
     int         m_loadedSubtitleTrackIndex = -1;
     int         m_audioTrackCount = 0;
@@ -677,7 +676,6 @@ protected:
 
     void OpenCreateGraphObject(OpenMediaData* pOMD);
     void OpenFile(OpenFileData* pOFD);
-    void OpenDVD(OpenDVDData* pODD);
     void OpenCustomizeGraph();
     CSize OpenSetupGetVideoSize();
     void OpenSetupVideo();
@@ -965,10 +963,6 @@ public:
     afx_msg void OnStreamSubOnOff();
     afx_msg void OnSubtitlesAutoCopy();
     afx_msg void OnAudioShiftOnOff();
-    afx_msg void OnDvdAngle(UINT nID);
-    afx_msg void OnDvdAudio(UINT nID);
-    afx_msg void OnDvdSub(UINT nID);
-    afx_msg void OnDvdSubOnOff();
 
     afx_msg LRESULT OnLoadSubtitles(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnGetSubtitles(WPARAM, LPARAM lParam);
@@ -976,7 +970,6 @@ public:
     // menu item handlers
 
     INT_PTR DoFileDialogWithLastFolder(CFileDialog& fd, CStringW& lastPath);
-    void OpenDVDOrBD(CStringW path);
 
     afx_msg void OnFileOpenQuick();
     afx_msg void OnFileOpenmedia();
@@ -984,7 +977,6 @@ public:
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
     afx_msg LRESULT OnCommandLineReceived(WPARAM wParam, LPARAM lParam);
     void ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived);
-    afx_msg void OnFileOpendvd();
     afx_msg void OnFileOpendevice();
     afx_msg void OnFileOpenOpticalDisk(UINT nID);
     afx_msg void OnFileReopen();
@@ -1212,8 +1204,6 @@ public:
     afx_msg void OnUpdateNavigateSkipFile(CCmdUI* pCmdUI);
     afx_msg void OnNavigateGoto();
     afx_msg void OnUpdateNavigateGoto(CCmdUI* pCmdUI);
-    afx_msg void OnNavigateMenu(UINT nID);
-    afx_msg void OnUpdateNavigateMenu(CCmdUI* pCmdUI);
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
@@ -1285,7 +1275,6 @@ public:
     void        SetupVMR9ColorControl();
     void        SetColorControl(DWORD flags, int& brightness, int& contrast, int& hue, int& saturation);
     void        SetClosedCaptions(bool enable);
-    LPCTSTR     GetDVDAudioFormatName(const DVD_AudioAttributes& ATR) const;
     void        SetAudioDelay(REFERENCE_TIME rtShift);
     void        SetSubtitleDelay(int delay_ms, bool relative = false);
     //void      AutoSelectTracks();
@@ -1437,13 +1426,6 @@ public:
 
     // TODO: refactor it outside of MainFrm
     GUID GetTimeFormat();
-
-    CHdmvClipInfo::HdmvPlaylist m_MPLSPlaylist;
-    bool m_bIsBDPlay;
-    bool OpenBD(CString Path);
-    bool m_bHasBDMeta;
-    CAtlList<CHdmvClipInfo::BDMVMeta> m_BDMeta;
-    CHdmvClipInfo::BDMVMeta GetBDMVMeta();
 
     bool GetDecoderType(CString& type) const;
     CString GetAudioInfo() const;
