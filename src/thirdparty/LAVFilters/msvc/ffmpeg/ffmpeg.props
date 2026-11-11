@@ -33,7 +33,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <!-- ffmpeg's stdatomic.h shim (generic header + win32 backend), as configure passes for cl; clang has its own -->
       <AdditionalIncludeDirectories>$(FFmpegSrc)compat\atomics;$(FFmpegSrc)compat\atomics\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>-Zo-utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Zo -utf-8 -wd4018 -wd4146 -wd4244 -wd4267 -wd4305 -wd4554 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(FFmpegCompiler)'=='clang'">
