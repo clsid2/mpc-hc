@@ -43,6 +43,7 @@
 #include "Snapshot.h"
 #include "CaptureController.h"
 #include "DiscController.h"
+#include "FavoritesRecent.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -159,24 +160,6 @@ struct SubtitleInput {
     SubtitleInput(CComQIPtr<ISubStream> pSubStream) : pSubStream(pSubStream) {};
     SubtitleInput(CComQIPtr<ISubStream> pSubStream, CComPtr<IBaseFilter> pSourceFilter)
         : pSubStream(pSubStream), pSourceFilter(pSourceFilter) {};
-};
-
-struct FileFavorite {
-    CString Name;
-    REFERENCE_TIME Start;
-    REFERENCE_TIME MarkA;
-    REFERENCE_TIME MarkB;
-    BOOL RelativeDrive;
-
-    FileFavorite() {
-        Start = MarkA = MarkB = 0;
-        RelativeDrive = FALSE;
-    }
-
-    static bool TryParse(const CString& fav, FileFavorite& ff);
-    static bool TryParse(const CString& fav, FileFavorite& ff, CAtlList<CString>& parts);
-
-    CString ToString() const;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -350,9 +333,7 @@ private:
     void SetupSecondarySubtitleSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
-    void SetupFavoritesSubMenu();
     bool SetupShadersSubMenu();
-    void SetupRecentFilesSubMenu();
 
     DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
     void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
@@ -370,7 +351,6 @@ private:
     CMPCThemeMenu m_favoritesMenu;
     CMPCThemeMenu m_shadersMenu;
     CMPCThemeMenu m_recentFilesMenu;
-    int recentFilesMenuFromMRUSequence;
 
     UINT m_nJumpToSubMenusCount;
 
@@ -463,6 +443,11 @@ public:
     CDiscController m_disc;
 private:
     friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph, m_pDVS and the modal parent
+
+public:
+    CFavoritesRecent m_favorites;
+private:
+    friend class CFavoritesRecent; // for the load state, the bars, m_OSD, A-B repeat, the open path and the dynamic menus
 
     //
 
@@ -713,7 +698,6 @@ protected:
 protected:
     friend class CSubtitleDlDlg;
     CSubtitleDlDlg m_wndSubtitlesDownloadDialog;
-    CFavoriteOrganizeDlg m_wndFavoriteOrganizeDialog;
     friend class CPPageSubMisc;
 
     friend class SubtitlesProviders;
@@ -725,10 +709,6 @@ protected:
 public:
     void OpenCurPlaylistItem(REFERENCE_TIME rtStart = 0, bool reopen = false, ABRepeat abRepeat = ABRepeat());
     void OpenMedia(CAutoPtr<OpenMediaData> pOMD);
-    void PlayFavoriteFile(const CString& fav);
-    void PlayFavoriteDVD(CString fav);
-    void OpenRecentFileEntry(RecentFileEntry& r);
-    FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     bool ResetDevice();
     bool DisplayChange();
     bool CloseMediaBeforeOpen();
@@ -791,8 +771,6 @@ public:
     void SetSubtitleTrackIdx(int index);
     int GetCurrentAudioTrackIdx(CString *pstrName = nullptr);
     int GetCurrentSubtitleTrackIdx(CString *pstrName = nullptr);
-
-    void AddFavorite(bool fDisplayMessage = false, bool fShowDialog = true);
 
     CString GetFileName();
 
@@ -857,10 +835,7 @@ protected:  // control bar embedded members
 
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
-    std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
     std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
-
-    LPCTSTR GetRecentFile() const;
 
     friend class CPPagePlayback; // TODO
     friend class CPPageAudioSwitcher; // TODO
@@ -1208,23 +1183,6 @@ public:
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
-
-    afx_msg void OnFavoritesAdd();
-    afx_msg void OnUpdateFavoritesAdd(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesQuickAddFavorite();
-    afx_msg void OnFavoritesOrganize();
-    afx_msg void OnUpdateFavoritesOrganize(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesFile(UINT nID);
-    afx_msg void OnUpdateFavoritesFile(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesDVD(UINT nID);
-    afx_msg void OnUpdateFavoritesDVD(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesDevice(UINT nID);
-    afx_msg void OnUpdateFavoritesDevice(CCmdUI* pCmdUI);
-    afx_msg void OnRecentFileClear();
-    afx_msg void OnUpdateRecentFileClear(CCmdUI* pCmdUI);
-    afx_msg void OnRecentFile(UINT nID);
-    afx_msg void OnUpdateRecentFile(CCmdUI* pCmdUI);
-    afx_msg void OnShowHistory();
 
     afx_msg void OnHelpHomepage();
     afx_msg void OnHelpCheckForUpdate();

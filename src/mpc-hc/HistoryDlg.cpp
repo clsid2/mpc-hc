@@ -234,7 +234,7 @@ void CHistoryDlg::OpenItem(int nItem)
     size_t index = m_list.GetItemData(nItem);
     if (index < m_entries.size()) {
         RecentFileEntry r(m_entries[index]);
-        AfxGetMainFrame()->OpenRecentFileEntry(r);
+        AfxGetMainFrame()->m_favorites.OpenRecentFileEntry(r);
     }
 }
 

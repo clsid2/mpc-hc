@@ -25,6 +25,7 @@
 #include "FavoriteOrganizeDlg.h"
 #include "mplayerc.h"
 #include "MainFrm.h"
+#include "FavoritesRecent.h"
 #include "CMPCTheme.h"
 #undef SubclassWindow
 
@@ -344,10 +345,10 @@ void CFavoriteOrganizeDlg::PlayFavorite(int nItem)
 {
     switch (m_tab.GetCurSel()) {
         case 0: // Files
-            ((CMainFrame*)GetParentFrame())->PlayFavoriteFile(m_sl[0].GetAt((POSITION)m_list.GetItemData(nItem)));
+            ((CMainFrame*)GetParentFrame())->m_favorites.PlayFavoriteFile(m_sl[0].GetAt((POSITION)m_list.GetItemData(nItem)));
             break;
         case 1: // DVDs
-            ((CMainFrame*)GetParentFrame())->PlayFavoriteDVD(m_sl[1].GetAt((POSITION)m_list.GetItemData(nItem)));
+            ((CMainFrame*)GetParentFrame())->m_favorites.PlayFavoriteDVD(m_sl[1].GetAt((POSITION)m_list.GetItemData(nItem)));
             break;
         case 2: // Devices
             break;
@@ -620,7 +621,7 @@ void CFavoriteOrganizeDlg::CopyToClipboard()
         int iItem = m_list.GetNextSelectedItem(pos);
         const CString& fav = pSL->GetAt((POSITION)m_list.GetItemData(iItem));
         CAtlList<CString> args;
-        ((CMainFrame*)GetParentFrame())->ParseFavoriteFile(fav, args);
+        ((CMainFrame*)GetParentFrame())->m_favorites.ParseFavoriteFile(fav, args);
 
         CString path = args.GetHead().Trim();
         if (!path.IsEmpty()) {
