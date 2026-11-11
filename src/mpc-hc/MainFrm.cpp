@@ -331,6 +331,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_RUN_DEFERRED, OnRunDeferredActions)
     ON_MESSAGE(WM_MPC_UPDATE_CHECK_DONE, OnUpdateCheckDone)
     ON_MESSAGE(WM_MPC_UI_REQUEST, OnUIRequest)
+    ON_MESSAGE(WM_HELPPROMPTADDR, OnHelpPromptAddr)
     ON_MESSAGE(WM_TUNER_NEW_CHANNEL, OnHeadlessScanNewChannel)
     ON_MESSAGE(WM_TUNER_SCAN_END, OnHeadlessScanEnd)
     ON_MESSAGE(WM_DVB_EIT_DATA_READY, OnCurrentChannelInfoUpdated)
@@ -1425,6 +1426,16 @@ LRESULT CMainFrame::OnUIRequest(WPARAM wParam, LPARAM lParam)
     auto pRequest = reinterpret_cast<UIRequest*>(lParam);
     pRequest->build(this, pRequest->body);
     pRequest->Release();
+    return 0;
+}
+
+// MFC's message box saves its help context in the frame (CFrameWnd::m_dwPromptContext)
+// and writes it back after MessageBox returns. The frame can be destroyed while a
+// message box it owns is up, e.g. the first-run update prompt in InitInstance, and
+// that write then lands in freed memory. Returning 0 makes MFC use the app's context,
+// which lives for the whole process; it only matters for WinHelp, which we do not use.
+LRESULT CMainFrame::OnHelpPromptAddr(WPARAM wParam, LPARAM lParam)
+{
     return 0;
 }
 
