@@ -946,6 +946,7 @@ public:
     afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUpdateCheckDone(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUIRequest(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHelpPromptAddr(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to
     // it instead, because DoTunerScan sends to the HWND it was handed.
