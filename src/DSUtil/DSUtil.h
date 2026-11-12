@@ -71,8 +71,9 @@ extern bool  IsCLSIDRegistered(const CLSID& clsid);
 extern CString GetFilterPath(LPCTSTR clsid);
 extern CString GetFilterPath(const CLSID& clsid);
 extern void  CStringToBin(CString str, CAtlArray<BYTE>& data);
+extern void  CStringToBin(CString str, std::vector<BYTE>& data);
 extern CString BinToCString(const BYTE* ptr, size_t len);
-extern void FindFiles(CString fn, CAtlList<CString>& files);
+extern void FindFiles(CString fn, std::list<CString>& files);
 enum OpticalDiskType_t {
     OpticalDisk_NotFound,
     OpticalDisk_Audio,
@@ -81,7 +82,7 @@ enum OpticalDiskType_t {
     OpticalDisk_BD,
     OpticalDisk_Unknown
 };
-extern OpticalDiskType_t GetOpticalDiskType(TCHAR drive, CAtlList<CString>& files);
+extern OpticalDiskType_t GetOpticalDiskType(TCHAR drive, std::list<CString>& files);
 extern CString GetDriveLabel(TCHAR drive);
 extern CString GetDriveLabel(CLongPath path);
 bool IsDriveVirtual(CString drive);
@@ -132,7 +133,7 @@ extern REFERENCE_TIME StringToReftime(LPCTSTR strVal);
 extern void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName);
 extern CString FindCoverArt(const CString& path, const CString& author);
 extern CString NormalizeUnicodeStrForSearch(CString srcStr, LANGID langid);
-extern bool FindStringInList(const CAtlList<CString>& list, CString& value);
+extern bool FindStringInList(const std::list<CString>& list, CString& value);
 extern CStringW ForceTrailingSlash(CStringW folder);
 extern CStringW GetChannelStrFromMediaType(AM_MEDIA_TYPE* pmt);
 extern CStringW GetChannelStrFromMediaType(AM_MEDIA_TYPE* pmt, int& channels);

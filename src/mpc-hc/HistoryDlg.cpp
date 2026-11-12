@@ -123,10 +123,10 @@ void CHistoryDlg::SetupList()
 
     for (size_t i = 0; i < m_entries.size(); i++) {
         const auto& entry = m_entries[i];
-        if (entry.fns.IsEmpty()) {
+        if (entry.fns.empty()) {
             continue;
         }
-        const CString& entryPath = entry.fns.GetHead();
+        const CString& entryPath = entry.fns.front();
 
         if (!filter.IsEmpty()) {
             CString path(entryPath);
@@ -217,8 +217,8 @@ void CHistoryDlg::CopySelectedPaths()
     while (pos) {
         int nItem = m_list.GetNextSelectedItem(pos);
         size_t index = m_list.GetItemData(nItem);
-        if (index < m_entries.size() && !m_entries[index].fns.IsEmpty()) {
-            paths.Append(m_entries[index].fns.GetHead());
+        if (index < m_entries.size() && !m_entries[index].fns.empty()) {
+            paths.Append(m_entries[index].fns.front());
             paths.Append(_T("\r\n"));
         }
     }
@@ -272,8 +272,8 @@ void CHistoryDlg::RemoveSelected()
         size_t index = m_list.GetItemData(nItem);
         if (index < m_entries.size()) {
             hashes.emplace_back(m_entries[index].hash);
-            if (!m_entries[index].fns.IsEmpty()) {
-                paths.emplace_back(m_entries[index].fns.GetHead());
+            if (!m_entries[index].fns.empty()) {
+                paths.emplace_back(m_entries[index].fns.front());
             }
         }
     }
@@ -348,10 +348,10 @@ void CHistoryDlg::RemoveMissingFiles()
     std::list<CString> paths;
 
     for (const auto& entry : m_entries) {
-        if (entry.fns.IsEmpty()) {
+        if (entry.fns.empty()) {
             continue;
         }
-        CString path(entry.fns.GetHead());
+        CString path(entry.fns.front());
         if (entry.DVDPosition.llDVDGuid && path.GetLength() == 24 && path.Mid(1).CompareNoCase(_T(":\\VIDEO_TS\\VIDEO_TS.IFO")) == 0) {
             // skip DVD-Video at the root of the disc
             continue;
@@ -374,10 +374,10 @@ void CHistoryDlg::RemoveURLs()
     std::list<CString> paths;
 
     for (const auto& entry : m_entries) {
-        if (entry.fns.IsEmpty()) {
+        if (entry.fns.empty()) {
             continue;
         }
-        CString path(entry.fns.GetHead());
+        CString path(entry.fns.front());
         if (PathUtils::IsURL(path)) {
             hashes.emplace_back(entry.hash);
             paths.emplace_back(path);
@@ -400,8 +400,8 @@ void CHistoryDlg::RemoveOlderThan(int days)
     for (const auto& entry : m_entries) {
         if (!entry.lastOpened.IsEmpty() && entry.lastOpened < cutoff) {
             hashes.emplace_back(entry.hash);
-            if (!entry.fns.IsEmpty()) {
-                paths.emplace_back(entry.fns.GetHead());
+            if (!entry.fns.empty()) {
+                paths.emplace_back(entry.fns.front());
             }
         }
     }

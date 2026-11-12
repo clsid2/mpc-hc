@@ -669,13 +669,13 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
     int dibsize = sizeof(BITMAPINFOHEADER) + (int)llImageSize;
 
-    CAutoVectorPtr<BYTE> dib;
-    if (!dib.Allocate(dibsize)) {
+    std::unique_ptr<BYTE[]> dib(new(std::nothrow) BYTE[dibsize]);
+    if (!dib) {
         AfxMessageBox(IDS_OUT_OF_MEMORY, MB_ICONWARNING | MB_OK, 0);
         return false;
     }
 
-    BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)(BYTE*)dib;
+    BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)dib.get();
     ZeroMemory(bih, sizeof(BITMAPINFOHEADER));
     bih->biSize = sizeof(BITMAPINFOHEADER);
     bih->biWidth = width;
@@ -933,7 +933,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         rts.Render(spd, 0, 25, bbox);
     }
 
-    SaveDIB(fn, (BYTE*)dib, dibsize);
+    SaveDIB(fn, dib.get(), dibsize);
 
     if (m_frame.Graph().m_pBA) {
         m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);

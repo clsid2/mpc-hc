@@ -66,7 +66,7 @@ public:
     void ReleaseDVBState();
     void OpenSetupCaptureBar();
 
-    void StartTunerScan(CAutoPtr<TunerScanData> pTSD);
+    void StartTunerScan(std::unique_ptr<TunerScanData> pTSD);
     void StopTunerScan();
     HRESULT SetChannel(int nChannel);
 

@@ -76,10 +76,8 @@ CPlaylistItem& CPlaylistItem::operator=(const CPlaylistItem& pli)
     if (this != &pli) {
         m_id = pli.m_id;
         m_label = pli.m_label;
-        m_fns.RemoveAll();
-        m_fns.AddTailList(&pli.m_fns);
-        m_subs.RemoveAll();
-        m_subs.AddTailList(&pli.m_subs);
+        m_fns = pli.m_fns;
+        m_subs = pli.m_subs;
         m_type = pli.m_type;
         m_fInvalid = pli.m_fInvalid;
         m_duration = pli.m_duration;
@@ -97,22 +95,19 @@ CPlaylistItem& CPlaylistItem::operator=(const CPlaylistItem& pli)
         m_bYoutubeDL = pli.m_bYoutubeDL;
         m_ydlSourceURL = pli.m_ydlSourceURL;
         m_useragent = pli.m_useragent;
-        m_ydl_subs.RemoveAll();
-        m_ydl_subs.AddHeadList(&pli.m_ydl_subs);
+        m_ydl_subs = pli.m_ydl_subs;
     }
     return *this;
 }
 
-POSITION CPlaylistItem::FindFile(LPCTSTR path)
+bool CPlaylistItem::FindFile(LPCTSTR path)
 {
-    POSITION pos = m_fns.GetHeadPosition();
-    while (pos) {
-        if (m_fns.GetAt(pos).CompareNoCase(path) == 0) {
-            return pos;
+    for (const CString& fn : m_fns) {
+        if (fn.CompareNoCase(path) == 0) {
+            return true;
         }
-        m_fns.GetNext(pos);
     }
-    return nullptr;
+    return false;
 }
 
 CString CPlaylistItem::GetLabel(int i)
@@ -123,8 +118,8 @@ CString CPlaylistItem::GetLabel(int i)
         ASSERT(m_label);
         if (m_label && !m_label.IsEmpty()) {
             str = m_label;
-        } else if (!m_fns.IsEmpty()) {
-            str = PathUtils::StripPathOrUrl(m_fns.GetHead());
+        } else if (!m_fns.empty()) {
+            str = PathUtils::StripPathOrUrl(m_fns.front());
         }
     } else if (i == 1) {
         if (m_fInvalid) {
@@ -155,13 +150,13 @@ CString CPlaylistItem::GetLabel(int i)
 
 void CPlaylistItem::AutoLoadFiles()
 {
-    if (m_fns.IsEmpty()) {
+    if (m_fns.empty()) {
         return;
     }
 
     const CAppSettings& s = AfxGetAppSettings();
 
-    CString fn = m_fns.GetHead();
+    CString fn = m_fns.front();
 
     if (s.fAutoloadAudio && !PathUtils::IsURL(fn) && (s.fEnableAudioSwitcher || s.SelectedAudioRenderer() != AUDRNDT_INTERNAL && s.SelectedAudioRenderer() != AUDRNDT_MPC)) {
         int i = fn.ReverseFind('.');
@@ -188,7 +183,7 @@ void CPlaylistItem::AutoLoadFiles()
                         CString ext2 = fullpath.Mid(fullpath.ReverseFind('.') + 1).MakeLower();
                         if (!FindStringInList(m_fns, fullpath) && ext != ext2
                                 && mf.FindExt(ext2, true) && mf.IsUsingEngine(fullpath, DirectShow)) {
-                            m_fns.AddTail(fullpath);
+                            m_fns.push_back(fullpath);
                         }
                     } while (FindNextFile(hFind, &fd));
 
@@ -222,7 +217,7 @@ void CPlaylistItem::AutoLoadFiles()
 
         for (size_t i = 0; i < ret.GetCount(); i++) {
             if (!FindStringInList(m_subs, ret[i].fn)) {
-                m_subs.AddTail(ret[i].fn);
+                m_subs.push_back(ret[i].fn);
             }
         }
     }
@@ -323,7 +318,7 @@ void CPlaylist::SortByName()
     a.SetCount(GetCount());
     POSITION pos = GetHeadPosition();
     for (int i = 0; pos; i++, GetNext(pos)) {
-        CString& fn = GetAt(pos).m_fns.GetHead();
+        CString& fn = GetAt(pos).m_fns.front();
         a[i].str = (LPCTSTR)fn + std::max(fn.ReverseFind('/'), fn.ReverseFind('\\')) + 1;
         a[i].pos = pos;
     }
@@ -351,7 +346,7 @@ void CPlaylist::SortByPath(int startIndex)
     CAtlArray<plsort2_t> a;
     a.SetCount(GetCount() - startIndex);
     for (int i = 0; pos; i++, GetNext(pos)) {
-        a[i].str = GetAt(pos).m_fns.GetHead(), a[i].pos = pos;
+        a[i].str = GetAt(pos).m_fns.front(), a[i].pos = pos;
     }
     std::sort(a.GetData(), a.GetData() + a.GetCount());
     for (size_t i = 0; i < a.GetCount(); i++) {
@@ -371,8 +366,8 @@ void CPlaylist::SortByDate(bool bIncreasing)
     POSITION pos = GetHeadPosition();
     for (int i = 0; pos; i++, GetNext(pos)) {
         CPlaylistItem& pli = GetAt(pos);
-        if (pli.m_filetime == 0 && pli.m_type == CPlaylistItem::file && !pli.m_fns.IsEmpty()) {
-            CString& fn = pli.m_fns.GetHead();
+        if (pli.m_filetime == 0 && pli.m_type == CPlaylistItem::file && !pli.m_fns.empty()) {
+            CString& fn = pli.m_fns.front();
             if (!PathUtils::IsURL(fn)) {
                 pli.m_filetime = 1; // assume unavailable, so we don't check the file again
                 WIN32_FILE_ATTRIBUTE_DATA fad;

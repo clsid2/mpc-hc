@@ -170,7 +170,7 @@ void CTunerScanDlg::OnBnClickedStart()
 {
     if (!m_bInProgress) {
         UpdateData(true);
-        CAutoPtr<TunerScanData> pTSD(DEBUG_NEW TunerScanData);
+        std::unique_ptr<TunerScanData> pTSD(DEBUG_NEW TunerScanData);
         pTSD->Hwnd           = m_hWnd;
         pTSD->FrequencyStart = m_ulFrequencyStart;
         pTSD->FrequencyStop  = m_ulFrequencyEnd;
@@ -180,7 +180,7 @@ void CTunerScanDlg::OnBnClickedStart()
         SaveScanSettings();
 
         m_ChannelList.DeleteAllItems();
-        m_pMainFrame->m_capture.StartTunerScan(pTSD);
+        m_pMainFrame->m_capture.StartTunerScan(std::move(pTSD));
 
         SetProgress(true);
     } else {

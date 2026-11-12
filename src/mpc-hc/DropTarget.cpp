@@ -62,7 +62,7 @@ DROPEFFECT CDropTarget::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject, DWOR
 BOOL CDropTarget::OnDrop(CWnd* pWnd, COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
 {
     BOOL bResult = FALSE;
-    CAtlList<CStringW> slFiles;
+    std::list<CStringW> slFiles;
 
     CLIPFORMAT cfFormat = 0;
 
@@ -81,7 +81,7 @@ BOOL CDropTarget::OnDrop(CWnd* pWnd, COleDataObject* pDataObject, DROPEFFECT dro
                         if (res) {
                             fn.ReleaseBuffer(res);
                             //ExtendMaxPathLengthIfNeeded(fn);
-                            slFiles.AddTail(fn);
+                            slFiles.push_back(fn);
                         }
                     }
                     ::DragFinish(hDrop);
@@ -109,20 +109,18 @@ BOOL CDropTarget::OnDrop(CWnd* pWnd, COleDataObject* pDataObject, DROPEFFECT dro
                     CStringW text = bUnicode ? CStringW(pUnicodeText) : CStringW(pAnsiText);
                     if (!text.IsEmpty()) {
                         if (cfFormat == CF_URLW || cfFormat == CF_URLA) {
-                            slFiles.AddTail(text);
+                            slFiles.push_back(text);
                         } else {
-                            CAtlList<CStringW> lines;
+                            std::list<CStringW> lines;
                             Explode(text, lines, L'\n');
-                            POSITION pos = lines.GetHeadPosition();
-                            while (pos) {
-                                const CString& line = lines.GetNext(pos);
+                            for (const CString& line : lines) {
                                 if (::PathIsURLW(line) || ::PathFileExistsW(line)) {
-                                    slFiles.AddTail(line);
+                                    slFiles.push_back(line);
                                 }
                             }
                         }
 
-                        if (!slFiles.IsEmpty()) {
+                        if (!slFiles.empty()) {
                             pClient->OnDropFiles(slFiles, dropEffect);
                             bResult = TRUE;
                         }

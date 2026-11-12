@@ -686,6 +686,17 @@ bool CVobFile::Open(CString fn, CAtlList<CString>& vobs, ULONG nProgNum /*= 1*/,
     return Open(vobs, offset, bAuthenticate);
 }
 
+bool CVobFile::Open(CString fn, std::list<CString>& vobs, ULONG nProgNum /*= 1*/, bool bAuthenticate /*= true*/)
+{
+    CAtlList<CString> atlVobs;
+    bool ret = Open(fn, atlVobs, nProgNum, bAuthenticate);
+    vobs.clear();
+    for (POSITION pos = atlVobs.GetHeadPosition(); pos;) {
+        vobs.push_back(atlVobs.GetNext(pos));
+    }
+    return ret;
+}
+
 bool CVobFile::Open(const CAtlList<CString>& vobs, int offset /*= -1*/, bool bAuthenticate /*= true*/)
 {
     Close();

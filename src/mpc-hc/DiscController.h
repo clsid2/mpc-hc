@@ -55,7 +55,7 @@ public:
     CHdmvClipInfo::HdmvPlaylist m_MPLSPlaylist;
     bool m_bIsBDPlay;
     bool m_bHasBDMeta;
-    CAtlList<CHdmvClipInfo::BDMVMeta> m_BDMeta;
+    std::list<CHdmvClipInfo::BDMVMeta> m_BDMeta;
 
     bool OpenBD(CString Path);
     void OpenDVDOrBD(CStringW path);

@@ -30,7 +30,7 @@ namespace FileDialogUtils
     // Retrieves the path(s) the user selected, to be called after DoModal() returned IDOK.
     // Use this instead of CFileDialog::GetStartPosition()/GetNextPathName(), which cannot
     // return a path longer than _MAX_PATH. Returns false if nothing could be retrieved.
-    bool GetSelectedPaths(CFileDialog& fd, CAtlList<CString>& paths);
+    bool GetSelectedPaths(CFileDialog& fd, std::list<CString>& paths);
 
     // Single selection variant, returns an empty string on failure.
     CString GetSelectedPath(CFileDialog& fd);
@@ -45,11 +45,11 @@ class COpenFileDlg : public CFileDialog
 
 private:
     TCHAR* m_buff;
-    CAtlArray<CString>& m_mask;
+    std::vector<CString>& m_mask;
     CLongPath m_defaultDir;
 
 public:
-    COpenFileDlg(CAtlArray<CString>& mask, bool fAllowDirSelection,
+    COpenFileDlg(std::vector<CString>& mask, bool fAllowDirSelection,
                  LPCTSTR lpszDefExt = nullptr,
                  LPCTSTR lpszFileName = nullptr,
                  DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,

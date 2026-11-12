@@ -41,7 +41,7 @@ private:
     BOOL m_bAppendToPlaylist;
 
     bool m_bMultipleFiles;
-    CAtlList<CString> m_fns;
+    std::list<CString> m_fns;
 
 public:
     COpenDlg(CWnd* pParent = nullptr);
@@ -50,7 +50,7 @@ public:
     // Dialog Data
     enum { IDD = IDD_OPEN_DLG };
 
-    const CAtlList<CString>& GetFileNames() const { return m_fns; }
+    const std::list<CString>& GetFileNames() const { return m_fns; }
     bool HasMultipleFiles() const { return m_bMultipleFiles; }
     bool GetAppendToPlaylist() const { return !!m_bAppendToPlaylist; }
 
