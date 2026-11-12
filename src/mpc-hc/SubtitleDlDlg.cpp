@@ -249,7 +249,7 @@ BOOL CSubtitleDlDlg::OnInitDialog()
                             | LVS_EX_CHECKBOXES | LVS_EX_LABELTIP);
     m_list.setAdditionalStyles(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 
-    m_list.SetImageList(&m_pMainFrame->m_pSubtitlesProviders->GetImageList(), LVSIL_SMALL);
+    m_list.SetImageList(&m_pMainFrame->m_subs.m_pSubtitlesProviders->GetImageList(), LVSIL_SMALL);
 
     m_ps.m_hWnd = m_list.GetSafeHwnd();
     m_ps.m_nSortColumn = AfxGetApp()->GetProfileInt(IDS_R_DLG_SUBTITLEDL, IDS_RS_DLG_SUBTITLEDL_SORTCOLUMN, 0);
@@ -339,9 +339,9 @@ BOOL CSubtitleDlDlg::PreTranslateMessage(MSG* pMsg)
 void CSubtitleDlDlg::OnOK()
 {
     if (IsDlgButtonChecked(IDC_CHECK1) == BST_CHECKED) {
-        m_pMainFrame->SetSubtitle(SubtitleInput(nullptr));
-        CAutoLock cAutoLock(&m_pMainFrame->m_csSubLock);
-        auto& subStreams = m_pMainFrame->m_pSubStreams;
+        m_pMainFrame->m_subs.SetSubtitle(SubtitleInput(nullptr));
+        CAutoLock cAutoLock(&m_pMainFrame->m_subs.m_csSubLock);
+        auto& subStreams = m_pMainFrame->m_subs.m_pSubStreams;
         POSITION pos = subStreams.GetHeadPosition();
         while (pos) {
             POSITION currentPos = pos;
@@ -369,19 +369,19 @@ void CSubtitleDlDlg::OnOK()
 void CSubtitleDlDlg::OnRefresh()
 {
     m_list.DeleteAllItems();
-    m_pMainFrame->m_pSubtitlesProviders->Search(FALSE);
+    m_pMainFrame->m_subs.m_pSubtitlesProviders->Search(FALSE);
 }
 
 void CSubtitleDlDlg::OnManualSearch()
 {
     m_list.DeleteAllItems();
     UpdateData(TRUE);
-    m_pMainFrame->m_pSubtitlesProviders->ManualSearch(FALSE, manualSearch);
+    m_pMainFrame->m_subs.m_pSubtitlesProviders->ManualSearch(FALSE, manualSearch);
 }
 
 void CSubtitleDlDlg::OnAbort()
 {
-    m_pMainFrame->m_pSubtitlesProviders->Abort(SubtitlesThreadType(STT_SEARCH | STT_DOWNLOAD));
+    m_pMainFrame->m_subs.m_pSubtitlesProviders->Abort(SubtitlesThreadType(STT_SEARCH | STT_DOWNLOAD));
 }
 
 void CSubtitleDlDlg::OnOptions()

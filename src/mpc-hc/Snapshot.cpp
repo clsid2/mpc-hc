@@ -506,7 +506,7 @@ HRESULT CSnapshot::RenderCurrentSubtitles(BYTE* pData) {
     CheckPointer(pData, E_FAIL);
     HRESULT hr = S_FALSE;
 
-    if (CComQIPtr<ISubPicProvider> pSubPicProvider = m_frame.m_pCurrentSubInput.pSubStream) {
+    if (CComQIPtr<ISubPicProvider> pSubPicProvider = m_frame.m_subs.m_pCurrentSubInput.pSubStream) {
         const PBITMAPINFOHEADER bih = (PBITMAPINFOHEADER)pData;
         const int width = bih->biWidth;
         const int height = abs(bih->biHeight);

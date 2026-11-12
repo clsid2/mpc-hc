@@ -237,7 +237,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.SetAudioDelay(rtPos);
             break;
         case CMD_SETSUBTITLEDELAY:
-            m_frame.SetSubtitleDelay(_wtoi((LPCWSTR)pCDS->lpData));
+            m_frame.m_subs.SetSubtitleDelay(_wtoi((LPCWSTR)pCDS->lpData));
             break;
         case CMD_SETINDEXPLAYLIST:
             //m_frame.m_wndPlaylistBar.SetSelIdx(_wtoi((LPCWSTR)pCDS->lpData));
@@ -246,7 +246,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.SetAudioTrackIdx(_wtoi((LPCWSTR)pCDS->lpData));
             break;
         case CMD_SETSUBTITLETRACK:
-            m_frame.SetSubtitleTrackIdx(_wtoi((LPCWSTR)pCDS->lpData));
+            m_frame.m_subs.SetSubtitleTrackIdx(_wtoi((LPCWSTR)pCDS->lpData));
             break;
         case CMD_GETVERSION: {
             CStringW buff = AfxGetMyApp()->m_strVersion;
@@ -254,7 +254,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             break;
         }
         case CMD_GETSUBTITLETRACKS:
-            m_frame.SendSubtitleTracksToApi();
+            m_frame.m_subs.SendSubtitleTracksToApi();
             break;
         case CMD_GETAUDIOTRACKS:
             SendAudioTracksToApi();
@@ -263,7 +263,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             SendApiNotify(CMD_CURRENTAUDIOTRACK, m_frame.GetCurrentAudioTrackIdx());
             break;
         case CMD_GETCURRENTSUBTITLETRACK:
-            SendApiNotify(CMD_CURRENTSUBTITLETRACK, m_frame.GetCurrentSubtitleTrackIdx());
+            SendApiNotify(CMD_CURRENTSUBTITLETRACK, m_frame.m_subs.GetCurrentSubtitleTrackIdx());
             break;
         case CMD_GETCURRENTPOSITION:
             SendCurrentPositionToApi();
@@ -451,7 +451,7 @@ void CApiBridge::SendNowPlayingToApi(bool sendtrackinfo)
 
         SendAPICommand(CMD_NOWPLAYING, L"%s", static_cast<LPCWSTR>(buff));
         if (sendtrackinfo) {
-            m_frame.SendSubtitleTracksToApi();
+            m_frame.m_subs.SendSubtitleTracksToApi();
             SendAudioTracksToApi();
         }
     }

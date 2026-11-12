@@ -405,8 +405,8 @@ void CDiscController::OpenDVD(OpenDVDData* pODD)
         } else {
             if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
                 if (!s.IsISRAutoLoadEnabled()) {
-                    m_frame.m_pDVS = pBF;
-                    m_frame.m_pDVS2 = pBF;
+                    m_frame.m_subs.m_pDVS = pBF;
+                    m_frame.m_subs.m_pDVS2 = pBF;
                 }
             } else {
                 if (clsid != CLSID_MPCBEAudioRenderer) {

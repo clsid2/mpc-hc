@@ -46,7 +46,7 @@
 #include "FavoritesRecent.h"
 #include "VideoGeometry.h"
 #include "ApiBridge.h"
-#include "SubtitleDlDlg.h"
+#include "SubtitleController.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
 #include "CMPCThemeMenu.h"
@@ -56,7 +56,6 @@
 #include "PlayerGraph.h" // after initguid.h and qnetwork.h, so the qnetwork IIDs are defined here
 #include "../DSUtil/FontInstaller.h"
 #include "AppSettings.h"
-#include "../filters/transform/VSFilter/IDirectVobSub.h"
 #include "MediaTransControls.h"
 #include "FavoriteOrganizeDlg.h"
 #include "AllocatorCommon.h"
@@ -154,16 +153,6 @@ struct SeekToCommand {
     bool bShowOSD;
 };
 
-struct SubtitleInput {
-    CComQIPtr<ISubStream> pSubStream;
-    CComPtr<IBaseFilter> pSourceFilter;
-
-    SubtitleInput() {};
-    SubtitleInput(CComQIPtr<ISubStream> pSubStream) : pSubStream(pSubStream) {};
-    SubtitleInput(CComQIPtr<ISubStream> pSubStream, CComPtr<IBaseFilter> pSourceFilter)
-        : pSubStream(pSubStream), pSourceFilter(pSourceFilter) {};
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
@@ -233,7 +222,6 @@ private:
     friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
     friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
     friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
-    friend class SubtitlesProvider;
 
     CPlayerGraph m_graph;
     // SmarkSeek
@@ -241,9 +229,6 @@ private:
     int defaultVideoAngle;
 
     CComPtr<IUnknown> m_pProv;
-
-    CComQIPtr<IDirectVobSub> m_pDVS;
-    CComQIPtr<IDirectVobSub2> m_pDVS2;
 
     bool m_bUsingDXVA;
     LPCTSTR m_HWAccelType;
@@ -263,26 +248,6 @@ private:
 	// temp fonts loader
 	CFontInstaller m_FontInstaller;
 
-    // subtitles
-
-    CCritSec m_csSubLock;
-    CCritSec m_csSubtitleManagementLock;
-
-    CList<SubtitleInput> m_pSubStreams;
-    std::list<ISubStream*> m_ExternalSubstreams;
-    POSITION m_posFirstExtSub;
-    SubtitleInput m_pCurrentSubInput;
-    SubtitleInput m_pSecondarySubInput; // secondary subtitle track, limited to externally loaded text subtitles
-
-    // last subtitle segment copied to the clipboard by auto-copy, and the time
-    // before which there is nothing new to copy
-    int m_nLastCopiedSubSegment;
-    REFERENCE_TIME m_rtNextAutoCopySubtitle;
-    void ResetAutoCopySubtitle() {
-        m_nLastCopiedSubSegment = -1;
-        m_rtNextAutoCopySubtitle = 0;
-    }
-
     // StatusBar message text parts
     CString currentAudioLang;
     CString currentSubLang;
@@ -290,17 +255,7 @@ private:
     CString m_statusbarAudioFormat;
     CString m_statusbarVideoSize;
 
-    SubtitleInput* GetSubtitleInput(int& i, bool bIsOffset = false);
-    // Secondary subtitle track helpers. The same eligibility predicate drives the
-    // menu builder and the command handler, so the handler can never select an
-    // entry the menu did not offer.
-    bool IsEligibleSecondarySubtitle(const SubtitleInput& subInput) const;
-    SubtitleInput* GetSecondarySubtitleInput(int idx);
     int UpdateSelectedAudioStreamInfo(int index, AM_MEDIA_TYPE* pmt, LCID lcid);
-    bool IsValidSubtitleStream(int i);
-    int GetSelectedSubtitleTrackIndex();
-
-    friend class CTextPassThruFilter;
 
     // windowing
 
@@ -331,8 +286,6 @@ private:
     void SetupOpenCDSubMenu();
     void SetupFiltersSubMenu();
     void SetupAudioSubMenu();
-    void SetupSubtitlesSubMenu();
-    void SetupSecondarySubtitleSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
     bool SetupShadersSubMenu();
@@ -366,8 +319,6 @@ private:
 
     bool SeekToFileChapter(int iChapter, bool bRelative = false);
 
-    void AddTextPassThruFilter();
-
     int m_nLoops;
     bool m_bKeepLoopCountOnStop = false; // set before a skip that closes the file, so OnPlayStop keeps m_nLoops
     ABRepeat abRepeat, reloadABRepeat;
@@ -377,8 +328,6 @@ private:
 
     bool m_fCustomGraph;
     bool m_fShockwaveGraph;
-
-    CComPtr<ISubClock> m_pSubClock;
 
     bool m_fFrameSteppingActive;
     int m_nStepForwardCount;
@@ -441,7 +390,7 @@ private:
 public:
     CDiscController m_disc;
 private:
-    friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph, m_pDVS and the modal parent
+    friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph and the modal parent
 
 public:
     CFavoritesRecent m_favorites;
@@ -457,6 +406,13 @@ public:
     CApiBridge m_api;
 private:
     friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers, the shader toggle and the yt-dlp helpers
+
+public:
+    CSubtitleController m_subs;
+private:
+    friend class CSubtitleController; // for the load state, the bars, m_OSD, the dynamic menus, the stream selection helpers, the status message and the modal parent
+    friend class CSubtitleDlDlg; // for the status message, the options sheet and m_fAudioOnly
+    friend struct SubtitlesInfo; // for the graph and the playlist bar
 
     //
 
@@ -639,7 +595,6 @@ protected:
     CAutoPtr<OpenMediaData> m_lastOMD;
 
     int         m_loadedAudioTrackIndex = -1;
-    int         m_loadedSubtitleTrackIndex = -1;
     int         m_audioTrackCount = 0;
 
     double m_dSpeedRate;
@@ -696,17 +651,6 @@ protected:
     volatile bool m_fOpeningAborted;
     bool m_bWasSnapped;
 
-protected:
-    friend class CSubtitleDlDlg;
-    CSubtitleDlDlg m_wndSubtitlesDownloadDialog;
-    friend class CPPageSubMisc;
-
-    friend class SubtitlesProviders;
-    std::unique_ptr<SubtitlesProviders> m_pSubtitlesProviders;
-    friend struct SubtitlesInfo;
-    friend class SubtitlesTask;
-    friend class SubtitlesThread;
-
 public:
     void OpenCurPlaylistItem(REFERENCE_TIME rtStart = 0, bool reopen = false, ABRepeat abRepeat = ABRepeat());
     void OpenMedia(CAutoPtr<OpenMediaData> pOMD);
@@ -751,27 +695,9 @@ public:
     void SetPlayingRate(double rate);
 
     int SetupAudioStreams();
-    int SetupSubtitleStreams();
-
-    bool LoadSubtitle(CString fn, SubtitleInput* pSubInput = nullptr, bool bAutoLoad = false);
-    bool LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub);
-    bool SetSubtitle(int i, bool bIsOffset = false, bool bDisplayMessage = false);
-    void SetSubtitle(const SubtitleInput& subInput, bool skip_lcid = false);
-    void SetSecondarySubtitle(const SubtitleInput& subInput);
-    CComPtr<ISubPicProvider> GetSubtitleSubPicProvider();
-    void UpdateSubtitleColorInfo();
-    void ToggleSubtitleOnOff(bool bDisplayMessage = false);
-    void ReplaceSubtitle(const ISubStream* pSubStreamOld, ISubStream* pSubStreamNew);
-    void InvalidateSubtitle(DWORD_PTR nSubtitleId = DWORD_PTR_MAX, REFERENCE_TIME rtInvalidate = -1);
-    void ReloadSubtitle();
-    bool ApplySubtitleRenderingParameters(ISubStream* pSubStream, bool bSecondary);
-    void UpdateSubtitleRenderingParameters();
-    HRESULT InsertTextPassThruFilter(IBaseFilter* pBF, IPin* pPin, IPin* pPinto);
 
     void SetAudioTrackIdx(int index);
-    void SetSubtitleTrackIdx(int index);
     int GetCurrentAudioTrackIdx(CString *pstrName = nullptr);
-    int GetCurrentSubtitleTrackIdx(CString *pstrName = nullptr);
 
     CString GetFileName();
 
@@ -933,12 +859,8 @@ public:
     void ToolbarContextMenu(int iItem, int nIndex, CRect buttonRect);
 
     afx_msg void OnUpdateAudiosButton(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateSubtitlesButton(CCmdUI* pCmdUI);
 
     afx_msg void OnStreamAudio(UINT nID);
-    afx_msg void OnStreamSub(UINT nID);
-    afx_msg void OnStreamSubOnOff();
-    afx_msg void OnSubtitlesAutoCopy();
     afx_msg void OnAudioShiftOnOff();
 
     afx_msg LRESULT OnLoadSubtitles(WPARAM wParam, LPARAM lParam);
@@ -960,14 +882,6 @@ public:
     afx_msg void OnFileRecycle();
     afx_msg void OnFileSaveAs();
     afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
-    afx_msg void OnFileSubtitlesLoad();
-    afx_msg void OnUpdateFileSubtitlesLoad(CCmdUI* pCmdUI);
-    afx_msg void OnFileSubtitlesSave() { SubtitlesSave(); }
-    afx_msg void OnUpdateFileSubtitlesSave(CCmdUI* pCmdUI);
-    //afx_msg void OnFileSubtitlesUpload();
-    //afx_msg void OnUpdateFileSubtitlesUpload(CCmdUI* pCmdUI);
-    afx_msg void OnFileSubtitlesDownload();
-    afx_msg void OnUpdateFileSubtitlesDownload(CCmdUI* pCmdUI);
     afx_msg void OnFileProperties();
     afx_msg void OnUpdateFileProperties(CCmdUI* pCmdUI);
     afx_msg void OnFileOpenLocation();
@@ -983,8 +897,6 @@ public:
     afx_msg void OnUpdateViewNavigation(CCmdUI* pCmdUI);
     afx_msg void OnViewControlBar(UINT nID);
     afx_msg void OnUpdateViewControlBar(CCmdUI* pCmdUI);
-    afx_msg void OnViewSubresync();
-    afx_msg void OnUpdateViewSubresync(CCmdUI* pCmdUI);
     void UpdatePlaylistButton();
     afx_msg void OnViewPlaylist();
     afx_msg void OnPlaylistToggleShuffle();
@@ -1098,11 +1010,6 @@ public:
     afx_msg void OnUpdateViewOSDShowFileName(CCmdUI* pCmdUI);
     afx_msg void OnViewOSDShowFileName();
     afx_msg void OnD3DFullscreenToggle();
-    afx_msg void OnGotoSubtitle(UINT nID);
-    afx_msg void OnSubresyncShiftSub(UINT nID);
-    afx_msg void OnSubtitleDelay(UINT nID);
-    afx_msg void OnSubtitlePos(UINT nID);
-    afx_msg void OnSubtitleFontSize(UINT nID);
 
     afx_msg void OnPlayPlay();
     afx_msg void OnPlayPause();
@@ -1130,11 +1037,6 @@ public:
     afx_msg void OnPlayShadersPresetPrev();
     afx_msg void OnPlayShadersPresets(UINT nID);
     afx_msg void OnPlayAudio(UINT nID);
-    afx_msg void OnSubtitlesDefaultStyle();
-    afx_msg void OnSubtitlesOverrideStyles();
-    afx_msg void OnPlaySubtitles(UINT nID);
-    afx_msg void OnPlaySecondarySubtitle(UINT nID);
-    afx_msg void OnSecondarySubtitleLoad();
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
     afx_msg void OnPlayVolume(UINT nID);
@@ -1192,9 +1094,6 @@ public:
 
     CFullscreenWnd* m_pDedicatedFSVideoWnd;
     COSD        m_OSD;
-    int         m_nCurSubtitle;
-    long        m_lSubtitleShift;
-    REFERENCE_TIME m_rtCurSubPos;
     bool        m_bLockedZoomVideoWindow;
     int         m_nLockedZoomVideoWindow;
 
@@ -1213,16 +1112,13 @@ public:
     void        SetColorControl(DWORD flags, int& brightness, int& contrast, int& hue, int& saturation);
     void        SetClosedCaptions(bool enable);
     void        SetAudioDelay(REFERENCE_TIME rtShift);
-    void        SetSubtitleDelay(int delay_ms, bool relative = false);
     //void      AutoSelectTracks();
     void        SetTimersPlay();
     void        KillTimerDelayedSeek();
     void        KillTimersStop();
     void        AdjustStreamPosPoller(bool restart);
-    void        ResetSubtitlePosAndSize(bool repaint = false);
 
     afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
-    void        SendSubtitleTracksToApi();
     afx_msg void OnFileOpendirectory();
 
     void        JumpOfNSeconds(int seconds);
@@ -1301,9 +1197,6 @@ protected:
 
     // Handles MF_DEFAULT and escapes '&'
     static BOOL AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text);
-
-    void SubtitlesSave(const TCHAR* directory = nullptr, bool silent = false);
-    REFERENCE_TIME CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow);
 
     void OnSizingFixWndToVideo(UINT nSide, LPRECT lpRect, bool bCtrl = false);
     void OnSizingSnapToScreen(UINT nSide, LPRECT lpRect, bool bCtrl = false);

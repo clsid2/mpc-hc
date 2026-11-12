@@ -391,7 +391,7 @@ void CPlayerSubresyncBar::SaveSubtitle()
             return;
         }
 
-        pMainFrame->InvalidateSubtitle();
+        pMainFrame->m_subs.InvalidateSubtitle();
     }
 }
 

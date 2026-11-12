@@ -802,7 +802,7 @@ bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime
     body.Replace("[version]", UTF8(AfxGetMyApp()->m_strVersion));
     m_pMainFrame->GetCurrentAudioTrackIdx(&strName);
     body.Replace("[audiotrack]", HtmlSpecialChars(UTF8(strName)));
-    m_pMainFrame->GetCurrentSubtitleTrackIdx(&strName);
+    m_pMainFrame->m_subs.GetCurrentSubtitleTrackIdx(&strName);
     body.Replace("[subtitletrack]", HtmlSpecialChars(UTF8(strName)));
 
     return true;
@@ -1306,14 +1306,14 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
 
         if (pMainFrame->GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
             GetNavStreamTracksJSON(pMainFrame, 2, baseID, tracks, active);
-        } else if (!pMainFrame->m_pSubStreams.IsEmpty()) {
+        } else if (!pMainFrame->m_subs.m_pSubStreams.IsEmpty()) {
             // the internal subtitle renderer's menu has 6 items before the list
             baseID += 6;
 
-            POSITION pos = pMainFrame->m_pSubStreams.GetHeadPosition();
+            POSITION pos = pMainFrame->m_subs.m_pSubStreams.GetHeadPosition();
             int i = 0;
             while (pos) {
-                SubtitleInput& subInput = pMainFrame->m_pSubStreams.GetNext(pos);
+                SubtitleInput& subInput = pMainFrame->m_subs.m_pSubStreams.GetNext(pos);
 
                 if (CComQIPtr<IAMStreamSelect> pSSF = subInput.pSourceFilter) {
                     DWORD cStreams;
@@ -1334,7 +1334,7 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
                             continue;
                         }
 
-                        if (subInput.pSubStream == pMainFrame->m_pCurrentSubInput.pSubStream
+                        if (subInput.pSubStream == pMainFrame->m_subs.m_pCurrentSubInput.pSubStream
                                 && dwFlags & (AMSTREAMSELECTINFO_ENABLED | AMSTREAMSELECTINFO_EXCLUSIVE)) {
                             active = count + i;
                         }
@@ -1348,7 +1348,7 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
                         continue;
                     }
 
-                    if (subInput.pSubStream == pMainFrame->m_pCurrentSubInput.pSubStream) {
+                    if (subInput.pSubStream == pMainFrame->m_subs.m_pCurrentSubInput.pSubStream) {
                         active = count + i + pSubStream->GetStream();
                     }
 

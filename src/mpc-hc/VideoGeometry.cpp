@@ -319,7 +319,7 @@ void CVideoGeometry::OnViewPanNScan(UINT nID)
     switch (nID) {
         case ID_VIEW_RESET:
             // Subtitle overrides
-            m_frame.ResetSubtitlePosAndSize(true);
+            m_frame.m_subs.ResetSubtitlePosAndSize(true);
             // Pan&Scan
             m_ZoomX = m_ZoomY = 1.0;
             m_PosX = m_PosY = 0.5;
