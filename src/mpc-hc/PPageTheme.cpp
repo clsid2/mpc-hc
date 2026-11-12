@@ -348,9 +348,9 @@ BOOL CPPageTheme::OnApply()
         s.bUseEnhancedTaskBar = m_bUseEnhancedTaskBar;
         if (pFrame) {
             if (m_bUseEnhancedTaskBar) {
-                pFrame->CreateThumbnailToolbar();
+                pFrame->m_api.CreateThumbnailToolbar();
             } else {
-                pFrame->UpdateThumbarButton();
+                pFrame->m_api.UpdateThumbarButton();
             }
         }
     }

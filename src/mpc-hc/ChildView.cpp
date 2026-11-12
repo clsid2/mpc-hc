@@ -133,7 +133,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
     if (m_pMainFrame->m_OSD.GetOSDType() == OSD_TYPE_BITMAP && m_pMainFrame->m_pVideoWnd == this) {
         m_pMainFrame->m_OSD.OnSize(nType, cx, cy);
     }
-    m_pMainFrame->UpdateThumbnailClip();
+    m_pMainFrame->m_api.UpdateThumbnailClip();
 }
 
 LRESULT CChildView::OnNcHitTest(CPoint point)

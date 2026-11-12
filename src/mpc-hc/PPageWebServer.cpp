@@ -137,11 +137,11 @@ BOOL CPPageWebServer::OnApply()
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
         if (m_fEnableWebServer) {
             if (fRestart) {
-                pMainFrame->StopWebServer();
+                pMainFrame->m_api.StopWebServer();
             }
-            pMainFrame->StartWebServer(m_nWebServerPort);
+            pMainFrame->m_api.StartWebServer(m_nWebServerPort);
         } else {
-            pMainFrame->StopWebServer();
+            pMainFrame->m_api.StopWebServer();
         }
     }
 

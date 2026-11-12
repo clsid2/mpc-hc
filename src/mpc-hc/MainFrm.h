@@ -45,6 +45,7 @@
 #include "DiscController.h"
 #include "FavoritesRecent.h"
 #include "VideoGeometry.h"
+#include "ApiBridge.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -420,9 +421,6 @@ private:
     CString m_tempstatus_msg, m_closingmsg;
     bool m_bKeepTempStatusBarVisibleOnMediaLoad = false;
 
-    int m_lastApiVolume = -1;
-    int m_lastApiMute = -1;
-    int m_hostIntApiVersion = 0; // >0 once the connected host says MPCINT_HELLO (integer channel)
     int m_lastProcessedVolume = -1;
     int m_lastProcessedMute = -1;
 
@@ -455,11 +453,14 @@ public:
 private:
     friend class CVideoGeometry; // for the load state, m_OSD, the video and preview windows, the window sizing helpers and the preview graph
 
+public:
+    CApiBridge m_api;
+private:
+    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers, the shader toggle and the yt-dlp helpers
+
     //
 
     friend class CWebClientSocket;
-    friend class CWebServer;
-    CAutoPtr<CWebServer> m_pWebServer;
     int m_iPlaybackMode;
     ULONG m_lCurrentChapter;
     ULONG m_lChapterStartTime;
@@ -573,9 +574,6 @@ private:
     DROPEFFECT OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point) override;
 
 public:
-    void StartWebServer(int nPort);
-    void StopWebServer();
-
     int GetPlaybackMode() const {
         return m_iPlaybackMode;
     }
@@ -1109,8 +1107,6 @@ public:
     afx_msg void OnPlayPlay();
     afx_msg void OnPlayPause();
     afx_msg void OnPlayPlaypause();
-    afx_msg void OnApiPlay();
-    afx_msg void OnApiPause();
     afx_msg void OnPlayStop();
             void OnPlayStop(bool is_closing);
     afx_msg void OnUpdatePlayPauseStop(CCmdUI* pCmdUI);
@@ -1181,8 +1177,6 @@ public:
 
     LRESULT OnMPCVRSwitchFullscreen(WPARAM wParam, LPARAM lParam);
 
-    CMPC_Lcd m_Lcd;
-
     CMouseWndWithArtView*  m_pVideoWnd;            // Current Video (main display screen or 2nd)
     CWnd*                  m_pOSDWnd;
     CPreView               m_wndPreView;           // SeekPreview
@@ -1227,30 +1221,12 @@ public:
     void        AdjustStreamPosPoller(bool restart);
     void        ResetSubtitlePosAndSize(bool repaint = false);
 
-    // MPC API functions
-    void        ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS);
-    void        SendAPICommand(MPCAPI_COMMAND nCommand, LPCWSTR fmt, ...);
-    bool        SendAPIStringTo(HWND hTarget, MPCAPI_COMMAND nCommand, const CStringW& payload);
-    void        PostApiInt(HWND hTarget, WORD command, int value);
-    void        SendApiNotify(MPCAPI_COMMAND cmd, int value); // integer channel if host supports it, else WM_COPYDATA
     afx_msg LRESULT OnApiIntMessage(WPARAM wParam, LPARAM lParam);
-    void        SendNowPlayingToApi(bool sendtrackinfo = true);
     void        SendSubtitleTracksToApi();
-    void        SendAudioTracksToApi();
-    void        SendPlaylistToApi();
     afx_msg void OnFileOpendirectory();
 
-    void        SendCurrentPositionToApi(bool fNotifySeek = false);
-    void        SendCurrentVolumeToApi(bool force = false);
-    void        SendCurrentMuteToApi(bool force = false);
-    void        ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData);
     void        JumpOfNSeconds(int seconds);
 
-    CComPtr<ITaskbarList3> m_pTaskbarList;
-    HRESULT CreateThumbnailToolbar();
-    HRESULT UpdateThumbarButton();
-    HRESULT UpdateThumbarButton(MPC_PLAYSTATE iPlayState);
-    HRESULT UpdateThumbnailClip();
     BOOL Create(LPCTSTR lpszClassName,
                 LPCTSTR lpszWindowName,
                 DWORD dwStyle = WS_OVERLAPPEDWINDOW,
@@ -1383,24 +1359,11 @@ public:
      * @return 
     */
     CString getBestTitle(bool fTitleBarTextTitle = true);
-    MediaTransControls m_media_trans_control;
 
-    void MediaTransportControlSetMedia();
-    void MediaTransportControlUpdateState(OAFilterState state);
-    void MediaTransportControlUpdateTimeline(bool force = false);
-    void MediaTransportControlUpdateAutoRepeat();
-#if MPC_SMTC_VIDEO_THUMBNAIL
-    void MediaTransportControlUpdateThumbnail();
-#endif
     afx_msg LRESULT OnSmtcSeek(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSmtcAutoRepeat(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSmtcShuffle(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSmtcRate(WPARAM wParam, LPARAM lParam);
-    ULONGLONG m_lastSMTCTimelineUpdate = 0;
-#if MPC_SMTC_VIDEO_THUMBNAIL
-    ULONGLONG m_nextSMTCThumbnailUpdate = 0;
-    ULONGLONG m_lastSMTCThumbnailTick = 0;
-#endif
 
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
