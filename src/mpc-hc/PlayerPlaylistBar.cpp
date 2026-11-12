@@ -928,7 +928,7 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn, bool* lav_fallback, std::v
 
             pli = CPlaylistItem();
             pli.m_fns.AddTail(str);
-            if (PathUtils::IsURL(str) && CMainFrame::IsOnYDLWhitelist(str)) {
+            if (PathUtils::IsURL(str) && CCommandLine::IsOnYDLWhitelist(str)) {
                 pli.m_ydlSourceURL = str;
                 pli.m_bYoutubeDL = true;
             }
@@ -2435,10 +2435,10 @@ void CPlayerPlaylistBar::OnDropFiles(CAtlList<CString>& slFiles, DROPEFFECT)
     SetForegroundWindow();
     m_list.SetFocus();
 
-    if ((slFiles.GetCount() == 1) && m_pMainFrame->CanSendToYoutubeDL(slFiles.GetHead())) {
-        if (m_pMainFrame->ProcessYoutubeDLURL(slFiles.GetHead(), true)) {
+    if ((slFiles.GetCount() == 1) && m_pMainFrame->m_cmdline.CanSendToYoutubeDL(slFiles.GetHead())) {
+        if (m_pMainFrame->m_cmdline.ProcessYoutubeDLURL(slFiles.GetHead(), true)) {
             return;
-        } else if (m_pMainFrame->IsOnYDLWhitelist(slFiles.GetHead())) {
+        } else if (m_pMainFrame->m_cmdline.IsOnYDLWhitelist(slFiles.GetHead())) {
             // don't bother trying to open this website URL directly
             return;
         }

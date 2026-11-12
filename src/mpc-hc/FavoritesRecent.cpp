@@ -432,11 +432,11 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
 
     auto firstFile = args.GetHead();
     if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(firstFile)) {
-        if (m_frame.CanSendToYoutubeDL(firstFile)) {
+        if (m_frame.m_cmdline.CanSendToYoutubeDL(firstFile)) {
             if (!m_frame.CloseMediaBeforeOpen()) {
                 return;
             }
-            if (!m_frame.ProcessYoutubeDLURL(firstFile, false)) {
+            if (!m_frame.m_cmdline.ProcessYoutubeDLURL(firstFile, false)) {
                 m_frame.m_wndPlaylistBar.Open(args, false);
             }
         } else {
@@ -539,14 +539,14 @@ void CFavoritesRecent::OpenRecentFileEntry(RecentFileEntry& r)
     CAtlList<CString> fns;
     fns.AddHeadList(&r.fns);
 
-    if (fns.GetCount() == 1 && m_frame.CanSendToYoutubeDL(r.fns.GetHead())) {
+    if (fns.GetCount() == 1 && m_frame.m_cmdline.CanSendToYoutubeDL(r.fns.GetHead())) {
         if (!m_frame.CloseMediaBeforeOpen()) {
             return;
         }
-        if (m_frame.ProcessYoutubeDLURL(fns.GetHead(), false)) {
+        if (m_frame.m_cmdline.ProcessYoutubeDLURL(fns.GetHead(), false)) {
             m_frame.OpenCurPlaylistItem();
             return;
-        } else if (m_frame.IsOnYDLWhitelist(fns.GetHead())) {
+        } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fns.GetHead())) {
             m_frame.m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
             m_frame.m_wndStatusBar.SetStatusMessage(m_frame.m_closingmsg);
             // don't bother trying to open this website URL directly

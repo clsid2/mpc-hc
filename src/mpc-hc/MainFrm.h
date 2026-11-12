@@ -48,6 +48,7 @@
 #include "ApiBridge.h"
 #include "SubtitleController.h"
 #include "ShaderController.h"
+#include "CommandLine.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
 #include "CMPCThemeMenu.h"
@@ -344,19 +345,6 @@ private:
 
     bool m_bRememberFilePos;
 
-    ULONGLONG m_dwLastRun;
-    int m_nLastAppendSelectionIndex; // playlist index where the current batch of redirected opens started
-
-    // A command line redirected from another instance, waiting to be acted on. OnCopyData only
-    // queues it, so that handler returns immediately instead of probing the filesystem while
-    // the sending instances wait on it.
-    struct PendingCommandLine {
-        CAtlList<CString> cmdln;
-        ULONGLONG tArrived = 0;
-    };
-    std::deque<PendingCommandLine> m_pendingCommandLines;
-    bool m_bProcessingCommandLine = false;
-
     bool m_bBuffering;
 
     bool m_fLiveWM;
@@ -405,7 +393,7 @@ private:
 public:
     CApiBridge m_api;
 private:
-    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers and the yt-dlp helpers
+    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers
 
 public:
     CSubtitleController m_subs;
@@ -418,6 +406,11 @@ public:
     CShaderController m_shaders;
 private:
     friend class CShaderController; // for the load state, m_OSD, the shaders menu, the status message, the options sheet and the video repaint
+
+public:
+    CCommandLine m_cmdline;
+private:
+    friend class CCommandLine; // for the bars, the open path, the reload state, the media control helpers and the deferred actions
 
     //
 
@@ -868,7 +861,6 @@ public:
     afx_msg void OnUpdateFileOpen(CCmdUI* pCmdUI);
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
     afx_msg LRESULT OnCommandLineReceived(WPARAM wParam, LPARAM lParam);
-    void ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived);
     afx_msg void OnFileOpendevice();
     afx_msg void OnFileOpenOpticalDisk(UINT nID);
     afx_msg void OnFileReopen();
@@ -1082,7 +1074,6 @@ public:
 
     void        SetLoadState(MLS eState);
     MLS         GetLoadState() const;
-    void        QueueCommandLine(const CAtlList<CString>& cmdln);
     bool        IsStateLoaded();
     bool        IsStateLoadedOrLoading();
     bool        IsStateClosed();
@@ -1165,8 +1156,6 @@ protected:
 
     bool m_bExtOnTop; // 'true' if the "on top" flag was set by an external tool
 
-    CString m_sydlLastProcessURL;
-
     bool IsImageFile(CStringW fn);
     bool IsPlayableFormatExt(CStringW ext);
     bool IsAudioFileExt(CStringW ext);
@@ -1222,12 +1211,6 @@ public:
 
     bool GetDecoderType(CString& type) const;
     CString GetAudioInfo() const;
-
-    static bool IsOnYDLWhitelist(const CString url);
-
-    bool CanSendToYoutubeDL(const CString url);
-    bool ProcessYoutubeDLURL(CString url, bool append, bool replace = false);
-    bool DownloadWithYoutubeDL(CString url, CString filename);
 
     /**
      * @brief Get title of file

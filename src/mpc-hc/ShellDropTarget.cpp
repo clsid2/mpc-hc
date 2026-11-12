@@ -215,7 +215,7 @@ STDMETHODIMP CShellDropTarget::Drop(IDataObject* pDataObj, DWORD, POINTL, DWORD*
         cmdln.AddTail(_T("/add"));
     }
     cmdln.AddTailList(&files);
-    m_pMainFrame->QueueCommandLine(cmdln);
+    m_pMainFrame->m_cmdline.QueueCommandLine(cmdln);
 
     *pdwEffect = DROPEFFECT_COPY;
     return S_OK;
