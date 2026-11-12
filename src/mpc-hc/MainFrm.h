@@ -44,6 +44,7 @@
 #include "CaptureController.h"
 #include "DiscController.h"
 #include "FavoritesRecent.h"
+#include "VideoGeometry.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -449,6 +450,11 @@ public:
 private:
     friend class CFavoritesRecent; // for the load state, the bars, m_OSD, A-B repeat, the open path and the dynamic menus
 
+public:
+    CVideoGeometry m_geometry;
+private:
+    friend class CVideoGeometry; // for the load state, m_OSD, the video and preview windows, the window sizing helpers and the preview graph
+
     //
 
     friend class CWebClientSocket;
@@ -639,9 +645,6 @@ protected:
     int         m_audioTrackCount = 0;
 
     double m_dSpeedRate;
-    double m_ZoomX, m_ZoomY, m_PosX, m_PosY;
-    int m_AngleX, m_AngleY, m_AngleZ;
-    int m_iDefRotation;
 
     void ForceCloseProcess();
     void ThrowAndForceClose();
@@ -1012,26 +1015,7 @@ public:
     afx_msg void OnViewFullscreen();
     afx_msg void OnViewFullscreenSecondary();
     afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
-    afx_msg void OnViewZoom(UINT nID);
-    afx_msg void OnUpdateViewZoom(CCmdUI* pCmdUI);
-    afx_msg void OnViewZoomAutoFit();
-    afx_msg void OnViewZoomAutoFitLarger();
-    afx_msg void OnViewModifySize(UINT nID);
-    afx_msg void OnViewDefaultVideoFrame(UINT nID);
-    afx_msg void OnUpdateViewDefaultVideoFrame(CCmdUI* pCmdUI);
-    afx_msg void OnViewSwitchVideoFrame();
     afx_msg void OnUpdateViewSwitchVideoFrame(CCmdUI* pCmdUI);
-    afx_msg void OnViewCompMonDeskARDiff();
-    afx_msg void OnUpdateViewCompMonDeskARDiff(CCmdUI* pCmdUI);
-    afx_msg void OnViewPanNScan(UINT nID);
-    afx_msg void OnUpdateViewPanNScan(CCmdUI* pCmdUI);
-    afx_msg void OnViewPanNScanPresets(UINT nID);
-    afx_msg void OnUpdateViewPanNScanPresets(CCmdUI* pCmdUI);
-    afx_msg void OnViewRotate(UINT nID);
-    afx_msg void OnUpdateViewRotate(CCmdUI* pCmdUI);
-    afx_msg void OnViewAspectRatio(UINT nID);
-    afx_msg void OnUpdateViewAspectRatio(CCmdUI* pCmdUI);
-    afx_msg void OnViewAspectRatioNext();
     afx_msg void OnViewOntop(UINT nID);
     afx_msg void OnUpdateViewOntop(CCmdUI* pCmdUI);
     afx_msg void OnViewOptions();
@@ -1300,8 +1284,6 @@ protected:
     void UpdateUILanguage();
     void ApplyThemeChange();
 
-    bool PerformFlipRotate();
-
     bool m_bAltDownClean;
     bool m_bShowingFloatingMenubar;
     virtual void OnShowMenuBar() override {
@@ -1424,6 +1406,4 @@ public:
     afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
 private:
     void SetupExternalChapters();
-    void ApplyPanNScanPresetString();
-    void ValidatePanNScanParameters();
 };
