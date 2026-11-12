@@ -41,6 +41,7 @@ public:
     };
 private:
     friend class CMainFrame;
+    friend class CApiBridge; // for SetMute, from the API mute command
 
     CMainFrame* m_pMainFrame;
 
