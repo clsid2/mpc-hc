@@ -18,7 +18,6 @@
     <ClCompile Include="$(FFmpegSrc)libavfilter\drawutils.c"><ObjectFileName>$(IntDir)libavfilter\drawutils.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\file_open.c"><ObjectFileName>$(IntDir)libavfilter\file_open.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\formats.c"><ObjectFileName>$(IntDir)libavfilter\formats.obj</ObjectFileName></ClCompile>
-    <ClCompile Include="$(FFmpegSrc)libavfilter\framepool.c"><ObjectFileName>$(IntDir)libavfilter\framepool.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\framequeue.c"><ObjectFileName>$(IntDir)libavfilter\framequeue.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\framesync.c"><ObjectFileName>$(IntDir)libavfilter\framesync.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\graphdump.c"><ObjectFileName>$(IntDir)libavfilter\graphdump.obj</ObjectFileName></ClCompile>
@@ -41,6 +40,7 @@
     <Nasm Include="$(FFmpegSrc)libavfilter\x86\yadif-16.asm"><ObjectFileName>$(IntDir)libavfilter\x86\yadif-16.obj</ObjectFileName><ExtraInclude>$(FFmpegSrc)libavfilter\x86</ExtraInclude></Nasm>
     <ClCompile Include="$(FFmpegSrc)libavfilter\yadif_common.c"><ObjectFileName>$(IntDir)libavfilter\yadif_common.obj</ObjectFileName></ClCompile>
     <ResourceCompile Include="$(FFmpegSrc)libavfilter\avfilterres.rc"><ResourceOutputFileName>$(IntDir)libavfilter\avfilterres.res</ResourceOutputFileName></ResourceCompile>
+    <ClCompile Include="$(FFmpegSrc)libavfilter\framepool.c"><ObjectFileName>$(IntDir)libavfilter\framepool.obj</ObjectFileName></ClCompile>
     <ClCompile Include="$(FFmpegSrc)libavfilter\log2_tab.c"><ObjectFileName>$(IntDir)libavfilter\log2_tab.obj</ObjectFileName></ClCompile>
   </ItemGroup>
 </Project>

@@ -25,8 +25,11 @@ LIBS="avutil swresample swscale avcodec avformat avfilter"
 echo "== $PLAT: capturing make command list"
 ( cd "$B" && make -nB V=1 > cmds.txt 2>&1 ) || { echo "make -nB failed"; exit 1; }
 C="$B/cmds.txt"
-# cl writes objects with -Fo<obj>, clang with -o <obj>
-grep -E '^(cl\.exe|clang) ' "$C" | grep ' -c ' | awk '{o="";s=""; for(i=1;i<=NF;i++){ if($i ~ /^-Fo/) o=substr($i,4); if($i=="-o") o=$(i+1); if($i ~ /\.c$/) s=$i } print o" "s}' > "$B/map-c.txt"
+# cl writes objects with -Fo<obj>, clang with -o <obj>. ffmpeg runs cl through its mscl
+# helper (ffbuild/mscl.exe cl.exe ...) to get .d files; strip it. The helper's own host
+# compile is dropped by skipping objects under ffbuild/.
+sed -E 's#^ffbuild/mscl(\.exe)? ##' "$C" | grep -E '^(cl\.exe|clang) ' | grep ' -c ' | awk '{o="";s=""; for(i=1;i<=NF;i++){ if($i ~ /^-Fo/) o=substr($i,4); if($i=="-o") o=$(i+1); if($i ~ /\.c$/) s=$i } if (o !~ /^ffbuild\//) print o" "s}' > "$B/map-c.txt"
+[ "$(wc -l < "$B/map-c.txt")" -ge 100 ] || { echo "ERROR: no compile commands recognised in cmds.txt"; exit 1; }
 grep '^nasm'  "$C" | awk '{o="";s=""; for(i=1;i<=NF;i++){ if($i=="-o") o=$(i+1); if($i ~ /\.asm$/) s=$i } print o" "s}' > "$B/map-asm.txt"
 grep 'mswindres' "$C" | awk '{o="";s=""; for(i=1;i<=NF;i++){ if($i=="-o") o=$(i+1); if($i ~ /\.rc$/) s=$i } print o" "s}' > "$B/map-rc.txt"
 echo "   $(wc -l < "$B/map-c.txt") C, $(wc -l < "$B/map-asm.txt") asm, $(wc -l < "$B/map-rc.txt") rc"
@@ -47,9 +50,20 @@ for lib in $LIBS; do
   cp "$def" "$G/lib$lib/"
   linkline=$(grep "mslink" "$C" | grep -v '^LDFLAGS' | grep -- "-out:lib$lib/$dll.dll")
   deps=$(echo "$linkline" | tr ' ' '\n' | grep '\.lib$' | grep -v -- '-implib' | sort -u | tr '\n' ';')
-  # object list: make's response file when the toolchain uses one (cl), else the link line itself (clang)
+  # object list: make's response file when the toolchain uses one (cl). The real build
+  # deletes it after linking, and a make without $(file) writes it with an echo that the
+  # dry run prints instead; failing both, the .o files on the link line itself (clang)
   objs="$B/lib$lib/$dll.dll.objs"
-  [ -f "$objs" ] || { objs="$B/lib$lib/$dll.objlist"; echo "$linkline" | tr ' ' '\n' | grep '\.o$' | tr '\n' ' ' > "$objs"; }
+  if [ ! -f "$objs" ]; then
+    objs="$B/lib$lib/$dll.objlist"
+    echoline=$(grep -E "^echo .* > lib$lib/$dll\.dll\.objs\$" "$C" | tail -1 || true)
+    if [ -n "$echoline" ]; then
+      echo "$echoline" | sed -E 's/^echo //; s/ > [^ ]+$//' > "$objs"
+    else
+      echo "$linkline" | tr ' ' '\n' | grep '\.o$' | tr '\n' ' ' > "$objs" || true
+    fi
+  fi
+  [ "$(tr ' ' '\n' < "$objs" | grep -c '\.o$')" -gt 0 ] || { echo "ERROR: no object files found for lib$lib ($dll)"; exit 1; }
   IT="$O/items-$lib-$PLAT.props"
   {
     echo '<?xml version="1.0" encoding="utf-8"?>'

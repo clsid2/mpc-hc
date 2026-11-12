@@ -126,8 +126,6 @@
 #define MIN_LOGO_WIDTH 360
 #define MIN_LOGO_HEIGHT 150
 
-#define PREV_CHAP_THRESHOLD 2
-
 static UINT s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
 static UINT WM_NOTIFYICON = RegisterWindowMessage(_T("MYWM_NOTIFYICON"));
 static UINT s_uTBBC = RegisterWindowMessage(_T("TaskbarButtonCreated"));
@@ -196,55 +194,6 @@ public:
         return m_rt;
     }
 };
-
-bool FileFavorite::TryParse(const CString& fav, FileFavorite& ff)
-{
-    CAtlList<CString> parts;
-    return TryParse(fav, ff, parts);
-}
-
-bool FileFavorite::TryParse(const CString& fav, FileFavorite& ff, CAtlList<CString>& parts)
-{
-    ExplodeEsc(fav, parts, _T(';'));
-    if (parts.IsEmpty()) {
-        return false;
-    }
-
-    ff.Name = parts.RemoveHead();
-
-    if (!parts.IsEmpty()) {
-        // Start position and optional A-B marks "pos[:A:B]"
-        auto startPos = parts.RemoveHead();
-        _stscanf_s(startPos, _T("%I64d:%I64d:%I64d"), &ff.Start, &ff.MarkA, &ff.MarkB);
-        ff.Start = std::max(ff.Start, 0ll); // Sanitize
-    }
-    if (!parts.IsEmpty()) {
-        _stscanf_s(parts.RemoveHead(), _T("%d"), &ff.RelativeDrive);
-    }
-    return true;
-}
-
-CString FileFavorite::ToString() const
-{
-    CString str;
-    if (RelativeDrive) {
-        str = _T("[RD]");
-    }
-    if (Start > 0) {    // Start position
-        str.AppendFormat(_T("[%s]"), ReftimeToString2(Start).GetString());
-    }
-    if (MarkA > 0 || MarkB > 0) {   // A-B marks (only characters to save space)
-        CString abMarks;
-        if (MarkA > 0) {
-            abMarks = _T("A");
-        }
-        if (MarkB > 0) {
-            abMarks.Append(_T("-B"));
-        }
-        str.AppendFormat(_T("[%s]"), abMarks.GetString());
-    }
-    return str;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -331,6 +280,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_MESSAGE(WM_MPC_RUN_DEFERRED, OnRunDeferredActions)
     ON_MESSAGE(WM_MPC_UPDATE_CHECK_DONE, OnUpdateCheckDone)
     ON_MESSAGE(WM_MPC_UI_REQUEST, OnUIRequest)
+    ON_MESSAGE(WM_HELPPROMPTADDR, OnHelpPromptAddr)
     ON_MESSAGE(WM_TUNER_NEW_CHANNEL, OnHeadlessScanNewChannel)
     ON_MESSAGE(WM_TUNER_SCAN_END, OnHeadlessScanEnd)
     ON_MESSAGE(WM_DVB_EIT_DATA_READY, OnCurrentChannelInfoUpdated)
@@ -342,17 +292,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND(ID_AUDIOSHIFT_ONOFF, OnAudioShiftOnOff)
     ON_COMMAND(ID_STREAM_SUB_ONOFF, OnStreamSubOnOff)
     ON_COMMAND(ID_SUBTITLES_AUTOCOPY, OnSubtitlesAutoCopy)
-    ON_COMMAND_RANGE(ID_DVD_ANGLE_NEXT, ID_DVD_ANGLE_PREV, OnDvdAngle)
-    ON_COMMAND_RANGE(ID_DVD_AUDIO_NEXT, ID_DVD_AUDIO_PREV, OnDvdAudio)
-    ON_COMMAND_RANGE(ID_DVD_SUB_NEXT, ID_DVD_SUB_PREV, OnDvdSub)
-    ON_COMMAND(ID_DVD_SUB_ONOFF, OnDvdSubOnOff)
 
     ON_COMMAND(ID_FILE_OPENQUICK, OnFileOpenQuick)
     ON_UPDATE_COMMAND_UI(ID_FILE_OPENMEDIA, OnUpdateFileOpen)
     ON_COMMAND(ID_FILE_OPENMEDIA, OnFileOpenmedia)
     ON_UPDATE_COMMAND_UI(ID_FILE_OPENMEDIA, OnUpdateFileOpen)
     ON_WM_COPYDATA()
-    ON_COMMAND(ID_FILE_OPENDVDBD, OnFileOpendvd)
     ON_UPDATE_COMMAND_UI(ID_FILE_OPENDVDBD, OnUpdateFileOpen)
     ON_COMMAND(ID_FILE_OPENDEVICE, OnFileOpendevice)
     ON_UPDATE_COMMAND_UI(ID_FILE_OPENDEVICE, OnUpdateFileOpen)
@@ -606,30 +551,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_UPDATE_COMMAND_UI_RANGE(ID_NAVIGATE_SKIPBACKFILE, ID_NAVIGATE_SKIPFORWARDFILE, OnUpdateNavigateSkipFile)
     ON_COMMAND(ID_NAVIGATE_GOTO, OnNavigateGoto)
     ON_UPDATE_COMMAND_UI(ID_NAVIGATE_GOTO, OnUpdateNavigateGoto)
-    ON_COMMAND_RANGE(ID_NAVIGATE_TITLEMENU, ID_NAVIGATE_CHAPTERMENU, OnNavigateMenu)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_NAVIGATE_TITLEMENU, ID_NAVIGATE_CHAPTERMENU, OnUpdateNavigateMenu)
     ON_COMMAND_RANGE(ID_NAVIGATE_JUMPTO_SUBITEM_START, ID_NAVIGATE_JUMPTO_SUBITEM_END, OnNavigateJumpTo)
     ON_COMMAND_RANGE(ID_NAVIGATE_MENU_LEFT, ID_NAVIGATE_MENU_LEAVE, OnNavigateMenuItem)
     ON_UPDATE_COMMAND_UI_RANGE(ID_NAVIGATE_MENU_LEFT, ID_NAVIGATE_MENU_LEAVE, OnUpdateNavigateMenuItem)
-
-
-    ON_COMMAND(ID_FAVORITES_ADD, OnFavoritesAdd)
-    ON_UPDATE_COMMAND_UI(ID_FAVORITES_ADD, OnUpdateFavoritesAdd)
-    ON_COMMAND(ID_FAVORITES_QUICKADDFAVORITE, OnFavoritesQuickAddFavorite)
-    ON_COMMAND(ID_FAVORITES_ORGANIZE, OnFavoritesOrganize)
-    ON_UPDATE_COMMAND_UI(ID_FAVORITES_ORGANIZE, OnUpdateFavoritesOrganize)
-    ON_COMMAND_RANGE(ID_FAVORITES_FILE_START, ID_FAVORITES_FILE_END, OnFavoritesFile)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_FAVORITES_FILE_START, ID_FAVORITES_FILE_END, OnUpdateFavoritesFile)
-    ON_COMMAND_RANGE(ID_FAVORITES_DVD_START, ID_FAVORITES_DVD_END, OnFavoritesDVD)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_FAVORITES_DVD_START, ID_FAVORITES_DVD_END, OnUpdateFavoritesDVD)
-    ON_COMMAND_RANGE(ID_FAVORITES_DEVICE_START, ID_FAVORITES_DEVICE_END, OnFavoritesDevice)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_FAVORITES_DEVICE_START, ID_FAVORITES_DEVICE_END, OnUpdateFavoritesDevice)
-
-    ON_COMMAND(ID_RECENT_FILES_CLEAR, OnRecentFileClear)
-    ON_UPDATE_COMMAND_UI(ID_RECENT_FILES_CLEAR, OnUpdateRecentFileClear)
-    ON_COMMAND_RANGE(ID_RECENT_FILE_START, ID_RECENT_FILE_END, OnRecentFile)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_RECENT_FILE_START, ID_RECENT_FILE_END, OnUpdateRecentFile)
-    ON_COMMAND(ID_RECENT_FILES_SHOW_HISTORY, OnShowHistory)
 
     ON_COMMAND(ID_HELP_HOMEPAGE, OnHelpHomepage)
     ON_COMMAND(ID_HELP_CHECKFORUPDATE, OnHelpCheckForUpdate)
@@ -856,6 +780,8 @@ CMainFrame::CMainFrame()
     , m_rtDurationOverride(-1)
     , m_snapshot(*this)
     , m_capture(*this)
+    , m_disc(*this)
+    , m_favorites(*this)
     , m_iPlaybackMode(PM_NONE)
     , m_lCurrentChapter(0)
     , m_lChapterStartTime(0xFFFFFFFF)
@@ -877,9 +803,6 @@ CMainFrame::CMainFrame()
     , m_bPausedByMinimize(false)
     , m_bThemeChangePending(false)
     , m_fAudioOnly(true)
-    , m_iDVDDomain(DVD_DOMAIN_Stop)
-    , m_iDVDTitle(0)
-    , m_bDVDStillOn(false)
     , m_dSpeedRate(1.0)
     , m_ZoomX(1.0)
     , m_ZoomY(1.0)
@@ -897,7 +820,6 @@ CMainFrame::CMainFrame()
     , m_bWasSnapped(false)
     , m_wndSubtitlesDownloadDialog(this)
     //, m_wndSubtitlesUploadDialog(this)
-    , m_wndFavoriteOrganizeDialog(this)
     , m_bTrayIcon(false)
     , m_controls(this)
     , m_wndView(this)
@@ -929,8 +851,6 @@ CMainFrame::CMainFrame()
     , m_bAllowWindowZoom(false)
     , m_dLastVideoScaleFactor(0)
     , m_bExtOnTop(false)
-    , m_bIsBDPlay(false)
-    , m_bHasBDMeta(false)
     , delayingFullScreen(false)
     , restoringWindowRect(false)
     , openingModalDlg(nullptr)
@@ -940,7 +860,6 @@ CMainFrame::CMainFrame()
     , currentSubLang(_T(""))
     , m_bToggleShader(false)
     , m_bToggleShaderScreenSpace(false)
-    , m_MPLSPlaylist()
     , m_sydlLastProcessURL()
     , m_bUseSeekPreview(false)
     , queuedSeek({0,0,false})
@@ -948,7 +867,6 @@ CMainFrame::CMainFrame()
     , lastSeekFinish(0)
     , defaultVideoAngle(0)
     , m_media_trans_control()
-    , recentFilesMenuFromMRUSequence(-1)
     , m_bTBDropdownActive(false)
 {
     // Don't let CFrameWnd handle automatically the state of the menu items.
@@ -1159,7 +1077,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_pSubtitlesProviders = std::make_unique<SubtitlesProviders>(this);
     m_wndSubtitlesDownloadDialog.Create(m_wndSubtitlesDownloadDialog.IDD, this);
     //m_wndSubtitlesUploadDialog.Create(m_wndSubtitlesUploadDialog.IDD, this);
-    m_wndFavoriteOrganizeDialog.Create(m_wndFavoriteOrganizeDialog.IDD, this);
+    m_favorites.m_wndFavoriteOrganizeDialog.Create(m_favorites.m_wndFavoriteOrganizeDialog.IDD, this);
 
     if (s.nCmdlnWebServerPort != 0) {
         if (s.nCmdlnWebServerPort > 0) {
@@ -1266,8 +1184,8 @@ void CMainFrame::OnDestroy()
         VERIFY(m_pColorControls->DestroyWindow());
     }
 
-    if (m_pHistoryDlg && IsWindow(m_pHistoryDlg->m_hWnd)) {
-        VERIFY(m_pHistoryDlg->DestroyWindow());
+    if (m_favorites.m_pHistoryDlg && IsWindow(m_favorites.m_pHistoryDlg->m_hWnd)) {
+        VERIFY(m_favorites.m_pHistoryDlg->DestroyWindow());
     }
 
     if (m_pUpdateCheckerDlg && IsWindow(m_pUpdateCheckerDlg->m_hWnd)) {
@@ -1428,6 +1346,16 @@ LRESULT CMainFrame::OnUIRequest(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+// MFC's message box saves its help context in the frame (CFrameWnd::m_dwPromptContext)
+// and writes it back after MessageBox returns. The frame can be destroyed while a
+// message box it owns is up, e.g. the first-run update prompt in InitInstance, and
+// that write then lands in freed memory. Returning 0 makes MFC use the app's context,
+// which lives for the whole process; it only matters for WinHelp, which we do not use.
+LRESULT CMainFrame::OnHelpPromptAddr(WPARAM wParam, LPARAM lParam)
+{
+    return 0;
+}
+
 void CMainFrame::OnClose()
 {
     CAppSettings& s = AfxGetAppSettings();
@@ -1540,18 +1468,6 @@ void CMainFrame::OnClose()
 
     actionScope.reset();
     __super::OnClose();
-}
-
-LPCTSTR CMainFrame::GetRecentFile() const
-{
-    auto& MRU = AfxGetAppSettings().MRU;
-    MRU.ReadMediaHistory();
-    for (int i = 0; i < MRU.GetSize(); i++) {
-        if (MRU[i].fns.GetCount() > 0 && !MRU[i].fns.GetHead().IsEmpty()) {
-            return MRU[i].fns.GetHead();
-        }
-    }
-    return nullptr;
 }
 
 LRESULT CMainFrame::OnTaskBarRestart(WPARAM, LPARAM)
@@ -1829,6 +1745,12 @@ BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
         return TRUE;
     }
     if (m_capture.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo)) {
+        return TRUE;
+    }
+    if (m_disc.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo)) {
+        return TRUE;
+    }
+    if (m_favorites.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo)) {
         return TRUE;
     }
 
@@ -2833,7 +2755,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                             break;
                     }
 
-                    CString format = GetDVDAudioFormatName(AATR);
+                    CString format = m_disc.GetDVDAudioFormatName(AATR);
                     m_statusbarAudioFormat.Format(L"%s %dch", format, AATR.bNumberOfChannels);
 
                     Audio.Format(IDS_MAINFRM_11,
@@ -3225,7 +3147,7 @@ void CMainFrame::OnABRepeat(UINT nID) {
                 }
                 havePos = true;
                 pos = HMSF2RT(Location.TimeCode, fps);
-                abRepeat.dvdTitle = m_iDVDTitle; //we only support one title.  so if they clear or set, we will remember the current title
+                abRepeat.dvdTitle = m_disc.m_iDVDTitle; //we only support one title.  so if they clear or set, we will remember the current title
             }
         } else {
             return;
@@ -3292,7 +3214,7 @@ void CMainFrame::DisableABRepeat() {
 }
 
 bool CMainFrame::CheckABRepeat(REFERENCE_TIME& aPos, REFERENCE_TIME& bPos) {
-    if (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_iDVDTitle == abRepeat.dvdTitle)) {
+    if (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDTitle == abRepeat.dvdTitle)) {
         if (abRepeat) {
             aPos = abRepeat.positionA;
             bPos = abRepeat.positionB;
@@ -3472,15 +3394,15 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 if (GetPlaybackMode() == PM_FILE) {
                     SetupChapters();
                 } else if (GetPlaybackMode() == PM_DVD) {
-                    m_iDVDTitle = (DWORD)evParam1;
+                    m_disc.m_iDVDTitle = (DWORD)evParam1;
 
-                    if (m_iDVDDomain == DVD_DOMAIN_Title) {
+                    if (m_disc.m_iDVDDomain == DVD_DOMAIN_Title) {
                         CString Domain;
-                        Domain.Format(IDS_AG_TITLE, m_iDVDTitle);
+                        Domain.Format(IDS_AG_TITLE, m_disc.m_iDVDTitle);
                         m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_DOMAIN), Domain);
                     }
 
-                    SetupDVDChapters();
+                    m_disc.SetupDVDChapters();
                 }
                 SetupSubtitlesSubMenu();
                 SetupAudioSubMenu();
@@ -3488,14 +3410,14 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
             break;
             case EC_DVD_DOMAIN_CHANGE: {
                 CAppSettings& s = AfxGetAppSettings();
-                m_iDVDDomain = (DVD_DOMAIN)evParam1;
+                m_disc.m_iDVDDomain = (DVD_DOMAIN)evParam1;
 
                 OpenDVDData* pDVDData = dynamic_cast<OpenDVDData*>(m_lastOMD.m_p);
                 ASSERT(pDVDData);
 
                 CString Domain(_T('-'));
 
-                switch (m_iDVDDomain) {
+                switch (m_disc.m_iDVDDomain) {
                     case DVD_DOMAIN_FirstPlay:
                         ULONGLONG llDVDGuid;
 
@@ -3506,7 +3428,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                         }
 
                         if (m_graph.m_pDVDI && SUCCEEDED(m_graph.m_pDVDI->GetDiscID(nullptr, &llDVDGuid))) {
-                            m_fValidDVDOpen = true;
+                            m_disc.m_fValidDVDOpen = true;
 
                             if (s.fShowDebugInfo) {
                                 m_OSD.DebugMessage(_T("DVD Title: %lu"), s.lDVDTitle);
@@ -3577,7 +3499,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                                     }
                                 }
 
-                                m_iDVDTitle   = s.lDVDTitle;
+                                m_disc.m_iDVDTitle   = s.lDVDTitle;
                                 s.lDVDTitle   = 0;
                                 s.lDVDChapter = 0;
                             } else if (pDVDData && pDVDData->pDvdState) {
@@ -3594,7 +3516,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                                 if (FAILED(hr)) {
                                     TRACE(_T("Failed to set remembered DVD title index, hr = 0x%08X"), hr);
                                 } else {
-                                    m_iDVDTitle = dvdPosition.lTitle;
+                                    m_disc.m_iDVDTitle = dvdPosition.lTitle;
 
                                     if (dvdPosition.timecode.bSeconds > 0 || dvdPosition.timecode.bMinutes > 0 || dvdPosition.timecode.bHours > 0 || dvdPosition.timecode.bFrames > 0) {
 #if 0
@@ -3611,7 +3533,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                                     }
 
                                     ABRepeat tmp = s.MRU.GetCurrentABRepeat();
-                                    if (tmp.dvdTitle == m_iDVDTitle) {
+                                    if (tmp.dvdTitle == m_disc.m_iDVDTitle) {
                                         abRepeat = tmp;
                                         m_wndSeekBar.Invalidate();
                                     }
@@ -3636,15 +3558,15 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                         }
                         break;
                     case DVD_DOMAIN_Title:
-                        Domain.Format(IDS_AG_TITLE, m_iDVDTitle);
+                        Domain.Format(IDS_AG_TITLE, m_disc.m_iDVDTitle);
                         if (s.fShowDebugInfo) {
                             m_OSD.DebugMessage(_T("%s"), Domain.GetString());
                         }
                         if (s.fKeepHistory && s.fRememberDVDPos) {
-                            s.MRU.UpdateCurrentDVDTitle(m_iDVDTitle);
+                            s.MRU.UpdateCurrentDVDTitle(m_disc.m_iDVDTitle);
                         }
-                        if (!m_fValidDVDOpen && m_graph.m_pDVDC) {
-                            m_fValidDVDOpen = true;
+                        if (!m_disc.m_fValidDVDOpen && m_graph.m_pDVDC) {
+                            m_disc.m_fValidDVDOpen = true;
                             m_graph.m_pDVDC->ShowMenu(DVD_MENU_Title, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
                         }
                         break;
@@ -3667,7 +3589,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 if (GetPlaybackMode() == PM_FILE) {
                     SetupChapters();
                 } else if (GetPlaybackMode() == PM_DVD) {
-                    SetupDVDChapters();
+                    m_disc.SetupDVDChapters();
                 }
 
 #if 0   // UOPs debug traces
@@ -3757,7 +3679,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                         SyncPreviewEdition();
                     }
                 } else if (GetPlaybackMode() == PM_DVD) {
-                    SetupDVDChapters();
+                    m_disc.SetupDVDChapters();
                 }
             }
             break;
@@ -3778,7 +3700,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
             case EC_DVD_PLAYBACK_RATE_CHANGE:
                 if (m_fCustomGraph) {
                     CAppSettings& s = AfxGetAppSettings();
-                    if (s.autoChangeFSMode.bEnabled && IsFullScreenMode() && m_iDVDDomain == DVD_DOMAIN_Title) {
+                    if (s.autoChangeFSMode.bEnabled && IsFullScreenMode() && m_disc.m_iDVDDomain == DVD_DOMAIN_Title) {
                         AutoChangeMonitorMode();
                     }
                 }
@@ -3795,10 +3717,10 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
                 UpdateCachedMediaState();
                 break;
             case EC_DVD_STILL_ON:
-                m_bDVDStillOn = true;
+                m_disc.m_bDVDStillOn = true;
                 break;
             case EC_DVD_STILL_OFF:
-                m_bDVDStillOn = false;
+                m_disc.m_bDVDStillOn = false;
                 break;
             case EC_DVD_BUTTON_CHANGE:
             case EC_DVD_SUBPICTURE_STREAM_CHANGE:
@@ -3937,10 +3859,10 @@ void CMainFrame::OnInitMenu(CMenu* pMenu)
         CMPCThemeMenu* pSubMenu = nullptr;
 
         if (itemID == ID_FAVORITES) {
-            SetupFavoritesSubMenu();
+            m_favorites.SetupFavoritesSubMenu();
             pSubMenu = &m_favoritesMenu;
         }/*else if (itemID == ID_RECENT_FILES) {
-            SetupRecentFilesSubMenu();
+            m_favorites.SetupRecentFilesSubMenu();
             pSubMenu = &m_recentFilesMenu;
         }*/
 
@@ -4070,10 +3992,10 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
             SetupJumpToSubMenus(pPopupMenu, i + 1);
             uiMenuCount = pPopupMenu->GetMenuItemCount(); //SetupJumpToSubMenus could actually reduce the menu count!
         } else if (itemID == ID_FAVORITES) {
-            SetupFavoritesSubMenu();
+            m_favorites.SetupFavoritesSubMenu();
             pSubMenu = &m_favoritesMenu;
         } else if (itemID == ID_RECENT_FILES) {
-            SetupRecentFilesSubMenu();
+            m_favorites.SetupRecentFilesSubMenu();
             pSubMenu = &m_recentFilesMenu;
         } else if (itemID == ID_SHADERS) {
             if (SetupShadersSubMenu()) {
@@ -5122,139 +5044,6 @@ void CMainFrame::OnSubtitlesAutoCopy()
     m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.bAutoCopySubtitleToClipboard ? IDS_OSD_AUTOCOPY_SUBTITLE_ON : IDS_OSD_AUTOCOPY_SUBTITLE_OFF));
 }
 
-void CMainFrame::OnDvdAngle(UINT nID)
-{
-    if (GetLoadState() != MLS::LOADED) {
-        return;
-    }
-
-    if (m_graph.m_pDVDI && m_graph.m_pDVDC) {
-        ULONG ulAnglesAvailable, ulCurrentAngle;
-        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAngle(&ulAnglesAvailable, &ulCurrentAngle)) && ulAnglesAvailable > 1) {
-            ulCurrentAngle += (nID == ID_DVD_ANGLE_NEXT) ? 1 : -1;
-            if (ulCurrentAngle > ulAnglesAvailable) {
-                ulCurrentAngle = 1;
-            } else if (ulCurrentAngle < 1) {
-                ulCurrentAngle = ulAnglesAvailable;
-            }
-            m_graph.m_pDVDC->SelectAngle(ulCurrentAngle, DVD_CMD_FLAG_Block, nullptr);
-
-            CString osdMessage;
-            osdMessage.Format(IDS_AG_ANGLE, ulCurrentAngle);
-            m_OSD.DisplayMessage(OSD_TOPLEFT, osdMessage);
-        }
-    }
-}
-
-void CMainFrame::OnDvdAudio(UINT nID)
-{
-    nID -= ID_DVD_AUDIO_NEXT;
-
-    if (GetLoadState() != MLS::LOADED) {
-        return;
-    }
-
-    if (m_graph.m_pDVDI && m_graph.m_pDVDC) {
-        ULONG nStreamsAvailable, nCurrentStream;
-        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAudio(&nStreamsAvailable, &nCurrentStream)) && nStreamsAvailable > 1) {
-            DVD_AudioAttributes AATR;
-            UINT nNextStream = (nCurrentStream + (nID == 0 ? 1 : nStreamsAvailable - 1)) % nStreamsAvailable;
-
-            HRESULT hr = m_graph.m_pDVDC->SelectAudioStream(nNextStream, DVD_CMD_FLAG_Block, nullptr);
-            if (SUCCEEDED(m_graph.m_pDVDI->GetAudioAttributes(nNextStream, &AATR))) {
-                CString lang;
-                CString strMessage;
-                if (AATR.Language) {
-                    GetLocaleString(AATR.Language, LOCALE_SENGLANGUAGE, lang);
-                    currentAudioLang = lang;
-                } else {
-                    lang.Format(IDS_AG_UNKNOWN, nNextStream + 1);
-                    currentAudioLang.Empty();
-                }
-
-                CString format = GetDVDAudioFormatName(AATR);
-                CString str;
-
-                if (!format.IsEmpty()) {
-                    str.Format(IDS_MAINFRM_11,
-                               lang.GetString(),
-                               format.GetString(),
-                               AATR.dwFrequency,
-                               AATR.bQuantization,
-                               AATR.bNumberOfChannels,
-                               ResStr(AATR.bNumberOfChannels > 1 ? IDS_MAINFRM_13 : IDS_MAINFRM_12).GetString());
-                    if (FAILED(hr)) {
-                        str += _T(" [") + ResStr(IDS_AG_ERROR) + _T("] ");
-                    }
-                    strMessage.Format(IDS_AUDIO_STREAM, str.GetString());
-                    m_OSD.DisplayMessage(OSD_TOPLEFT, strMessage);
-                }
-            }
-        }
-    }
-}
-
-void CMainFrame::OnDvdSub(UINT nID)
-{
-    nID -= ID_DVD_SUB_NEXT;
-
-    if (GetLoadState() != MLS::LOADED) {
-        return;
-    }
-
-    if (m_graph.m_pDVDI && m_graph.m_pDVDC) {
-        ULONG ulStreamsAvailable, ulCurrentStream;
-        BOOL bIsDisabled;
-        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
-                && ulStreamsAvailable > 1) {
-            //UINT nNextStream = (ulCurrentStream+(nID==0?1:ulStreamsAvailable-1))%ulStreamsAvailable;
-            int nNextStream;
-
-            if (!bIsDisabled) {
-                nNextStream = ulCurrentStream + (nID == 0 ? 1 : -1);
-            } else {
-                nNextStream = (nID == 0 ? 0 : ulStreamsAvailable - 1);
-            }
-
-            if (!bIsDisabled && ((nNextStream < 0) || ((ULONG)nNextStream >= ulStreamsAvailable))) {
-                m_graph.m_pDVDC->SetSubpictureState(FALSE, DVD_CMD_FLAG_Block, nullptr);
-                m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_SUBTITLE_STREAM_OFF));
-            } else {
-                HRESULT hr = m_graph.m_pDVDC->SelectSubpictureStream(nNextStream, DVD_CMD_FLAG_Block, nullptr);
-
-                DVD_SubpictureAttributes SATR;
-                m_graph.m_pDVDC->SetSubpictureState(TRUE, DVD_CMD_FLAG_Block, nullptr);
-                if (SUCCEEDED(m_graph.m_pDVDI->GetSubpictureAttributes(nNextStream, &SATR))) {
-                    CString lang;
-                    CString strMessage;
-                    GetLocaleString(SATR.Language, LOCALE_SENGLANGUAGE, lang);
-
-                    if (FAILED(hr)) {
-                        lang += _T(" [") + ResStr(IDS_AG_ERROR) + _T("] ");
-                    }
-                    strMessage.Format(IDS_SUBTITLE_STREAM, lang.GetString());
-                    m_OSD.DisplayMessage(OSD_TOPLEFT, strMessage);
-                }
-            }
-        }
-    }
-}
-
-void CMainFrame::OnDvdSubOnOff()
-{
-    if (GetLoadState() != MLS::LOADED) {
-        return;
-    }
-
-    if (m_graph.m_pDVDI && m_graph.m_pDVDC) {
-        ULONG ulStreamsAvailable, ulCurrentStream;
-        BOOL bIsDisabled;
-        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))) {
-            m_graph.m_pDVDC->SetSubpictureState(bIsDisabled, DVD_CMD_FLAG_Block, nullptr);
-        }
-    }
-}
-
 //
 // menu item handlers
 //
@@ -5319,7 +5108,7 @@ void CMainFrame::OnFileOpenQuick()
     SetForegroundWindow();
 
     if (fns.GetCount() == 1) {
-        if (OpenBD(fns.GetHead())) {
+        if (m_disc.OpenBD(fns.GetHead())) {
             return;
         }
     }
@@ -5377,7 +5166,7 @@ void CMainFrame::OnFileOpenmedia()
     filenames.AddHeadList(&dlg.GetFileNames());
 
     if (!dlg.HasMultipleFiles()) {
-        if (OpenBD(filenames.GetHead())) {
+        if (m_disc.OpenBD(filenames.GetHead())) {
             return;
         }
     }
@@ -5665,7 +5454,7 @@ void CMainFrame::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived
             sl.AddTailList(&s.slDubs);
         }
 
-        if (OpenBD(s.slFiles.GetHead())) {
+        if (m_disc.OpenBD(s.slFiles.GetHead())) {
             // Nothing more to do
         } else if (!fMulti && CLongPath(s.slFiles.GetHead() + _T("\\VIDEO_TS")).IsDirectory()) {
             fSetForegroundWindow = true;
@@ -5848,50 +5637,6 @@ int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
     return 0;
 }
 
-void CMainFrame::OpenDVDOrBD(CStringW path) {
-    if (!path.IsEmpty()) {
-        AfxGetAppSettings().strDVDPath = path;
-        if (!OpenBD(path)) {
-            CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
-            if (p) {
-                p->path = path;
-                p->path.Replace(_T('/'), _T('\\'));
-                p->path = ForceTrailingSlash(p->path);
-                m_wndPlaylistBar.OpenDVD(p->path);
-            }
-            OpenMedia(p);
-        }
-    }
-}
-
-void CMainFrame::OnFileOpendvd()
-{
-    if (!IsStateClosedOrLoaded() || IsD3DFullScreenMode()) {
-        return;
-    }
-
-    CAppSettings& s = AfxGetAppSettings();
-    CString strTitle(StrRes(IDS_MAINFRM_46));
-    CString path;
-
-    if (s.fUseDVDPath && !s.strDVDPath.IsEmpty()) {
-        path = s.strDVDPath;
-    } else {
-        //strDVDPath is actually used as a default to open without the dialog,
-        //but since it is always updated to the last path chosen,
-        //we can use it as the default for the dialog, too
-        CFolderPickerDialog fd(ForceTrailingSlash(s.strDVDPath), FOS_PATHMUSTEXIST, GetModalParent());
-        fd.m_ofn.lpstrTitle = strTitle;
-
-        if (fd.DoModal() == IDOK) {
-            path = fd.GetPathName(); //getfolderpath() does not work correctly for CFolderPickerDialog
-        } else {
-            return;
-        }
-    }
-    OpenDVDOrBD(path);
-}
-
 void CMainFrame::OnFileOpendevice()
 {
     if (!IsStateClosedOrLoaded()) {
@@ -5959,7 +5704,7 @@ void CMainFrame::OnFileOpenOpticalDisk(UINT nID)
 
         if (nID == 0) {
             if (OpticalDisk_BD == discType || OpticalDisk_DVDVideo == discType) {
-                OpenDVDOrBD(CStringW(drive) + L":\\");
+                m_disc.OpenDVDOrBD(CStringW(drive) + L":\\");
             } else {
                 if (!CloseMediaBeforeOpen()) {
                     return;
@@ -5995,7 +5740,7 @@ void CMainFrame::OnFileRecycle()
 
 void CMainFrame::OnFileReopen()
 {
-    if (!m_LastOpenBDPath.IsEmpty() && OpenBD(m_LastOpenBDPath)) {
+    if (!m_disc.m_LastOpenBDPath.IsEmpty() && m_disc.OpenBD(m_disc.m_LastOpenBDPath)) {
         return;
     }
 
@@ -6140,7 +5885,7 @@ void CMainFrame::OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect)
         return;
     }
 
-    if (slFiles.GetCount() == 1 && OpenBD(slFiles.GetHead())) {
+    if (slFiles.GetCount() == 1 && m_disc.OpenBD(slFiles.GetHead())) {
         return;
     }
 
@@ -8868,7 +8613,7 @@ void CMainFrame::OnPlayPlay()
 
         if (m_bFirstPlay) {
             if (GetPlaybackMode() == PM_FILE) {
-                if (!m_LastOpenBDPath.IsEmpty()) {
+                if (!m_disc.m_LastOpenBDPath.IsEmpty()) {
                     strOSD.LoadString(IDS_PLAY_BD);
                 } else {
                     strOSD = GetFileName();
@@ -9109,8 +8854,8 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
                     fEnable = false; // Disable pause for digital capture mode to avoid accidental playback stop. We don't support time shifting yet.
                 }
             } else if (GetPlaybackMode() == PM_DVD) {
-                fEnable = m_iDVDDomain != DVD_DOMAIN_VideoManagerMenu
-                    && m_iDVDDomain != DVD_DOMAIN_VideoTitleSetMenu;
+                fEnable = m_disc.m_iDVDDomain != DVD_DOMAIN_VideoManagerMenu
+                    && m_disc.m_iDVDDomain != DVD_DOMAIN_VideoTitleSetMenu;
 
                 if (fs == State_Stopped && pCmdUI->m_nID == ID_PLAY_PAUSE) {
                     fEnable = false;
@@ -9222,7 +8967,7 @@ void CMainFrame::OnUpdatePlayFramestep(CCmdUI* pCmdUI)
     bool fEnable = false;
 
     if (pCmdUI->m_nID == ID_PLAY_FRAMESTEP) {
-        if (!m_fAudioOnly && !m_fLiveWM && GetLoadState() == MLS::LOADED && (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_iDVDDomain == DVD_DOMAIN_Title))) {
+        if (!m_fAudioOnly && !m_fLiveWM && GetLoadState() == MLS::LOADED && (GetPlaybackMode() == PM_FILE || (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain == DVD_DOMAIN_Title))) {
             if (m_graph.m_pFS || m_graph.m_pMS && (S_OK == m_graph.m_pMS->IsFormatSupported(&TIME_FORMAT_FRAME))) {
                 fEnable = true;
             }
@@ -9380,7 +9125,7 @@ void CMainFrame::OnUpdatePlaySeek(CCmdUI* pCmdUI)
 
     if (GetLoadState() == MLS::LOADED) {
         fEnable = true;
-        if (GetPlaybackMode() == PM_DVD && m_iDVDDomain != DVD_DOMAIN_Title) {
+        if (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain != DVD_DOMAIN_Title) {
             fEnable = false;
         } else if (IsPlaybackCaptureMode()) {
             fEnable = false;
@@ -9580,7 +9325,7 @@ void CMainFrame::OnUpdatePlayChangeRate(CCmdUI* pCmdUI)
                 fEnable = false;
             } else if (!fInc && GetPlaybackMode() == PM_DVD && m_dSpeedRate <= -128.0) {
                 fEnable = false;
-            } else if (GetPlaybackMode() == PM_DVD && m_iDVDDomain != DVD_DOMAIN_Title) {
+            } else if (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain != DVD_DOMAIN_Title) {
                 fEnable = false;
             } else if (m_fShockwaveGraph) {
                 fEnable = false;
@@ -10661,101 +10406,6 @@ bool CMainFrame::SeekToFileChapter(int iChapter, bool bRelative /*= false*/)
     return ret;
 }
 
-bool CMainFrame::SeekToDVDChapter(int iChapter, bool bRelative /*= false*/)
-{
-    if (GetPlaybackMode() != PM_DVD) {
-        return false;
-    }
-
-    ULONG ulNumOfVolumes, ulVolume;
-    DVD_DISC_SIDE Side;
-    ULONG ulNumOfTitles = 0;
-    CheckNoLogBool(m_graph.m_pDVDI->GetDVDVolumeInfo(&ulNumOfVolumes, &ulVolume, &Side, &ulNumOfTitles));
-
-    DVD_PLAYBACK_LOCATION2 Location;
-    ULONG ulNumOfChapters = 0;
-    ULONG uTitle = 0, uChapter = 0;
-    if (bRelative) {
-        CheckNoLogBool(m_graph.m_pDVDI->GetCurrentLocation(&Location));
-
-        CheckNoLogBool(m_graph.m_pDVDI->GetNumberOfChapters(Location.TitleNum, &ulNumOfChapters));
-
-        uTitle = Location.TitleNum;
-        uChapter = Location.ChapterNum;
-
-        if (iChapter < 0) {
-            ULONG tsec = (Location.TimeCode.bHours * 3600)
-                         + (Location.TimeCode.bMinutes * 60)
-                         + (Location.TimeCode.bSeconds);
-            ULONG diff = 0;
-            if (m_lChapterStartTime != 0xFFFFFFFF && tsec > m_lChapterStartTime) {
-                diff = tsec - m_lChapterStartTime;
-            }
-            // Go the previous chapter only if more than PREV_CHAP_THRESHOLD seconds
-            // have passed since the beginning of the current chapter else restart it
-            if (diff <= PREV_CHAP_THRESHOLD) {
-                // If we are at the first chapter of a volume that isn't the first
-                // one, we skip to the last chapter of the previous volume.
-                if (uChapter == 1 && uTitle > 1) {
-                    uTitle--;
-                    CheckNoLogBool(m_graph.m_pDVDI->GetNumberOfChapters(uTitle, &uChapter));
-                } else if (uChapter > 1) {
-                    uChapter--;
-                }
-            }
-        } else {
-            // If we are at the last chapter of a volume that isn't the last
-            // one, we skip to the first chapter of the next volume.
-            if (uChapter == ulNumOfChapters && uTitle < ulNumOfTitles) {
-                uTitle++;
-                uChapter = 1;
-            } else if (uChapter < ulNumOfChapters) {
-                uChapter++;
-            }
-        }
-    } else if (iChapter > 0) {
-        uChapter = ULONG(iChapter);
-        if (uChapter <= ulNumOfTitles) {
-            uTitle = uChapter;
-            uChapter = 1;
-        } else {
-            CheckNoLogBool(m_graph.m_pDVDI->GetCurrentLocation(&Location));
-            uTitle = Location.TitleNum;
-            uChapter -= ulNumOfTitles;
-        }
-    }
-
-    if (uTitle && uChapter
-            && SUCCEEDED(m_graph.m_pDVDC->PlayChapterInTitle(uTitle, uChapter, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr))) {
-        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentLocation(&Location))
-                && SUCCEEDED(m_graph.m_pDVDI->GetNumberOfChapters(Location.TitleNum, &ulNumOfChapters))) {
-            CString strTitle;
-            strTitle.Format(IDS_AG_TITLE2, Location.TitleNum, ulNumOfTitles);
-            __int64 start, stop;
-            m_wndSeekBar.GetRange(start, stop);
-
-            CString strOSD;
-            if (stop > 0) {
-                const CAppSettings& s = AfxGetAppSettings();
-
-                DVD_HMSF_TIMECODE currentHMSF = s.fRemainingTime ? RT2HMS_r(stop - HMSF2RT(Location.TimeCode)) : Location.TimeCode;
-                DVD_HMSF_TIMECODE stopHMSF = RT2HMS_r(stop);
-                strOSD.Format(_T("%s%s/%s %s, %s%02u/%02lu"),
-                              s.fRemainingTime ? _T("- ") : _T(""), DVDtimeToString(currentHMSF, stopHMSF.bHours > 0).GetString(), DVDtimeToString(stopHMSF).GetString(),
-                              strTitle.GetString(), ResStr(IDS_AG_CHAPTER2).GetString(), Location.ChapterNum, ulNumOfChapters);
-            } else {
-                strOSD.Format(_T("%s, %s%02u/%02lu"), strTitle.GetString(), ResStr(IDS_AG_CHAPTER2).GetString(), Location.ChapterNum, ulNumOfChapters);
-            }
-
-            m_OSD.DisplayMessage(OSD_TOPLEFT, strOSD, 3000);
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
 // navigate
 void CMainFrame::OnNavigateSkip(UINT nID)
 {
@@ -10778,7 +10428,7 @@ void CMainFrame::OnNavigateSkip(UINT nID)
             SendMessage(WM_COMMAND, ID_PLAY_PLAY);
         }
 
-        SeekToDVDChapter((nID == ID_NAVIGATE_SKIPBACK) ? -1 : 1, true);
+        m_disc.SeekToDVDChapter((nID == ID_NAVIGATE_SKIPBACK) ? -1 : 1, true);
     } else if (GetPlaybackMode() == PM_DIGITAL_CAPTURE && GetLoadState() == MLS::LOADED) {
         CComQIPtr<IBDATuner> pTun = m_graph.m_pGB;
         if (pTun) {
@@ -10820,8 +10470,8 @@ void CMainFrame::OnUpdateNavigateSkip(CCmdUI* pCmdUI)
     pCmdUI->Enable(
         (GetLoadState() == MLS::LOADED
         && ((GetPlaybackMode() == PM_DVD
-            && m_iDVDDomain != DVD_DOMAIN_VideoManagerMenu
-            && m_iDVDDomain != DVD_DOMAIN_VideoTitleSetMenu)
+            && m_disc.m_iDVDDomain != DVD_DOMAIN_VideoManagerMenu
+            && m_disc.m_iDVDDomain != DVD_DOMAIN_VideoTitleSetMenu)
             || (GetPlaybackMode() == PM_FILE  && s.fUseSearchInFolder)
             || (GetPlaybackMode() == PM_FILE  && !s.fUseSearchInFolder && (m_wndPlaylistBar.GetCount() > 1 || m_pCB->ChapGetCount() > 1))
             || (GetPlaybackMode() == PM_DIGITAL_CAPTURE && !m_capture.m_pDVBState->bSetChannelActive)))
@@ -10903,7 +10553,7 @@ void CMainFrame::OnUpdateNavigateGoto(CCmdUI* pCmdUI)
 
     if (GetLoadState() == MLS::LOADED) {
         fEnable = true;
-        if (GetPlaybackMode() == PM_DVD && m_iDVDDomain != DVD_DOMAIN_Title) {
+        if (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain != DVD_DOMAIN_Title) {
             fEnable = false;
         } else if (IsPlaybackCaptureMode()) {
             fEnable = false;
@@ -10911,37 +10561,6 @@ void CMainFrame::OnUpdateNavigateGoto(CCmdUI* pCmdUI)
     }
 
     pCmdUI->Enable(fEnable);
-}
-
-void CMainFrame::OnNavigateMenu(UINT nID)
-{
-    nID -= ID_NAVIGATE_TITLEMENU;
-
-    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_DVD) {
-        return;
-    }
-
-    m_dSpeedRate = 1.0;
-
-    if (GetMediaState() != State_Running) {
-        SendMessage(WM_COMMAND, ID_PLAY_PLAY);
-    }
-
-    m_graph.m_pDVDC->ShowMenu((DVD_MENU_ID)(nID + 2), DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
-}
-
-void CMainFrame::OnUpdateNavigateMenu(CCmdUI* pCmdUI)
-{
-    UINT nID = pCmdUI->m_nID - ID_NAVIGATE_TITLEMENU;
-    ULONG ulUOPs;
-
-    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_DVD
-            || FAILED(m_graph.m_pDVDI->GetCurrentUOPS(&ulUOPs))) {
-        pCmdUI->Enable(FALSE);
-        return;
-    }
-
-    pCmdUI->Enable(!(ulUOPs & (UOP_FLAG_ShowMenu_Title << nID)));
 }
 
 void CMainFrame::OnNavigateJumpTo(UINT nID)
@@ -10955,11 +10574,11 @@ void CMainFrame::OnNavigateJumpTo(UINT nID)
     if (GetPlaybackMode() == PM_FILE) {
         int id = nID - ID_NAVIGATE_JUMPTO_SUBITEM_START;
 
-        if (id < (int)m_MPLSPlaylist.size() && m_MPLSPlaylist.size() > 1) {
+        if (id < (int)m_disc.m_MPLSPlaylist.size() && m_disc.m_MPLSPlaylist.size() > 1) {
             int idx = 0;
-            for (auto &Item : m_MPLSPlaylist) {
+            for (auto &Item : m_disc.m_MPLSPlaylist) {
                 if (idx == id) {
-                    m_bIsBDPlay = true;
+                    m_disc.m_bIsBDPlay = true;
                     m_wndPlaylistBar.Empty();
                     CAtlList<CString> sl;
                     sl.AddTail(CString(Item.m_strFileName));
@@ -10971,8 +10590,8 @@ void CMainFrame::OnNavigateJumpTo(UINT nID)
             }
         }
 
-        if (m_MPLSPlaylist.size() > 1) {
-            id -= (int)m_MPLSPlaylist.size();
+        if (m_disc.m_MPLSPlaylist.size() > 1) {
+            id -= (int)m_disc.m_MPLSPlaylist.size();
         }
 
         if (m_pCB->ChapGetCount() > 1) {
@@ -10988,7 +10607,7 @@ void CMainFrame::OnNavigateJumpTo(UINT nID)
             PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
         }
     } else if (GetPlaybackMode() == PM_DVD) {
-        SeekToDVDChapter(nID - ID_NAVIGATE_JUMPTO_SUBITEM_START + 1);
+        m_disc.SeekToDVDChapter(nID - ID_NAVIGATE_JUMPTO_SUBITEM_START + 1);
     } else if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
         CComQIPtr<IBDATuner> pTun = m_graph.m_pGB;
         if (pTun) {
@@ -11560,22 +11179,50 @@ void CMainFrame::PlayFavoriteDVD(CString fav)
         p->pDvdState = pDvdState;
         m_wndPlaylistBar.OpenDVD(p->path);
     }
-    OpenMedia(p);
 }
 
-void CMainFrame::OnUpdateFavoritesDVD(CCmdUI* pCmdUI)
+void CMainFrame::OnNavigateMenuItem(UINT nID)
 {
-    //UINT nID = pCmdUI->m_nID - ID_FAVORITES_DVD_START;
+    nID -= ID_NAVIGATE_MENU_LEFT;
+
+    if (GetPlaybackMode() == PM_DVD) {
+        switch (nID) {
+            case 0:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Left);
+                break;
+            case 1:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Right);
+                break;
+            case 2:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Upper);
+                break;
+            case 3:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Lower);
+                break;
+            case 4:
+                if (m_disc.m_iDVDDomain == DVD_DOMAIN_Title || m_disc.m_iDVDDomain == DVD_DOMAIN_VideoTitleSetMenu || m_disc.m_iDVDDomain == DVD_DOMAIN_VideoManagerMenu) {
+                    m_graph.m_pDVDC->ActivateButton();
+                } else {
+                    OnPlayPlay();
+                }
+                break;
+            case 5:
+                m_graph.m_pDVDC->ReturnFromSubmenu(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+                break;
+            case 6:
+                m_graph.m_pDVDC->Resume(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+                break;
+            default:
+                break;
+        }
+    } else if (GetPlaybackMode() == PM_FILE) {
+        OnPlayPlay();
+    }
 }
 
-void CMainFrame::OnFavoritesDevice(UINT nID)
+void CMainFrame::OnUpdateNavigateMenuItem(CCmdUI* pCmdUI)
 {
-    //nID -= ID_FAVORITES_DEVICE_START;
-}
-
-void CMainFrame::OnUpdateFavoritesDevice(CCmdUI* pCmdUI)
-{
-    //UINT nID = pCmdUI->m_nID - ID_FAVORITES_DEVICE_START;
+    pCmdUI->Enable((GetLoadState() == MLS::LOADED) && ((GetPlaybackMode() == PM_DVD) || (GetPlaybackMode() == PM_FILE)));
 }
 
 // help
@@ -13135,7 +12782,7 @@ void CMainFrame::RepaintVideo(const bool bForceRepaint/* = false*/)
 {
     if (!m_bDelaySetOutputRect && (m_graph.m_pCAP || m_graph.m_pMFVDC)) {
         OAFilterState fs = GetMediaState();
-        if (fs == State_Paused || fs == State_Stopped || bForceRepaint || (m_bDVDStillOn && GetPlaybackMode() == PM_DVD)) {
+        if (fs == State_Paused || fs == State_Stopped || bForceRepaint || (m_disc.m_bDVDStillOn && GetPlaybackMode() == PM_DVD)) {
             if (m_graph.m_pCAP) {
                 m_graph.m_pCAP->Paint(false);
             } else if (m_graph.m_pMFVDC) {
@@ -13970,7 +13617,7 @@ void CMainFrame::OpenFile(OpenFileData* pOFD)
             tempath.Replace(fnn, _T(""));
             tempath.Replace(_T("BDMV\\PLAYLIST\\"), _T(""));
             CHdmvClipInfo clipinfo;
-            m_bHasBDMeta = clipinfo.ReadMeta(tempath, m_BDMeta);
+            m_disc.m_bHasBDMeta = clipinfo.ReadMeta(tempath, m_disc.m_BDMeta);
         }
 
         HRESULT hr;
@@ -14593,185 +14240,6 @@ void CMainFrame::SetupCueChapters(CString cuefn) {
             m_pCB->ChapAppend(c.time, label);
         }
     }
-}
-
-void CMainFrame::SetupDVDChapters()
-{
-    // Release the old chapter bag and create a new one.
-    // Due to smart pointers the old chapter bag won't
-    // be deleted until all classes release it.
-    m_pCB.Release();
-    m_pCB = DEBUG_NEW CDSMChapterBag(nullptr, nullptr);
-
-    WCHAR buff[MAX_PATH];
-    ULONG len, ulNumOfChapters;
-    DVD_PLAYBACK_LOCATION2 loc;
-
-    if (m_graph.m_pDVDI && SUCCEEDED(m_graph.m_pDVDI->GetDVDDirectory(buff, _countof(buff), &len))
-            && SUCCEEDED(m_graph.m_pDVDI->GetCurrentLocation(&loc))
-            && SUCCEEDED(m_graph.m_pDVDI->GetNumberOfChapters(loc.TitleNum, &ulNumOfChapters))) {
-        CString path;
-        path.Format(L"%s\\video_ts.IFO", buff);
-        ULONG VTSN, TTN;
-
-        if (CVobFile::GetTitleInfo(path, loc.TitleNum, VTSN, TTN)) {
-            path.Format(L"%s\\VTS_%02lu_0.IFO", buff, VTSN);
-            CAtlList<CString> files;
-
-            CVobFile vob;
-            if (vob.Open(path, files, TTN, false)) {
-                int iChaptersCount = vob.GetChaptersCount();
-                if (ulNumOfChapters == (ULONG)iChaptersCount) {
-                    for (int i = 0; i < iChaptersCount; i++) {
-                        REFERENCE_TIME rt = vob.GetChapterOffset(i);
-
-                        CStringW str;
-                        str.Format(IDS_AG_CHAPTER, i + 1);
-
-                        m_pCB->ChapAppend(rt, str);
-                    }
-                } else {
-                    // Parser failed!
-                    ASSERT(FALSE);
-                }
-                vob.Close();
-            }
-        }
-    }
-
-    m_pCB->ChapSort();
-
-    UpdateSeekbarChapterBag();
-}
-
-// Called from GraphThread
-void CMainFrame::OpenDVD(OpenDVDData* pODD)
-{
-    lastOpenFile.Empty();
-
-    CStringW fn = CStringW(pODD->path);
-    HRESULT hr = m_graph.m_pGB->RenderFile(fn, nullptr);
-
-    if (SUCCEEDED(hr)) {
-        lastOpenFile = fn;
-    }
-
-    CAppSettings& s = AfxGetAppSettings();
-
-    if (s.fReportFailedPins) {
-        ShowMediaTypesDialog();
-    }
-
-    if (SUCCEEDED(hr) && m_bUseSeekPreview) {
-        if (FAILED(hr = m_previewGraph.m_pGB->RenderFile(pODD->path, nullptr))) {
-            m_bUseSeekPreview = false;
-        }
-    }
-
-    // Check for supported interfaces
-    BeginEnumFilters(m_graph.m_pGB, pEF, pBF)
-        CLSID clsid = GetCLSID(pBF);
-        // DVD stuff
-        if (!m_graph.m_pDVDC) {
-            m_graph.m_pDVDC = pBF;
-        }
-        if (!m_graph.m_pDVDI) {
-            m_graph.m_pDVDI = pBF;
-        }
-        // IAMStreamSelect filters / IDirectVobSub
-        if (clsid == __uuidof(CAudioSwitcherFilter)) {
-            m_graph.m_pAudioSwitcherSS = pBF;
-        } else {
-            if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
-                if (!s.IsISRAutoLoadEnabled()) {
-                    m_pDVS = pBF;
-                    m_pDVS2 = pBF;
-                }
-            } else {
-                if (clsid != CLSID_MPCBEAudioRenderer) {
-                    if (CComQIPtr<IAMStreamSelect> pTest = pBF) {
-                        if (!m_graph.m_pOtherSS[0]) {
-                            m_graph.m_pOtherSS[0] = pBF;
-                        } else if (!m_graph.m_pOtherSS[1]) {
-                            m_graph.m_pOtherSS[1] = pBF;
-                        } else {
-                            ASSERT(false);
-                        }
-                    }
-                }
-            }
-        }
-        // Others
-        if (!m_graph.m_pLN21) {
-            m_graph.m_pLN21 = pBF;
-        }
-    EndEnumFilters;
-
-    ASSERT(m_graph.m_pDVDC);
-    ASSERT(m_graph.m_pDVDI);
-
-    if (m_bUseSeekPreview) {
-        BeginEnumFilters(m_previewGraph.m_pGB, pEF, pBF) {
-            if ((m_previewGraph.m_pDVDC = pBF) && (m_previewGraph.m_pDVDI = pBF)) {
-                break;
-            }
-        }
-        EndEnumFilters;
-    }
-
-    if (hr == E_INVALIDARG) {
-        throw (UINT)IDS_MAINFRM_93;
-    } else if (hr == VFW_E_CANNOT_RENDER) {
-        throw (UINT)IDS_DVD_NAV_ALL_PINS_ERROR;
-    } else if (hr == VFW_S_PARTIAL_RENDER) {
-        throw (UINT)IDS_DVD_NAV_SOME_PINS_ERROR;
-    } else if (hr == E_NOINTERFACE || !m_graph.m_pDVDC || !m_graph.m_pDVDI) {
-        throw (UINT)IDS_DVD_INTERFACES_ERROR;
-    } else if (hr == VFW_E_CANNOT_LOAD_SOURCE_FILTER) {
-        throw (UINT)IDS_MAINFRM_94;
-    } else if (FAILED(hr)) {
-        throw (UINT)IDS_AG_FAILED;
-    }
-
-    WCHAR buff[MAX_PATH];
-    ULONG len = 0;
-    if (SUCCEEDED(hr = m_graph.m_pDVDI->GetDVDDirectory(buff, _countof(buff), &len))) {
-        pODD->title = CString(CStringW(buff)).TrimRight(_T("\\"));
-    }
-
-    if (s.fKeepHistory) {
-        ULONGLONG llDVDGuid;
-        if (m_graph.m_pDVDI && SUCCEEDED(m_graph.m_pDVDI->GetDiscID(nullptr, &llDVDGuid))) {
-            auto* pMRU = &s.MRU;
-            pMRU->Add(pODD->title, llDVDGuid);
-        }
-        if (!s.IsExcludedFromHistory(pODD->title)) {
-            SHAddToRecentDocs(SHARD_PATH, pODD->title);
-        }
-    }
-
-    // TODO: resetdvd
-    m_graph.m_pDVDC->SetOption(DVD_ResetOnStop, FALSE);
-    m_graph.m_pDVDC->SetOption(DVD_HMSF_TimeCodeEvents, TRUE);
-
-    if (m_bUseSeekPreview && m_previewGraph.m_pDVDC) {
-        m_previewGraph.m_pDVDC->SetOption(DVD_ResetOnStop, FALSE);
-        m_previewGraph.m_pDVDC->SetOption(DVD_HMSF_TimeCodeEvents, TRUE);
-    }
-
-    if (s.idMenuLang) {
-        m_graph.m_pDVDC->SelectDefaultMenuLanguage(s.idMenuLang);
-    }
-    if (s.idAudioLang) {
-        m_graph.m_pDVDC->SelectDefaultAudioLanguage(s.idAudioLang, DVD_AUD_EXT_NotSpecified);
-    }
-    if (s.idSubtitlesLang) {
-        m_graph.m_pDVDC->SelectDefaultSubpictureLanguage(s.idSubtitlesLang, DVD_SP_EXT_NotSpecified);
-    }
-
-    m_iDVDDomain = DVD_DOMAIN_Stop;
-
-    SetPlaybackMode(PM_DVD);
 }
 
 // Called from GraphThread
@@ -15702,7 +15170,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
         return false;
     }
 
-    m_fValidDVDOpen = false;
+    m_disc.m_fValidDVDOpen = false;
     m_iDefRotation = 0;
     m_replayGain = ReplayGainInfo();
 
@@ -15764,7 +15232,7 @@ bool CMainFrame::OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD)
         if (pFileData) {
             OpenFile(pFileData);
         } else if (pDVDData) {
-            OpenDVD(pDVDData);
+            m_disc.OpenDVD(pDVDData);
         } else if (pDeviceData) {
             if (s.iDefaultCaptureDevice == 1) {
                 HRESULT hr = m_capture.OpenBDAGraph();
@@ -16461,7 +15929,7 @@ void CMainFrame::DestroyDynamicMenus()
     VERIFY(m_shadersMenu.DestroyMenu());
     VERIFY(m_recentFilesMenu.DestroyMenu());
     m_nJumpToSubMenusCount = 0;
-    recentFilesMenuFromMRUSequence = -1;
+    m_favorites.recentFilesMenuFromMRUSequence = -1;
 }
 
 void CMainFrame::LoadDynamicMenus() {
@@ -16471,7 +15939,7 @@ void CMainFrame::LoadDynamicMenus() {
     SetupSubtitlesSubMenu();
     SetupVideoStreamsSubMenu();
     SetupJumpToSubMenus();
-    SetupRecentFilesSubMenu();
+    m_favorites.SetupRecentFilesSubMenu();
 }
 
 void CMainFrame::SetupOpenCDSubMenu()
@@ -16777,7 +16245,7 @@ void CMainFrame::SetupAudioSubMenu()
                         break;
                 }
 
-                CString format = GetDVDAudioFormatName(ATR);
+                CString format = m_disc.GetDVDAudioFormatName(ATR);
 
                 if (!format.IsEmpty()) {
                     str.Format(IDS_MAINFRM_11,
@@ -17256,10 +16724,10 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
     };
 
     if (GetPlaybackMode() == PM_FILE) {
-        if (m_MPLSPlaylist.size() > 1) {
+        if (m_disc.m_MPLSPlaylist.size() > 1) {
             menuStartRadioSection();
             CString pl_label = m_wndPlaylistBar.m_pl.GetHead().GetLabel();
-            for (auto& Item : m_MPLSPlaylist) {
+            for (auto& Item : m_disc.m_MPLSPlaylist) {
                 UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
                 CString time = _T("[") + ReftimeToString2(Item.Duration()) + _T("]");
                 CString name = PathUtils::StripPathOrUrl(Item.m_strFileName);
@@ -17612,187 +17080,6 @@ CString CMainFrame::GetStreamOSDString(CString name, LCID lcid, DWORD dwSelGroup
         strMessage.Format(IDS_SUBTITLE_STREAM, name.Mid(n).Trim().GetString());
     }
     return strMessage;
-}
-
-void CMainFrame::SetupRecentFilesSubMenu()
-{
-    auto& s = AfxGetAppSettings();
-    auto& MRU = s.MRU;
-    MRU.ReadMediaHistory();
-
-    if (MRU.listModifySequence == recentFilesMenuFromMRUSequence) {
-        return;
-    }
-    recentFilesMenuFromMRUSequence = MRU.listModifySequence;
-
-    CMPCThemeMenu& subMenu = m_recentFilesMenu;
-    // Empty the menu
-    while (subMenu.RemoveMenu(0, MF_BYPOSITION));
-   
-    if (!s.fKeepHistory) {
-        return;
-    }
-
-    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_RECENT_FILES_SHOW_HISTORY, ResStr(IDS_HISTORY_SHOW)));
-
-    if (MRU.GetSize() > 0) {
-        VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_RECENT_FILES_CLEAR, ResStr(IDS_RECENT_FILES_CLEAR)));
-        VERIFY(subMenu.AppendMenu(MF_SEPARATOR | MF_ENABLED));
-        UINT id = ID_RECENT_FILE_START;
-        for (int i = 0; i < MRU.GetSize(); i++) {
-            UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
-            if (!MRU[i].fns.IsEmpty() && !MRU[i].fns.GetHead().IsEmpty()) {
-                CString p = MRU[i].cue.IsEmpty() ? MRU[i].fns.GetHead() : MRU[i].cue;
-                if (s.bUseTitleInRecentFileList && !MRU[i].title.IsEmpty()) {
-                    CString title(MRU[i].title);
-                    if (title.GetLength() > 100) {
-                        title = title.Left(40) + _T("~~~") + title.Right(57);
-                    }
-                    int targetlen = 150 - title.GetLength();
-                    if (PathUtils::IsURL(p)) {
-                        if (title.Right(1) == L')') {
-                            // probably already contains shorturl
-                            p = title;
-                        } else {
-                            CString shorturl = ShortenURL(p, targetlen, true);
-                            p.Format(_T("%s (%s)"), static_cast<LPCWSTR>(title), static_cast<LPCWSTR>(shorturl));
-                        }
-                    } else {
-                        CString fn = PathUtils::StripPathOrUrl(p);
-                        if (fn.GetLength() > targetlen) { // If file name is too long, cut middle part.
-                            int l = fn.GetLength();
-                            fn.Format(_T("%s~~~%s"), static_cast<LPCWSTR>(fn.Left(l / 2 - 2 + (l % 2))), static_cast<LPCWSTR>(fn.Right(l / 2 - 1)));
-                        }
-                        p.Format(_T("%s (%s)"), static_cast<LPCWSTR>(title), static_cast<LPCWSTR>(fn));
-                    }
-                }
-                else {
-                    if (PathUtils::IsURL(p)) {
-                        p = ShortenURL(p, 150);
-                    }
-                    if (p.GetLength() > 150) {
-                        p.Format(_T("%s~~~%s"), static_cast<LPCWSTR>(p.Left(60)), static_cast<LPCWSTR>(p.Right(87)));
-                    }
-                }
-                p = SanitizeMenuLabel(p, 0); //already shortened above, in a way that keeps the extension visible
-                VERIFY(subMenu.AppendMenu(flags, id, p));
-            } else {
-                ASSERT(false);
-            }
-            id++;
-        }
-    }
-}
-
-void CMainFrame::SetupFavoritesSubMenu()
-{
-    CMPCThemeMenu& subMenu = m_favoritesMenu;
-    // Empty the menu
-    while (subMenu.RemoveMenu(0, MF_BYPOSITION));
-
-    const CAppSettings& s = AfxGetAppSettings();
-
-    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_FAVORITES_ADD, ResStr(IDS_FAVORITES_ADD)));
-    VERIFY(subMenu.AppendMenu(MF_STRING | MF_ENABLED, ID_FAVORITES_ORGANIZE, ResStr(IDS_FAVORITES_ORGANIZE)));
-
-    UINT nLastGroupStart = subMenu.GetMenuItemCount();
-    UINT id = ID_FAVORITES_FILE_START;
-    CAtlList<CString> favs;
-    AfxGetAppSettings().GetFav(FAV_FILE, favs);
-    POSITION pos = favs.GetHeadPosition();
-
-    while (pos) {
-        UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
-
-        CString f_str = favs.GetNext(pos);
-
-        FileFavorite ff;
-        VERIFY(FileFavorite::TryParse(f_str, ff)); //parse before sanitizing, the escaping is not part of the format
-
-        f_str = ff.Name;
-        if (!f_str.IsEmpty()) {
-            f_str = SanitizeMenuLabel(f_str);
-        }
-
-        CString str = ff.ToString();
-        if (!str.IsEmpty()) {
-            f_str.AppendFormat(_T("\t%s"), str.GetString());
-        }
-
-        if (!f_str.IsEmpty()) {
-            VERIFY(subMenu.AppendMenu(flags, id, f_str));
-        }
-
-        id++;
-        if (id > ID_FAVORITES_FILE_END) {
-            break;
-        }
-    }
-
-    if (id > ID_FAVORITES_FILE_START) {
-        VERIFY(subMenu.InsertMenu(nLastGroupStart, MF_SEPARATOR | MF_ENABLED | MF_BYPOSITION));
-    }
-
-    nLastGroupStart = subMenu.GetMenuItemCount();
-
-    id = ID_FAVORITES_DVD_START;
-    s.GetFav(FAV_DVD, favs);
-    pos = favs.GetHeadPosition();
-
-    while (pos) {
-        UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
-
-        CString str = favs.GetNext(pos);
-
-        CAtlList<CString> sl;
-        ExplodeEsc(str, sl, _T(';'), 2);
-
-        str = sl.RemoveHead();
-
-        if (!sl.IsEmpty()) {
-            // TODO
-        }
-
-        if (!str.IsEmpty()) {
-            VERIFY(subMenu.AppendMenu(flags, id, SanitizeMenuLabel(str)));
-        }
-
-        id++;
-        if (id > ID_FAVORITES_DVD_END) {
-            break;
-        }
-    }
-
-    if (id > ID_FAVORITES_DVD_START) {
-        VERIFY(subMenu.InsertMenu(nLastGroupStart, MF_SEPARATOR | MF_ENABLED | MF_BYPOSITION));
-    }
-
-    nLastGroupStart = subMenu.GetMenuItemCount();
-
-    id = ID_FAVORITES_DEVICE_START;
-
-    s.GetFav(FAV_DEVICE, favs);
-
-    pos = favs.GetHeadPosition();
-    while (pos) {
-        UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
-
-        CString str = favs.GetNext(pos);
-
-        CAtlList<CString> sl;
-        ExplodeEsc(str, sl, _T(';'), 2);
-
-        str = sl.RemoveHead();
-
-        if (!str.IsEmpty()) {
-            VERIFY(subMenu.AppendMenu(flags, id, SanitizeMenuLabel(str)));
-        }
-
-        id++;
-        if (id > ID_FAVORITES_DEVICE_END) {
-            break;
-        }
-    }
 }
 
 bool CMainFrame::SetupShadersSubMenu()
@@ -18790,7 +18077,7 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
         if (fs == State_Stopped) {
             SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
         }
-    } else if (GetPlaybackMode() == PM_DVD && m_iDVDDomain == DVD_DOMAIN_Title) {
+    } else if (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain == DVD_DOMAIN_Title) {
         if (fs == State_Stopped) {
             SendMessage(WM_COMMAND, ID_PLAY_PAUSE);
             fs = State_Paused;
@@ -19170,11 +18457,11 @@ void CMainFrame::OpenMediaInternal(CAutoPtr<OpenMediaData> pOMD)
     }
 
     // clear BD playlist if we are not currently opening something from it
-    if (!m_bIsBDPlay) {
-        m_MPLSPlaylist.clear();
-        m_LastOpenBDPath = _T("");
+    if (!m_disc.m_bIsBDPlay) {
+        m_disc.m_MPLSPlaylist.clear();
+        m_disc.m_LastOpenBDPath = _T("");
     }
-    m_bIsBDPlay = false;
+    m_disc.m_bIsBDPlay = false;
 
     // no need to try releasing external objects while playing
     KillTimer(TIMER_UNLOAD_UNUSED_EXTERNAL_OBJECTS);
@@ -19373,7 +18660,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
         m_wndPreView.ShowWindow(SW_HIDE);
     }
     m_bUseSeekPreview = false;
-    m_bDVDStillOn = false;
+    m_disc.m_bDVDStillOn = false;
 
     if (m_ActiveGraphNotifyEvCode == EC_PAUSED) {
         ThrowAndForceClose();
@@ -20208,29 +19495,6 @@ void CMainFrame::SetClosedCaptions(bool enable)
 {
     if (m_graph.m_pLN21) {
         m_graph.m_pLN21->SetServiceState(enable ? AM_L21_CCSTATE_On : AM_L21_CCSTATE_Off);
-    }
-}
-
-LPCTSTR CMainFrame::GetDVDAudioFormatName(const DVD_AudioAttributes& ATR) const
-{
-    switch (ATR.AudioFormat) {
-        case DVD_AudioFormat_AC3:
-            return _T("AC3");
-        case DVD_AudioFormat_MPEG1:
-        case DVD_AudioFormat_MPEG1_DRC:
-            return _T("MPEG1");
-        case DVD_AudioFormat_MPEG2:
-        case DVD_AudioFormat_MPEG2_DRC:
-            return _T("MPEG2");
-        case DVD_AudioFormat_LPCM:
-            return _T("LPCM");
-        case DVD_AudioFormat_DTS:
-            return _T("DTS");
-        case DVD_AudioFormat_SDDS:
-            return _T("SDDS");
-        case DVD_AudioFormat_Other:
-        default:
-            return MAKEINTRESOURCE(IDS_MAINFRM_137);
     }
 }
 
@@ -21536,7 +20800,7 @@ HRESULT CMainFrame::UpdateThumbarButton(MPC_PLAYSTATE iPlayState)
                 m_pTaskbarList->SetProgressState(m_hWnd, m_wndSeekBar.HasDuration() ? TBPF_PAUSED : TBPF_NOPROGRESS);
             }
 
-            if (GetPlaybackMode() == PM_DVD && m_iDVDDomain != DVD_DOMAIN_Title) {
+            if (GetPlaybackMode() == PM_DVD && m_disc.m_iDVDDomain != DVD_DOMAIN_Title) {
                 buttons[0].dwFlags = THBF_DISABLED;
                 buttons[1].dwFlags = THBF_DISABLED;
                 buttons[2].dwFlags = THBF_DISABLED;
@@ -22184,61 +21448,6 @@ void CMainFrame::ApplyThemeChange()
 
     RecalcLayout();
     RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
-}
-
-bool CMainFrame::OpenBD(CString Path)
-{
-    CHdmvClipInfo ClipInfo;
-    CString strPlaylistFile;
-    CHdmvClipInfo::HdmvPlaylist MainPlaylist;
-
-#if INTERNAL_SOURCEFILTER_MPEG
-    const CAppSettings& s = AfxGetAppSettings();
-    bool InternalMpegSplitter = s.SrcFilters[SRC_MPEG] || s.SrcFilters[SRC_MPEGTS];
-#else
-    bool InternalMpegSplitter = false;
-#endif
-
-    m_LastOpenBDPath = Path;
-
-    CString ext = CLongPath(Path).GetExtension();
-    ext.MakeLower();
-
-    if ((CLongPath(Path).IsDirectory() && Path.Find(_T("\\BDMV"))) || CLongPath(Path + _T("\\BDMV")).IsDirectory() || (!ext.IsEmpty() && ext == _T(".bdmv"))) {
-        if (!ext.IsEmpty() && ext == _T(".bdmv")) {
-            Path.Replace(_T("\\BDMV\\"), _T("\\"));
-            CLongPath _Path(Path);
-            _Path.RemoveFileSpec();
-            Path = CString(_Path);
-        } else if (Path.Find(_T("\\BDMV"))) {
-            Path.Replace(_T("\\BDMV"), _T("\\"));
-        }
-        if (SUCCEEDED(ClipInfo.FindMainMovie(Path, strPlaylistFile, MainPlaylist, m_MPLSPlaylist))) {
-            m_bIsBDPlay = true;
-
-            m_bHasBDMeta = ClipInfo.ReadMeta(Path, m_BDMeta);
-
-            if (!InternalMpegSplitter && !ext.IsEmpty() && ext == _T(".bdmv")) {
-                return false;
-            } else {
-                m_wndPlaylistBar.Empty();
-                CAtlList<CString> sl;
-
-                if (InternalMpegSplitter) {
-                    sl.AddTail(CString(strPlaylistFile));
-                } else {
-                    sl.AddTail(CString(Path + _T("\\BDMV\\index.bdmv")));
-                }
-
-                m_wndPlaylistBar.Append(sl, false);
-                PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
-                return true;
-            }
-        }
-    }
-
-    m_LastOpenBDPath = _T("");
-    return false;
 }
 
 // Returns the the corresponding subInput or nullptr in case of error.
@@ -23016,11 +22225,6 @@ void CMainFrame::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt) {
     __super::OnMouseHWheel(nFlags, zDelta, pt);
 }
 
-CHdmvClipInfo::BDMVMeta CMainFrame::GetBDMVMeta()
-{
-    return m_BDMeta.GetHead();
-}
-
 BOOL CMainFrame::AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text)
 {
     text = SanitizeMenuLabel(text);
@@ -23057,12 +22261,12 @@ CString CMainFrame::getBestTitle(bool fTitleBarTextTitle) {
     }
 
     CStringW ext = GetFileExt(GetFileName());
-    if (ext == ".mpls" && m_bHasBDMeta) {
-        title = GetBDMVMeta().title;
+    if (ext == ".mpls" && m_disc.m_bHasBDMeta) {
+        title = m_disc.GetBDMVMeta().title;
         return title;
     } else if (ext != ".mpls") {
-        m_bHasBDMeta = false;
-        m_BDMeta.RemoveAll();
+        m_disc.m_bHasBDMeta = false;
+        m_disc.m_BDMeta.RemoveAll();
     }
 
     return L"";

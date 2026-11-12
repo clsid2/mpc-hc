@@ -19,6 +19,7 @@ static const URLProtocol * const url_protocols[] = {
     &ff_rtmpt_protocol,
     &ff_rtmpts_protocol,
     &ff_rtp_protocol,
+    &ff_shared_protocol,
     &ff_srtp_protocol,
     &ff_tee_protocol,
     &ff_tcp_protocol,
@@ -28,4 +29,5 @@ static const URLProtocol * const url_protocols[] = {
     &ff_udplite_protocol,
     &ff_ipfs_gateway_protocol,
     &ff_ipns_gateway_protocol,
+    &ff_windows_handle_protocol,
     NULL };

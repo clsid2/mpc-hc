@@ -42,6 +42,8 @@
 #include "PlayerToolBar.h"
 #include "Snapshot.h"
 #include "CaptureController.h"
+#include "DiscController.h"
+#include "FavoritesRecent.h"
 #include "SubtitleDlDlg.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
@@ -60,6 +62,8 @@
 #include <functional>
 #include <optional>
 #include <vector>
+
+#define PREV_CHAP_THRESHOLD 2 // used by the file and the DVD chapter skip
 
 class CDebugShadersDlg;
 class CColorControlsDlg;
@@ -156,24 +160,6 @@ struct SubtitleInput {
     SubtitleInput(CComQIPtr<ISubStream> pSubStream) : pSubStream(pSubStream) {};
     SubtitleInput(CComQIPtr<ISubStream> pSubStream, CComPtr<IBaseFilter> pSourceFilter)
         : pSubStream(pSubStream), pSourceFilter(pSourceFilter) {};
-};
-
-struct FileFavorite {
-    CString Name;
-    REFERENCE_TIME Start;
-    REFERENCE_TIME MarkA;
-    REFERENCE_TIME MarkB;
-    BOOL RelativeDrive;
-
-    FileFavorite() {
-        Start = MarkA = MarkB = 0;
-        RelativeDrive = FALSE;
-    }
-
-    static bool TryParse(const CString& fav, FileFavorite& ff);
-    static bool TryParse(const CString& fav, FileFavorite& ff, CAtlList<CString>& parts);
-
-    CString ToString() const;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -347,9 +333,7 @@ private:
     void SetupSecondarySubtitleSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
-    void SetupFavoritesSubMenu();
     bool SetupShadersSubMenu();
-    void SetupRecentFilesSubMenu();
 
     DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
     void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
@@ -367,7 +351,6 @@ private:
     CMPCThemeMenu m_favoritesMenu;
     CMPCThemeMenu m_shadersMenu;
     CMPCThemeMenu m_recentFilesMenu;
-    int recentFilesMenuFromMRUSequence;
 
     UINT m_nJumpToSubMenusCount;
 
@@ -379,11 +362,7 @@ private:
     void SetupChapters();
     void SetupCueChapters(CString fn);
 
-    // chapters (DVD mode)
-    void SetupDVDChapters();
-
     bool SeekToFileChapter(int iChapter, bool bRelative = false);
-    bool SeekToDVDChapter(int iChapter, bool bRelative = false);
 
     void AddTextPassThruFilter();
 
@@ -459,6 +438,16 @@ public:
     CCaptureController m_capture;
 private:
     friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows and the graph thread
+
+public:
+    CDiscController m_disc;
+private:
+    friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph, m_pDVS and the modal parent
+
+public:
+    CFavoritesRecent m_favorites;
+private:
+    friend class CFavoritesRecent; // for the load state, the bars, m_OSD, A-B repeat, the open path and the dynamic menus
 
     //
 
@@ -643,13 +632,8 @@ protected:
     bool restoringWindowRect;
 
     bool m_fAudioOnly;
-    bool m_fValidDVDOpen;
-    CString m_LastOpenBDPath;
     CAutoPtr<OpenMediaData> m_lastOMD;
 
-    DVD_DOMAIN  m_iDVDDomain;
-    DWORD       m_iDVDTitle;
-    bool        m_bDVDStillOn;
     int         m_loadedAudioTrackIndex = -1;
     int         m_loadedSubtitleTrackIndex = -1;
     int         m_audioTrackCount = 0;
@@ -677,7 +661,6 @@ protected:
 
     void OpenCreateGraphObject(OpenMediaData* pOMD);
     void OpenFile(OpenFileData* pOFD);
-    void OpenDVD(OpenDVDData* pODD);
     void OpenCustomizeGraph();
     CSize OpenSetupGetVideoSize();
     void OpenSetupVideo();
@@ -715,7 +698,6 @@ protected:
 protected:
     friend class CSubtitleDlDlg;
     CSubtitleDlDlg m_wndSubtitlesDownloadDialog;
-    CFavoriteOrganizeDlg m_wndFavoriteOrganizeDialog;
     friend class CPPageSubMisc;
 
     friend class SubtitlesProviders;
@@ -727,10 +709,6 @@ protected:
 public:
     void OpenCurPlaylistItem(REFERENCE_TIME rtStart = 0, bool reopen = false, ABRepeat abRepeat = ABRepeat());
     void OpenMedia(CAutoPtr<OpenMediaData> pOMD);
-    void PlayFavoriteFile(const CString& fav);
-    void PlayFavoriteDVD(CString fav);
-    void OpenRecentFileEntry(RecentFileEntry& r);
-    FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     bool ResetDevice();
     bool DisplayChange();
     bool CloseMediaBeforeOpen();
@@ -793,8 +771,6 @@ public:
     void SetSubtitleTrackIdx(int index);
     int GetCurrentAudioTrackIdx(CString *pstrName = nullptr);
     int GetCurrentSubtitleTrackIdx(CString *pstrName = nullptr);
-
-    void AddFavorite(bool fDisplayMessage = false, bool fShowDialog = true);
 
     CString GetFileName();
 
@@ -859,10 +835,7 @@ protected:  // control bar embedded members
 
     std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
-    std::unique_ptr<CHistoryDlg> m_pHistoryDlg;
     std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
-
-    LPCTSTR GetRecentFile() const;
 
     friend class CPPagePlayback; // TODO
     friend class CPPageAudioSwitcher; // TODO
@@ -946,6 +919,7 @@ public:
     afx_msg LRESULT OnRunDeferredActions(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUpdateCheckDone(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnUIRequest(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnHelpPromptAddr(WPARAM wParam, LPARAM lParam);
 
     // Only reached in headless scan mode: with the dialog running these go to
     // it instead, because DoTunerScan sends to the HWND it was handed.
@@ -965,10 +939,6 @@ public:
     afx_msg void OnStreamSubOnOff();
     afx_msg void OnSubtitlesAutoCopy();
     afx_msg void OnAudioShiftOnOff();
-    afx_msg void OnDvdAngle(UINT nID);
-    afx_msg void OnDvdAudio(UINT nID);
-    afx_msg void OnDvdSub(UINT nID);
-    afx_msg void OnDvdSubOnOff();
 
     afx_msg LRESULT OnLoadSubtitles(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnGetSubtitles(WPARAM, LPARAM lParam);
@@ -976,7 +946,6 @@ public:
     // menu item handlers
 
     INT_PTR DoFileDialogWithLastFolder(CFileDialog& fd, CStringW& lastPath);
-    void OpenDVDOrBD(CStringW path);
 
     afx_msg void OnFileOpenQuick();
     afx_msg void OnFileOpenmedia();
@@ -984,7 +953,6 @@ public:
     afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
     afx_msg LRESULT OnCommandLineReceived(WPARAM wParam, LPARAM lParam);
     void ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived);
-    afx_msg void OnFileOpendvd();
     afx_msg void OnFileOpendevice();
     afx_msg void OnFileOpenOpticalDisk(UINT nID);
     afx_msg void OnFileReopen();
@@ -1212,28 +1180,9 @@ public:
     afx_msg void OnUpdateNavigateSkipFile(CCmdUI* pCmdUI);
     afx_msg void OnNavigateGoto();
     afx_msg void OnUpdateNavigateGoto(CCmdUI* pCmdUI);
-    afx_msg void OnNavigateMenu(UINT nID);
-    afx_msg void OnUpdateNavigateMenu(CCmdUI* pCmdUI);
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
-
-    afx_msg void OnFavoritesAdd();
-    afx_msg void OnUpdateFavoritesAdd(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesQuickAddFavorite();
-    afx_msg void OnFavoritesOrganize();
-    afx_msg void OnUpdateFavoritesOrganize(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesFile(UINT nID);
-    afx_msg void OnUpdateFavoritesFile(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesDVD(UINT nID);
-    afx_msg void OnUpdateFavoritesDVD(CCmdUI* pCmdUI);
-    afx_msg void OnFavoritesDevice(UINT nID);
-    afx_msg void OnUpdateFavoritesDevice(CCmdUI* pCmdUI);
-    afx_msg void OnRecentFileClear();
-    afx_msg void OnUpdateRecentFileClear(CCmdUI* pCmdUI);
-    afx_msg void OnRecentFile(UINT nID);
-    afx_msg void OnUpdateRecentFile(CCmdUI* pCmdUI);
-    afx_msg void OnShowHistory();
 
     afx_msg void OnHelpHomepage();
     afx_msg void OnHelpCheckForUpdate();
@@ -1285,7 +1234,6 @@ public:
     void        SetupVMR9ColorControl();
     void        SetColorControl(DWORD flags, int& brightness, int& contrast, int& hue, int& saturation);
     void        SetClosedCaptions(bool enable);
-    LPCTSTR     GetDVDAudioFormatName(const DVD_AudioAttributes& ATR) const;
     void        SetAudioDelay(REFERENCE_TIME rtShift);
     void        SetSubtitleDelay(int delay_ms, bool relative = false);
     //void      AutoSelectTracks();
@@ -1437,13 +1385,6 @@ public:
 
     // TODO: refactor it outside of MainFrm
     GUID GetTimeFormat();
-
-    CHdmvClipInfo::HdmvPlaylist m_MPLSPlaylist;
-    bool m_bIsBDPlay;
-    bool OpenBD(CString Path);
-    bool m_bHasBDMeta;
-    CAtlList<CHdmvClipInfo::BDMVMeta> m_BDMeta;
-    CHdmvClipInfo::BDMVMeta GetBDMVMeta();
 
     bool GetDecoderType(CString& type) const;
     CString GetAudioInfo() const;

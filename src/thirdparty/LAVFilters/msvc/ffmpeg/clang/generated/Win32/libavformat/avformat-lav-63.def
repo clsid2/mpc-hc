@@ -92,6 +92,7 @@ EXPORTS
     avformat_seek_file
     avformat_send_command
     avformat_stream_group_add_stream
+    avformat_stream_group_add_stream_group
     avformat_stream_group_create
     avformat_stream_group_name
     avformat_version
@@ -117,6 +118,7 @@ EXPORTS
     avio_open
     avio_open2
     avio_open_dir
+    avio_open_dir2
     avio_open_dyn_buf
     avio_pause
     avio_print_string_array

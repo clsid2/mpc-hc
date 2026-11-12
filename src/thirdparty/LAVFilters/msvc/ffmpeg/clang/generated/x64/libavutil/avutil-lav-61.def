@@ -192,6 +192,7 @@ EXPORTS
     av_encryption_info_get_side_data
     av_encryption_init_info_add_side_data
     av_encryption_init_info_alloc
+    av_encryption_init_info_append_side_data
     av_encryption_init_info_free
     av_encryption_init_info_get_side_data
     av_escape
@@ -223,7 +224,9 @@ EXPORTS
     av_fifo_write
     av_fifo_write_from_cb
     av_file_map
+    av_file_map_shared
     av_file_unmap
+    av_file_unmap_shared
     av_film_grain_params_alloc
     av_film_grain_params_create_side_data
     av_film_grain_params_select
@@ -261,6 +264,12 @@ EXPORTS
     av_frame_unref
     av_free
     av_freep
+    av_gain_map_channels_identical
+    av_gain_map_params_alloc
+    av_gain_map_params_create_side_data
+    av_gain_map_params_from_iso21496
+    av_gain_map_params_to_iso21496
+    av_gain_map_params_validate
     av_gcd
     av_gcd_q
     av_get_alt_sample_fmt
@@ -318,6 +327,7 @@ EXPORTS
     av_hwframe_ctx_create_derived
     av_hwframe_ctx_init
     av_hwframe_get_buffer
+    av_hwframe_get_transfer_buffer
     av_hwframe_map
     av_hwframe_transfer_data
     av_hwframe_transfer_get_formats

@@ -149,6 +149,12 @@ bool MergeArchive(Archive &Arc,ComprDataIO *DataIO,bool ShowFileName,wchar Comma
     return false;
 #endif
 
+#if 1
+  // MPC-HC custom code
+  if (Arc.Encrypted) {
+      return false;
+  }
+#else
   if (Arc.Encrypted!=PrevVolEncrypted)
   {
     // There is no legitimate reason for encrypted header state to be
@@ -158,6 +164,7 @@ bool MergeArchive(Archive &Arc,ComprDataIO *DataIO,bool ShowFileName,wchar Comma
     uiMsg(UIERROR_BADARCHIVE,Arc.FileName);
     ErrHandler.Exit(RARX_BADARC);
   }
+#endif
 
   if (SplitHeader)
     Arc.SearchBlock(HeaderType);

@@ -409,6 +409,8 @@
     <ClCompile Include="MainFrmControls.cpp" />
     <ClCompile Include="Snapshot.cpp" />
     <ClCompile Include="CaptureController.cpp" />
+    <ClCompile Include="DiscController.cpp" />
+    <ClCompile Include="FavoritesRecent.cpp" />
     <ClCompile Include="mplayerc.cpp" />
     <ClCompile Include="Profile.cpp" />
     <ClCompile Include="Playlist.cpp" />
@@ -999,6 +1001,8 @@
     <ClInclude Include="MainFrmControls.h" />
     <ClInclude Include="Snapshot.h" />
     <ClInclude Include="CaptureController.h" />
+    <ClInclude Include="DiscController.h" />
+    <ClInclude Include="FavoritesRecent.h" />
     <ClInclude Include="PlayerGraph.h" />
     <ClInclude Include="mplayerc.h" />
     <ClInclude Include="Profile.h" />

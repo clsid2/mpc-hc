@@ -187,6 +187,7 @@ EXPORTS
     avpriv_h264_has_num_reorder_frames
     avpriv_mpeg4audio_get_config2
     avpriv_mpegaudio_decode_header
+    avpriv_mpegaudio_decode_header2
     avpriv_pix_fmt_find
     avpriv_split_xiph_headers
     avpriv_tak_parse_streaminfo

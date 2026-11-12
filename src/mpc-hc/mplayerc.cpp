@@ -2475,7 +2475,7 @@ BOOL CMPlayerCApp::InitInstance()
         scroll to the current file in the playlist.  We call after activating
         the frame to fix this issue.
     */
-    pFrame->m_wndPlaylistBar.LoadPlaylist(pFrame->GetRecentFile());
+    pFrame->m_wndPlaylistBar.LoadPlaylist(pFrame->m_favorites.GetRecentFile());
 
     pFrame->UpdateWindow();
 
