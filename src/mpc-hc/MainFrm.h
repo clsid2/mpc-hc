@@ -47,6 +47,7 @@
 #include "VideoGeometry.h"
 #include "ApiBridge.h"
 #include "SubtitleController.h"
+#include "ShaderController.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
 #include "CMPCThemeMenu.h"
@@ -288,7 +289,6 @@ private:
     void SetupAudioSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
-    bool SetupShadersSubMenu();
 
     DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
     void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
@@ -405,7 +405,7 @@ private:
 public:
     CApiBridge m_api;
 private:
-    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers, the shader toggle and the yt-dlp helpers
+    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers and the yt-dlp helpers
 
 public:
     CSubtitleController m_subs;
@@ -413,6 +413,11 @@ private:
     friend class CSubtitleController; // for the load state, the bars, m_OSD, the dynamic menus, the stream selection helpers, the status message and the modal parent
     friend class CSubtitleDlDlg; // for the status message, the options sheet and m_fAudioOnly
     friend struct SubtitlesInfo; // for the graph and the playlist bar
+
+public:
+    CShaderController m_shaders;
+private:
+    friend class CShaderController; // for the load state, m_OSD, the shaders menu, the status message, the options sheet and the video repaint
 
     //
 
@@ -701,17 +706,6 @@ public:
 
     CString GetFileName();
 
-    // shaders
-    void SetShaders(bool bSetPreResize = true, bool bSetPostResize = true);
-	
-	bool m_bToggleShader;
-	bool m_bToggleShaderScreenSpace;
-	std::list<ShaderC> m_ShaderCache;
-	ShaderC* GetShader(CString path, bool bD3D11);
-	bool SaveShaderFile(ShaderC* shader);
-	bool DeleteShaderFile(LPCWSTR label);
-	void TidyShaderCache();
-
     void DoAfterPlaybackEvent();
     bool SearchInDir(bool bDirForward, bool bLoop = false);
     bool WildcardFileSearch(CString searchstr, std::set<CString, CStringUtils::LogicalLess>& results, bool recurse_dirs, std::map<CString, ULONGLONG>* creationTimes = nullptr);
@@ -760,7 +754,6 @@ protected:  // control bar embedded members
     CPlayerNavigationBar m_wndNavigationBar;
     CEditListEditor m_wndEditListEditor;
 
-    std::unique_ptr<CDebugShadersDlg> m_pDebugShaders;
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
     std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
 
@@ -910,8 +903,6 @@ public:
     afx_msg void OnUpdateEDLNewClip(CCmdUI* pCmdUI);
     afx_msg void OnEDLSave();
     afx_msg void OnUpdateEDLSave(CCmdUI* pCmdUI);
-    afx_msg void OnViewDebugShaders();
-    afx_msg void OnUpdateViewDebugShaders(CCmdUI* pCmdUI);
     afx_msg void OnViewColorControls();
     afx_msg void OnUpdateViewColorControls(CCmdUI* pCmdUI);
     afx_msg void OnViewMinimal();
@@ -1001,10 +992,6 @@ public:
     afx_msg void OnViewEnableFrameTimeCorrection();
     afx_msg void OnViewVSyncOffsetIncrease();
     afx_msg void OnViewVSyncOffsetDecrease();
-	afx_msg void OnUpdateShaderToggle1(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateShaderToggle2(CCmdUI* pCmdUI);
-	afx_msg void OnShaderToggle1();
-	afx_msg void OnShaderToggle2();
     afx_msg void OnUpdateViewOSDDisplayTime(CCmdUI* pCmdUI);
     afx_msg void OnViewOSDDisplayTime();
     afx_msg void OnUpdateViewOSDShowFileName(CCmdUI* pCmdUI);
@@ -1032,10 +1019,6 @@ public:
     afx_msg void OnPlayFiltersCopyToClipboard();
     afx_msg void OnPlayFilters(UINT nID);
     afx_msg void OnUpdatePlayFilters(CCmdUI* pCmdUI);
-    afx_msg void OnPlayShadersSelect();
-    afx_msg void OnPlayShadersPresetNext();
-    afx_msg void OnPlayShadersPresetPrev();
-    afx_msg void OnPlayShadersPresets(UINT nID);
     afx_msg void OnPlayAudio(UINT nID);
     afx_msg void OnPlayVideoStreams(UINT nID);
     afx_msg void OnPlayFiltersStreams(UINT nID);
