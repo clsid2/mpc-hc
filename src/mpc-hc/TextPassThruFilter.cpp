@@ -41,7 +41,7 @@ protected:
     void AddSubStream(ISubStream* pSubStream) {
         if (m_pSubStreamOld) {
             if (pSubStream) {
-                m_pTPTFilter->m_pMainFrame->ReplaceSubtitle(m_pSubStreamOld, pSubStream);
+                m_pTPTFilter->m_pMainFrame->m_subs.ReplaceSubtitle(m_pSubStreamOld, pSubStream);
             }
             m_pSubStreamOld = nullptr;
         }
@@ -52,7 +52,7 @@ protected:
     }
 
     void InvalidateSubtitle(REFERENCE_TIME rtStart, ISubStream* pSubStream) {
-        m_pTPTFilter->m_pMainFrame->InvalidateSubtitle((DWORD_PTR)pSubStream, rtStart);
+        m_pTPTFilter->m_pMainFrame->m_subs.InvalidateSubtitle((DWORD_PTR)pSubStream, rtStart);
     }
 
 public:
@@ -215,7 +215,7 @@ CTextPassThruFilter::CTextPassThruFilter(CMainFrame* pMainFrame)
     , m_pMainFrame(pMainFrame)
 {
     HRESULT hr;
-    m_pInput = DEBUG_NEW CTextPassThruInputPin(this, this, &m_pMainFrame->m_csSubLock, &hr);
+    m_pInput = DEBUG_NEW CTextPassThruInputPin(this, this, &m_pMainFrame->m_subs.m_csSubLock, &hr);
     m_pOutput = DEBUG_NEW CTextPassThruOutputPin(this, this, &hr);
 }
 

@@ -277,7 +277,7 @@ BOOL CPPageSubStyle::OnApply()
             AfxGetAppSettings().subtitlesDefStyle = m_stss;
             s.bSubtitleRoundedOpaqueBox = !!m_bRoundedOpaqueBox;
             if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
-                pMainFrame->UpdateSubtitleRenderingParameters();
+                pMainFrame->m_subs.UpdateSubtitleRenderingParameters();
                 pMainFrame->RepaintVideo();
             }
         }

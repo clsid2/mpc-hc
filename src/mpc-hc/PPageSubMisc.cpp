@@ -94,7 +94,7 @@ BOOL CPPageSubMisc::OnInitDialog()
     // Do not check dynamic_cast, because if it fails we cannot recover from the error anyway.
     const CMainFrame* pMainFrame = AfxGetMainFrame();
     ASSERT(pMainFrame);
-    m_pSubtitlesProviders = pMainFrame->m_pSubtitlesProviders.get();
+    m_pSubtitlesProviders = pMainFrame->m_subs.m_pSubtitlesProviders.get();
     ASSERT(m_pSubtitlesProviders);
 
     m_list.SetImageList(&m_pSubtitlesProviders->GetImageList(), LVSIL_SMALL);

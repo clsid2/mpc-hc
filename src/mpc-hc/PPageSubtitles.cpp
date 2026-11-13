@@ -253,7 +253,7 @@ BOOL CPPageSubtitles::OnApply()
 
     if (changed) {
         if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
-            pMainFrame->UpdateSubtitleRenderingParameters();
+            pMainFrame->m_subs.UpdateSubtitleRenderingParameters();
             pMainFrame->RepaintVideo();
         }
     }

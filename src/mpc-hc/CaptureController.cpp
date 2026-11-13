@@ -101,8 +101,8 @@ HRESULT CCaptureController::OpenBDAGraph()
             } else {
                 if (clsid == CLSID_VSFilter || clsid == CLSID_XySubFilter) {
                     if (!AfxGetAppSettings().IsISRAutoLoadEnabled()) {
-                        m_frame.m_pDVS = pBF;
-                        m_frame.m_pDVS2 = pBF;
+                        m_frame.m_subs.m_pDVS = pBF;
+                        m_frame.m_subs.m_pDVS2 = pBF;
                     }
                 }
             }
