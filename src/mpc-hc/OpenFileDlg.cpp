@@ -28,11 +28,11 @@
 
 namespace FileDialogUtils
 {
-    static void AppendPath(IShellItem* pItem, CAtlList<CString>& paths)
+    static void AppendPath(IShellItem* pItem, std::list<CString>& paths)
     {
         CComHeapPtr<WCHAR> path;
         if (SUCCEEDED(pItem->GetDisplayName(SIGDN_FILESYSPATH, &path))) {
-            paths.AddTail(CString(path));
+            paths.push_back(CString(path));
         }
     }
 
@@ -40,7 +40,7 @@ namespace FileDialogUtils
     // strings: either a single full path, or the folder followed by one bare file name
     // per selected file. Note that the MSDN example for CFileDialog gets the first case
     // wrong, it reports the path as the folder and then finds no files at all.
-    static void ParseOFNBuffer(const OPENFILENAME& ofn, CAtlList<CString>& paths)
+    static void ParseOFNBuffer(const OPENFILENAME& ofn, std::list<CString>& paths)
     {
         const TCHAR* p = ofn.lpstrFile;
         if (!p) {
@@ -60,7 +60,7 @@ namespace FileDialogUtils
         len = _tcsnlen(p, remaining);
         if (len == 0) {
             // only one string, so it is a full path rather than a folder
-            paths.AddTail(folder);
+            paths.push_back(folder);
             return;
         }
 
@@ -68,14 +68,14 @@ namespace FileDialogUtils
             folder += _T('\\');
         }
         while (len > 0 && len < remaining) {
-            paths.AddTail(folder + CString(p, (int)len));
+            paths.push_back(folder + CString(p, (int)len));
             p += len + 1;
             remaining -= len + 1;
             len = _tcsnlen(p, remaining);
         }
     }
 
-    bool GetSelectedPaths(CFileDialog& fd, CAtlList<CString>& paths)
+    bool GetSelectedPaths(CFileDialog& fd, std::list<CString>& paths)
     {
         // Read the result from the shell interface the dialog is built on. Unlike the
         // OPENFILENAME buffer and CFileDialog::GetNextPathName(), IShellItem has no
@@ -97,19 +97,19 @@ namespace FileDialogUtils
             }
         }
 
-        if (paths.IsEmpty()) {
+        if (paths.empty()) {
             // old style dialog, or a selection with no file system path (COpenFileDlg
             // substitutes "*.*" when a directory was picked)
             ParseOFNBuffer(fd.GetOFN(), paths);
         }
 
-        return !paths.IsEmpty();
+        return !paths.empty();
     }
 
     CString GetSelectedPath(CFileDialog& fd)
     {
-        CAtlList<CString> paths;
-        return GetSelectedPaths(fd, paths) ? paths.GetHead() : CString();
+        std::list<CString> paths;
+        return GetSelectedPaths(fd, paths) ? paths.front() : CString();
     }
 }
 
@@ -120,7 +120,7 @@ WNDPROC COpenFileDlg::m_wndProc = nullptr;
 // COpenFileDlg
 
 IMPLEMENT_DYNAMIC(COpenFileDlg, CFileDialog)
-COpenFileDlg::COpenFileDlg(CAtlArray<CString>& mask, bool fAllowDirSelection, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
+COpenFileDlg::COpenFileDlg(std::vector<CString>& mask, bool fAllowDirSelection, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
                            DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd)
     : CFileDialog(TRUE, lpszDefExt, lpszFileName, dwFlags | OFN_NOVALIDATE, lpszFilter, pParentWnd, 0)
     , m_mask(mask)

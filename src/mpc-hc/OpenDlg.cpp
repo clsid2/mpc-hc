@@ -80,8 +80,8 @@ BOOL COpenDlg::OnInitDialog()
     MRU.ReadMediaHistory();
     m_cbMRU.ResetContent();
     for (int i = 0; i < MRU.GetSize(); i++) {
-        if (MRU[i].fns.GetCount() >0 && !MRU[i].fns.GetHead().IsEmpty()) {
-            m_cbMRU.AddString(MRU[i].fns.GetHead());
+        if (MRU[i].fns.size() >0 && !MRU[i].fns.front().IsEmpty()) {
+            m_cbMRU.AddString(MRU[i].fns.front());
         }
     }
     CorrectComboListWidth(m_cbMRU);
@@ -100,7 +100,7 @@ BOOL COpenDlg::OnInitDialog()
         m_cbMRU.SetCurSel(0);
     }
 
-    m_fns.RemoveAll();
+    m_fns.clear();
     m_path.Empty();
     m_pathDub.Empty();
     m_bMultipleFiles = false;
@@ -128,7 +128,7 @@ void COpenDlg::OnBrowseFile()
     CAppSettings& s = AfxGetAppSettings();
 
     CString filter;
-    CAtlArray<CString> mask;
+    std::vector<CString> mask;
     s.m_Formats.GetFilter(filter, mask);
 
     DWORD dwFlags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_ENABLEINCLUDENOTIFY | OFN_NOCHANGEDIR;
@@ -144,19 +144,19 @@ void COpenDlg::OnBrowseFile()
         return;
     }
 
-    m_fns.RemoveAll();
+    m_fns.clear();
     FileDialogUtils::GetSelectedPaths(fd, m_fns);
 
-    if (!m_fns.IsEmpty()) {
+    if (!m_fns.empty()) {
         if (s.fKeepHistory) {
-            s.lastQuickOpenPath = PathUtils::DirName(m_fns.GetHead());
+            s.lastQuickOpenPath = PathUtils::DirName(m_fns.front());
         }
 
-        if (m_fns.GetCount() > 1) {
+        if (m_fns.size() > 1) {
             m_bMultipleFiles = true;
             EndDialog(IDOK);
             return;
-        } else if (m_fns.GetHead()[m_fns.GetHead().GetLength() - 1] == '\\' || m_fns.GetHead()[m_fns.GetHead().GetLength() - 1] == '*') {
+        } else if (m_fns.front()[m_fns.front().GetLength() - 1] == '\\' || m_fns.front()[m_fns.front().GetLength() - 1] == '*') {
             m_bMultipleFiles = true;
             EndDialog(IDOK);
             return;
@@ -173,7 +173,7 @@ void COpenDlg::OnBrowseDubFile()
     const CAppSettings& s = AfxGetAppSettings();
 
     CString filter;
-    CAtlArray<CString> mask;
+    std::vector<CString> mask;
     s.m_Formats.GetAudioFilter(filter, mask);
 
     DWORD dwFlags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_ENABLEINCLUDENOTIFY | OFN_NOCHANGEDIR;
@@ -196,10 +196,10 @@ void COpenDlg::OnOk()
 {
     UpdateData();
 
-    m_fns.RemoveAll();
-    m_fns.AddTail(PathUtils::Unquote(m_path));
+    m_fns.clear();
+    m_fns.push_back(PathUtils::Unquote(m_path));
     if (m_cbMRUDub.IsWindowEnabled() && !m_pathDub.IsEmpty()) {
-        m_fns.AddTail(PathUtils::Unquote(m_pathDub));
+        m_fns.push_back(PathUtils::Unquote(m_pathDub));
     }
 
     m_bMultipleFiles = false;

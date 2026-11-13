@@ -44,7 +44,7 @@ interface __declspec(uuid("43CDA93D-6A4E-4A07-BD3E-49D161073EE7"))
     public IUnknown
 {
     STDMETHOD_(size_t, GetCount)() PURE;
-    STDMETHOD(GetDeadEnd)(int iIndex, CAtlList<CStringW>& path, CAtlList<CMediaType>& mts) PURE;
+    STDMETHOD(GetDeadEnd)(int iIndex, std::list<CStringW>& path, std::list<CMediaType>& mts) PURE;
 };
 
 // private use only

@@ -457,10 +457,8 @@ public:
         lastOpened = r.lastOpened;
         filePosition = r.filePosition;
         DVDPosition = r.DVDPosition;
-        fns.RemoveAll();
-        subs.RemoveAll();
-        fns.AddHeadList(&r.fns);
-        subs.AddHeadList(&r.subs);
+        fns = r.fns;
+        subs = r.subs;
         abRepeat = r.abRepeat;
         AudioTrackIndex = r.AudioTrackIndex;
         SubtitleTrackIndex = r.SubtitleTrackIndex;
@@ -472,9 +470,9 @@ public:
     CStringW hash;
     CString title;
     CString lastOpened;
-    CAtlList<CString> fns;
+    std::list<CString> fns;
     CString cue;
-    CAtlList<CString> subs;
+    std::list<CString> subs;
     REFERENCE_TIME filePosition=0;
     DVD_POSITION DVDPosition = {};
     ABRepeat abRepeat;
@@ -565,7 +563,7 @@ class CAppSettings
 public:
     // cmdline params
     UINT64 nCLSwitches;
-    CAtlList<CString>   slFiles, slDubs, slSubs, slFilters;
+    std::list<CString>  slFiles, slDubs, slSubs, slFilters;
     static std::map<DWORD, const wmcmd_base*> CommandIDToWMCMD;
 
     // Initial position (used by command line flags)
@@ -585,7 +583,7 @@ public:
     int             iMonitor;
 
     CString         ParseFileName(CString const& param);
-    void            ParseCommandLine(CAtlList<CString>& cmdln);
+    void            ParseCommandLine(std::list<CString>& cmdln);
 
     // Added a Debug display to the screen (/debug option)
     bool            fShowDebugInfo;
@@ -1139,8 +1137,8 @@ public:
         bInitialized = false;
     };
 
-    void            GetFav(favtype ft, CAtlList<CString>& sl) const;
-    void            SetFav(favtype ft, CAtlList<CString>& sl);
+    void            GetFav(favtype ft, std::list<CString>& sl) const;
+    void            SetFav(favtype ft, std::list<CString>& sl);
     void            AddFav(favtype ft, CString s);
 
     CBDAChannel*    FindChannelByPref(int nPrefNumber);

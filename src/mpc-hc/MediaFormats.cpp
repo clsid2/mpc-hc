@@ -265,12 +265,12 @@ const CMediaFormatCategory* CMediaFormats::FindMediaByExt(CString ext, bool fAud
     return nullptr;
 }
 
-void CMediaFormats::GetFilter(CString& filter, CAtlArray<CString>& mask) const
+void CMediaFormats::GetFilter(CString& filter, std::vector<CString>& mask) const
 {
     CString strTemp;
 
     filter.AppendFormat(IsExtHidden() ? _T("%s|") : _T("%s (*.avi;*.mp4;*.mkv;...)|"), ResStr(IDS_AG_MEDIAFILES).GetString());
-    mask.Add(_T(""));
+    mask.push_back(_T(""));
 
     for (size_t i = 0; i < GetCount(); i++) {
         strTemp = GetAt(i).GetFilter() + _T(";");
@@ -284,21 +284,21 @@ void CMediaFormats::GetFilter(CString& filter, CAtlArray<CString>& mask) const
     for (size_t i = 0; i < GetCount(); i++) {
         const CMediaFormatCategory& mfc = GetAt(i);
         filter += mfc.GetDescription() + _T("|" + GetAt(i).GetFilter() + _T("|"));
-        mask.Add(mfc.GetFilter());
+        mask.push_back(mfc.GetFilter());
     }
 
     filter.AppendFormat(IDS_AG_ALLFILES);
-    mask.Add(_T("*.*"));
+    mask.push_back(_T("*.*"));
 
     filter += _T("|");
 }
 
-void CMediaFormats::GetAudioFilter(CString& filter, CAtlArray<CString>& mask) const
+void CMediaFormats::GetAudioFilter(CString& filter, std::vector<CString>& mask) const
 {
     CString strTemp;
 
     filter.AppendFormat(IsExtHidden() ? _T("%s|") : _T("%s (*.mp3;*.aac;*.wav;...)|"), ResStr(IDS_AG_AUDIOFILES).GetString());
-    mask.Add(_T(""));
+    mask.push_back(_T(""));
 
     for (size_t i = 0; i < GetCount(); i++) {
         const CMediaFormatCategory& mfc = GetAt(i);
@@ -320,11 +320,11 @@ void CMediaFormats::GetAudioFilter(CString& filter, CAtlArray<CString>& mask) co
             continue;
         }
         filter += mfc.GetDescription() + _T("|") + GetAt(i).GetFilter() + _T("|");
-        mask.Add(mfc.GetFilter());
+        mask.push_back(mfc.GetFilter());
     }
 
     filter.AppendFormat(IDS_AG_ALLFILES);
-    mask.Add(_T("*.*"));
+    mask.push_back(_T("*.*"));
 
     filter += _T("|");
 }

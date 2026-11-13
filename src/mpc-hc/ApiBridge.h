@@ -37,7 +37,7 @@ class CApiBridge
     CMainFrame& m_frame;
     CPlayerGraph& m_graph;
 
-    CAutoPtr<CWebServer> m_pWebServer;
+    std::unique_ptr<CWebServer> m_pWebServer;
 
     ULONGLONG m_lastSMTCTimelineUpdate = 0;
 #if MPC_SMTC_VIDEO_THUMBNAIL

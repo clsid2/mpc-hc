@@ -21,6 +21,7 @@
 #pragma once
 
 #include <atlpath.h>
+#include <list>
 
 // CPath builds the result of these methods in a MAX_PATH buffer around a Shlwapi call, so past
 // MAX_PATH they fail, and the void ones do it silently: Combine and Canonicalize leave an empty
@@ -76,8 +77,8 @@ namespace PathUtils
     bool IsLinkFile(LPCTSTR path);
     bool CreateDirRecursive(LPCTSTR path);
     CString ResolveLinkFile(LPCTSTR path);
-    void RecurseAddDir(LPCTSTR path, CAtlList<CString>& sl);
-    void ParseDirs(CAtlList<CString>& pathsList);
+    void RecurseAddDir(LPCTSTR path, std::list<CString>& sl);
+    void ParseDirs(std::list<CString>& pathsList);
 
     bool IsURL(CString& fn);
     bool IsFullFilePath(CString& fn);

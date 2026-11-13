@@ -282,7 +282,7 @@ namespace PathUtils
         return _T("");
     }
 
-    void RecurseAddDir(LPCTSTR path, CAtlList<CString>& paths)
+    void RecurseAddDir(LPCTSTR path, std::list<CString>& paths)
     {
         CFileFind finder;
 
@@ -293,32 +293,30 @@ namespace PathUtils
             if (!finder.IsDots() && finder.IsDirectory()) {
                 CString folderPath = finder.GetFilePath();
                 ExtendMaxPathLengthIfNeeded(folderPath);
-                paths.AddTail(folderPath);
+                paths.push_back(folderPath);
                 RecurseAddDir(folderPath, paths);
             }
         }
     }
 
-    void ParseDirs(CAtlList<CString>& paths)
+    void ParseDirs(std::list<CString>& paths)
     {
-        POSITION pos = paths.GetHeadPosition();
-        while (pos) {
-            POSITION prevPos = pos;
-            CString fn = paths.GetNext(pos);
+        for (auto it = paths.begin(); it != paths.end();) {
+            auto next = std::next(it);
+            CString fn = *it;
             // Try to follow link files that point to a directory
             if (IsLinkFile(fn)) {
                 fn = ResolveLinkFile(fn);
             }
 
             if (IsDir(fn)) {
-                CAtlList<CString> subDirs;
+                std::list<CString> subDirs;
                 RecurseAddDir(fn, subDirs);
                 // Add the subdirectories just after their parent
                 // so that the tree is not parsed multiple times
-                while (!subDirs.IsEmpty()) {
-                    paths.InsertAfter(prevPos, subDirs.RemoveTail());
-                }
+                paths.splice(next, subDirs);
             }
+            it = next;
         }
     }
 

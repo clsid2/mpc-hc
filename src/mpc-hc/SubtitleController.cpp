@@ -187,11 +187,9 @@ void CSubtitleController::OnFileSubtitlesLoad()
 
     if (fd.DoModal() == IDOK) {
         bool bFirstFile = true;
-        CAtlList<CString> subfiles;
+        std::list<CString> subfiles;
         FileDialogUtils::GetSelectedPaths(fd, subfiles);
-        POSITION pos = subfiles.GetHeadPosition();
-        while (pos) {
-            const CString& subfile = subfiles.GetNext(pos);
+        for (const CString& subfile : subfiles) {
             if (m_pDVS) {
                 if (SUCCEEDED(m_pDVS->put_FileName((LPWSTR)(LPCWSTR)subfile))) {
                     m_pDVS->put_SelectedLanguage(0);
@@ -708,8 +706,8 @@ void CSubtitleController::OnPlaySubtitles(UINT nID)
                 if (clsid == __uuidof(CRenderedTextSubtitle)) {
                     CRenderedTextSubtitle* pRTS = (CRenderedTextSubtitle*)(ISubStream*)pSubInput->pSubStream;
 
-                    CAutoPtrArray<CPPageSubStyle> pages;
-                    CAtlArray<STSStyle*> styles;
+                    std::vector<std::unique_ptr<CPPageSubStyle>> pages;
+                    std::vector<STSStyle*> styles;
 
                     POSITION pos = pRTS->m_styles.GetStartPosition();
                     for (int k = 0; pos; k++) {
@@ -717,18 +715,18 @@ void CSubtitleController::OnPlaySubtitles(UINT nID)
                         STSStyle* style;
                         pRTS->m_styles.GetNextAssoc(pos, styleName, style);
 
-                        CAutoPtr<CPPageSubStyle> page(DEBUG_NEW CPPageSubStyle(/*isStyleDialog = */ true));
+                        std::unique_ptr<CPPageSubStyle> page(DEBUG_NEW CPPageSubStyle(/*isStyleDialog = */ true));
                         if (style->hasAnsiStyleName) {
                             styleName = ToUnicode(styleName, pRTS->GetCharSet(style->charSet));
                         }
                         page->InitStyle(styleName, *style);
-                        pages.Add(page);
-                        styles.Add(style);
+                        pages.push_back(std::move(page));
+                        styles.push_back(style);
                     }
 
                     CMPCThemePropertySheet dlg(IDS_SUBTITLES_STYLES_CAPTION, m_frame.GetModalParent());
-                    for (size_t l = 0; l < pages.GetCount(); l++) {
-                        dlg.AddPage(pages[l]);
+                    for (size_t l = 0; l < pages.size(); l++) {
+                        dlg.AddPage(pages[l].get());
                     }
 
                     if (dlg.DoModal() == IDOK) {
@@ -737,7 +735,7 @@ void CSubtitleController::OnPlaySubtitles(UINT nID)
                             {
                                 CAutoLock cAutoLock(&m_csSubLock);
 
-                                for (size_t l = 0; l < pages.GetCount(); l++) {
+                                for (size_t l = 0; l < pages.size(); l++) {
                                     STSStyle tmpStyle = *styles[l];
                                     pages[l]->GetStyle(*styles[l]);
                                     if (pages[l]->GetStyleName() == L"Default") {
@@ -1456,14 +1454,14 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
     CString ext = CLongPath(fn).GetExtension().MakeLower();
 
     if (!pSubStream && (ext == _T(".idx") || !bAutoLoad && ext == _T(".sub"))) {
-        CAutoPtr<CVobSubFile> pVSF(DEBUG_NEW CVobSubFile(&m_csSubLock));
+        std::unique_ptr<CVobSubFile> pVSF(DEBUG_NEW CVobSubFile(&m_csSubLock));
         if (pVSF && pVSF->Open(fn) && pVSF->GetStreamCount() > 0) {
-            pSubStream = pVSF.Detach();
+            pSubStream = pVSF.release();
         }
     }
 
     if (!pSubStream && ext != _T(".idx") && ext != _T(".sup")) {
-        CAutoPtr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
+        std::unique_ptr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
         if (pRTS) {
             if (pRTS->Open(fn, DEFAULT_CHARSET, _T(""), videoName) && pRTS->GetStreamCount() > 0) {
 #if USE_LIBASS
@@ -1471,15 +1469,15 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
                     pRTS->m_LibassContext.SetFilterGraph(m_graph.m_pGB);
                 }
 #endif
-                pSubStream = pRTS.Detach();
+                pSubStream = pRTS.release();
             }
         }
     }
 
     if (!pSubStream) {
-        CAutoPtr<CPGSSubFile> pPSF(DEBUG_NEW CPGSSubFile(&m_csSubLock));
+        std::unique_ptr<CPGSSubFile> pPSF(DEBUG_NEW CPGSSubFile(&m_csSubLock));
         if (pPSF && pPSF->Open(fn, _T(""), videoName) && pPSF->GetStreamCount() > 0) {
-            pSubStream = pPSF.Detach();
+            pSubStream = pPSF.release();
         }
     }
 
@@ -1532,7 +1530,7 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
 bool CSubtitleController::LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub) {
     CAppSettings& s = AfxGetAppSettings();
     CComQIPtr<ISubStream> pSubStream;
-    CAtlList<CString> preferlist;
+    std::list<CString> preferlist;
     if (!s.sYDLSubsPreference.IsEmpty()) {
         if (s.sYDLSubsPreference.Find(_T(',')) != -1) {
             ExplodeMin(s.sYDLSubsPreference, preferlist, ',');
@@ -1540,7 +1538,7 @@ bool CSubtitleController::LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub) {
             ExplodeMin(s.sYDLSubsPreference, preferlist, ' ');
         }
     }
-    if (!preferlist.IsEmpty() && !CYoutubeDLInstance::isPrefer(preferlist, sub.lang)) {
+    if (!preferlist.empty() && !CYoutubeDLInstance::isPrefer(preferlist, sub.lang)) {
         return false;
     }
 
@@ -1559,7 +1557,7 @@ bool CSubtitleController::LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub) {
         AddTextPassThruFilter();
     }
 
-    CAutoPtr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
+    std::unique_ptr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
     if (pRTS) {
         bool opened = false;
         if (!sub.url.IsEmpty()) {
@@ -1596,7 +1594,7 @@ bool CSubtitleController::LoadSubtitle(CYoutubeDLInstance::YDLSubInfo& sub) {
                 pRTS->m_LibassContext.SetFilterGraph(m_graph.m_pGB);
             }
 #endif
-            pSubStream = pRTS.Detach();
+            pSubStream = pRTS.release();
         }
     }
 
@@ -2562,7 +2560,7 @@ LRESULT CSubtitleController::OnLoadSubtitles(WPARAM wParam, LPARAM lParam)
 {
     SubtitlesData& data = *(SubtitlesData*)lParam;
 
-    CAutoPtr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
+    std::unique_ptr<CRenderedTextSubtitle> pRTS(DEBUG_NEW CRenderedTextSubtitle(&m_csSubLock));
     if (pRTS) {
         if (pRTS->Open(CString(data.pSubtitlesInfo->Provider()->DisplayName().c_str()),
             (BYTE*)(LPCSTR)data.fileContents.c_str(), (int)data.fileContents.length(), DEFAULT_CHARSET,
@@ -2574,7 +2572,7 @@ LRESULT CSubtitleController::OnLoadSubtitles(WPARAM wParam, LPARAM lParam)
                 pRTS->m_LibassContext.SetFilterGraph(m_graph.m_pGB);
             }
 #endif
-            SubtitleInput subElement = pRTS.Detach();
+            SubtitleInput subElement = pRTS.release();
             m_pSubStreams.AddTail(subElement);
             if (data.bActivate) {
                 m_ExternalSubstreams.push_back(subElement.pSubStream);

@@ -238,7 +238,7 @@ bool LoadResource(UINT resid, CStringA& str, LPCTSTR restype)
     return true;
 }
 
-static bool FindRedir(const CUrl& src,const CString& body, CAtlList<CString>& urls, const std::vector<std::wregex>& res)
+static bool FindRedir(const CUrl& src,const CString& body, std::list<CString>& urls, const std::vector<std::wregex>& res)
 {
     bool bDetectHLS = false;
     for (const auto re : res) {
@@ -260,7 +260,7 @@ static bool FindRedir(const CUrl& src,const CString& body, CAtlList<CString>& ur
                     && (url.Find(_T("EXT-X-STREAM-INF:")) != -1
                         || url.Find(_T("EXT-X-TARGETDURATION:")) != -1
                         || url.Find(_T("EXT-X-MEDIA-SEQUENCE:")) != -1)) {
-                urls.RemoveAll();
+                urls.clear();
                 break;
             }
 
@@ -269,19 +269,19 @@ static bool FindRedir(const CUrl& src,const CString& body, CAtlList<CString>& ur
             if (_tcsicmp(src.GetSchemeName(), dst.GetSchemeName())
                     || _tcsicmp(src.GetHostName(), dst.GetHostName())
                     || _tcsicmp(src.GetUrlPath(), dst.GetUrlPath())) {
-                urls.AddTail(url);
+                urls.push_back(url);
             } else {
                 // recursive
-                urls.RemoveAll();
+                urls.clear();
                 break;
             }
         }
     }
 
-    return !urls.IsEmpty();
+    return !urls.empty();
 }
 
-static bool FindRedir(const CString& fn, CAtlList<CString>& fns, const std::vector<std::wregex>& res)
+static bool FindRedir(const CString& fn, std::list<CString>& fns, const std::vector<std::wregex>& res)
 {
     CString body;
 
@@ -319,15 +319,15 @@ static bool FindRedir(const CString& fn, CAtlList<CString>& fns, const std::vect
                 continue;
             }
 
-            fns.AddTail(fn2);
+            fns.push_back(fn2);
         }
     }
 
-    return !fns.IsEmpty();
+    return !fns.empty();
 }
 
 
-CString GetContentType(CString fn, CAtlList<CString>* redir)
+CString GetContentType(CString fn, std::list<CString>* redir)
 {
     fn.Trim();
     if (fn.IsEmpty()) {
@@ -1167,7 +1167,7 @@ bool CMPlayerCApp::ChangeSettingsLocation(bool useIni)
     bool success;
 
     // Load favorites so that they can be correctly saved to the new location
-    CAtlList<CString> filesFav, DVDsFav, devicesFav;
+    std::list<CString> filesFav, DVDsFav, devicesFav;
     m_s->GetFav(FAV_FILE, filesFav);
     m_s->GetFav(FAV_DVD, DVDsFav);
     m_s->GetFav(FAV_DEVICE, devicesFav);
@@ -1470,24 +1470,23 @@ void CMPlayerCApp::WriteProfileVectorInt(CString strSection, CString strKey, std
 
 void CMPlayerCApp::PreProcessCommandLine()
 {
-    m_cmdln.RemoveAll();
+    m_cmdln.clear();
 
     for (int i = 1; i < __argc; i++) {
-        m_cmdln.AddTail(CString(__targv[i]).Trim(_T(" \"")));
+        m_cmdln.push_back(CString(__targv[i]).Trim(_T(" \"")));
     }
 }
 
 bool CMPlayerCApp::SendCommandLine(HWND hWnd)
 {
-    if (m_cmdln.IsEmpty()) {
+    if (m_cmdln.empty()) {
         return false;
     }
 
     int bufflen = sizeof(DWORD);
 
-    POSITION pos = m_cmdln.GetHeadPosition();
-    while (pos) {
-        bufflen += (m_cmdln.GetNext(pos).GetLength() + 1) * sizeof(TCHAR);
+    for (const CString& s : m_cmdln) {
+        bufflen += (s.GetLength() + 1) * sizeof(TCHAR);
     }
 
     CAutoVectorPtr<BYTE> buff;
@@ -1497,12 +1496,10 @@ bool CMPlayerCApp::SendCommandLine(HWND hWnd)
 
     BYTE* p = buff;
 
-    *(DWORD*)p = (DWORD)m_cmdln.GetCount();
+    *(DWORD*)p = (DWORD)m_cmdln.size();
     p += sizeof(DWORD);
 
-    pos = m_cmdln.GetHeadPosition();
-    while (pos) {
-        const CString& s = m_cmdln.GetNext(pos);
+    for (const CString& s : m_cmdln) {
         int len = (s.GetLength() + 1) * sizeof(TCHAR);
         memcpy(p, s, len);
         p += len;
@@ -2225,7 +2222,7 @@ BOOL CMPlayerCApp::InitInstance()
         }
     }
 
-    if ((m_s->nCLSwitches & CLSW_CLOSE) && m_s->slFiles.IsEmpty()) { // "/close" switch and empty file list
+    if ((m_s->nCLSwitches & CLSW_CLOSE) && m_s->slFiles.empty()) { // "/close" switch and empty file list
         return FALSE;
     }
 
@@ -2330,7 +2327,7 @@ BOOL CMPlayerCApp::InitInstance()
         // to redirect, the selection arrives through IDropTarget once this instance has
         // registered its class objects, and exiting here would fail Explorer's activation.
         const bool bEmbedding = !!(m_s->nCLSwitches & CLSW_EMBEDDING);
-        if (!bEmbedding && ((m_s->nCLSwitches & CLSW_ADD) || !(m_s->GetAllowMultiInst() || m_s->nCLSwitches & CLSW_NEW || m_cmdln.IsEmpty()))) {
+        if (!bEmbedding && ((m_s->nCLSwitches & CLSW_ADD) || !(m_s->GetAllowMultiInst() || m_s->nCLSwitches & CLSW_NEW || m_cmdln.empty()))) {
             // The first instance owns this mutex until it has created its window, so waiting
             // for it means waiting for startup to finish. Release it again straight away:
             // holding it across the send serialized every redirecting process, so one slow
@@ -2428,7 +2425,7 @@ BOOL CMPlayerCApp::InitInstance()
 
     CPoint borderAdjustDirection;
     pFrame->SetDefaultWindowRect((m_s->nCLSwitches & CLSW_MONITOR) ? m_s->iMonitor : 0);
-    if (!m_s->slFiles.IsEmpty()) {
+    if (!m_s->slFiles.empty()) {
         pFrame->m_controls.DelayShowNotLoaded(true);
     }
     // Apply the persistent startup view preset, unless a command-line /viewpreset overrides it (applied later).

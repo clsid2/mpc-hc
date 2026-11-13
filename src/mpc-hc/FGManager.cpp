@@ -1690,7 +1690,7 @@ STDMETHODIMP_(size_t) CFGManager::GetCount()
     return m_deadends.GetCount();
 }
 
-STDMETHODIMP CFGManager::GetDeadEnd(int iIndex, CAtlList<CStringW>& path, CAtlList<CMediaType>& mts)
+STDMETHODIMP CFGManager::GetDeadEnd(int iIndex, std::list<CStringW>& path, std::list<CMediaType>& mts)
 {
     CAutoLock cAutoLock(this);
 
@@ -1698,8 +1698,8 @@ STDMETHODIMP CFGManager::GetDeadEnd(int iIndex, CAtlList<CStringW>& path, CAtlLi
         return E_FAIL;
     }
 
-    path.RemoveAll();
-    mts.RemoveAll();
+    path.clear();
+    mts.clear();
 
     POSITION pos = m_deadends[iIndex]->GetHeadPosition();
     while (pos) {
@@ -1707,10 +1707,13 @@ STDMETHODIMP CFGManager::GetDeadEnd(int iIndex, CAtlList<CStringW>& path, CAtlLi
 
         CStringW str;
         str.Format(L"%s::%s", p.filter.GetString(), p.pin.GetString());
-        path.AddTail(str);
+        path.push_back(str);
     }
 
-    mts.AddTailList(&m_deadends[iIndex]->mts);
+    const auto& deadEndMts = m_deadends[iIndex]->mts;
+    for (POSITION posMt = deadEndMts.GetHeadPosition(); posMt;) {
+        mts.push_back(deadEndMts.GetNext(posMt));
+    }
 
     return S_OK;
 }

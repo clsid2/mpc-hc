@@ -115,14 +115,14 @@ public:
     //  OpenMediaData() {}
     virtual ~OpenMediaData() {} // one virtual funct is needed to enable rtti
     CString title;
-    CAtlList<CString> subs;
+    std::list<CString> subs;
 };
 
 class OpenFileData : public OpenMediaData
 {
 public:
     OpenFileData() : rtStart(0), bAddToRecent(true), rarEntryIndex(-1) {}
-    CAtlList<CString> fns;
+    std::list<CString> fns;
     REFERENCE_TIME rtStart;
     ABRepeat abRepeat;
     bool bAddToRecent;
@@ -310,8 +310,8 @@ private:
 
     UINT m_nJumpToSubMenusCount;
 
-    CInterfaceArray<IUnknown, &IID_IUnknown> m_pparray;
-    CInterfaceArray<IAMStreamSelect> m_ssarray;
+    std::vector<CComPtr<IUnknown>> m_pparray;
+    std::vector<CComPtr<IAMStreamSelect>> m_ssarray;
 
     // chapters (file mode)
     CComPtr<IDSMChapterBag> m_pCB;
@@ -508,7 +508,7 @@ private:
 
     // bodies of OpenMedia and CloseMedia; the public wrappers record the request
     // while a holder is on the stack, these always run
-    void OpenMediaInternal(CAutoPtr<OpenMediaData> pOMD);
+    void OpenMediaInternal(std::unique_ptr<OpenMediaData> pOMD);
     void CloseMediaInternal(bool bNextIsQueued = false, bool bPendingFileDelete = false);
 
     bool m_bSettingUpMenus;
@@ -524,7 +524,7 @@ private:
     // client coordinates of the last OnDropAccept call; OnDropFiles gets no point
     CPoint m_lastDropPoint;
     bool IsPlaylistDropWhileDisabled(CPoint ptClient) const;
-    void OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect) override;
+    void OnDropFiles(std::list<CStringW>& slFiles, DROPEFFECT dropEffect) override;
     DROPEFFECT OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point) override;
 
 public:
@@ -590,7 +590,7 @@ protected:
     bool restoringWindowRect;
 
     bool m_fAudioOnly;
-    CAutoPtr<OpenMediaData> m_lastOMD;
+    std::unique_ptr<OpenMediaData> m_lastOMD;
 
     int         m_loadedAudioTrackIndex = -1;
     int         m_audioTrackCount = 0;
@@ -601,7 +601,7 @@ protected:
     void ThrowAndForceClose();
 
     // Operations
-    bool OpenMediaPrivate(CAutoPtr<OpenMediaData> pOMD);
+    bool OpenMediaPrivate(std::unique_ptr<OpenMediaData> pOMD);
     void CloseMediaPrivate();
 
     CWnd* GetModalParent();
@@ -651,7 +651,7 @@ protected:
 
 public:
     void OpenCurPlaylistItem(REFERENCE_TIME rtStart = 0, bool reopen = false, ABRepeat abRepeat = ABRepeat());
-    void OpenMedia(CAutoPtr<OpenMediaData> pOMD);
+    void OpenMedia(std::unique_ptr<OpenMediaData> pOMD);
     bool ResetDevice();
     bool DisplayChange();
     bool CloseMediaBeforeOpen();

@@ -26,7 +26,7 @@
 #define DROPEFFECT_APPEND 16
 
 struct CDropClient {
-    virtual void OnDropFiles(CAtlList<CStringW>& slFiles, DROPEFFECT dropEffect) PURE;
+    virtual void OnDropFiles(std::list<CStringW>& slFiles, DROPEFFECT dropEffect) PURE;
     virtual DROPEFFECT OnDropAccept(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point) PURE;
 };
 

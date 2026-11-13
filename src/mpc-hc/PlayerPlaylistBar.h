@@ -95,14 +95,14 @@ private:
     CPlaylistItem* GetCur();
 
     void AddItem(CString fn, bool insertAtCurrent = false);
-    void AddItem(CString fn, CAtlList<CString>* subs);
-    void AddItem(CAtlList<CString>& fns, CAtlList<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), CAtlList<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
+    void AddItem(CString fn, std::list<CString>* subs);
+    void AddItem(std::list<CString>& fns, std::list<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), std::list<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
     bool AddItemNoDuplicate(CString fn, bool insertAtCurrent = false);
     bool AddFromFilemask(CString mask, bool recurse_dirs, bool insertAtCurrent = false);
     bool AddItemsInFolder(CString folder, bool insertAtCurrent = false);
-    void ParsePlayList(CString fn, CAtlList<CString>* subs, int redir_count = 0);
-    void ParsePlayList(CAtlList<CString>& fns, CAtlList<CString>* subs, int redir_count = 0, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), CAtlList<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
-    void ResolveLinkFiles(CAtlList<CString>& fns);
+    void ParsePlayList(CString fn, std::list<CString>* subs, int redir_count = 0);
+    void ParsePlayList(std::list<CString>& fns, std::list<CString>* subs, int redir_count = 0, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), std::list<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
+    void ResolveLinkFiles(std::list<CString>& fns);
 
     bool ParseBDMVPlayList(CString fn);
 
@@ -153,7 +153,7 @@ public:
     BOOL Create(CWnd* pParentWnd, UINT defDockBarID);
 
     // public so the main frame can hand over a drop that ole32 routed to it (#4265)
-    void OnDropFiles(CAtlList<CString>& slFiles, DROPEFFECT) override;
+    void OnDropFiles(std::list<CString>& slFiles, DROPEFFECT) override;
 
     virtual void ReloadTranslatableResources();
 
@@ -192,9 +192,9 @@ public:
     void PlayListChanged();
     bool Empty();
 
-    void Open(CAtlList<CString>& fns, bool fMulti, CAtlList<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""));
-    void Append(CAtlList<CString>& fns, bool fMulti, CAtlList<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), CAtlList<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
-    void ReplaceCurrentItem(CAtlList<CString>& fns, CAtlList<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), CAtlList<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
+    void Open(std::list<CString>& fns, bool fMulti, std::list<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""));
+    void Append(std::list<CString>& fns, bool fMulti, std::list<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), std::list<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
+    void ReplaceCurrentItem(std::list<CString>& fns, std::list<CString>* subs = nullptr, CString label = _T(""), CString ydl_src = _T(""), CString ydl_ua = _T(""), CString cue = _T(""), std::list<CYoutubeDLInstance::YDLSubInfo>* ydl_subs = nullptr);
     void AddSubtitleToCurrent(CString fn);
 
     void OpenDVD(CString fn);

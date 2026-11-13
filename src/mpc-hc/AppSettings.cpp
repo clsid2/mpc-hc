@@ -2497,7 +2497,7 @@ void CAppSettings::LoadSettings()
 
     UpdateThemeState();
 
-    if (fLaunchfullscreen && slFiles.GetCount() > 0) {
+    if (fLaunchfullscreen && slFiles.size() > 0) {
         nCLSwitches |= CLSW_FULLSCREEN;
     }
 
@@ -2787,14 +2787,14 @@ CString CAppSettings::ParseFileName(CString const& param)
     return param;
 }
 
-void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
+void CAppSettings::ParseCommandLine(std::list<CString>& cmdln)
 {
     UINT64 existingAfterPlaybackCL = nCLSwitches & CLSW_AFTERPLAYBACK_MASK;
     nCLSwitches = 0;
-    slFiles.RemoveAll();
-    slDubs.RemoveAll();
-    slSubs.RemoveAll();
-    slFilters.RemoveAll();
+    slFiles.clear();
+    slDubs.clear();
+    slSubs.clear();
+    slFilters.clear();
     rtStart = 0;
     rtShift = 0;
     lDVDTitle = 0;
@@ -2812,9 +2812,9 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
     cmdlnDVBScan.strOutputPath.Empty();
     cmdlnDVBScan.bSaveChannels = false;
 
-    POSITION pos = cmdln.GetHeadPosition();
-    while (pos) {
-        const CString& param = cmdln.GetNext(pos);
+    auto pos = cmdln.begin();
+    while (pos != cmdln.end()) {
+        CString& param = *pos++;
         if (param.IsEmpty()) {
             continue;
         }
@@ -2835,23 +2835,23 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_EMBEDDING;
             } else if (sw == _T("help") || sw == _T("h") || sw == _T("?")) {
                 nCLSwitches |= CLSW_HELP;
-            } else if (sw == _T("dub") && pos) {
-                slDubs.AddTail(ParseFileName(cmdln.GetNext(pos)));
-            } else if (sw == _T("dubdelay") && pos) {
-                CString strFile = ParseFileName(cmdln.GetNext(pos));
+            } else if (sw == _T("dub") && pos != cmdln.end()) {
+                slDubs.push_back(ParseFileName(*pos++));
+            } else if (sw == _T("dubdelay") && pos != cmdln.end()) {
+                CString strFile = ParseFileName(*pos++);
                 int nPos = strFile.Find(_T("DELAY"));
                 if (nPos != -1) {
                     rtShift = 10000i64 * _tstol(strFile.Mid(nPos + 6));
                 }
-                slDubs.AddTail(strFile);
-            } else if (sw == _T("sub") && pos) {
-                slSubs.AddTail(ParseFileName(cmdln.GetNext(pos)));
-            } else if (sw == _T("filter") && pos) {
-                slFilters.AddTail(cmdln.GetNext(pos));
+                slDubs.push_back(strFile);
+            } else if (sw == _T("sub") && pos != cmdln.end()) {
+                slSubs.push_back(ParseFileName(*pos++));
+            } else if (sw == _T("filter") && pos != cmdln.end()) {
+                slFilters.push_back(*pos++);
             } else if (sw == _T("dvd")) {
                 nCLSwitches |= CLSW_DVD;
-            } else if (sw == _T("dvdpos") && pos) {
-                ExtractDVDStartPos(cmdln.GetNext(pos));
+            } else if (sw == _T("dvdpos") && pos != cmdln.end()) {
+                ExtractDVDStartPos(*pos++);
             } else if (sw == _T("cd")) {
                 nCLSwitches |= CLSW_CD;
             } else if (sw == _T("device")) {
@@ -2860,8 +2860,8 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_ADD;
             } else if (sw == _T("randomize")) {
                 nCLSwitches |= CLSW_RANDOMIZE;
-            } else if (sw == _T("volume") && pos) {
-                int setVolumeVal = _ttoi(cmdln.GetNext(pos));
+            } else if (sw == _T("volume") && pos != cmdln.end()) {
+                int setVolumeVal = _ttoi(*pos++);
                 if (setVolumeVal >= 0 && setVolumeVal <= 100) {
                     nCmdVolume = setVolumeVal;
                     nCLSwitches |= CLSW_VOLUME;
@@ -2884,11 +2884,11 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_UNREGEXT;    /* keep for compatibility with old versions */
             } else if (sw == _T("iconsassoc")) {
                 nCLSwitches |= CLSW_ICONSASSOC;
-            } else if (sw == _T("start") && pos) {
-                rtStart = 10000i64 * _tcstol(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("start") && pos != cmdln.end()) {
+                rtStart = 10000i64 * _tcstol(*pos++, nullptr, 10);
                 nCLSwitches |= CLSW_STARTVALID;
-            } else if (sw == _T("startpos") && pos) {
-                rtStart = 10000i64 * ConvertTimeToMSec(cmdln.GetNext(pos));
+            } else if (sw == _T("startpos") && pos != cmdln.end()) {
+                rtStart = 10000i64 * ConvertTimeToMSec(*pos++);
                 nCLSwitches |= CLSW_STARTVALID;
             } else if (sw == _T("nofocus")) {
                 nCLSwitches |= CLSW_NOFOCUS;
@@ -2906,32 +2906,36 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_LOCK;
             } else if (sw == _T("d3dfs")) {
                 nCLSwitches |= CLSW_D3DFULLSCREEN;
-            } else if (sw == _T("adminoption") && pos) {
+            } else if (sw == _T("adminoption") && pos != cmdln.end()) {
                 nCLSwitches |= CLSW_ADMINOPTION;
-                iAdminOption = _ttoi(cmdln.GetNext(pos));
-            } else if (sw == _T("slave") && pos) {
-                HWND slavewnd = (HWND)IntToPtr(_ttoi(cmdln.GetNext(pos)));
+                iAdminOption = _ttoi(*pos++);
+            } else if (sw == _T("slave") && pos != cmdln.end()) {
+                HWND slavewnd = (HWND)IntToPtr(_ttoi(*pos++));
                 if (slavewnd != nullptr && ::IsWindow(slavewnd)) {
                     nCLSwitches |= CLSW_SLAVE;
                     hMasterWnd = slavewnd;
                 } else {
                     ASSERT(false);
                 }
-            } else if (sw == _T("fixedsize") && pos) {
-                CAtlList<CString> sl;
-                // Optional arguments for the main window's position
-                Explode(cmdln.GetNext(pos), sl, ',', 4);
-                if (sl.GetCount() == 4) {
-                    fixedWindowPosition.SetPoint(_ttol(sl.GetAt(sl.FindIndex(2))), _ttol(sl.GetAt(sl.FindIndex(3))) );
+            } else if (sw == _T("fixedsize") && pos != cmdln.end()) {
+                std::vector<CString> sl;
+                {
+                    // Optional arguments for the main window's position
+                    std::list<CString> parts;
+                    Explode(*pos++, parts, ',', 4);
+                    sl.assign(parts.begin(), parts.end());
                 }
-                if (sl.GetCount() >= 2) {
-                    sizeFixedWindow.SetSize(_ttol(sl.GetAt(sl.FindIndex(0))), _ttol(sl.GetAt(sl.FindIndex(1))) );
+                if (sl.size() == 4) {
+                    fixedWindowPosition.SetPoint(_ttol(sl[2]), _ttol(sl[3]) );
+                }
+                if (sl.size() >= 2) {
+                    sizeFixedWindow.SetSize(_ttol(sl[0]), _ttol(sl[1]) );
                     if (sizeFixedWindow.cx > 0 && sizeFixedWindow.cy > 0) {
                         nCLSwitches |= CLSW_FIXEDSIZE;
                     }
                 }
-            } else if (sw == _T("viewpreset") && pos) {
-                int viewPreset = _ttoi(cmdln.GetNext(pos));
+            } else if (sw == _T("viewpreset") && pos != cmdln.end()) {
+                int viewPreset = _ttoi(*pos++);
                 switch (viewPreset) {
                     case 1:
                         nCLSwitches |= CLSW_PRESET1;
@@ -2949,22 +2953,22 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                         nCLSwitches |= CLSW_UNRECOGNIZEDSWITCH;
                         break;
                 }
-            } else if (sw == _T("monitor") && pos) {
-                iMonitor = _tcstol(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("monitor") && pos != cmdln.end()) {
+                iMonitor = _tcstol(*pos++, nullptr, 10);
                 nCLSwitches |= CLSW_MONITOR;
-            } else if (sw == _T("pns") && pos) {
-                strPnSPreset = cmdln.GetNext(pos);
-            } else if (sw == _T("webport") && pos) {
-                int tmpport = _tcstol(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("pns") && pos != cmdln.end()) {
+                strPnSPreset = *pos++;
+            } else if (sw == _T("webport") && pos != cmdln.end()) {
+                int tmpport = _tcstol(*pos++, nullptr, 10);
                 if (tmpport >= 0 && tmpport <= 65535) {
                     nCmdlnWebServerPort = tmpport;
                 }
-            } else if (sw == _T("dvbscan") && pos) {
+            } else if (sw == _T("dvbscan") && pos != cmdln.end()) {
                 // /dvbscan <start>-<stop>, in kHz. Run a tuner scan without the
                 // scan dialog, write the result and quit. The range is required
                 // because there is no sensible default: the persisted one
                 // belongs to whoever last used the dialog.
-                CString strRange = cmdln.GetNext(pos);
+                CString strRange = *pos++;
                 int nDash = strRange.Find(_T('-'));
                 if (nDash > 0) {
                     ULONG ulStart = _tcstoul(strRange.Left(nDash), nullptr, 10);
@@ -2975,12 +2979,12 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                         nCLSwitches |= CLSW_DVBSCAN;
                     }
                 }
-            } else if (sw == _T("dvbscanout") && pos) {
-                cmdlnDVBScan.strOutputPath = cmdln.GetNext(pos);
-            } else if (sw == _T("dvbbandwidth") && pos) {
-                cmdlnDVBScan.ulBandwidth = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
-            } else if (sw == _T("dvbsymbolrate") && pos) {
-                cmdlnDVBScan.ulSymbolRate = _tcstoul(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("dvbscanout") && pos != cmdln.end()) {
+                cmdlnDVBScan.strOutputPath = *pos++;
+            } else if (sw == _T("dvbbandwidth") && pos != cmdln.end()) {
+                cmdlnDVBScan.ulBandwidth = _tcstoul(*pos++, nullptr, 10);
+            } else if (sw == _T("dvbsymbolrate") && pos != cmdln.end()) {
+                cmdlnDVBScan.ulSymbolRate = _tcstoul(*pos++, nullptr, 10);
             } else if (sw == _T("dvbscansave")) {
                 // Only means anything together with /dvbscan; see
                 // CMainFrame::FinishHeadlessDVBScan for what gets stored.
@@ -2994,10 +2998,10 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                     MPCExceptionHandler::Enable();
                 }
 #endif
-            } else if (sw == _T("audiorenderer") && pos) {
-                SetAudioRenderer(_ttoi(cmdln.GetNext(pos)));
-            } else if (sw == _T("shaderpreset") && pos) {
-                m_Shaders.SetCurrentPreset(cmdln.GetNext(pos));
+            } else if (sw == _T("audiorenderer") && pos != cmdln.end()) {
+                SetAudioRenderer(_ttoi(*pos++));
+            } else if (sw == _T("shaderpreset") && pos != cmdln.end()) {
+                m_Shaders.SetCurrentPreset(*pos++);
             } else if (sw == _T("reset")) {
                 nCLSwitches |= CLSW_RESET;
             } else if (sw == _T("mute")) {
@@ -3006,18 +3010,18 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
                 nCLSwitches |= CLSW_MONITOROFF;
             } else if (sw == _T("playnext")) {
                 nCLSwitches |= CLSW_PLAYNEXT;
-            } else if (sw == _T("hwgpu") && pos) {
-                iLAVGPUDevice = _tcstol(cmdln.GetNext(pos), nullptr, 10);
+            } else if (sw == _T("hwgpu") && pos != cmdln.end()) {
+                iLAVGPUDevice = _tcstol(*pos++, nullptr, 10);
             } else if (sw == _T("configlavsplitter")) {
                 nCLSwitches |= CLSW_CONFIGLAVSPLITTER;
             } else if (sw == _T("configlavaudio")) {
                 nCLSwitches |= CLSW_CONFIGLAVAUDIO;
             } else if (sw == _T("configlavvideo")) {
                 nCLSwitches |= CLSW_CONFIGLAVVIDEO;
-            } else if (sw == L"ab_start" && pos) {
-                abRepeat.positionA = 10000i64 * ConvertTimeToMSec(cmdln.GetNext(pos));
-            } else if (sw == L"ab_end" && pos) {
-                abRepeat.positionB = 10000i64 * ConvertTimeToMSec(cmdln.GetNext(pos));
+            } else if (sw == L"ab_start" && pos != cmdln.end()) {
+                abRepeat.positionA = 10000i64 * ConvertTimeToMSec(*pos++);
+            } else if (sw == L"ab_end" && pos != cmdln.end()) {
+                abRepeat.positionB = 10000i64 * ConvertTimeToMSec(*pos++);
             } else if (sw == L"thumbnails") {
                 nCLSwitches |= CLSW_THUMBNAILS | CLSW_NEW;
             } else {
@@ -3025,10 +3029,10 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
             }
         } else {
             if (param == _T("-")) { // Special case: standard input
-                slFiles.AddTail(_T("pipe://stdin"));
+                slFiles.push_back(_T("pipe://stdin"));
             } else {
-                const_cast<CString&>(param) = ParseFileName(param);
-                slFiles.AddTail(param);
+                param = ParseFileName(param);
+                slFiles.push_back(param);
             }
         }
     }
@@ -3047,9 +3051,9 @@ void CAppSettings::ParseCommandLine(CAtlList<CString>& cmdln)
     }
 }
 
-void CAppSettings::GetFav(favtype ft, CAtlList<CString>& sl) const
+void CAppSettings::GetFav(favtype ft, std::list<CString>& sl) const
 {
-    sl.RemoveAll();
+    sl.clear();
 
     CString root;
 
@@ -3074,11 +3078,11 @@ void CAppSettings::GetFav(favtype ft, CAtlList<CString>& sl) const
         if (s.IsEmpty()) {
             break;
         }
-        sl.AddTail(s);
+        sl.push_back(s);
     }
 }
 
-void CAppSettings::SetFav(favtype ft, CAtlList<CString>& sl)
+void CAppSettings::SetFav(favtype ft, std::list<CString>& sl)
 {
     CString root;
 
@@ -3099,22 +3103,21 @@ void CAppSettings::SetFav(favtype ft, CAtlList<CString>& sl)
     AfxGetApp()->WriteProfileString(root, nullptr, nullptr);
 
     int i = 0;
-    POSITION pos = sl.GetHeadPosition();
-    while (pos) {
+    for (const CString& fav : sl) {
         CString s;
         s.Format(_T("Name%d"), i++);
-        AfxGetApp()->WriteProfileString(root, s, sl.GetNext(pos));
+        AfxGetApp()->WriteProfileString(root, s, fav);
     }
 }
 
 void CAppSettings::AddFav(favtype ft, CString s)
 {
-    CAtlList<CString> sl;
+    std::list<CString> sl;
     GetFav(ft, sl);
-    if (sl.Find(s)) {
+    if (std::find(sl.begin(), sl.end(), s) != sl.end()) {
         return;
     }
-    sl.AddTail(s);
+    sl.push_back(s);
     SetFav(ft, sl);
 }
 
@@ -3299,7 +3302,7 @@ CStringW getRFEHash(RecentFileEntry &r) {
     if (r.DVDPosition.llDVDGuid) {
         return getRFEHash(r.DVDPosition.llDVDGuid);
     } else {
-        fn = r.fns.GetHead();
+        fn = r.fns.front();
         return getRFEHash(fn);
     }
 }
@@ -3443,9 +3446,9 @@ int CAppSettings::CRecentFileListWithMoreInfo::GetCurrentSubtitleTrack() {
 void CAppSettings::CRecentFileListWithMoreInfo::AddSubToCurrent(CStringW subpath) {
     size_t idx;
     if (GetCurrentIndex(idx)) {
-        bool found = rfe_array[idx].subs.Find(subpath);
+        bool found = std::find(rfe_array[idx].subs.begin(), rfe_array[idx].subs.end(), subpath) != rfe_array[idx].subs.end();
         if (!found) {
-            rfe_array[idx].subs.AddHead(subpath);
+            rfe_array[idx].subs.push_front(subpath);
             WriteMediaHistoryEntry(rfe_array[idx]);
         }
     }
@@ -3474,17 +3477,16 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteCurrentEntry() {
 }
 
 void CAppSettings::CRecentFileListWithMoreInfo::Add(RecentFileEntry r, bool current_open) {
-    if (r.fns.GetCount() < 1) {
+    if (r.fns.size() < 1) {
         return;
     }
-    if (CString(r.fns.GetHead()).MakeLower().Find(_T("@device:")) >= 0) {
+    if (CString(r.fns.front()).MakeLower().Find(_T("@device:")) >= 0) {
         return;
     }
 
     const auto& s = AfxGetAppSettings();
-    POSITION fnPos = r.fns.GetHeadPosition();
-    while (fnPos) {
-        if (s.IsExcludedFromHistory(r.fns.GetNext(fnPos))) {
+    for (const CString& fn : r.fns) {
+        if (s.IsExcludedFromHistory(fn)) {
             if (current_open) {
                 // Nothing is current anymore, so playback of this file updates no entry.
                 current_rfe_hash.Empty();
@@ -3551,7 +3553,7 @@ void CAppSettings::CRecentFileListWithMoreInfo::ReadLegacyMediaHistory(std::map<
         t.Format(_T("Cue%zu"), i);
         CStringW cue = pApp->GetProfileStringW(legacySection, t);
         RecentFileEntry r;
-        r.fns.AddTail(fn);
+        r.fns.push_back(fn);
         r.title = title;
         r.cue = cue;
         int k = 2;
@@ -3559,14 +3561,14 @@ void CAppSettings::CRecentFileListWithMoreInfo::ReadLegacyMediaHistory(std::map<
             t.Format(_T("File%zu,%d"), i, k);
             CStringW ft = pApp->GetProfileStringW(legacySection, t);
             if (ft.IsEmpty()) break;
-            r.fns.AddTail(ft);
+            r.fns.push_back(ft);
         }
         k = 1;
         for (;; k++) {
             t.Format(_T("Sub%zu,%d"), i, k);
             CStringW st = pApp->GetProfileStringW(legacySection, t);
             if (st.IsEmpty()) break;
-            r.subs.AddTail(st);
+            r.subs.push_back(st);
         }
         if (fn.Right(9) ==  L"\\VIDEO_TS") { //try to find the dvd position from index
             CStringW strDVDPos;
@@ -3580,7 +3582,7 @@ void CAppSettings::CRecentFileListWithMoreInfo::ReadLegacyMediaHistory(std::map<
             }
             rfe_array.Add(r);
         } else {
-            filenameToIndex[r.fns.GetHead()] = rfe_array.Add(r);
+            filenameToIndex[r.fns.front()] = rfe_array.Add(r);
         }
     }
     rfe_array.FreeExtra();
@@ -3630,7 +3632,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntryFN(CStringW
     CStringW hash = getRFEHash(fn);
     if (!LoadMediaHistoryEntry(hash, r)) {
         r.hash = hash;
-        r.fns.AddHead(fn); //otherwise add a new entry
+        r.fns.push_front(fn); //otherwise add a new entry
         return false;
     }
     return true;
@@ -3640,7 +3642,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntryDVD(ULONGLO
     CStringW hash = getRFEHash(llDVDGuid);
     if (!LoadMediaHistoryEntry(hash, r)) {
         r.hash = hash;
-        r.fns.AddHead(fn); //otherwise add a new entry
+        r.fns.push_front(fn); //otherwise add a new entry
         r.DVDPosition.llDVDGuid = llDVDGuid;
         return false;
     }
@@ -3662,7 +3664,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntry(CStringW h
     CStringW dvdPosition = pApp->GetProfileStringW(subSection, L"DVDPosition", L"");
 
     r.hash = hash;
-    r.fns.AddHead(fn);
+    r.fns.push_front(fn);
     r.title = pApp->GetProfileStringW(subSection, L"Title", L"");
     r.cue   = pApp->GetProfileStringW(subSection, L"Cue", L"");
     r.filePosition = filePosition * 10000LL;
@@ -3682,7 +3684,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntry(CStringW h
         if (ft.IsEmpty()) {
             break;
         }
-        r.fns.AddTail(ft);
+        r.fns.push_back(ft);
     }
     k = 1;
     for (;; k++) {
@@ -3691,7 +3693,7 @@ bool CAppSettings::CRecentFileListWithMoreInfo::LoadMediaHistoryEntry(CStringW h
         if (st.IsEmpty()) {
             break;
         }
-        r.subs.AddTail(st);
+        r.subs.push_back(st);
     }
 
     r.AudioTrackIndex = pApp->GetProfileIntW(subSection, L"AudioTrackIndex", -1);
@@ -3769,7 +3771,7 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryAudioIndex(Rece
     auto pApp = AfxGetMyApp();
 
     if (r.hash.IsEmpty()) {
-        r.hash = getRFEHash(r.fns.GetHead());
+        r.hash = getRFEHash(r.fns.front());
     }
 
     CStringW subSection, t;
@@ -3786,7 +3788,7 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistorySubtitleIndex(R
     auto pApp = AfxGetMyApp();
 
     if (r.hash.IsEmpty()) {
-        r.hash = getRFEHash(r.fns.GetHead());
+        r.hash = getRFEHash(r.fns.front());
     }
 
     CStringW subSection, t;
@@ -3803,7 +3805,7 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFil
     auto pApp = AfxGetMyApp();
 
     if (r.hash.IsEmpty()) {
-        r.hash = getRFEHash(r.fns.GetHead());
+        r.hash = getRFEHash(r.fns.front());
     }
 
     CStringW subSection, t;
@@ -3811,16 +3813,14 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFil
 
     CString storedFilename = pApp->GetProfileStringW(subSection, L"Filename", L"");
     bool isNewEntry = storedFilename.IsEmpty();
-    if (isNewEntry || storedFilename != r.fns.GetHead()) {
-        pApp->WriteProfileStringW(subSection, L"Filename", r.fns.GetHead());
+    if (isNewEntry || storedFilename != r.fns.front()) {
+        pApp->WriteProfileStringW(subSection, L"Filename", r.fns.front());
     }
 
-    if (r.fns.GetCount() > 1) {
+    if (r.fns.size() > 1) {
         int k = 2;
-        POSITION p(r.fns.GetHeadPosition());
-        r.fns.GetNext(p);
-        while (p != nullptr) {
-            CString fn = r.fns.GetNext(p);
+        for (auto p = std::next(r.fns.begin()); p != r.fns.end(); ++p) {
+            CString fn = *p;
             t.Format(L"Filename%03d", k);
             pApp->WriteProfileStringW(subSection, t, fn);
             k++;
@@ -3834,11 +3834,10 @@ void CAppSettings::CRecentFileListWithMoreInfo::WriteMediaHistoryEntry(RecentFil
         t = L"Cue";
         pApp->WriteProfileStringW(subSection, t, r.cue);
     }
-    if (r.subs.GetCount() > 0) {
+    if (r.subs.size() > 0) {
         int k = 1;
-        POSITION p(r.subs.GetHeadPosition());
-        while (p != nullptr) {
-            CString fn = r.subs.GetNext(p);
+        for (const CString& sub : r.subs) {
+            CString fn = sub;
             t.Format(L"Sub%03d", k);
             pApp->WriteProfileStringW(subSection, t, fn);
             k++;

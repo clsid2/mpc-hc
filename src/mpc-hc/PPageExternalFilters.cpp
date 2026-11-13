@@ -842,14 +842,11 @@ DROPEFFECT CPPageExternalFilters::OnDropAccept(COleDataObject*, DWORD, CPoint)
     return DROPEFFECT_COPY;
 }
 
-void CPPageExternalFilters::OnDropFiles(CAtlList<CString>& slFiles, DROPEFFECT)
+void CPPageExternalFilters::OnDropFiles(std::list<CString>& slFiles, DROPEFFECT)
 {
     SetActiveWindow();
 
-    POSITION pos = slFiles.GetHeadPosition();
-
-    while (pos) {
-        CString fn = slFiles.GetNext(pos);
+    for (const CString& fn : slFiles) {
 
         CFilterMapper2 fm2(false);
         fm2.Register(fn);

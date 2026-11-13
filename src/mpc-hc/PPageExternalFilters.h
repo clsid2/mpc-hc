@@ -70,7 +70,7 @@ private:
     CMPCThemeTreeCtrl m_tree;
 
     CDropTarget m_dropTarget;
-    void OnDropFiles(CAtlList<CString>& slFiles, DROPEFFECT) override;
+    void OnDropFiles(std::list<CString>& slFiles, DROPEFFECT) override;
     DROPEFFECT OnDropAccept(COleDataObject*, DWORD, CPoint) override;
 
     void Exchange(CListCtrl& list, int i, int j);
