@@ -8642,6 +8642,563 @@ void CMainFrame::OnNavigateMenuItem(UINT nID)
                 m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Lower);
                 break;
             case 4:
+                if (m_iDVDDomain == DVD_DOMAIN_Title || m_iDVDDomain == DVD_DOMAIN_VideoTitleSetMenu || m_iDVDDomain == DVD_DOMAIN_VideoManagerMenu) {
+                    m_graph.m_pDVDC->ActivateButton();
+                } else {
+                    OnPlayPlay();
+                }
+                break;
+            case 5:
+                m_graph.m_pDVDC->ReturnFromSubmenu(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+                break;
+            case 6:
+                m_graph.m_pDVDC->Resume(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+                break;
+            default:
+                break;
+        }
+    } else if (GetPlaybackMode() == PM_FILE) {
+        OnPlayPlay();
+    }
+}
+
+void CMainFrame::OnUpdateNavigateMenuItem(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable((GetLoadState() == MLS::LOADED) && ((GetPlaybackMode() == PM_DVD) || (GetPlaybackMode() == PM_FILE)));
+}
+
+// favorites
+
+class CDVDStateStream : public CUnknown, public IStream
+{
+    STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) {
+        return
+            QI(IStream)
+            CUnknown::NonDelegatingQueryInterface(riid, ppv);
+    }
+
+    size_t m_pos;
+
+public:
+    CDVDStateStream() : CUnknown(NAME("CDVDStateStream"), nullptr) {
+        m_pos = 0;
+    }
+
+    DECLARE_IUNKNOWN;
+
+    CAtlArray<BYTE> m_data;
+
+    // ISequentialStream
+    STDMETHODIMP Read(void* pv, ULONG cb, ULONG* pcbRead) {
+        size_t cbRead = std::min(m_data.GetCount() - m_pos, size_t(cb));
+        cbRead = std::max(cbRead, size_t(0));
+        if (cbRead) {
+            memcpy(pv, &m_data[m_pos], cbRead);
+        }
+        if (pcbRead) {
+            *pcbRead = (ULONG)cbRead;
+        }
+        m_pos += cbRead;
+        return S_OK;
+    }
+    STDMETHODIMP Write(const void* pv, ULONG cb, ULONG* pcbWritten) {
+        BYTE* p = (BYTE*)pv;
+        ULONG cbWritten = (ULONG) - 1;
+        while (++cbWritten < cb) {
+            m_data.Add(*p++);
+        }
+        if (pcbWritten) {
+            *pcbWritten = cbWritten;
+        }
+        return S_OK;
+    }
+
+    // IStream
+    STDMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER* plibNewPosition) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP SetSize(ULARGE_INTEGER libNewSize) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP CopyTo(IStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP Commit(DWORD grfCommitFlags) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP Revert() {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP Stat(STATSTG* pstatstg, DWORD grfStatFlag) {
+        return E_NOTIMPL;
+    }
+
+    STDMETHODIMP Clone(IStream** ppstm) {
+        return E_NOTIMPL;
+    }
+};
+
+void CMainFrame::AddFavorite(bool fDisplayMessage, bool fShowDialog)
+{
+    CAppSettings& s = AfxGetAppSettings();
+    CAtlList<CString> args;
+    WORD osdMsg = 0;
+    const TCHAR sep = _T(';');
+
+    // Lambda to conditionally add favorite: to visual list if dialog is open, or persist immediately
+    auto addFavorite = [this, &s](favtype favType, const CString& str) {
+        if (::IsWindow(m_wndFavoriteOrganizeDialog.m_hWnd) && m_wndFavoriteOrganizeDialog.IsWindowVisible()) {
+            m_wndFavoriteOrganizeDialog.AddItemToVisualList(favType, str);
+        } else {
+            s.AddFav(favType, str);
+        }
+    };
+
+    if (GetPlaybackMode() == PM_FILE) {
+        bool is_BD = false;
+        CString fn = m_wndPlaylistBar.GetCurFileNameTitle();
+        if (fn.IsEmpty()) {
+            if (m_graph.m_pFSF) {
+                CComHeapPtr<OLECHAR> pFN;
+                AM_MEDIA_TYPE mt;
+                if (SUCCEEDED(m_graph.m_pFSF->GetCurFile(&pFN, &mt)) && pFN && *pFN) {
+                    fn = CStringW(pFN);
+                }
+            }
+            if (fn.IsEmpty()) {
+                return;
+            }
+            is_BD = true;
+        }
+
+        CString desc = GetFileName();
+
+        // capture the rest of the entry here as well, the file can change while the modal pump runs
+        CPlaylistItem pli = CPlaylistItem(true);
+        bool bHasCur = !is_BD && m_wndPlaylistBar.GetCur(pli);
+        REFERENCE_TIME rtPos = GetPos();
+        ABRepeat ab = abRepeat;
+
+        // Name
+        CString name;
+        if (fShowDialog) {
+            BOOL bEnableABMarks = static_cast<bool>(abRepeat);
+            CFavoriteAddDlg dlg(desc, fn, bEnableABMarks);
+            if (dlg.DoModal() != IDOK) {
+                return;
+            }
+            name = dlg.m_name;
+        } else {
+            name = desc;
+        }
+        args.AddTail(name);
+
+        // RememberPos
+        CString posStr = _T("0");
+        if (s.bFavRememberPos) {
+            posStr.Format(_T("%I64d"), rtPos);
+        }
+        // RememberABMarks
+        if (s.bFavRememberABMarks && ab) {
+            posStr.AppendFormat(_T(":%I64d:%I64d"), ab.positionA, ab.positionB);
+        }
+        args.AddTail(posStr);
+
+        // RelativeDrive
+        CString relativeDrive;
+        relativeDrive.Format(_T("%d"), s.bFavRelativeDrive);
+
+        args.AddTail(relativeDrive);
+
+        // Paths
+        if (is_BD) {
+            args.AddTail(fn);
+        } else {
+            if (bHasCur) {
+                if (pli.m_bYoutubeDL) {
+                    args.AddTail(pli.m_ydlSourceURL);
+                } else {
+                    POSITION pos = pli.m_fns.GetHeadPosition();
+                    while (pos) {
+                        args.AddTail(pli.m_fns.GetNext(pos));
+                    }
+                }
+            }
+        }
+
+        CString str = ImplodeEsc(args, sep);
+        addFavorite(FAV_FILE, str);
+        osdMsg = IDS_FILE_FAV_ADDED;
+    } else if (GetPlaybackMode() == PM_DVD) {
+        WCHAR path[MAX_PATH];
+        ULONG len = 0;
+        if (SUCCEEDED(m_graph.m_pDVDI->GetDVDDirectory(path, MAX_PATH, &len))) {
+            CString fn = path;
+            fn.TrimRight(_T("/\\"));
+
+            DVD_PLAYBACK_LOCATION2 Location;
+            CString desc;
+            if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentLocation(&Location))) {
+                desc.Format(_T("%s - T%02u C%02u - %02u:%02u:%02u"), fn.GetString(), Location.TitleNum, Location.ChapterNum,
+                            Location.TimeCode.bHours, Location.TimeCode.bMinutes, Location.TimeCode.bSeconds);
+            } else {
+                desc = fn;
+            }
+
+            // capture the state here as well, the disc position can change while the modal pump runs
+            CString state;
+            {
+                CDVDStateStream stream;
+                stream.AddRef();
+
+                CComPtr<IDvdState> pStateData;
+                CComQIPtr<IPersistStream> pPersistStream;
+                if (SUCCEEDED(m_graph.m_pDVDI->GetState(&pStateData))
+                        && (pPersistStream = pStateData)
+                        && SUCCEEDED(OleSaveToStream(pPersistStream, (IStream*)&stream))) {
+                    state = BinToCString(stream.m_data.GetData(), stream.m_data.GetCount());
+                }
+            }
+
+            // Name
+            CString name;
+            if (fShowDialog) {
+                CFavoriteAddDlg dlg(fn, desc);
+                if (dlg.DoModal() != IDOK) {
+                    return;
+                }
+                name = dlg.m_name;
+            } else {
+                name = s.bFavRememberPos ? desc : fn;
+            }
+            args.AddTail(name);
+
+            // RememberPos
+            CString pos(_T("0"));
+            if (s.bFavRememberPos && !state.IsEmpty()) {
+                pos = state;
+            }
+
+            args.AddTail(pos);
+
+            // Paths
+            args.AddTail(fn);
+
+            CString str = ImplodeEsc(args, sep);
+            addFavorite(FAV_DVD, str);
+            osdMsg = IDS_DVD_FAV_ADDED;
+        }
+    } // TODO: PM_ANALOG_CAPTURE and PM_DIGITAL_CAPTURE
+
+    if (fDisplayMessage && osdMsg) {
+        CString osdMsgStr(StrRes(osdMsg));
+        SendStatusMessage(osdMsgStr, 3000);
+        m_OSD.DisplayMessage(OSD_TOPLEFT, osdMsgStr, 3000);
+    }
+}
+
+void CMainFrame::OnFavoritesAdd()
+{
+    AddFavorite();
+}
+
+void CMainFrame::OnUpdateFavoritesAdd(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(GetPlaybackMode() == PM_FILE || GetPlaybackMode() == PM_DVD);
+}
+
+void CMainFrame::OnFavoritesQuickAddFavorite()
+{
+    AddFavorite(true, false);
+}
+
+void CMainFrame::OnFavoritesOrganize()
+{
+    m_wndFavoriteOrganizeDialog.ShowAndLoad();
+}
+
+void CMainFrame::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)
+{
+    // always available, also without favorites: the dialog can add them
+    pCmdUI->Enable(TRUE);
+}
+
+void CMainFrame::OnRecentFileClear()
+{
+    if (IDYES != AfxMessageBox(IDS_RECENT_FILES_QUESTION, MB_ICONQUESTION | MB_YESNO, 0)) {
+        return;
+    }
+
+    CAppSettings& s = AfxGetAppSettings();
+    s.ClearRecentFiles();
+}
+
+void CMainFrame::OnUpdateRecentFileClear(CCmdUI* pCmdUI)
+{
+    // TODO: Add your command update UI handler code here
+}
+
+void CMainFrame::OnFavoritesFile(UINT nID)
+{
+    nID -= ID_FAVORITES_FILE_START;
+    CAtlList<CString> sl;
+    AfxGetAppSettings().GetFav(FAV_FILE, sl);
+
+    if (POSITION pos = sl.FindIndex(nID)) {
+        PlayFavoriteFile(sl.GetAt(pos));
+    }
+}
+
+void CMainFrame::PlayFavoriteFile(const CString& fav)
+{
+    if (DeferIfNested(DeferredActionType::Open, [this, fav] { PlayFavoriteFile(fav); })) {
+        return;
+    }
+
+    CAtlList<CString> args;
+    REFERENCE_TIME rtStart = 0;
+    FileFavorite ff = ParseFavoriteFile(fav, args, &rtStart);
+    // closing the current file clears abRepeat, so keep the favorite's marks for the open
+    ABRepeat favABRepeat = abRepeat;
+
+    auto firstFile = args.GetHead();
+    if (!m_wndPlaylistBar.SelectFileInPlaylist(firstFile)) {
+        if (CanSendToYoutubeDL(firstFile)) {
+            if (!CloseMediaBeforeOpen()) {
+                return;
+            }
+            if (!ProcessYoutubeDLURL(firstFile, false)) {
+                m_wndPlaylistBar.Open(args, false);
+            }
+        } else {
+            m_wndPlaylistBar.Open(args, false);
+        }
+    }
+
+    // Keep a playlist's restored current item label, but retain favorite names for URLs
+    // such as HLS streams, which are played as a single item rather than expanded.
+    if (!IsPlaylistFile(CString(firstFile).MakeLower()) || PathUtils::IsURL(firstFile)) {
+        m_wndPlaylistBar.SetCurLabel(ff.Name);
+    }
+
+    if (IsStateLoaded() && GetPlaybackMode() == PM_FILE && m_lastOMD && args.GetHead() == m_lastOMD->title) {
+        m_wndSeekBar.Invalidate();
+        DoSeekTo(rtStart);
+    } else {
+        if (!CloseMediaBeforeOpen()) {
+            return;
+        }
+        OpenCurPlaylistItem(rtStart, false, favABRepeat);
+    }
+
+}
+
+FileFavorite CMainFrame::ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart)
+{
+    FileFavorite ff;
+    VERIFY(FileFavorite::TryParse(fav, ff, args));
+
+    abRepeat.positionA = ff.MarkA;
+    abRepeat.positionB = ff.MarkB;
+
+    // Start at mark A (if set)
+    ff.Start = std::max(ff.Start, abRepeat.positionA);
+
+    if (prtStart) {
+        *prtStart = ff.Start;
+    }
+
+    // NOTE: This is just for the favorites but we could add a global settings that
+    // does this always when on. Could be useful when using removable devices.
+    // All you have to do then is plug in your 500 gb drive, full with movies and/or music,
+    // start MPC-HC (from the 500 gb drive) with a preloaded playlist and press play.
+    if (ff.RelativeDrive) {
+        // Get the drive MPC-HC is on and apply it to the path list
+        CString exePath = PathUtils::GetProgramPath(true);
+
+        CLongPath exeDrive(exePath);
+
+        if (exeDrive.StripToRoot()) {
+            POSITION pos = args.GetHeadPosition();
+
+            while (pos != nullptr) {
+                CString& stringPath = args.GetNext(pos);    // Note the reference (!)
+                CLongPath path(stringPath);
+
+                int rootLength = path.SkipRoot();
+
+                if (path.StripToRoot()) {
+                    if (_tcsicmp(exeDrive, path) != 0) {   // Do we need to replace the drive letter ?
+                        // Replace drive letter
+                        CString newPath(exeDrive);
+
+                        newPath += stringPath.Mid(rootLength);
+
+                        stringPath = newPath;   // Note: Changes args.GetHead()
+                    }
+                }
+            }
+        }
+    }
+    return ff;
+}
+
+void CMainFrame::OnUpdateFavoritesFile(CCmdUI* pCmdUI)
+{
+    //UINT nID = pCmdUI->m_nID - ID_FAVORITES_FILE_START;
+}
+
+void CMainFrame::OnRecentFile(UINT nID)
+{
+    auto& MRU = AfxGetAppSettings().MRU;
+    RecentFileEntry r;
+
+    // find corresponding item in MRU list, we can't directly use string from menu because it may have been shortened
+    nID -= ID_RECENT_FILE_START;
+    if (nID < (UINT)MRU.GetSize()) {
+        r = MRU[nID];
+    } else {
+        ASSERT(false);
+        return;
+    }
+
+    OpenRecentFileEntry(r);
+}
+
+void CMainFrame::OpenRecentFileEntry(RecentFileEntry& r)
+{
+    if (DeferIfNested(DeferredActionType::Open, [this, r] { RecentFileEntry entry(r); OpenRecentFileEntry(entry); })) {
+        return;
+    }
+
+    CAtlList<CString> fns;
+    fns.AddHeadList(&r.fns);
+
+    if (fns.GetCount() == 1 && CanSendToYoutubeDL(r.fns.GetHead())) {
+        if (!CloseMediaBeforeOpen()) {
+            return;
+        }
+        if (ProcessYoutubeDLURL(fns.GetHead(), false)) {
+            OpenCurPlaylistItem();
+            return;
+        } else if (IsOnYDLWhitelist(fns.GetHead())) {
+            m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
+            m_wndStatusBar.SetStatusMessage(m_closingmsg);
+            // don't bother trying to open this website URL directly
+            return;
+        }
+    }
+
+    CAtlList<CString> subs;
+    subs.AddHeadList(&r.subs);
+
+    if (!m_wndPlaylistBar.SelectFileInPlaylist(fns.GetHead())) {
+        m_wndPlaylistBar.Open(fns, false, &subs, r.title, _T(""), r.cue);
+    }
+    else {
+        m_wndPlaylistBar.ReplaceCurrentItem(fns, &subs, r.title, _T(""), r.cue);
+    }
+
+    PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
+}
+
+void CMainFrame::OnUpdateRecentFile(CCmdUI* pCmdUI)
+{
+    //UINT nID = pCmdUI->m_nID - ID_RECENT_FILE_START;
+}
+
+void CMainFrame::OnShowHistory()
+{
+    if (!m_pHistoryDlg) {
+        m_pHistoryDlg = std::make_unique<CHistoryDlg>(this);
+        m_pHistoryDlg->Create(IDD_HISTORY, this);
+    }
+    if (m_pHistoryDlg->IsWindowVisible()) {
+        m_pHistoryDlg->SetActiveWindow();
+    } else {
+        m_pHistoryDlg->ShowWindow(SW_SHOW);
+    }
+}
+
+void CMainFrame::OnFavoritesDVD(UINT nID)
+{
+    nID -= ID_FAVORITES_DVD_START;
+
+    CAtlList<CString> sl;
+    AfxGetAppSettings().GetFav(FAV_DVD, sl);
+
+    if (POSITION pos = sl.FindIndex(nID)) {
+        PlayFavoriteDVD(sl.GetAt(pos));
+    }
+}
+
+void CMainFrame::PlayFavoriteDVD(CString fav)
+{
+    if (DeferIfNested(DeferredActionType::Open, [this, fav] { PlayFavoriteDVD(fav); })) {
+        return;
+    }
+    if (!CloseMediaBeforeOpen()) {
+        return;
+    }
+
+    CAtlList<CString> args;
+    CString fn;
+    CDVDStateStream stream;
+
+    stream.AddRef();
+
+    ExplodeEsc(fav, args, _T(';'), 3);
+    args.RemoveHeadNoReturn(); // desc / name
+    CString state = args.RemoveHead(); // state
+    if (state != _T("0")) {
+        CStringToBin(state, stream.m_data);
+    }
+    fn = args.RemoveHead(); // path
+
+    CComPtr<IDvdState> pDvdState;
+    HRESULT hr = OleLoadFromStream((IStream*)&stream, IID_PPV_ARGS(&pDvdState));
+    UNREFERENCED_PARAMETER(hr);
+
+    CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
+    if (p) {
+        p->path = fn;
+        p->pDvdState = pDvdState;
+        m_wndPlaylistBar.OpenDVD(p->path);
+    }
+}
+
+void CMainFrame::OnNavigateMenuItem(UINT nID)
+{
+    nID -= ID_NAVIGATE_MENU_LEFT;
+
+    if (GetPlaybackMode() == PM_DVD) {
+        switch (nID) {
+            case 0:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Left);
+                break;
+            case 1:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Right);
+                break;
+            case 2:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Upper);
+                break;
+            case 3:
+                m_graph.m_pDVDC->SelectRelativeButton(DVD_Relative_Lower);
+                break;
+            case 4:
                 if (m_disc.m_iDVDDomain == DVD_DOMAIN_Title || m_disc.m_iDVDDomain == DVD_DOMAIN_VideoTitleSetMenu || m_disc.m_iDVDDomain == DVD_DOMAIN_VideoManagerMenu) {
                     m_graph.m_pDVDC->ActivateButton();
                 } else {

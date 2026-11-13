@@ -33,6 +33,7 @@
 COpenDlg::COpenDlg(CWnd* pParent /*=nullptr*/)
     : CMPCThemeResizableDialog(COpenDlg::IDD, pParent)
     , m_bAppendToPlaylist(FALSE)
+    , m_bForFavorites(false)
     , m_bMultipleFiles(false)
 {
 }
@@ -105,6 +106,14 @@ BOOL COpenDlg::OnInitDialog()
     m_pathDub.Empty();
     m_bMultipleFiles = false;
     m_bAppendToPlaylist = FALSE;
+
+    if (m_bForFavorites) {
+        // nothing is opened, so there is no playlist to add to
+        GetDlgItem(IDC_CHECK1)->ShowWindow(SW_HIDE);
+        SetWindowText(ResStr(IDS_FAVORITES_ADD_TITLE));
+        SetDlgItemText(IDC_STATIC2, ResStr(IDS_FAVORITES_ADD_PROMPT));
+        SetDlgItemText(IDC_STATIC3, ResStr(IDS_FAVORITES_ADD_PATH));
+    }
 
     SetupAnchors();
 

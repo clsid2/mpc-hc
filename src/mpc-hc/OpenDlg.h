@@ -39,6 +39,7 @@ private:
     CString m_pathDub;
     CMPCThemeStatic m_labelDub;
     BOOL m_bAppendToPlaylist;
+    bool m_bForFavorites;
 
     bool m_bMultipleFiles;
     CAtlList<CString> m_fns;
@@ -53,6 +54,8 @@ public:
     const CAtlList<CString>& GetFileNames() const { return m_fns; }
     bool HasMultipleFiles() const { return m_bMultipleFiles; }
     bool GetAppendToPlaylist() const { return !!m_bAppendToPlaylist; }
+    // Picks what to add to the favorites instead of what to open
+    void SetForFavorites(bool bForFavorites) { m_bForFavorites = bForFavorites; }
 
     UINT GetDialogTemplateID() const override { return IDD; }
     void SetupAnchors() override;
