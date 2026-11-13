@@ -299,7 +299,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.m_wndToolBar.m_volctrl.DecreaseVolume();
             break;
 		case CMD_SHADER_TOGGLE :
-			m_frame.OnShaderToggle1();
+			m_frame.m_shaders.OnShaderToggle1();
 			break;
         case CMD_CLOSEAPP:
             m_frame.PostMessage(WM_CLOSE);
