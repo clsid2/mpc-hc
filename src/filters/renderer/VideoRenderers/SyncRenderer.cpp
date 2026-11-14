@@ -457,6 +457,7 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
         if (hr == D3DERR_DEVICELOST || hr == D3DERR_DEVICEREMOVED || hr == D3DERR_DEVICEHUNG || hr == D3DERR_OUTOFVIDEOMEMORY) {
             m_pD3DDevEx.Release();
             m_pD3DDev.Release();
+            /*
             m_pD3DEx.Release();
             m_pD3D.Release();
             Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
@@ -465,7 +466,8 @@ HRESULT CBaseAP::CreateDXDevice(CString& _Error)
             } else {
                 return E_UNEXPECTED;
             }
-        } else if (FAILED(hr)) {
+            */
+        } else if (hr == S_PRESENT_MODE_CHANGED || FAILED(hr)) {
             m_pD3DDevEx.Release();
             m_pD3DDev.Release();
         }
