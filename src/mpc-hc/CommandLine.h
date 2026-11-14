@@ -37,10 +37,10 @@ public:
     explicit CCommandLine(CMainFrame& frame);
 
     BOOL ReceiveCommandLine(const COPYDATASTRUCT* pCDS);
-    static void UnpackCommandLine(const COPYDATASTRUCT* pCDS, CAtlList<CString>& cmdln);
-    void QueueCommandLine(const CAtlList<CString>& cmdln);
+    static void UnpackCommandLine(const COPYDATASTRUCT* pCDS, std::list<CString>& cmdln);
+    void QueueCommandLine(const std::list<CString>& cmdln);
     LRESULT OnCommandLineReceived(WPARAM wParam, LPARAM lParam);
-    void ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived);
+    void ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArrived);
 
     static bool IsOnYDLWhitelist(const CString url);
     bool CanSendToYoutubeDL(const CString url);
@@ -57,7 +57,7 @@ private:
     // queues it, so that handler returns immediately instead of probing the filesystem while
     // the sending instances wait on it.
     struct PendingCommandLine {
-        CAtlList<CString> cmdln;
+        std::list<CString> cmdln;
         ULONGLONG tArrived = 0;
     };
     std::deque<PendingCommandLine> m_pendingCommandLines;

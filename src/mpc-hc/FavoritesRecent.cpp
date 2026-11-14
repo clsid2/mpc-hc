@@ -29,27 +29,30 @@
 
 bool FileFavorite::TryParse(const CString& fav, FileFavorite& ff)
 {
-    CAtlList<CString> parts;
+    std::list<CString> parts;
     return TryParse(fav, ff, parts);
 }
 
-bool FileFavorite::TryParse(const CString& fav, FileFavorite& ff, CAtlList<CString>& parts)
+bool FileFavorite::TryParse(const CString& fav, FileFavorite& ff, std::list<CString>& parts)
 {
     ExplodeEsc(fav, parts, _T(';'));
-    if (parts.IsEmpty()) {
+    if (parts.empty()) {
         return false;
     }
 
-    ff.Name = parts.RemoveHead();
+    ff.Name = parts.front();
+    parts.pop_front();
 
-    if (!parts.IsEmpty()) {
+    if (!parts.empty()) {
         // Start position and optional A-B marks "pos[:A:B]"
-        auto startPos = parts.RemoveHead();
+        auto startPos = parts.front();
+        parts.pop_front();
         _stscanf_s(startPos, _T("%I64d:%I64d:%I64d"), &ff.Start, &ff.MarkA, &ff.MarkB);
         ff.Start = std::max(ff.Start, 0ll); // Sanitize
     }
-    if (!parts.IsEmpty()) {
-        _stscanf_s(parts.RemoveHead(), _T("%d"), &ff.RelativeDrive);
+    if (!parts.empty()) {
+        _stscanf_s(parts.front(), _T("%d"), &ff.RelativeDrive);
+        parts.pop_front();
     }
     return true;
 }
@@ -93,11 +96,11 @@ public:
 
     DECLARE_IUNKNOWN;
 
-    CAtlArray<BYTE> m_data;
+    std::vector<BYTE> m_data;
 
     // ISequentialStream
     STDMETHODIMP Read(void* pv, ULONG cb, ULONG* pcbRead) {
-        size_t cbRead = std::min(m_data.GetCount() - m_pos, size_t(cb));
+        size_t cbRead = std::min(m_data.size() - m_pos, size_t(cb));
         cbRead = std::max(cbRead, size_t(0));
         if (cbRead) {
             memcpy(pv, &m_data[m_pos], cbRead);
@@ -112,7 +115,7 @@ public:
         BYTE* p = (BYTE*)pv;
         ULONG cbWritten = (ULONG) - 1;
         while (++cbWritten < cb) {
-            m_data.Add(*p++);
+            m_data.push_back(*p++);
         }
         if (pcbWritten) {
             *pcbWritten = cbWritten;
@@ -191,8 +194,8 @@ LPCTSTR CFavoritesRecent::GetRecentFile() const
     auto& MRU = AfxGetAppSettings().MRU;
     MRU.ReadMediaHistory();
     for (int i = 0; i < MRU.GetSize(); i++) {
-        if (MRU[i].fns.GetCount() > 0 && !MRU[i].fns.GetHead().IsEmpty()) {
-            return MRU[i].fns.GetHead();
+        if (MRU[i].fns.size() > 0 && !MRU[i].fns.front().IsEmpty()) {
+            return MRU[i].fns.front();
         }
     }
     return nullptr;
@@ -201,7 +204,7 @@ LPCTSTR CFavoritesRecent::GetRecentFile() const
 void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
 {
     CAppSettings& s = AfxGetAppSettings();
-    CAtlList<CString> args;
+    std::list<CString> args;
     WORD osdMsg = 0;
     const TCHAR sep = _T(';');
 
@@ -251,7 +254,7 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         } else {
             name = desc;
         }
-        args.AddTail(name);
+        args.push_back(name);
 
         // RememberPos
         CString posStr = _T("0");
@@ -262,26 +265,23 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
         if (s.bFavRememberABMarks && ab) {
             posStr.AppendFormat(_T(":%I64d:%I64d"), ab.positionA, ab.positionB);
         }
-        args.AddTail(posStr);
+        args.push_back(posStr);
 
         // RelativeDrive
         CString relativeDrive;
         relativeDrive.Format(_T("%d"), s.bFavRelativeDrive);
 
-        args.AddTail(relativeDrive);
+        args.push_back(relativeDrive);
 
         // Paths
         if (is_BD) {
-            args.AddTail(fn);
+            args.push_back(fn);
         } else {
             if (bHasCur) {
                 if (pli.m_bYoutubeDL) {
-                    args.AddTail(pli.m_ydlSourceURL);
+                    args.push_back(pli.m_ydlSourceURL);
                 } else {
-                    POSITION pos = pli.m_fns.GetHeadPosition();
-                    while (pos) {
-                        args.AddTail(pli.m_fns.GetNext(pos));
-                    }
+                    args.insert(args.end(), pli.m_fns.begin(), pli.m_fns.end());
                 }
             }
         }
@@ -316,7 +316,7 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
                 if (SUCCEEDED(m_graph.m_pDVDI->GetState(&pStateData))
                         && (pPersistStream = pStateData)
                         && SUCCEEDED(OleSaveToStream(pPersistStream, (IStream*)&stream))) {
-                    state = BinToCString(stream.m_data.GetData(), stream.m_data.GetCount());
+                    state = BinToCString(stream.m_data.data(), stream.m_data.size());
                 }
             }
 
@@ -331,7 +331,7 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
             } else {
                 name = s.bFavRememberPos ? desc : fn;
             }
-            args.AddTail(name);
+            args.push_back(name);
 
             // RememberPos
             CString pos(_T("0"));
@@ -339,10 +339,10 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
                 pos = state;
             }
 
-            args.AddTail(pos);
+            args.push_back(pos);
 
             // Paths
-            args.AddTail(fn);
+            args.push_back(fn);
 
             CString str = ImplodeEsc(args, sep);
             addFavorite(FAV_DVD, str);
@@ -380,13 +380,13 @@ void CFavoritesRecent::OnFavoritesOrganize()
 void CFavoritesRecent::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)
 {
     const CAppSettings& s = AfxGetAppSettings();
-    CAtlList<CString> sl;
+    std::list<CString> sl;
     s.GetFav(FAV_FILE, sl);
-    bool enable = !sl.IsEmpty();
+    bool enable = !sl.empty();
 
     if (!enable) {
         s.GetFav(FAV_DVD, sl);
-        enable = !sl.IsEmpty();
+        enable = !sl.empty();
     }
 
     pCmdUI->Enable(enable);
@@ -410,11 +410,11 @@ void CFavoritesRecent::OnUpdateRecentFileClear(CCmdUI* pCmdUI)
 void CFavoritesRecent::OnFavoritesFile(UINT nID)
 {
     nID -= ID_FAVORITES_FILE_START;
-    CAtlList<CString> sl;
+    std::list<CString> sl;
     AfxGetAppSettings().GetFav(FAV_FILE, sl);
 
-    if (POSITION pos = sl.FindIndex(nID)) {
-        PlayFavoriteFile(sl.GetAt(pos));
+    if (nID < sl.size()) {
+        PlayFavoriteFile(*std::next(sl.begin(), nID));
     }
 }
 
@@ -424,13 +424,13 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
         return;
     }
 
-    CAtlList<CString> args;
+    std::list<CString> args;
     REFERENCE_TIME rtStart = 0;
     FileFavorite ff = ParseFavoriteFile(fav, args, &rtStart);
     // closing the current file clears abRepeat, so keep the favorite's marks for the open
     ABRepeat favABRepeat = m_frame.abRepeat;
 
-    auto firstFile = args.GetHead();
+    auto firstFile = args.front();
     if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(firstFile)) {
         if (m_frame.m_cmdline.CanSendToYoutubeDL(firstFile)) {
             if (!m_frame.CloseMediaBeforeOpen()) {
@@ -446,7 +446,7 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
 
     m_frame.m_wndPlaylistBar.SetCurLabel(ff.Name);
 
-    if (m_frame.IsStateLoaded() && m_frame.GetPlaybackMode() == PM_FILE && m_frame.m_lastOMD && args.GetHead() == m_frame.m_lastOMD->title) {
+    if (m_frame.IsStateLoaded() && m_frame.GetPlaybackMode() == PM_FILE && m_frame.m_lastOMD && args.front() == m_frame.m_lastOMD->title) {
         m_frame.m_wndSeekBar.Invalidate();
         m_frame.DoSeekTo(rtStart);
     } else {
@@ -458,7 +458,7 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
 
 }
 
-FileFavorite CFavoritesRecent::ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart)
+FileFavorite CFavoritesRecent::ParseFavoriteFile(const CString& fav, std::list<CString>& args, REFERENCE_TIME* prtStart)
 {
     FileFavorite ff;
     VERIFY(FileFavorite::TryParse(fav, ff, args));
@@ -484,10 +484,7 @@ FileFavorite CFavoritesRecent::ParseFavoriteFile(const CString& fav, CAtlList<CS
         CLongPath exeDrive(exePath);
 
         if (exeDrive.StripToRoot()) {
-            POSITION pos = args.GetHeadPosition();
-
-            while (pos != nullptr) {
-                CString& stringPath = args.GetNext(pos);    // Note the reference (!)
+            for (CString& stringPath : args) {    // Note the reference (!)
                 CLongPath path(stringPath);
 
                 int rootLength = path.SkipRoot();
@@ -499,7 +496,7 @@ FileFavorite CFavoritesRecent::ParseFavoriteFile(const CString& fav, CAtlList<CS
 
                         newPath += stringPath.Mid(rootLength);
 
-                        stringPath = newPath;   // Note: Changes args.GetHead()
+                        stringPath = newPath;   // Note: Changes args.front()
                     }
                 }
             }
@@ -536,17 +533,16 @@ void CFavoritesRecent::OpenRecentFileEntry(RecentFileEntry& r)
         return;
     }
 
-    CAtlList<CString> fns;
-    fns.AddHeadList(&r.fns);
+    std::list<CString> fns = r.fns;
 
-    if (fns.GetCount() == 1 && m_frame.m_cmdline.CanSendToYoutubeDL(r.fns.GetHead())) {
+    if (fns.size() == 1 && m_frame.m_cmdline.CanSendToYoutubeDL(r.fns.front())) {
         if (!m_frame.CloseMediaBeforeOpen()) {
             return;
         }
-        if (m_frame.m_cmdline.ProcessYoutubeDLURL(fns.GetHead(), false)) {
+        if (m_frame.m_cmdline.ProcessYoutubeDLURL(fns.front(), false)) {
             m_frame.OpenCurPlaylistItem();
             return;
-        } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fns.GetHead())) {
+        } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fns.front())) {
             m_frame.m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
             m_frame.m_wndStatusBar.SetStatusMessage(m_frame.m_closingmsg);
             // don't bother trying to open this website URL directly
@@ -554,10 +550,9 @@ void CFavoritesRecent::OpenRecentFileEntry(RecentFileEntry& r)
         }
     }
 
-    CAtlList<CString> subs;
-    subs.AddHeadList(&r.subs);
+    std::list<CString> subs = r.subs;
 
-    if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(fns.GetHead())) {
+    if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(fns.front())) {
         m_frame.m_wndPlaylistBar.Open(fns, false, &subs, r.title, _T(""), r.cue);
     }
     else {
@@ -589,11 +584,11 @@ void CFavoritesRecent::OnFavoritesDVD(UINT nID)
 {
     nID -= ID_FAVORITES_DVD_START;
 
-    CAtlList<CString> sl;
+    std::list<CString> sl;
     AfxGetAppSettings().GetFav(FAV_DVD, sl);
 
-    if (POSITION pos = sl.FindIndex(nID)) {
-        PlayFavoriteDVD(sl.GetAt(pos));
+    if (nID < sl.size()) {
+        PlayFavoriteDVD(*std::next(sl.begin(), nID));
     }
 }
 
@@ -606,31 +601,33 @@ void CFavoritesRecent::PlayFavoriteDVD(CString fav)
         return;
     }
 
-    CAtlList<CString> args;
+    std::list<CString> args;
     CString fn;
     CDVDStateStream stream;
 
     stream.AddRef();
 
     ExplodeEsc(fav, args, _T(';'), 3);
-    args.RemoveHeadNoReturn(); // desc / name
-    CString state = args.RemoveHead(); // state
+    args.pop_front(); // desc / name
+    CString state = args.front(); // state
+    args.pop_front();
     if (state != _T("0")) {
         CStringToBin(state, stream.m_data);
     }
-    fn = args.RemoveHead(); // path
+    fn = args.front(); // path
+    args.pop_front();
 
     CComPtr<IDvdState> pDvdState;
     HRESULT hr = OleLoadFromStream((IStream*)&stream, IID_PPV_ARGS(&pDvdState));
     UNREFERENCED_PARAMETER(hr);
 
-    CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
+    std::unique_ptr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
     if (p) {
         p->path = fn;
         p->pDvdState = pDvdState;
         m_frame.m_wndPlaylistBar.OpenDVD(p->path);
     }
-    m_frame.OpenMedia(p);
+    m_frame.OpenMedia(std::move(p));
 }
 
 void CFavoritesRecent::OnUpdateFavoritesDVD(CCmdUI* pCmdUI)
@@ -675,8 +672,8 @@ void CFavoritesRecent::SetupRecentFilesSubMenu()
         UINT id = ID_RECENT_FILE_START;
         for (int i = 0; i < MRU.GetSize(); i++) {
             UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
-            if (!MRU[i].fns.IsEmpty() && !MRU[i].fns.GetHead().IsEmpty()) {
-                CString p = MRU[i].cue.IsEmpty() ? MRU[i].fns.GetHead() : MRU[i].cue;
+            if (!MRU[i].fns.empty() && !MRU[i].fns.front().IsEmpty()) {
+                CString p = MRU[i].cue.IsEmpty() ? MRU[i].fns.front() : MRU[i].cue;
                 if (s.bUseTitleInRecentFileList && !MRU[i].title.IsEmpty()) {
                     CString title(MRU[i].title);
                     if (title.GetLength() > 100) {
@@ -731,14 +728,12 @@ void CFavoritesRecent::SetupFavoritesSubMenu()
 
     UINT nLastGroupStart = subMenu.GetMenuItemCount();
     UINT id = ID_FAVORITES_FILE_START;
-    CAtlList<CString> favs;
+    std::list<CString> favs;
     AfxGetAppSettings().GetFav(FAV_FILE, favs);
-    POSITION pos = favs.GetHeadPosition();
 
-    while (pos) {
+    for (CString f_str : favs) {
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
-        CString f_str = favs.GetNext(pos);
 
         FileFavorite ff;
         VERIFY(FileFavorite::TryParse(f_str, ff)); //parse before sanitizing, the escaping is not part of the format
@@ -771,19 +766,17 @@ void CFavoritesRecent::SetupFavoritesSubMenu()
 
     id = ID_FAVORITES_DVD_START;
     s.GetFav(FAV_DVD, favs);
-    pos = favs.GetHeadPosition();
 
-    while (pos) {
+    for (CString str : favs) {
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
-        CString str = favs.GetNext(pos);
-
-        CAtlList<CString> sl;
+        std::list<CString> sl;
         ExplodeEsc(str, sl, _T(';'), 2);
 
-        str = sl.RemoveHead();
+        str = sl.front();
+        sl.pop_front();
 
-        if (!sl.IsEmpty()) {
+        if (!sl.empty()) {
             // TODO
         }
 
@@ -807,16 +800,14 @@ void CFavoritesRecent::SetupFavoritesSubMenu()
 
     s.GetFav(FAV_DEVICE, favs);
 
-    pos = favs.GetHeadPosition();
-    while (pos) {
+    for (CString str : favs) {
         UINT flags = MF_BYCOMMAND | MF_STRING | MF_ENABLED;
 
-        CString str = favs.GetNext(pos);
-
-        CAtlList<CString> sl;
+        std::list<CString> sl;
         ExplodeEsc(str, sl, _T(';'), 2);
 
-        str = sl.RemoveHead();
+        str = sl.front();
+        sl.pop_front();
 
         if (!str.IsEmpty()) {
             VERIFY(subMenu.AppendMenu(flags, id, SanitizeMenuLabel(str)));

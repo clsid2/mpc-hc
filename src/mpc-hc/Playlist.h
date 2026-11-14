@@ -36,8 +36,8 @@ class CPlaylistItem
 public:
     UINT m_id;
     CString m_label;
-    CAtlList<CString> m_fns;
-    CAtlList<CString> m_subs;
+    std::list<CString> m_fns;
+    std::list<CString> m_subs;
     enum type_t { file, device } m_type;
     REFERENCE_TIME m_duration;
     ULONGLONG m_filetime; // file creation time; 0 = not checked yet, 1 = unavailable (missing file or URL)
@@ -52,7 +52,7 @@ public:
     bool m_bYoutubeDL;
     CString m_ydlSourceURL;
     CString m_useragent;
-    CAtlList<CYoutubeDLInstance::YDLSubInfo> m_ydl_subs;
+    std::list<CYoutubeDLInstance::YDLSubInfo> m_ydl_subs;
 
     bool m_fInvalid;
 
@@ -62,7 +62,7 @@ public:
     CPlaylistItem(const CPlaylistItem& pli);
     CPlaylistItem& operator=(const CPlaylistItem& pli);
 
-    POSITION FindFile(LPCTSTR path);
+    bool FindFile(LPCTSTR path);
     void AutoLoadFiles();
 
     CString GetLabel(int i = 0);

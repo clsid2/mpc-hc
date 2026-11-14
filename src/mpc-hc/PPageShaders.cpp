@@ -486,11 +486,10 @@ void CPPageShaders::OnAddShaderFile()
 
     if (dlg.DoModal() == IDOK) {
         auto list = m_Shaders.GetList();
-        CAtlList<CString> paths;
+        std::list<CString> paths;
         FileDialogUtils::GetSelectedPaths(dlg, paths);
-        POSITION dlgPos = paths.GetHeadPosition();
-        while (dlgPos) {
-            Shader shader(paths.GetNext(dlgPos));
+        for (const CString& path : paths) {
+            Shader shader(path);
             if (std::find(list.begin(), list.end(), shader) == std::end(list)) {
                 m_Shaders.AddShader(shader);
             }

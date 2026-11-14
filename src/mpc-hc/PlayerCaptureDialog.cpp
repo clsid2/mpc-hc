@@ -1190,7 +1190,7 @@ void CPlayerCaptureDialog::UpdateVideoControls()
 
 void CPlayerCaptureDialog::SetupAudioControls(
     CStringW displayName,
-    IAMStreamConfig* pAMSC, const CInterfaceArray<IAMAudioInputMixer>& pAMAIM)
+    IAMStreamConfig* pAMSC, const std::vector<CComPtr<IAMAudioInputMixer>>& pAMAIM)
 {
     if (!this) {
         return;
@@ -1200,11 +1200,11 @@ void CPlayerCaptureDialog::SetupAudioControls(
 
     m_audDisplayName = displayName;
     m_pAMASC = pAMSC;
-    if (!pAMAIM.IsEmpty()) {
-        m_pAMAIM.Copy(pAMAIM);
+    for (IAMAudioInputMixer* pMixer : pAMAIM) { // the dialog keeps its own ATL array
+        m_pAMAIM.Add(pMixer);
     }
 
-    if (pAMSC || !pAMAIM.IsEmpty()) {
+    if (pAMSC || !pAMAIM.empty()) {
         UpdateAudioControls();
     }
 }

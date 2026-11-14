@@ -22,6 +22,7 @@
 
 #include "Mpeg2Def.h"
 #include <atlcoll.h>
+#include <list>
 #include <vector>
 
 enum BDVM_VideoFormat {
@@ -148,7 +149,7 @@ public:
     HRESULT ReadSTNInfo();
     HRESULT ReadPlaylist(CString strPlaylistFile, REFERENCE_TIME& rtDuration, HdmvPlaylist& Playlist);
     HRESULT ReadChapters(CString strPlaylistFile, CAtlList<CHdmvClipInfo::PlaylistItem>& PlaylistItems, CAtlList<PlaylistChapter>& Chapters);
-    bool ReadMeta(LPCTSTR strFolder, CAtlList<BDMVMeta>& meta);
+    bool ReadMeta(LPCTSTR strFolder, std::list<BDMVMeta>& meta);
 
 private:
     DWORD SequenceInfo_start_address;

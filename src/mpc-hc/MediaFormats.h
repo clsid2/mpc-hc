@@ -84,8 +84,8 @@ public:
     bool FindExt(CString ext, bool fAudioOnly = false, bool fAssociableOnly = true) const;
     const CMediaFormatCategory* FindMediaByExt(CString ext, bool fAudioOnly = false, bool fAssociableOnly = true) const;
 
-    void GetFilter(CString& filter, CAtlArray<CString>& mask) const;
-    void GetAudioFilter(CString& filter, CAtlArray<CString>& mask) const;
+    void GetFilter(CString& filter, std::vector<CString>& mask) const;
+    void GetAudioFilter(CString& filter, std::vector<CString>& mask) const;
 
     static bool IsExtHidden();
 };

@@ -2,6 +2,7 @@
 
 #include <atlbase.h>
 #include <atlcoll.h>
+#include <list>
 #include "winddk/ntddcdvd.h"
 
 class CDVDSession
@@ -84,6 +85,7 @@ public:
     bool HasTitleKey(BYTE* key) const;
 
     bool Open(CString fn, CAtlList<CString>& files /* out */, ULONG nProgNum = 1, bool bAuthenticate = true); // vts ifo
+    bool Open(CString fn, std::list<CString>& files /* out */, ULONG nProgNum = 1, bool bAuthenticate = true); // vts ifo
     bool Open(const CAtlList<CString>& files, int offset = -1, bool bAuthenticate = true); // vts vobs, video vob offset in lba
     bool Authenticate();
     void Close();

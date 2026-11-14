@@ -732,6 +732,13 @@ void CStringToBin(CString str, CAtlArray<BYTE>& data)
     }
 }
 
+void CStringToBin(CString str, std::vector<BYTE>& data)
+{
+    CAtlArray<BYTE> bin;
+    CStringToBin(str, bin);
+    data.assign(bin.GetData(), bin.GetData() + bin.GetCount());
+}
+
 CString BinToCString(const BYTE* ptr, size_t len)
 {
     CString ret;
@@ -750,7 +757,7 @@ CString BinToCString(const BYTE* ptr, size_t len)
     return ret;
 }
 
-void FindFiles(CString fn, CAtlList<CString>& files)
+void FindFiles(CString fn, std::list<CString>& files)
 {
     ExtendMaxPathLengthIfNeeded(fn);
     CString path = fn;
@@ -762,16 +769,16 @@ void FindFiles(CString fn, CAtlList<CString>& files)
     HANDLE h = FindFirstFile(fn, &findData);
     if (h != INVALID_HANDLE_VALUE) {
         do {
-            files.AddTail(path + findData.cFileName);
+            files.push_back(path + findData.cFileName);
         } while (FindNextFile(h, &findData));
 
         FindClose(h);
     }
 }
 
-OpticalDiskType_t GetOpticalDiskType(TCHAR drive, CAtlList<CString>& files)
+OpticalDiskType_t GetOpticalDiskType(TCHAR drive, std::list<CString>& files)
 {
-    files.RemoveAll();
+    files.clear();
 
     CString path;
     path.Format(_T("%c:"), drive);
@@ -795,13 +802,13 @@ OpticalDiskType_t GetOpticalDiskType(TCHAR drive, CAtlList<CString>& files)
 
     // CDROM_DVDVideo
     FindFiles(path + _T("\\VIDEO_TS\\video_ts.ifo"), files);
-    if (!files.IsEmpty()) {
+    if (!files.empty()) {
         return OpticalDisk_DVDVideo;
     }
 
     // CDROM_BD
     FindFiles(path + _T("\\BDMV\\index.bdmv"), files);
-    if (!files.IsEmpty()) {
+    if (!files.empty()) {
         return OpticalDisk_BD;
     }
 
@@ -814,7 +821,7 @@ OpticalDiskType_t GetOpticalDiskType(TCHAR drive, CAtlList<CString>& files)
     FindFiles(path + _T("\\mpegav\\music??.mpg"), files);
     FindFiles(path + _T("\\mpeg2\\music??.dat"), files);
     FindFiles(path + _T("\\mpeg2\\music??.mpg"), files);
-    if (!files.IsEmpty()) {
+    if (!files.empty()) {
         return OpticalDisk_VideoCD;
     }
 
@@ -835,14 +842,14 @@ OpticalDiskType_t GetOpticalDiskType(TCHAR drive, CAtlList<CString>& files)
                 if (trackData.Control == 0 || trackData.Control == 1) {
                     CString fn;
                     fn.Format(_T("%s\\track%02Id.cda"), path.GetString(), i);
-                    files.AddTail(fn);
+                    files.push_back(fn);
                 }
             }
         }
 
         CloseHandle(hDrive);
     }
-    if (!files.IsEmpty()) {
+    if (!files.empty()) {
         return OpticalDisk_Audio;
     }
 
@@ -1993,16 +2000,14 @@ inline const LONGLONG GetPerfCounter() {
     }
 }
 
-bool FindStringInList(const CAtlList<CString>& list, CString& value)
+bool FindStringInList(const std::list<CString>& list, CString& value)
 {
-    bool found = false;
-    POSITION pos = list.GetHeadPosition();
-    while (pos && !found) {
-        if (list.GetNext(pos).CompareNoCase(value) == 0) {
-            found = true;
+    for (const CString& s : list) {
+        if (s.CompareNoCase(value) == 0) {
+            return true;
         }
     }
-    return found;
+    return false;
 }
 
 CStringW ForceTrailingSlash(CStringW folder) {

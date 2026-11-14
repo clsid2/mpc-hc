@@ -41,7 +41,7 @@ struct FileFavorite {
     }
 
     static bool TryParse(const CString& fav, FileFavorite& ff);
-    static bool TryParse(const CString& fav, FileFavorite& ff, CAtlList<CString>& parts);
+    static bool TryParse(const CString& fav, FileFavorite& ff, std::list<CString>& parts);
 
     CString ToString() const;
 };
@@ -66,7 +66,7 @@ public:
     void AddFavorite(bool fDisplayMessage = false, bool fShowDialog = true);
     void PlayFavoriteFile(const CString& fav);
     void PlayFavoriteDVD(CString fav);
-    FileFavorite ParseFavoriteFile(const CString& fav, CAtlList<CString>& args, REFERENCE_TIME* prtStart = nullptr);
+    FileFavorite ParseFavoriteFile(const CString& fav, std::list<CString>& args, REFERENCE_TIME* prtStart = nullptr);
     void OpenRecentFileEntry(RecentFileEntry& r);
     LPCTSTR GetRecentFile() const;
 

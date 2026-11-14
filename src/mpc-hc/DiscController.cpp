@@ -80,14 +80,14 @@ void CDiscController::OpenDVDOrBD(CStringW path) {
     if (!path.IsEmpty()) {
         AfxGetAppSettings().strDVDPath = path;
         if (!OpenBD(path)) {
-            CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
+            std::unique_ptr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
             if (p) {
                 p->path = path;
                 p->path.Replace(_T('/'), _T('\\'));
                 p->path = ForceTrailingSlash(p->path);
                 m_frame.m_wndPlaylistBar.OpenDVD(p->path);
             }
-            m_frame.OpenMedia(p);
+            m_frame.OpenMedia(std::move(p));
         }
     }
 }
@@ -128,12 +128,12 @@ bool CDiscController::OpenBD(CString Path)
                 return false;
             } else {
                 m_frame.m_wndPlaylistBar.Empty();
-                CAtlList<CString> sl;
+                std::list<CString> sl;
 
                 if (InternalMpegSplitter) {
-                    sl.AddTail(CString(strPlaylistFile));
+                    sl.push_back(CString(strPlaylistFile));
                 } else {
-                    sl.AddTail(CString(Path + _T("\\BDMV\\index.bdmv")));
+                    sl.push_back(CString(Path + _T("\\BDMV\\index.bdmv")));
                 }
 
                 m_frame.m_wndPlaylistBar.Append(sl, false);
@@ -149,7 +149,7 @@ bool CDiscController::OpenBD(CString Path)
 
 CHdmvClipInfo::BDMVMeta CDiscController::GetBDMVMeta()
 {
-    return m_BDMeta.GetHead();
+    return m_BDMeta.front();
 }
 
 void CDiscController::OnDvdAngle(UINT nID)
@@ -337,7 +337,7 @@ void CDiscController::SetupDVDChapters()
 
         if (CVobFile::GetTitleInfo(path, loc.TitleNum, VTSN, TTN)) {
             path.Format(L"%s\\VTS_%02lu_0.IFO", buff, VTSN);
-            CAtlList<CString> files;
+            std::list<CString> files;
 
             CVobFile vob;
             if (vob.Open(path, files, TTN, false)) {

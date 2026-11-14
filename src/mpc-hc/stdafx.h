@@ -38,6 +38,7 @@
 #include <cmath>
 #include <functional>
 #include <future>
+#include <list>
 #include <map>
 #include <memory>
 #include <regex>

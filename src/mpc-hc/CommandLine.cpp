@@ -43,7 +43,7 @@ BOOL CCommandLine::ReceiveCommandLine(const COPYDATASTRUCT* pCDS)
         return FALSE;
     }
 
-    CAtlList<CString> cmdln;
+    std::list<CString> cmdln;
     UnpackCommandLine(pCDS, cmdln);
 
     QueueCommandLine(cmdln);
@@ -51,7 +51,7 @@ BOOL CCommandLine::ReceiveCommandLine(const COPYDATASTRUCT* pCDS)
     return TRUE;
 }
 
-void CCommandLine::UnpackCommandLine(const COPYDATASTRUCT* pCDS, CAtlList<CString>& cmdln)
+void CCommandLine::UnpackCommandLine(const COPYDATASTRUCT* pCDS, std::list<CString>& cmdln)
 {
     DWORD len = *((DWORD*)pCDS->lpData);
     TCHAR* pBuff = (TCHAR*)((DWORD*)pCDS->lpData + 1);
@@ -63,7 +63,7 @@ void CCommandLine::UnpackCommandLine(const COPYDATASTRUCT* pCDS, CAtlList<CStrin
         CString str(pBuff, (int)n);
         pBuff += n + 1;
 
-        cmdln.AddTail(str);
+        cmdln.push_back(str);
     }
 }
 
@@ -74,12 +74,12 @@ void CCommandLine::UnpackCommandLine(const COPYDATASTRUCT* pCDS, CAtlList<CStrin
 // their own (#4149). The arrival time travels with the command line, so a slow open cannot
 // make the next file of the same Explorer selection look like a new one. The Explorer drop
 // target (ShellDropTarget.cpp) comes in here too, with Explorer itself waiting on the return.
-void CCommandLine::QueueCommandLine(const CAtlList<CString>& cmdln)
+void CCommandLine::QueueCommandLine(const std::list<CString>& cmdln)
 {
     m_pendingCommandLines.emplace_back();
     PendingCommandLine& pending = m_pendingCommandLines.back();
     pending.tArrived = GetTickCount64();
-    pending.cmdln.AddTailList(&cmdln);
+    pending.cmdln = cmdln;
     VERIFY(m_frame.PostMessage(WM_MPC_CMDLINE));
 }
 
@@ -102,15 +102,14 @@ LRESULT CCommandLine::OnCommandLineReceived(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArrived)
+void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArrived)
 {
     // Re-checked because this now runs later than the message that carried the command line.
     if (AfxGetMyApp()->m_fClosingState || m_frame.m_capture.m_bScanDlgOpened) {
         return;
     }
     {
-        auto pCmdln = std::make_shared<CAtlList<CString>>();
-        pCmdln->AddTailList(&cmdln);
+        auto pCmdln = std::make_shared<std::list<CString>>(cmdln);
         // may add to the playlist rather than open, so it is never discarded
         if (m_frame.DeferIfNested(CMainFrame::DeferredActionType::Other, [this, pCmdln, tArrived] { ProcessCommandLine(*pCmdln, tArrived); })) {
             return;
@@ -129,9 +128,8 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
         s.nCLSwitches &= ~CLSW_SLAVE;
     }
 
-    POSITION pos = s.slFilters.GetHeadPosition();
-    while (pos) {
-        CString fullpath = MakeFullPath(s.slFilters.GetNext(pos));
+    for (const CString& filter : s.slFilters) {
+        CString fullpath = MakeFullPath(filter);
 
         CLongPath tmp(fullpath);
         tmp.RemoveFileSpec();
@@ -185,20 +183,20 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
         }
     };
 
-    if ((s.nCLSwitches & CLSW_DVD) && !s.slFiles.IsEmpty()) {
+    if ((s.nCLSwitches & CLSW_DVD) && !s.slFiles.empty()) {
         if (!m_frame.CloseMediaBeforeOpen()) {
             return;
         }
         fSetForegroundWindow = true;
 
-        CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
+        std::unique_ptr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
         if (p) {
-            p->path = s.slFiles.GetHead();
-            p->subs.AddTailList(&s.slSubs);
+            p->path = s.slFiles.front();
+            p->subs = s.slSubs;
             m_frame.m_wndPlaylistBar.OpenDVD(p->path);
         }
         // ToDo: open indirectly
-        m_frame.OpenMedia(p);
+        m_frame.OpenMedia(std::move(p));
         s.nCLSwitches &= ~CLSW_DVD;
     } else if (s.nCLSwitches & CLSW_CD) {
         if (m_frame.GetMediaState() == State_Running) {
@@ -206,16 +204,16 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
         }
         fSetForegroundWindow = true;
 
-        CAtlList<CString> sl;
-        if (!s.slFiles.IsEmpty()) {
-            GetOpticalDiskType(s.slFiles.GetHead()[0], sl);
+        std::list<CString> sl;
+        if (!s.slFiles.empty()) {
+            GetOpticalDiskType(s.slFiles.front()[0], sl);
         } else {
             CString dir;
             dir.ReleaseBufferSetLength(GetCurrentDirectory(2048, dir.GetBuffer(2048)));
 
             GetOpticalDiskType(dir[0], sl);
 
-            for (TCHAR drive = _T('A'); sl.IsEmpty() && drive <= _T('Z'); drive++) {
+            for (TCHAR drive = _T('A'); sl.empty() && drive <= _T('Z'); drive++) {
                 GetOpticalDiskType(drive, sl);
             }
         }
@@ -243,34 +241,33 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
             m_frame.PostMessage(WM_COMMAND, ID_FILE_OPENDEVICE);
             s.nCLSwitches &= ~CLSW_DEVICE;
         }
-    } else if (!s.slFiles.IsEmpty()) {
-        CAtlList<CString> sl;
-        sl.AddTailList(&s.slFiles);
+    } else if (!s.slFiles.empty()) {
+        std::list<CString> sl = s.slFiles;
 
         PathUtils::ParseDirs(sl);
 
-        bool fMulti = sl.GetCount() > 1;
+        bool fMulti = sl.size() > 1;
         if (!fMulti) {
-            sl.AddTailList(&s.slDubs);
+            sl.insert(sl.end(), s.slDubs.begin(), s.slDubs.end());
         }
 
-        if (m_frame.m_disc.OpenBD(s.slFiles.GetHead())) {
+        if (m_frame.m_disc.OpenBD(s.slFiles.front())) {
             // Nothing more to do
-        } else if (!fMulti && CLongPath(s.slFiles.GetHead() + _T("\\VIDEO_TS")).IsDirectory()) {
+        } else if (!fMulti && CLongPath(s.slFiles.front() + _T("\\VIDEO_TS")).IsDirectory()) {
             fSetForegroundWindow = true;
 
             if (m_frame.GetMediaState() == State_Running) {
                 m_frame.MediaControlPause(true);
             }
 
-            CAutoPtr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
+            std::unique_ptr<OpenDVDData> p(DEBUG_NEW OpenDVDData());
             if (p) {
-                p->path = s.slFiles.GetHead();
-                p->subs.AddTailList(&s.slSubs);
+                p->path = s.slFiles.front();
+                p->subs = s.slSubs;
                 m_frame.m_wndPlaylistBar.OpenDVD(p->path);
             }
             // ToDo: open indirectly
-            m_frame.OpenMedia(p);
+            m_frame.OpenMedia(std::move(p));
         } else {
             // When the command line reached us, not when we got round to acting on it: an open
             // that took a long time must not make the next file of the same selection, which
@@ -290,16 +287,14 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
                     m_nLastAppendSelectionIndex = (int)m_frame.m_wndPlaylistBar.GetCount();
                 }
 
-                if (!fMulti && sl.GetCount() > 1) {
+                if (!fMulti && sl.size() > 1) {
                     // video + dub, appended as one entry like the open path below (#4224)
                     m_frame.m_wndPlaylistBar.Append(sl, false, &s.slSubs);
                 } else {
-                    POSITION pos2 = sl.GetHeadPosition();
-                    while (pos2) {
-                        CString fn = sl.GetNext(pos2);
+                    for (const CString& fn : sl) {
                         if (!CanSendToYoutubeDL(fn) || !ProcessYoutubeDLURL(fn, true)) {
-                            CAtlList<CString> sl2;
-                            sl2.AddHead(fn);
+                            std::list<CString> sl2;
+                            sl2.push_front(fn);
                             m_frame.m_wndPlaylistBar.Append(sl2, false, &s.slSubs);
                         }
                     }
@@ -335,14 +330,12 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
                     m_frame.MediaControlPause(true);
                 }
 
-                if (fMulti || sl.GetCount() == 1) {
+                if (fMulti || sl.size() == 1) {
                     bool first = true;
-                    POSITION pos2 = sl.GetHeadPosition();
-                    while (pos2) {
-                        CString fn = sl.GetNext(pos2);
+                    for (const CString& fn : sl) {
                         if (!CanSendToYoutubeDL(fn) || !ProcessYoutubeDLURL(fn, !first, false)) {
-                            CAtlList<CString> sl2;
-                            sl2.AddHead(fn);
+                            std::list<CString> sl2;
+                            sl2.push_front(fn);
                             if (first) {
                                 m_frame.m_wndPlaylistBar.Open(sl2, false, &s.slSubs);
                             } else {
@@ -357,7 +350,7 @@ void CCommandLine::ProcessCommandLine(CAtlList<CString>& cmdln, ULONGLONG tArriv
                 }
 
                 applyRandomizeSwitch();
-                if (sl.GetCount() != 1 || !m_frame.IsPlaylistFile(sl.GetHead())) { //playlists already set first pos (or saved pos)
+                if (sl.size() != 1 || !m_frame.IsPlaylistFile(sl.front())) { //playlists already set first pos (or saved pos)
                     m_frame.m_wndPlaylistBar.SetFirst();
                 }
 
@@ -510,8 +503,8 @@ bool CCommandLine::CanSendToYoutubeDL(const CString url)
 bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
 {
     auto& s = AfxGetAppSettings();
-    CAtlList<CYoutubeDLInstance::YDLStreamURL> streams;
-    CAtlList<CString> filenames;
+    std::list<CYoutubeDLInstance::YDLStreamURL> streams;
+    std::list<CString> filenames;
     CYoutubeDLInstance ydl;
     CYoutubeDLInstance::YDLPlaylistInfo listinfo;
     CString useragent;
@@ -536,17 +529,18 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
 
     CString f_title;
 
-    for (unsigned int i = 0; i < streams.GetCount(); i++) {
-        auto stream = streams.GetAt(streams.FindIndex(i));
+    unsigned int i = 0;
+    for (auto itStream = streams.begin(); itStream != streams.end(); ++itStream, i++) {
+        auto stream = *itStream;
         CString v_url = stream.video_url;
         CString a_url = stream.audio_url;
-        filenames.RemoveAll();
+        filenames.clear();
         if (!v_url.IsEmpty() && (!s.bYDLAudioOnly || a_url.IsEmpty())) {
-            filenames.AddTail(v_url);
+            filenames.push_back(v_url);
 
         }
         if (!a_url.IsEmpty()) {
-            filenames.AddTail(a_url);
+            filenames.push_back(a_url);
         }
         CString title = stream.title;
         CString seasonid;
@@ -585,7 +579,7 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
         int targetlen = title.GetLength() > 100 ? 50 : 150 - title.GetLength();
         CString short_url = ShortenURL(ydl_src, targetlen, true);
         
-        if (ydl_src == filenames.GetHead()) {
+        if (ydl_src == filenames.front()) {
             // Processed URL is same as input, can happen for DASH manifest files. Clear source URL to avoid reprocessing.
             ydl_src = _T("");
         }
@@ -602,8 +596,8 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
         auto* mru = &s.MRU;
         RecentFileEntry r;
         mru->LoadMediaHistoryEntryFN(m_sydlLastProcessURL, r);
-        if (streams.GetCount() > 1) {
-            auto h = streams.GetHead();
+        if (streams.size() > 1) {
+            auto h = streams.front();
             if (!h.series.IsEmpty()) {
                 r.title = h.series;
                 if (!h.season.IsEmpty()) {
@@ -619,7 +613,7 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
             }
             else r.title = f_title;
         }
-        else if (streams.GetCount() == 1) {
+        else if (streams.size() == 1) {
             r.title = f_title;
         }
         mru->Add(r, false);

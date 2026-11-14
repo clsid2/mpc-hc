@@ -36,7 +36,7 @@ const CLSID CLSID_MPCHCDropTargetPlay    = { 0x350FCB02, 0x242B, 0x4716, { 0x8E,
 const CLSID CLSID_MPCHCDropTargetEnqueue = { 0xA1A14499, 0x02C8, 0x4A17, { 0x88, 0x95, 0x92, 0x72, 0x51, 0xC8, 0x21, 0xB2 } };
 #endif
 
-static bool GetDroppedFiles(IDataObject* pDataObj, CAtlList<CString>& files)
+static bool GetDroppedFiles(IDataObject* pDataObj, std::list<CString>& files)
 {
     if (!pDataObj) {
         return false;
@@ -55,48 +55,39 @@ static bool GetDroppedFiles(IDataObject* pDataObj, CAtlList<CString>& files)
             UINT res = ::DragQueryFile(hDrop, iFile, fn.GetBuffer(2048), 2048);
             if (res) {
                 fn.ReleaseBuffer(res);
-                files.AddTail(fn);
+                files.push_back(fn);
             }
         }
         GlobalUnlock(stg.hGlobal);
     }
     ReleaseStgMedium(&stg);
 
-    return !files.IsEmpty();
+    return !files.empty();
 }
 
 // Explorer enumerates a selection with the focused item first and the rest in no order
 // worth keeping, so the batch is put in path order here, once, before the player sees it.
 // Same comparison as the playlist's own sort by path.
-static void SortByPath(CAtlList<CString>& files)
+static void SortByPath(std::list<CString>& files)
 {
-    std::vector<CString> v;
-    v.reserve(files.GetCount());
-    POSITION pos = files.GetHeadPosition();
-    while (pos) {
-        v.emplace_back(files.GetNext(pos));
-    }
+    std::vector<CString> v(files.begin(), files.end());
     std::sort(v.begin(), v.end(), [](const CString& a, const CString& b) {
         return StrCmpLogicalW(a, b) < 0;
     });
-    files.RemoveAll();
-    for (const CString& fn : v) {
-        files.AddTail(fn);
-    }
+    files.assign(v.begin(), v.end());
 }
 
 // With multiple instances allowed, a selection opened while this instance is busy gets a
 // window of its own, which is what the command line path gave it before the drop target
 // existed. It is one process for the whole selection, not one per file.
-static bool LaunchNewInstance(const CAtlList<CString>& files)
+static bool LaunchNewInstance(const std::list<CString>& files)
 {
     CString args;
-    POSITION pos = files.GetHeadPosition();
-    while (pos) {
+    for (const CString& fn : files) {
         if (!args.IsEmpty()) {
             args += _T(' ');
         }
-        args += _T('"') + files.GetNext(pos) + _T('"');
+        args += _T('"') + fn + _T('"');
     }
     if (args.GetLength() > 30000) { // longer than a command line can carry
         return false;
@@ -183,7 +174,7 @@ STDMETHODIMP CShellDropTarget::Drop(IDataObject* pDataObj, DWORD, POINTL, DWORD*
     }
     *pdwEffect = DROPEFFECT_NONE;
 
-    CAtlList<CString> files;
+    std::list<CString> files;
     if (!GetDroppedFiles(pDataObj, files)) {
         return E_INVALIDARG;
     }
@@ -210,11 +201,11 @@ STDMETHODIMP CShellDropTarget::Drop(IDataObject* pDataObj, DWORD, POINTL, DWORD*
         m_pMainFrame->SetForegroundWindow();
     }
 
-    CAtlList<CString> cmdln;
+    std::list<CString> cmdln;
     if (m_bAppend) {
-        cmdln.AddTail(_T("/add"));
+        cmdln.push_back(_T("/add"));
     }
-    cmdln.AddTailList(&files);
+    cmdln.insert(cmdln.end(), files.begin(), files.end());
     m_pMainFrame->m_cmdline.QueueCommandLine(cmdln);
 
     *pdwEffect = DROPEFFECT_COPY;

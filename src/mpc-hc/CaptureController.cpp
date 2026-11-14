@@ -277,11 +277,11 @@ void CCaptureController::OpenSetupCaptureBar()
         }
 
         if (m_graph.m_pAudCap && m_graph.m_pAMASC) {
-            CInterfaceArray<IAMAudioInputMixer> pAMAIM;
+            std::vector<CComPtr<IAMAudioInputMixer>> pAMAIM;
 
             BeginEnumPins(m_graph.m_pAudCap, pEP, pPin) {
                 if (CComQIPtr<IAMAudioInputMixer> pAIM = pPin) {
-                    pAMAIM.Add(pAIM);
+                    pAMAIM.emplace_back(pAIM);
                 }
             }
             EndEnumPins;
@@ -874,7 +874,7 @@ void CCaptureController::AddCurDevToPlaylist()
     }
 }
 
-void CCaptureController::StartTunerScan(CAutoPtr<TunerScanData> pTSD)
+void CCaptureController::StartTunerScan(std::unique_ptr<TunerScanData> pTSD)
 {
     // Remove the old info during the scan
     if (m_pDVBState) {
@@ -886,9 +886,9 @@ void CCaptureController::StartTunerScan(CAutoPtr<TunerScanData> pTSD)
     m_frame.OpenSetupWindowTitle();
 
     if (m_frame.m_pGraphThread && m_frame.m_pGraphThread->m_hThread) {
-        m_frame.m_pGraphThread->PostThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.Detach());
+        m_frame.m_pGraphThread->PostThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.release());
     } else {
-        DoTunerScan(pTSD);
+        DoTunerScan(pTSD.get());
     }
 }
 
@@ -903,7 +903,7 @@ void CCaptureController::StartHeadlessDVBScan()
 
     m_headlessDVBScanChannels.clear();
 
-    CAutoPtr<TunerScanData> pTSD(DEBUG_NEW TunerScanData);
+    std::unique_ptr<TunerScanData> pTSD(DEBUG_NEW TunerScanData);
     pTSD->Hwnd = m_frame.m_hWnd;
     pTSD->FrequencyStart = s.cmdlnDVBScan.ulFrequencyStart;
     pTSD->FrequencyStop = s.cmdlnDVBScan.ulFrequencyStop;
@@ -916,7 +916,7 @@ void CCaptureController::StartHeadlessDVBScan()
                        : (ULONG)s.iBDASymbolRate;
     pTSD->Offset = s.fBDAUseOffset ? s.iBDAOffset : 0;
 
-    StartTunerScan(pTSD);
+    StartTunerScan(std::move(pTSD));
 }
 
 LRESULT CCaptureController::OnHeadlessScanNewChannel(WPARAM wParam, LPARAM lParam)

@@ -755,13 +755,13 @@ std::wstring CW2WS(const char* str)
     return wstrTo;
 }
 
-bool CHdmvClipInfo::ReadMeta(LPCTSTR strFolder, CAtlList<BDMVMeta>& meta)
+bool CHdmvClipInfo::ReadMeta(LPCTSTR strFolder, std::list<BDMVMeta>& meta)
 {
     bool re = false;
     CString strPath(strFolder);
     CString strFilter;
 
-    meta.RemoveAll();
+    meta.clear();
 
     strPath.Replace(_T("\\PLAYLIST\\"), _T("\\"));
     strPath.Replace(_T("\\STREAM\\"), _T("\\"));
@@ -815,7 +815,7 @@ bool CHdmvClipInfo::ReadMeta(LPCTSTR strFolder, CAtlList<BDMVMeta>& meta)
             }
 
             if (!Item.title.IsEmpty()) {
-                meta.AddTail(Item);
+                meta.push_back(Item);
                 re = true;
             }
         } while (FindNextFile(hFind, &fd));

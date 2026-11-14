@@ -60,14 +60,14 @@ void CApiBridge::OnApiPlay()
 void CApiBridge::StartWebServer(int nPort)
 {
     if (!m_pWebServer) {
-        m_pWebServer.Attach(DEBUG_NEW CWebServer(&m_frame, nPort));
+        m_pWebServer.reset(DEBUG_NEW CWebServer(&m_frame, nPort));
     }
 }
 
 void CApiBridge::StopWebServer()
 {
     if (m_pWebServer) {
-        m_pWebServer.Free();
+        m_pWebServer.reset();
     }
 }
 
@@ -131,7 +131,7 @@ static bool ParseAPIInteger(const COPYDATASTRUCT* pCDS, int minimum, int maximum
 
 void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
 {
-    CAtlList<CString> fns;
+    std::list<CString> fns;
     REFERENCE_TIME rtPos = 0;
     CString fn;
 
@@ -155,7 +155,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                     return;
                 }
             }
-            fns.AddHead(fn);
+            fns.push_front(fn);
             m_frame.m_wndPlaylistBar.Open(fns, false);
             m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
             break;
@@ -185,7 +185,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                     return;
                 }
             }
-            fns.AddHead(fn);
+            fns.push_front(fn);
             m_frame.m_wndPlaylistBar.Append(fns, true);
             break;
         case CMD_STARTPLAYLIST:
@@ -386,7 +386,7 @@ void CApiBridge::SendNowPlayingToApi(bool sendtrackinfo)
 
             CPlaylistItem pli = CPlaylistItem(true);
             if (m_frame.m_wndPlaylistBar.GetCur(pli, true)) {
-                label = !pli.m_label.IsEmpty() ? pli.m_label : pli.m_fns.GetHead();
+                label = !pli.m_label.IsEmpty() ? pli.m_label : pli.m_fns.front();
                 REFERENCE_TIME rtDur;
                 m_graph.m_pMS->GetDuration(&rtDur);
                 strDur.Format(L"%.3f", rtDur / 10000000.0);
@@ -505,15 +505,13 @@ void CApiBridge::SendAudioTracksToApi()
 void CApiBridge::SendPlaylistToApi()
 {
     CStringW strPlaylist;
-    POSITION pos = m_frame.m_wndPlaylistBar.m_pl.GetHeadPosition(), pos2;
+    POSITION pos = m_frame.m_wndPlaylistBar.m_pl.GetHeadPosition();
 
     while (pos) {
         CPlaylistItem& pli = m_frame.m_wndPlaylistBar.m_pl.GetNext(pos);
 
         if (pli.m_type == CPlaylistItem::file) {
-            pos2 = pli.m_fns.GetHeadPosition();
-            while (pos2) {
-                CString fn = pli.m_fns.GetNext(pos2);
+            for (CString fn : pli.m_fns) {
                 if (!strPlaylist.IsEmpty()) {
                     strPlaylist.Append(L"|");
                 }

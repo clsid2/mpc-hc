@@ -53,7 +53,7 @@ public:
         int episode_number = -1;
         CString episode_id;
         CString webpage_url;
-        CAtlList<YDLSubInfo> subtitles;
+        std::list<YDLSubInfo> subtitles;
         YDLStreamURL() :
             video_url(),
             audio_url(),
@@ -78,9 +78,8 @@ public:
             episode(r.episode),
             episode_number(r.episode_number),
             episode_id(r.episode_id),
-            webpage_url(r.webpage_url) {
-            subtitles.RemoveAll();
-            subtitles.AddHeadList(&r.subtitles);
+            webpage_url(r.webpage_url),
+            subtitles(r.subtitles) {
         }
     };
 
@@ -93,8 +92,8 @@ public:
     };
 
     bool Run(CString url);
-    bool GetHttpStreams(CAtlList<YDLStreamURL>& streams, YDLPlaylistInfo& info, CString& useragent);
-    static bool isPrefer(CAtlList<CString>& list, CString& lang);
+    bool GetHttpStreams(std::list<YDLStreamURL>& streams, YDLPlaylistInfo& info, CString& useragent);
+    static bool isPrefer(std::list<CString>& list, CString& lang);
 
 private:
     CUtf16JSON* pJSON;
@@ -108,7 +107,7 @@ private:
     DWORD capacity_out, capacity_err;
 
     bool loadJSON();
-    void loadSub(const Value& obj, CAtlList<YDLSubInfo>& subs, bool isAutomaticCaptions = false);
+    void loadSub(const Value& obj, std::list<YDLSubInfo>& subs, bool isAutomaticCaptions = false);
     static DWORD WINAPI BuffOutThread(void* ydl_inst);
     static DWORD WINAPI BuffErrThread(void* ydl_inst);
 };

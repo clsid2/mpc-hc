@@ -83,8 +83,8 @@ void CGraphThread::OnOpen(WPARAM wParam, LPARAM lParam)
     ASSERT(m_pMainFrame);
     ASSERT(WaitForSingleObject(m_pMainFrame->m_evOpenPrivateFinished, 0) == WAIT_TIMEOUT);
     if (m_pMainFrame->GetLoadState() == MLS::LOADING) {
-        CAutoPtr<OpenMediaData> pOMD((OpenMediaData*)lParam);
-        m_pMainFrame->OpenMediaPrivate(pOMD);
+        std::unique_ptr<OpenMediaData> pOMD((OpenMediaData*)lParam);
+        m_pMainFrame->OpenMediaPrivate(std::move(pOMD));
     }
     VERIFY(m_pMainFrame->m_evOpenPrivateFinished.Set());
 }
@@ -102,7 +102,7 @@ void CGraphThread::OnReset(WPARAM wParam, LPARAM lParam)
 void CGraphThread::OnTunerScan(WPARAM wParam, LPARAM lParam)
 {
     if (m_pMainFrame) {
-        CAutoPtr<TunerScanData> pTSD((TunerScanData*)lParam);
-        m_pMainFrame->m_capture.DoTunerScan(pTSD);
+        std::unique_ptr<TunerScanData> pTSD((TunerScanData*)lParam);
+        m_pMainFrame->m_capture.DoTunerScan(pTSD.get());
     }
 }

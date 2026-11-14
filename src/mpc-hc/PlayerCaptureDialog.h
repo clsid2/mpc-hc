@@ -455,7 +455,7 @@ public:
 
     void SetupVideoControls(CStringW displayName, IAMStreamConfig* pAMSC, IAMCrossbar* pAMXB, IAMTVTuner* pAMTuner);
     void SetupVideoControls(CStringW displayName, IAMStreamConfig* pAMSC, IAMVfwCaptureDialogs* pAMVfwCD);
-    void SetupAudioControls(CStringW displayName, IAMStreamConfig* pAMSC, const CInterfaceArray<IAMAudioInputMixer>& pAMAIM);
+    void SetupAudioControls(CStringW displayName, IAMStreamConfig* pAMSC, const std::vector<CComPtr<IAMAudioInputMixer>>& pAMAIM);
 
     void UpdateVideoControls();
     void UpdateAudioControls();

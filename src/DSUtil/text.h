@@ -82,6 +82,37 @@ T ExplodeMin(const T& str, CAtlList<T>& sl, SEP sep, size_t limit = 0)
 }
 
 template<class T, typename SEP>
+T Explode(const T& str, std::list<T>& sl, SEP sep, size_t limit = 0)
+{
+    sl.clear();
+
+    for (int i = 0, j = 0; ; i = j + 1) {
+        j = str.Find(sep, i);
+
+        if (j < 0 || sl.size() == limit - 1) {
+            sl.push_back(str.Mid(i).Trim());
+            break;
+        } else {
+            sl.push_back(str.Mid(i, j - i).Trim());
+        }
+    }
+
+    return sl.front();
+}
+
+template<class T, typename SEP>
+T ExplodeMin(const T& str, std::list<T>& sl, SEP sep, size_t limit = 0)
+{
+    Explode(str, sl, sep, limit);
+    sl.remove_if([](const T& s) { return s.IsEmpty(); });
+    if (sl.empty()) {
+        sl.push_back(T());    // eh
+    }
+
+    return sl.front();
+}
+
+template<class T, typename SEP>
 T ExplodeEsc(T str, CAtlList<T>& sl, SEP sep, size_t limit = 0, SEP esc = _T('\\'))
 {
     sl.RemoveAll();
@@ -171,6 +202,22 @@ T ImplodeEsc(const CAtlList<T>& sl, SEP sep, SEP esc = _T('\\'))
         str.Replace(T(sep), escsep);
         ret += str;
         if (pos) {
+            ret += sep;
+        }
+    }
+    return ret;
+}
+
+template<class T, typename SEP>
+T ImplodeEsc(const std::list<T>& sl, SEP sep, SEP esc = _T('\\'))
+{
+    T ret;
+    T escsep = T(esc) + T(sep);
+    for (auto it = sl.begin(); it != sl.end(); ++it) {
+        T str = *it;
+        str.Replace(T(sep), escsep);
+        ret += str;
+        if (std::next(it) != sl.end()) {
             ret += sep;
         }
     }
