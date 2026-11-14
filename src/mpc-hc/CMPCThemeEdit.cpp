@@ -283,9 +283,12 @@ LRESULT CMPCThemeEdit::OnContextMenu(WPARAM wParam, LPARAM lParam) {
                     if (himc) {
                         ::ImmReleaseContext(this->m_hWnd, himc);
                     }
+                    editMenu->Detach(); //popup belongs to menu, which destroys it below
+                    DestroyMenu(menu);
                     editMenu.reset();
                     return 0;
                 }
+                DestroyMenu(menu);
             }
         }
     }
