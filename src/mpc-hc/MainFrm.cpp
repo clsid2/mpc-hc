@@ -1062,8 +1062,7 @@ void CMainFrame::DestroyOSDBar() {
 void CMainFrame::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 {
     if (lpMeasureItemStruct->CtlType == ODT_MENU)  {
-        if (CMPCThemeMenu* cm = CMPCThemeMenu::getParentMenu(lpMeasureItemStruct->itemID)) {
-            cm->MeasureItem(lpMeasureItemStruct);
+        if (CMPCThemeMenu::MeasureMenuItem(lpMeasureItemStruct)) {
             return;
         }
     }
@@ -3993,7 +3992,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
         if (nID >= ID_PANNSCAN_PRESETS_START && nID < ID_PANNSCAN_PRESETS_END) {
             do {
                 nID = pPopupMenu->GetMenuItemID(i);
-                VERIFY(pPopupMenu->DeleteMenu(i, MF_BYPOSITION));
+                VERIFY(CMPCThemeMenu::DeleteThemedMenu(pPopupMenu, i, MF_BYPOSITION));
                 uiMenuCount--;
             } while (i < uiMenuCount && nID >= ID_PANNSCAN_PRESETS_START && nID < ID_PANNSCAN_PRESETS_END);
 
@@ -13328,7 +13327,7 @@ void CMainFrame::SetupJumpToSubMenus(CMenu* parentMenu /*= nullptr*/, int iInser
     // Remove the submenus from the "Navigate" menu
     if (parentMenu && iInsertPos >= 0) {
         for (; m_nJumpToSubMenusCount > 0; m_nJumpToSubMenusCount--) {
-            VERIFY(parentMenu->RemoveMenu(iInsertPos, MF_BYPOSITION));
+            VERIFY(CMPCThemeMenu::RemoveThemedMenu(parentMenu, iInsertPos, MF_BYPOSITION));
         }
     }
 

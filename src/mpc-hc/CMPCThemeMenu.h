@@ -1,5 +1,6 @@
 #pragma once
 #include <afxwin.h>
+#include <unordered_set>
 
 struct MenuObject {
     HICON m_hIcon;
@@ -24,13 +25,15 @@ public:
     void fulfillThemeReqsSubMenu(UINT nPos);
     static void fulfillThemeReqsItem(CMenu* parent, UINT i, bool byCommand = false);
     static UINT getPosFromID(CMenu* parent, UINT nID);
-    static CMPCThemeMenu* getParentMenu(UINT itemID);
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
-    void GetStrings(MenuObject* mo, CString& left, CString& right);
+    static void GetStrings(MenuObject* mo, CString& left, CString& right);
     virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);
+    static bool MeasureMenuItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);
     virtual BOOL AppendMenu(UINT nFlags, UINT_PTR nIDNewItem = 0, LPCTSTR lpszNewItem = NULL);
     virtual BOOL DeleteMenu(UINT nPosition, UINT nFlags);
     virtual BOOL RemoveMenu(UINT nPosition, UINT nFlags);
+    static BOOL DeleteThemedMenu(CMenu* menu, UINT nPosition, UINT nFlags);
+    static BOOL RemoveThemedMenu(CMenu* menu, UINT nPosition, UINT nFlags);
     virtual BOOL SetThemedMenuItemInfo(UINT uItem, LPMENUITEMINFO lpMenuItemInfo, BOOL fByPos = FALSE);
     static BOOL SetThemedMenuItemInfo(CMenu *menu, UINT uItem, LPMENUITEMINFO lpMenuItemInfo, BOOL fByPos = FALSE);
     CMPCThemeMenu* GetSubMenu(int nPos);
@@ -39,10 +42,13 @@ public:
     static void resetBrushes();
     void setOSMenu(bool isOSMenu) { this->isOSMenu = isOSMenu; };
 protected:
-    static std::map<UINT, CMPCThemeMenu*> subMenuIDs;
+    static std::unordered_set<MenuObject*> liveItems; //every MenuObject not yet deleted, to validate itemData from WM_MEASUREITEM/WM_DRAWITEM
+    static std::mutex liveItemsMutex;
     std::vector<MenuObject*> allocatedItems;
+    void addItem(MenuObject* pObject);
+    void removeItem(MenuObject* pObject);
     std::vector<CMPCThemeMenu*> allocatedMenus;
-    void initDimensions();
+    static void initDimensions();
     UINT findID(UINT& i, bool byCommand);
     void cleanupItem(UINT nPosition, UINT nFlags);
     bool isOSMenu = false;
@@ -61,6 +67,5 @@ protected:
     static HBRUSH bgBrush, bgMenubarBrush;
     static CFont font, symbolFont, bulletFont, checkFont;
     static CCritSec resourceLock;
-    static std::mutex submenuMutex;
 };
 
