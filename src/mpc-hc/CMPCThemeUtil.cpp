@@ -539,16 +539,23 @@ bool CMPCThemeUtil::getFixedFont(CFont& font, CDC* pDC, CWnd* wnd)
 
 bool CMPCThemeUtil::getFontByType(CFont& font, CWnd* wnd, int type, bool underline, bool bold)
 {
-    /* adipose: works poorly for dialogs as they cannot be scaled to fit zoomed fonts, only use for menus and status bars*/
-    GetMetrics();
-
     if (!wnd) {
         wnd = AfxGetMainWnd();
     }
 
-    //metrics will have the right fonts for the main window, but current window may be on another screen
-    DpiHelper dpiWindow, dpiMain;
+    DpiHelper dpiWindow;
     dpiWindow.Override(wnd->GetSafeHwnd());
+
+    return getFontByTypeForDpi(font, type, dpiWindow.DPIY(), underline, bold);
+}
+
+bool CMPCThemeUtil::getFontByTypeForDpi(CFont& font, int type, UINT dpi, bool underline, bool bold)
+{
+    /* adipose: works poorly for dialogs as they cannot be scaled to fit zoomed fonts, only use for menus and status bars*/
+    GetMetrics();
+
+    //metrics will have the right fonts for the main window, but current window may be on another screen
+    DpiHelper dpiMain;
     dpiMain.Override(AfxGetMainWnd()->GetSafeHwnd());
 
     LOGFONT* lf;
@@ -580,7 +587,7 @@ bool CMPCThemeUtil::getFontByType(CFont& font, CWnd* wnd, int type, bool underli
         lf = &nonClientMetrics.lfMessageFont;
     }
 
-    int newHeight = MulDiv(lf->lfHeight, dpiWindow.DPIY(), dpiMain.DPIY());
+    int newHeight = MulDiv(lf->lfHeight, dpi, dpiMain.DPIY());
     if (underline || bold || newHeight != lf->lfHeight) {
         LOGFONT tlf;
         memset(&tlf, 0, sizeof(LOGFONT));

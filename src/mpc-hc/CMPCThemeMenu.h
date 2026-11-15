@@ -1,6 +1,8 @@
 #pragma once
 #include <afxwin.h>
 #include <unordered_set>
+#include <map>
+#include <memory>
 
 struct MenuObject {
     HICON m_hIcon;
@@ -9,6 +11,7 @@ struct MenuObject {
     bool isMenubar = false;
     bool isSeparator = false;
     bool isFirstMenuInMenuBar = false;
+    UINT dpi = 0; //dpi the item was measured at, so it is drawn to the size windows cached
 };
 
 
@@ -38,7 +41,7 @@ public:
     static BOOL SetThemedMenuItemInfo(CMenu *menu, UINT uItem, LPMENUITEMINFO lpMenuItemInfo, BOOL fByPos = FALSE);
     CMPCThemeMenu* GetSubMenu(int nPos);
     static void updateItem(CCmdUI* pCmdUI);
-    static void clearDimensions() { hasDimensions = false; };
+    static void clearDimensions();
     static void resetBrushes();
     void setOSMenu(bool isOSMenu) { this->isOSMenu = isOSMenu; };
 protected:
@@ -48,24 +51,27 @@ protected:
     void addItem(MenuObject* pObject);
     void removeItem(MenuObject* pObject);
     std::vector<CMPCThemeMenu*> allocatedMenus;
-    static void initDimensions();
+    struct Dimensions {
+        int subMenuPadding;
+        int iconSpacing;
+        int iconPadding;
+        int rowPadding;
+        int separatorPadding;
+        int separatorHeight;
+        int postTextSpacing;
+        int accelSpacing;
+        int hoverInsetX, hoverInsetY, hoverRadius; //windows 11 style hover pill
+        CFont font, symbolFont, bulletFont, checkFont;
+    };
+    static Dimensions& getDimensions(UINT dpi); //caller must hold resourceLock
+    static UINT getOwnerDpi();
     UINT findID(UINT& i, bool byCommand);
     void cleanupItem(UINT nPosition, UINT nFlags);
     bool isOSMenu = false;
 
-    void GetRects(RECT rcItem, CRect& rectFull, CRect& rectM, CRect& rectIcon, CRect& rectText, CRect& rectArrow);
-    static bool hasDimensions;
-    static int subMenuPadding;
-    static int iconSpacing;
-    static int iconPadding;
-    static int rowPadding;
-    static int separatorPadding;
-    static int separatorHeight;
-    static int postTextSpacing;
-    static int accelSpacing;
-    static int hoverInsetX, hoverInsetY, hoverRadius; //windows 11 style hover pill
+    void GetRects(const Dimensions& dim, RECT rcItem, CRect& rectFull, CRect& rectM, CRect& rectIcon, CRect& rectText, CRect& rectArrow);
+    static std::map<UINT, std::unique_ptr<Dimensions>> dimensionsByDpi; //popups can be tracked from windows on monitors with different dpi
     static HBRUSH bgBrush, bgMenubarBrush;
-    static CFont font, symbolFont, bulletFont, checkFont;
     static CCritSec resourceLock;
 };
 
