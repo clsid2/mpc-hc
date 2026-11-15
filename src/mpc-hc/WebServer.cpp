@@ -82,9 +82,25 @@ CWebServer::CWebServer(CMainFrame* pMainFrame, int nPort)
 CWebServer::~CWebServer()
 {
     if (m_hThread != nullptr) {
+        m_bStopping = true;
         PostThreadMessage(m_ThreadId, WM_QUIT, (WPARAM)0, (LPARAM)0);
-        if (WaitForSingleObject(m_hThread, 10000) == WAIT_TIMEOUT) {
-            TerminateThread(m_hThread, 0xDEAD);
+        // the request handlers send to windows of the UI thread (the volume slider's
+        // TBM_GETPOS, WM_GETTEXT), so deliver sent messages while waiting. Posted ones
+        // stay queued, so nothing new starts underneath the caller (OnClose)
+        const ULONGLONG deadline = GetTickCount64() + 10000;
+        for (;;) {
+            const ULONGLONG now = GetTickCount64();
+            const DWORD wait = now < deadline ? DWORD(deadline - now) : 0;
+            const DWORD ret = MsgWaitForMultipleObjects(1, &m_hThread, FALSE, wait, QS_SENDMESSAGE);
+            if (ret == WAIT_OBJECT_0 + 1) {
+                MSG msg;
+                PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE | PM_QS_SENDMESSAGE);
+                continue;
+            }
+            if (ret != WAIT_OBJECT_0) {
+                TerminateThread(m_hThread, 0xDEAD);
+            }
+            break;
         }
         EXECUTE_ASSERT(CloseHandle(m_hThread));
     }
