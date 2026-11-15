@@ -74,6 +74,7 @@ public:
     static bool getFontByFaceForDpi(CFont& font, const wchar_t* fontName, int size, UINT dpi, LONG weight = FW_REGULAR);
     static bool getFixedFont(CFont& font, CDC* pDC, CWnd* wnd);
     static bool getFontByType(CFont& font, CWnd* wnd, int type, bool underline = false, bool bold = false);
+    static bool getFontByTypeForDpi(CFont& font, int type, UINT dpi, bool underline = false, bool bold = false);
     enum fontType {
         CaptionFont,
         SmallCaptionFont,

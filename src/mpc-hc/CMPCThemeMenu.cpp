@@ -11,20 +11,7 @@ std::unordered_set<MenuObject*> CMPCThemeMenu::liveItems;
 std::mutex CMPCThemeMenu::liveItemsMutex;
 HBRUSH CMPCThemeMenu::bgBrush = 0;
 HBRUSH CMPCThemeMenu::bgMenubarBrush = 0;
-CFont CMPCThemeMenu::font;
-CFont CMPCThemeMenu::symbolFont;
-CFont CMPCThemeMenu::bulletFont;
-CFont CMPCThemeMenu::checkFont;
-bool CMPCThemeMenu::hasDimensions = false;
-int CMPCThemeMenu::subMenuPadding;
-int CMPCThemeMenu::iconSpacing;
-int CMPCThemeMenu::iconPadding;
-int CMPCThemeMenu::rowPadding;
-int CMPCThemeMenu::separatorPadding;
-int CMPCThemeMenu::separatorHeight;
-int CMPCThemeMenu::postTextSpacing;
-int CMPCThemeMenu::accelSpacing;
-int CMPCThemeMenu::hoverInsetX, CMPCThemeMenu::hoverInsetY, CMPCThemeMenu::hoverRadius;
+std::map<UINT, std::unique_ptr<CMPCThemeMenu::Dimensions>> CMPCThemeMenu::dimensionsByDpi;
 CCritSec CMPCThemeMenu::resourceLock;
 
 IMPLEMENT_DYNAMIC(CMPCThemeMenu, CMenu);
@@ -50,44 +37,50 @@ CMPCThemeMenu::~CMPCThemeMenu()
     allocatedMenus.clear();
 }
 
-void CMPCThemeMenu::initDimensions()
+void CMPCThemeMenu::clearDimensions()
 {
-    if (!hasDimensions) {
-        DpiHelper dpi = DpiHelper();
-        dpi.Override(AfxGetMainWnd()->GetSafeHwnd());
+    CAutoLock cAutoLock(&resourceLock);
+    dimensionsByDpi.clear();
+}
 
-        subMenuPadding = dpi.ScaleX(20);
-        iconSpacing = dpi.ScaleX(22);
-        iconPadding = dpi.ScaleX(10);
-        rowPadding = dpi.ScaleY(4) + 3; //windows 10 explorer has paddings of 7,8,9,9,11--this yields 7,8,9,10,11
-        separatorPadding = dpi.ScaleX(8);
-        separatorHeight = dpi.ScaleX(7);
-        postTextSpacing = dpi.ScaleX(20);
-        accelSpacing = dpi.ScaleX(30);
-        hoverInsetX = dpi.ScaleX(5); //windows 11 insets the hover about 5px from the popup edge and rounds it by 4px, measured at 100%
-        hoverInsetY = dpi.ScaleY(2);
-        hoverRadius = dpi.ScaleX(4);
-        {
-            CAutoLock cAutoLock(&resourceLock);
-            if (font.m_hObject) {
-                font.DeleteObject();
-            }
-            CMPCThemeUtil::getFontByType(font, AfxGetMainWnd(), CMPCThemeUtil::MenuFont);
-            if (symbolFont.m_hObject) {
-                symbolFont.DeleteObject();
-            }
-            CMPCThemeUtil::getFontByFace(symbolFont, AfxGetMainWnd(), CMPCTheme::uiSymbolFont, 14, FW_BOLD);
-            if (bulletFont.m_hObject) {
-                bulletFont.DeleteObject();
-            }
-            CMPCThemeUtil::getFontByFace(bulletFont, AfxGetMainWnd(), CMPCTheme::uiSymbolFont, 6, FW_REGULAR);
-            if (checkFont.m_hObject) {
-                checkFont.DeleteObject();
-            }
-            CMPCThemeUtil::getFontByFace(checkFont, AfxGetMainWnd(), CMPCTheme::uiSymbolFont, 10, FW_REGULAR);
-        }
-        hasDimensions = true;
+CMPCThemeMenu::Dimensions& CMPCThemeMenu::getDimensions(UINT dpiValue)
+{
+    std::unique_ptr<Dimensions>& d = dimensionsByDpi[dpiValue];
+    if (!d) {
+        d = std::make_unique<Dimensions>();
+        DpiHelper dpi = DpiHelper();
+        dpi.Override(dpiValue, dpiValue);
+
+        d->subMenuPadding = dpi.ScaleX(20);
+        d->iconSpacing = dpi.ScaleX(22);
+        d->iconPadding = dpi.ScaleX(10);
+        d->rowPadding = dpi.ScaleY(4) + 3; //windows 10 explorer has paddings of 7,8,9,9,11--this yields 7,8,9,10,11
+        d->separatorPadding = dpi.ScaleX(8);
+        d->separatorHeight = dpi.ScaleX(7);
+        d->postTextSpacing = dpi.ScaleX(20);
+        d->accelSpacing = dpi.ScaleX(30);
+        d->hoverInsetX = dpi.ScaleX(5); //windows 11 insets the hover about 5px from the popup edge and rounds it by 4px, measured at 100%
+        d->hoverInsetY = dpi.ScaleY(2);
+        d->hoverRadius = dpi.ScaleX(4);
+        CMPCThemeUtil::getFontByTypeForDpi(d->font, CMPCThemeUtil::MenuFont, dpiValue);
+        CMPCThemeUtil::getFontByFaceForDpi(d->symbolFont, CMPCTheme::uiSymbolFont, 14, dpiValue, FW_BOLD);
+        CMPCThemeUtil::getFontByFaceForDpi(d->bulletFont, CMPCTheme::uiSymbolFont, 6, dpiValue, FW_REGULAR);
+        CMPCThemeUtil::getFontByFaceForDpi(d->checkFont, CMPCTheme::uiSymbolFont, 10, dpiValue, FW_REGULAR);
     }
+    return *d;
+}
+
+UINT CMPCThemeMenu::getOwnerDpi()
+{
+    //a popup is measured for the window tracking it, which may be on another monitor than the main window
+    //(e.g. an edit control in the options dialog); the menubar and system menu have no tracking window
+    HWND hOwner = AfxGetThreadState()->m_hTrackingWindow;
+    if (!hOwner) {
+        hOwner = AfxGetMainWnd()->GetSafeHwnd();
+    }
+    DpiHelper dpi = DpiHelper();
+    dpi.Override(hOwner);
+    return dpi.DPIY();
 }
 
 UINT CMPCThemeMenu::findID(UINT& nPos, bool byCommand)
@@ -413,13 +406,13 @@ UINT CMPCThemeMenu::getPosFromID(CMenu* parent, UINT nID)
     return (UINT) - 1;
 }
 
-void CMPCThemeMenu::GetRects(RECT rcItem, CRect& rectFull, CRect& rectM, CRect& rectIcon, CRect& rectText, CRect& rectArrow)
+void CMPCThemeMenu::GetRects(const Dimensions& dim, RECT rcItem, CRect& rectFull, CRect& rectM, CRect& rectIcon, CRect& rectText, CRect& rectArrow)
 {
     rectFull.CopyRect(&rcItem);
     rectM = rectFull;
-    rectIcon.SetRect(rectM.left, rectM.top, rectM.left + iconSpacing, rectM.bottom);
-    rectText.SetRect(rectM.left + iconSpacing + iconPadding, rectM.top, rectM.right - subMenuPadding, rectM.bottom);
-    rectArrow.SetRect(rectM.right - subMenuPadding, rectM.top, rectM.right, rectM.bottom);
+    rectIcon.SetRect(rectM.left, rectM.top, rectM.left + dim.iconSpacing, rectM.bottom);
+    rectText.SetRect(rectM.left + dim.iconSpacing + dim.iconPadding, rectM.top, rectM.right - dim.subMenuPadding, rectM.bottom);
+    rectArrow.SetRect(rectM.right - dim.subMenuPadding, rectM.top, rectM.right, rectM.bottom);
 }
 
 void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -430,7 +423,8 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
     if (!liveItems.count(menuObject)) { //not one of ours, or already deleted
         return;
     }
-    if (font.m_hObject) {
+    Dimensions& dim = getDimensions(menuObject->dpi ? menuObject->dpi : getOwnerDpi());
+    if (dim.font.m_hObject) {
         MENUITEMINFO mInfo = { sizeof(MENUITEMINFO) };
 
         mInfo.fMask = MIIM_FTYPE | MIIM_SUBMENU;
@@ -456,7 +450,7 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
         CRect rectText;
         CRect rectArrow;
 
-        GetRects(lpDrawItemStruct->rcItem, rectFull, rectM, rectIcon, rectText, rectArrow);
+        GetRects(dim, lpDrawItemStruct->rcItem, rectFull, rectM, rectIcon, rectText, rectArrow);
 
         UINT captionAlign = DT_LEFT;
 
@@ -502,23 +496,23 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
         }
 
         if (mInfo.fType & MFT_SEPARATOR) {
-            int centerOffset = (separatorHeight - 1) / 2;
-            CRect rectSeparator(rectM.left + separatorPadding, rectM.top + centerOffset, rectM.right - separatorPadding, rectM.top + centerOffset + 1);
+            int centerOffset = (dim.separatorHeight - 1) / 2;
+            CRect rectSeparator(rectM.left + dim.separatorPadding, rectM.top + centerOffset, rectM.right - dim.separatorPadding, rectM.top + centerOffset + 1);
             pDC->FillSolidRect(&rectSeparator, CMPCTheme::MenuSeparatorColor);
         } else {
             COLORREF oldTextFGColor = pDC->SetTextColor(TextFGColor);
 
             CFont* pOldFont = pDC->GetCurrentFont();
-            pDC->SelectObject(&font);
+            pDC->SelectObject(&dim.font);
             if ((lpDrawItemStruct->itemState & (ODS_SELECTED | ODS_HOTLIGHT)) && (lpDrawItemStruct->itemAction & (ODA_SELECT | ODA_DRAWENTIRE))) {
                 if (CMPCTheme::isWindows11Style && !menuObject->isMenubar) {
                     //windows 11 style: the hover is an inset rounded pill rather than the full row
                     Gdiplus::Graphics gfx(pDC->m_hDC);
                     gfx.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias8x8);
                     gfx.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
-                    const Gdiplus::REAL l = (Gdiplus::REAL)(rectM.left + hoverInsetX), t = (Gdiplus::REAL)(rectM.top + hoverInsetY);
-                    const Gdiplus::REAL w = (Gdiplus::REAL)(rectM.Width() - 2 * hoverInsetX), h = (Gdiplus::REAL)(rectM.Height() - 2 * hoverInsetY);
-                    const Gdiplus::REAL e = (Gdiplus::REAL)(2 * hoverRadius);
+                    const Gdiplus::REAL l = (Gdiplus::REAL)(rectM.left + dim.hoverInsetX), t = (Gdiplus::REAL)(rectM.top + dim.hoverInsetY);
+                    const Gdiplus::REAL w = (Gdiplus::REAL)(rectM.Width() - 2 * dim.hoverInsetX), h = (Gdiplus::REAL)(rectM.Height() - 2 * dim.hoverInsetY);
+                    const Gdiplus::REAL e = (Gdiplus::REAL)(2 * dim.hoverRadius);
                     Gdiplus::GraphicsPath path;
                     path.AddArc(l, t, e, e, 180, 90);
                     path.AddArc(l + w - e, t, e, e, 270, 90);
@@ -547,7 +541,7 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
                 }
 
                 if (mInfo.hSubMenu) {
-                    pDC->SelectObject(&symbolFont);
+                    pDC->SelectObject(&dim.symbolFont);
                     pDC->SetTextColor(ArrowColor);
                     pDC->DrawTextW(TEXT(">"), rectArrow, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
                 }
@@ -556,10 +550,10 @@ void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
                     CString check;
                     if (mInfo.fType & MFT_RADIOCHECK) {
                         check = TEXT("\u25CF"); //bullet
-                        pDC->SelectObject(&bulletFont);
+                        pDC->SelectObject(&dim.bulletFont);
                     } else {
                         check = TEXT("\u2714"); //checkmark
-                        pDC->SelectObject(&checkFont);
+                        pDC->SelectObject(&dim.checkFont);
                     }
                     pDC->SetTextColor(TextFGColor);
                     pDC->DrawTextW(check, rectIcon, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
@@ -601,7 +595,6 @@ bool CMPCThemeMenu::MeasureMenuItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 {
     //uses nothing but itemData and the shared resources, so any menu's items can be measured here
     if (lpMeasureItemStruct && lpMeasureItemStruct->CtlType == ODT_MENU) {
-        initDimensions(); //should happen before drawitem
         CAutoLock cAutoLock(&resourceLock); //make sure our resources are protected
         std::lock_guard<std::mutex> guard(liveItemsMutex);
 
@@ -609,28 +602,30 @@ bool CMPCThemeMenu::MeasureMenuItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
         if (!liveItems.count(mo)) { //not one of ours, or already deleted
             return false;
         }
+        mo->dpi = getOwnerDpi(); //drawitem uses the same dpi, to fill the size windows caches
+        Dimensions& dim = getDimensions(mo->dpi);
 
         if (mo->isSeparator) {
             lpMeasureItemStruct->itemWidth = 0;
-            lpMeasureItemStruct->itemHeight = separatorHeight;
+            lpMeasureItemStruct->itemHeight = dim.separatorHeight;
         } else {
             HWND mainWnd = AfxGetMainWnd()->GetSafeHwnd();
             HDC hDC = ::GetDC(mainWnd);
             if (hDC) {
-                CSize height = CMPCThemeUtil::GetTextSize(_T("W"), hDC, &font);
+                CSize height = CMPCThemeUtil::GetTextSize(_T("W"), hDC, &dim.font);
                 if (mo->isMenubar) {
-                    CSize cs = CMPCThemeUtil::GetTextSize(mo->m_strCaption, hDC, &font);
+                    CSize cs = CMPCThemeUtil::GetTextSize(mo->m_strCaption, hDC, &dim.font);
                     lpMeasureItemStruct->itemWidth = cs.cx;
-                    lpMeasureItemStruct->itemHeight = height.cy + rowPadding;
+                    lpMeasureItemStruct->itemHeight = height.cy + dim.rowPadding;
                 } else {
                     CString left, right;
                     GetStrings(mo, left, right);
-                    CSize cs = CMPCThemeUtil::GetTextSize(left, hDC, &font);
-                    lpMeasureItemStruct->itemHeight = height.cy + rowPadding;
-                    lpMeasureItemStruct->itemWidth = iconSpacing + postTextSpacing + subMenuPadding + cs.cx;
+                    CSize cs = CMPCThemeUtil::GetTextSize(left, hDC, &dim.font);
+                    lpMeasureItemStruct->itemHeight = height.cy + dim.rowPadding;
+                    lpMeasureItemStruct->itemWidth = dim.iconSpacing + dim.postTextSpacing + dim.subMenuPadding + cs.cx;
                     if (right.GetLength() > 0) {
-                        CSize csAccel = CMPCThemeUtil::GetTextSize(right, hDC, &font);
-                        lpMeasureItemStruct->itemWidth += accelSpacing + csAccel.cx;
+                        CSize csAccel = CMPCThemeUtil::GetTextSize(right, hDC, &dim.font);
+                        lpMeasureItemStruct->itemWidth += dim.accelSpacing + csAccel.cx;
                     }
                 }
                 ::ReleaseDC(mainWnd, hDC);
