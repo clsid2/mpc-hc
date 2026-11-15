@@ -405,7 +405,7 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
         if (id > 0) {
             if (id == ID_FILE_EXIT) {
                 m_pMainFrame->PostMessage(WM_COMMAND, id);
-            } else {
+            } else if (!m_pWebServer->IsStopping()) {
                 // Commands that open a modal dialog do not return until that dialog is
                 // dismissed at the player. Waiting for them would block this thread, and
                 // with it every other web client, so bound the wait instead. The command
@@ -538,7 +538,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
             }
 
             CAutoVectorPtr<BYTE> buff;
-            if (buff.Allocate(4 + len)) {
+            if (!m_pWebServer->IsStopping() && buff.Allocate(4 + len)) {
                 BYTE* p = buff;
                 *(DWORD*)p = (DWORD)cmdln.GetCount();
                 p += sizeof(DWORD);
@@ -551,11 +551,19 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
                     p += len;
                 }
 
-                COPYDATASTRUCT cds;
-                cds.dwData = 0x6ABE51;
-                cds.cbData = DWORD(p - buff);
-                cds.lpData = (void*)(BYTE*)buff;
-                m_pMainFrame->SendMessage(WM_COPYDATA, (WPARAM)nullptr, (LPARAM)&cds);
+                auto pcds = std::make_unique<COPYDATASTRUCT>();
+                pcds->dwData = 0x6ABE51;
+                pcds->cbData = DWORD(p - buff);
+                pcds->lpData = (void*)(BYTE*)buff;
+                // bounded as in OnCommand. Within one process WM_COPYDATA is not
+                // copied, and a send that timed out is still delivered later, so
+                // in that case the frame gets to keep (and we leak) both buffers
+                DWORD_PTR dwResult;
+                if (!::SendMessageTimeout(m_pMainFrame->GetSafeHwnd(), WM_COPYDATA, (WPARAM)nullptr, (LPARAM)pcds.get(),
+                                          SMTO_NORMAL, 5000, &dwResult) && GetLastError() == ERROR_TIMEOUT) {
+                    pcds.release();
+                    buff.Detach();
+                }
             }
 
             CLongPath p(path);
@@ -1077,8 +1085,13 @@ bool CWebClientSocket::OnDVBSetChannel(CStringA& hdr, CStringA& body, CStringA& 
         if (m_get.Lookup("idx", requestParam)
                 && _stscanf_s(requestParam, _T("%d"), &channelIdx) == 1
                 && channelIdx >= 0) {
-            if (AfxGetAppSettings().FindChannelByPref(channelIdx)) {
-                m_pMainFrame->SendMessage(WM_COMMAND, channelIdx + ID_NAVIGATE_JUMPTO_SUBITEM_START);
+            if (m_pWebServer->IsStopping()) {
+                hdr = "HTTP/1.0 503 Service Unavailable\r\n";
+            } else if (AfxGetAppSettings().FindChannelByPref(channelIdx)) {
+                // bounded as in OnCommand
+                DWORD_PTR dwResult;
+                ::SendMessageTimeout(m_pMainFrame->GetSafeHwnd(), WM_COMMAND, channelIdx + ID_NAVIGATE_JUMPTO_SUBITEM_START, 0,
+                                     SMTO_NORMAL, 5000, &dwResult);
             } else {
                 // Return a 404 if requested channel number was not found.
                 hdr = "HTTP/1.0 404 Not Found\r\n";
@@ -1389,6 +1402,12 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
 // still delivered later, and by then this socket and its strings may be gone.
 bool CWebClientSocket::BuildOnUIThread(std::function<void(CMainFrame*, CStringA&)> build, CStringA& hdr, CStringA& body, CStringA& mime)
 {
+    if (m_pWebServer->IsStopping()) {
+        // the player is closing
+        hdr = "HTTP/1.0 503 Service Unavailable\r\n";
+        return true;
+    }
+
     auto pRequest = DEBUG_NEW CMainFrame::UIRequest{ std::move(build) };
 
     DWORD_PTR dwResult;

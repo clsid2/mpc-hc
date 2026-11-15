@@ -24,6 +24,7 @@
 #include <afxsock.h>
 #include <atlcoll.h>
 #include <atlpath.h>
+#include <atomic>
 #include "PathUtils.h"
 
 #define UTF8(str)     UTF16To8(TToW(str))
@@ -46,6 +47,7 @@ class CWebServer
     static DWORD WINAPI StaticThreadProc(LPVOID lpParam);
     DWORD m_ThreadId;
     HANDLE m_hThread;
+    std::atomic<bool> m_bStopping{ false };
 
     CAutoPtrList<CWebClientSocket> m_clients;
 
@@ -63,6 +65,10 @@ public:
     virtual ~CWebServer();
 
     static void Init();
+
+    // set once the destructor starts waiting for the thread; requests then get
+    // a 503 rather than starting commands or opens while the player closes
+    bool IsStopping() const { return m_bStopping; }
 
     static void Deploy(CString dir);
 

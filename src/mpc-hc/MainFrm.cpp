@@ -1317,6 +1317,10 @@ void CMainFrame::OnClose()
         FLUSH_LOGGER();
     }
 
+    // the legacy web handlers read frame members on the web server thread,
+    // so stop it while the frame is still intact rather than in its destructor
+    m_api.StopWebServer();
+
     ASSERT(GetCurrentThreadId() == AfxGetApp()->m_nThreadID);
 
     s.bToggleShader = m_shaders.m_bToggleShader;
