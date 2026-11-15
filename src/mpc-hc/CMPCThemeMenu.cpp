@@ -7,7 +7,8 @@
 #include "PPageAccelTbl.h"
 #include "mplayerc.h"
 
-std::map<UINT, CMPCThemeMenu*> CMPCThemeMenu::subMenuIDs;
+std::unordered_set<MenuObject*> CMPCThemeMenu::liveItems;
+std::mutex CMPCThemeMenu::liveItemsMutex;
 HBRUSH CMPCThemeMenu::bgBrush = 0;
 HBRUSH CMPCThemeMenu::bgMenubarBrush = 0;
 CFont CMPCThemeMenu::font;
@@ -25,7 +26,6 @@ int CMPCThemeMenu::postTextSpacing;
 int CMPCThemeMenu::accelSpacing;
 int CMPCThemeMenu::hoverInsetX, CMPCThemeMenu::hoverInsetY, CMPCThemeMenu::hoverRadius;
 CCritSec CMPCThemeMenu::resourceLock;
-std::mutex CMPCThemeMenu::submenuMutex;
 
 IMPLEMENT_DYNAMIC(CMPCThemeMenu, CMenu);
 CMPCThemeMenu::CMPCThemeMenu()
@@ -35,19 +35,11 @@ CMPCThemeMenu::CMPCThemeMenu()
 CMPCThemeMenu::~CMPCThemeMenu()
 {
     {
-        std::lock_guard<std::mutex> guard(submenuMutex);
-        std::map<UINT, CMPCThemeMenu*>::iterator itr = subMenuIDs.begin();
-        while (itr != subMenuIDs.end()) {
-            if (itr->second == this) {
-                itr = subMenuIDs.erase(itr);
-            } else {
-                ++itr;
-            }
+        std::lock_guard<std::mutex> guard(liveItemsMutex);
+        for (u_int i = 0; i < allocatedItems.size(); i++) {
+            liveItems.erase(allocatedItems[i]);
+            delete allocatedItems[i];
         }
-    }
-
-    for (u_int i = 0; i < allocatedItems.size(); i++) {
-        delete allocatedItems[i];      
     }
     allocatedItems.clear();
 
@@ -136,10 +128,26 @@ void CMPCThemeMenu::cleanupItem(UINT nPosition, UINT nFlags)
         GetMenuItemInfo(nPosition, &tInfo, 0 != (nFlags & MF_BYPOSITION));
         MenuObject* pObject = (MenuObject*)tInfo.dwItemData;
         if (std::find(allocatedItems.begin(), allocatedItems.end(), pObject) != allocatedItems.end()) {
-            allocatedItems.erase(std::remove(allocatedItems.begin(), allocatedItems.end(), pObject), allocatedItems.end());
+            removeItem(pObject);
             delete pObject;
         }
     }
+}
+
+void CMPCThemeMenu::addItem(MenuObject* pObject)
+{
+    allocatedItems.push_back(pObject);
+    std::lock_guard<std::mutex> guard(liveItemsMutex);
+    liveItems.insert(pObject);
+}
+
+void CMPCThemeMenu::removeItem(MenuObject* pObject)
+{
+    {
+        std::lock_guard<std::mutex> guard(liveItemsMutex);
+        liveItems.erase(pObject);
+    }
+    allocatedItems.erase(std::remove(allocatedItems.begin(), allocatedItems.end(), pObject), allocatedItems.end());
 }
 
 BOOL CMPCThemeMenu::DeleteMenu(UINT nPosition, UINT nFlags)
@@ -153,15 +161,32 @@ BOOL CMPCThemeMenu::RemoveMenu(UINT nPosition, UINT nFlags)
     cleanupItem(nPosition, nFlags);
     if (nFlags & MF_BYPOSITION) {
         CMenu *t  = GetSubMenu(nPosition);
-        if (t) {
+        //only release wrappers we own; a submenu owned elsewhere (e.g. a CMainFrame member) stays attached
+        if (t && std::find(allocatedMenus.begin(), allocatedMenus.end(), t) != allocatedMenus.end()) {
             t->Detach();
-            if (std::find(allocatedMenus.begin(), allocatedMenus.end(), t) != allocatedMenus.end()) {
-                allocatedMenus.erase(std::remove(allocatedMenus.begin(), allocatedMenus.end(), t), allocatedMenus.end());
-                delete t;
-            }
+            allocatedMenus.erase(std::remove(allocatedMenus.begin(), allocatedMenus.end(), t), allocatedMenus.end());
+            delete t;
         }
     }
     return CMenu::RemoveMenu(nPosition, nFlags);
+}
+
+BOOL CMPCThemeMenu::DeleteThemedMenu(CMenu* menu, UINT nPosition, UINT nFlags)
+{
+    CMPCThemeMenu* tMenu = DYNAMIC_DOWNCAST(CMPCThemeMenu, menu);
+    if (nullptr != tMenu) {
+        return tMenu->DeleteMenu(nPosition, nFlags);
+    }
+    return menu->DeleteMenu(nPosition, nFlags);
+}
+
+BOOL CMPCThemeMenu::RemoveThemedMenu(CMenu* menu, UINT nPosition, UINT nFlags)
+{
+    CMPCThemeMenu* tMenu = DYNAMIC_DOWNCAST(CMPCThemeMenu, menu);
+    if (nullptr != tMenu) {
+        return tMenu->RemoveMenu(nPosition, nFlags);
+    }
+    return menu->RemoveMenu(nPosition, nFlags);
 }
 
 BOOL CMPCThemeMenu::SetThemedMenuItemInfo(UINT uItem, LPMENUITEMINFO lpMenuItemInfo, BOOL fByPos) {
@@ -267,7 +292,7 @@ void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
             }
             CString nameHolder;
             MenuObject* pObject = DEBUG_NEW MenuObject;
-            allocatedItems.push_back(pObject);
+            addItem(pObject);
             pObject->m_hIcon = NULL;
             pObject->isMenubar = isMenubar;
             if (i == 0) {
@@ -280,8 +305,6 @@ void CMPCThemeMenu::fulfillThemeReqs(bool isMenubar)
             if (!isOSMenu) {
                 pObject->m_strAccel = CPPageAccelTbl::MakeAccelShortcutLabel(nID);
             }
-
-            subMenuIDs[nID] = this;
 
             MENUITEMINFO tInfo;
             ZeroMemory(&tInfo, sizeof(MENUITEMINFO));
@@ -337,7 +360,7 @@ void CMPCThemeMenu::fulfillThemeReqsItem(UINT i, bool byCommand, bool isMenuBar)
         if (NULL == tInfo.dwItemData) {
             CString nameHolder;
             MenuObject* pObject = DEBUG_NEW MenuObject;
-            allocatedItems.push_back(pObject);
+            addItem(pObject);
             pObject->m_hIcon = NULL;
             pObject->isMenubar = isMenuBar;
 
@@ -352,8 +375,6 @@ void CMPCThemeMenu::fulfillThemeReqsItem(UINT i, bool byCommand, bool isMenuBar)
             }
 
             pObject->m_strAccel = CPPageAccelTbl::MakeAccelShortcutLabel(nID);
-
-            subMenuIDs[nID] = this;
 
             if (tInfo.fType & MFT_SEPARATOR) {
                 pObject->isSeparator = true;
@@ -392,26 +413,6 @@ UINT CMPCThemeMenu::getPosFromID(CMenu* parent, UINT nID)
     return (UINT) - 1;
 }
 
-CMPCThemeMenu* CMPCThemeMenu::getParentMenu(UINT itemID)
-{
-    if (subMenuIDs.count(itemID) == 1) {
-        CMPCThemeMenu* m = subMenuIDs.at(itemID);
-        /* // checks if submenu for overriding of onmeasureitem (win32 limitation).
-           // but mpc-hc doesn't set up some submenus until later
-           // which is too late for measureitem to take place
-           // so we return all items for measuring
-        MENUITEMINFO mInfo;
-        ZeroMemory(&mInfo, sizeof(MENUITEMINFO));
-        mInfo.fMask = MIIM_SUBMENU;
-        mInfo.cbSize = sizeof(MENUITEMINFO);
-        m->GetMenuItemInfo(itemID, &mInfo);
-        if (mInfo.hSubMenu)      //  */
-        return m;
-    }
-
-    return nullptr;
-}
-
 void CMPCThemeMenu::GetRects(RECT rcItem, CRect& rectFull, CRect& rectM, CRect& rectIcon, CRect& rectText, CRect& rectArrow)
 {
     rectFull.CopyRect(&rcItem);
@@ -424,9 +425,12 @@ void CMPCThemeMenu::GetRects(RECT rcItem, CRect& rectFull, CRect& rectM, CRect& 
 void CMPCThemeMenu::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
     CAutoLock cAutoLock(&resourceLock); //make sure our resources are protected
+    std::lock_guard<std::mutex> guard(liveItemsMutex);
+    MenuObject* menuObject = (MenuObject*)lpDrawItemStruct->itemData;
+    if (!liveItems.count(menuObject)) { //not one of ours, or already deleted
+        return;
+    }
     if (font.m_hObject) {
-        MenuObject* menuObject = (MenuObject*)lpDrawItemStruct->itemData;
-
         MENUITEMINFO mInfo = { sizeof(MENUITEMINFO) };
 
         mInfo.fMask = MIIM_FTYPE | MIIM_SUBMENU;
@@ -588,11 +592,23 @@ void CMPCThemeMenu::GetStrings(MenuObject* mo, CString& left, CString& right)
 
 void CMPCThemeMenu::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 {
+    if (!MeasureMenuItem(lpMeasureItemStruct)) {
+        ASSERT(false);
+    }
+}
+
+bool CMPCThemeMenu::MeasureMenuItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+    //uses nothing but itemData and the shared resources, so any menu's items can be measured here
     if (lpMeasureItemStruct && lpMeasureItemStruct->CtlType == ODT_MENU) {
         initDimensions(); //should happen before drawitem
         CAutoLock cAutoLock(&resourceLock); //make sure our resources are protected
+        std::lock_guard<std::mutex> guard(liveItemsMutex);
 
         MenuObject* mo = (MenuObject*)lpMeasureItemStruct->itemData;
+        if (!liveItems.count(mo)) { //not one of ours, or already deleted
+            return false;
+        }
 
         if (mo->isSeparator) {
             lpMeasureItemStruct->itemWidth = 0;
@@ -620,9 +636,9 @@ void CMPCThemeMenu::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
                 ::ReleaseDC(mainWnd, hDC);
             }
         }
-    } else {
-        ASSERT(false);
+        return true;
     }
+    return false;
 }
 
 CMPCThemeMenu* CMPCThemeMenu::GetSubMenu(int nPos)
