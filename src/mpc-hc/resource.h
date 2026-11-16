@@ -1908,14 +1908,69 @@
 #define IDS_MODERN_THEME_STYLE_WINDOWS10 58060
 #define IDS_MODERN_THEME_STYLE_WINDOWS11 58061
 #define IDS_PPAGEADVANCED_SUB_GLYPH_CACHE_MB 58062
+#define ID_FILE_TRIM_VIDEO              33465
+#define ID_TRIM_SAVE_CLIP               33466
+#define ID_TRIM_PLAY_SELECTION          33467
+#define ID_TRIM_SET_START               33468
+#define ID_TRIM_SET_END                 33469
+#define IDD_TRIM_SAVE_DLG               20080
+#define IDC_TRIM_PATH                   22106
+#define IDC_TRIM_BROWSE                 22107
+#define IDC_TRIM_DURATION               22108
+#define IDC_TRIM_FILENAME               22109
+#define IDC_TRIM_PROGRESS               22112
+#define IDC_TRIM_STATUS                 22113
+#define IDS_TRIM_VIDEO                  58063
+#define IDS_TRIM_SAVE_CLIP              58064
+#define IDS_TRIM_PLAY_SELECTION         58065
+#define IDS_TRIM_SET_START              58066
+#define IDS_TRIM_SET_END                58067
+#define IDS_TRIM_CLOSE_MODE             58068
+#define IDS_TRIM_OSD_ENTER              58069
+#define IDS_TRIM_STATUSBAR              58070
+#define IDS_TRIM_GRIP_START             58071
+#define IDS_TRIM_GRIP_END               58072
+#define IDS_TRIM_ACCESSIBLE_NAME        58073
+#define IDS_TRIM_EXIT_CONFIRM           58074
+#define IDS_TRIM_CHECKING               58075
+#define IDS_TRIM_INFO_CONVERT           58077
+#define IDS_TRIM_CLIP_LENGTH            58078
+#define IDS_TRIM_FIRST_AUDIO_ONLY       58079
+#define IDS_TRIM_MP4_FILTER             58080
+#define IDS_TRIM_INVALID_PATH           58081
+#define IDS_TRIM_REPLACE                58082
+#define IDS_TRIM_SAVING                 58083
+#define IDS_TRIM_SAVED                  58084
+#define IDS_TRIM_CANCELLING             58085
+#define IDS_TRIM_SHOW_IN_FOLDER         58086
+#define IDS_TRIM_CLOSE                  58087
+#define IDS_TRIM_STATUS_OK              58088
+#define IDS_TRIM_STATUS_CANCELLED       58089
+#define IDS_TRIM_STATUS_MF_MISSING      58090
+#define IDS_TRIM_STATUS_SOURCE_UNREADABLE 58091
+#define IDS_TRIM_STATUS_NO_VIDEO        58092
+#define IDS_TRIM_STATUS_FAST_CONTAINER  58093
+#define IDS_TRIM_STATUS_FAST_VIDEO      58094
+#define IDS_TRIM_STATUS_FAST_AUDIO      58095
+#define IDS_TRIM_STATUS_PRECISE_VIDEO   58096
+#define IDS_TRIM_STATUS_PRECISE_AUDIO   58097
+#define IDS_TRIM_STATUS_ENCODER_MISSING 58098
+#define IDS_TRIM_STATUS_EMPTY_RANGE     58099
+#define IDS_TRIM_STATUS_DEST_EXISTS     58100
+#define IDS_TRIM_STATUS_DEST_IS_SOURCE  58101
+#define IDS_TRIM_STATUS_ACCESS_DENIED   58102
+#define IDS_TRIM_STATUS_DISK_FULL       58103
+#define IDS_TRIM_STATUS_WRITE_FAILED    58104
+#define IDS_TRIM_STATUS_VALIDATION_FAILED 58105
+#define IDS_TRIM_STATUS_UNEXPECTED      58106
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        20079
-#define _APS_NEXT_COMMAND_VALUE         33465
-#define _APS_NEXT_CONTROL_VALUE         22105
+#define _APS_NEXT_RESOURCE_VALUE        20081
+#define _APS_NEXT_COMMAND_VALUE         33470
+#define _APS_NEXT_CONTROL_VALUE         22114
 #define _APS_NEXT_SYMED_VALUE           24052
 #endif
 #endif

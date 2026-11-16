@@ -587,6 +587,24 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,198,65,47,14
 END
 
+IDD_TRIM_SAVE_DLG DIALOGEX 0, 0, 286, 137
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Save Clip"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "Duration:",IDC_STATIC,9,10,48,10
+    LTEXT           "",IDC_TRIM_DURATION,61,10,216,10,SS_NOPREFIX
+    LTEXT           "File &name:",IDC_STATIC,9,30,48,10
+    EDITTEXT        IDC_TRIM_FILENAME,61,27,216,14,ES_AUTOHSCROLL
+    LTEXT           "&Folder:",IDC_STATIC,9,51,48,10
+    EDITTEXT        IDC_TRIM_PATH,61,48,150,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse...",IDC_TRIM_BROWSE,216,48,61,14
+    CONTROL         "",IDC_TRIM_PROGRESS,"msctls_progress32",NOT WS_VISIBLE | WS_BORDER,9,72,268,8
+    LTEXT           "",IDC_TRIM_STATUS,9,84,268,24,SS_NOPREFIX
+    DEFPUSHBUTTON   "Save Clip",IDOK,137,114,68,14
+    PUSHBUTTON      "Cancel",IDCANCEL,209,114,68,14
+END
+
 IDD_COMPROPERTYPAGE DIALOGEX 0, 0, 5, 5
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "Segoe UI", 400, 0, 0x1
@@ -1587,6 +1605,9 @@ BEGIN
         MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
         MENUITEM "Save &Image...",              ID_FILE_SAVE_IMAGE
         MENUITEM "Save &Thumbnails...",         ID_FILE_SAVE_THUMBNAILS
+        MENUITEM "Save C&lip...",               ID_TRIM_SAVE_CLIP
+        MENUITEM SEPARATOR
+        MENUITEM "Tri&m Video...",              ID_FILE_TRIM_VIDEO
         MENUITEM SEPARATOR
         POPUP "S&ubtitles"
         BEGIN
@@ -1865,6 +1886,9 @@ BEGIN
             MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
             MENUITEM "Save &Image...",              ID_FILE_SAVE_IMAGE
             MENUITEM "Save &Thumbnails...",         ID_FILE_SAVE_THUMBNAILS
+            MENUITEM "Save C&lip...",               ID_TRIM_SAVE_CLIP
+            MENUITEM SEPARATOR
+            MENUITEM "Tri&m Video...",              ID_FILE_TRIM_VIDEO
             MENUITEM SEPARATOR
             POPUP "S&ubtitles"
             BEGIN
@@ -2132,6 +2156,9 @@ BEGIN
             MENUITEM "&Save a Copy...",             ID_FILE_SAVE_COPY
             MENUITEM "Save &Image...",              ID_FILE_SAVE_IMAGE
             MENUITEM "Save &Thumbnails...",         ID_FILE_SAVE_THUMBNAILS
+            MENUITEM "Save C&lip...",               ID_TRIM_SAVE_CLIP
+            MENUITEM SEPARATOR
+            MENUITEM "Tri&m Video...",              ID_FILE_TRIM_VIDEO
             MENUITEM SEPARATOR
             POPUP "S&ubtitles"
             BEGIN
@@ -4363,6 +4390,53 @@ BEGIN
     IDS_MODERN_THEME_STYLE_WINDOWS11 "Windows 11"
     IDS_PPAGEADVANCED_SUB_GLYPH_CACHE_MB "Subtitle glyph cache limit in MB. The internal subtitle renderer's cache grows up to this limit on scripts that need it."
     IDS_AUDIO_BOOST_WARNING "WARNING: Boosting audio volume can in some situations have a negative effect on audio quality due to overflow.\n\nThere are two better and safer methods for increasing volume:\n1) Enabling mixing in the internal audio decoder settings.\nInternal Filters > Audio Decoder > Mixing\nThis is recommended if you have stereo speakers or headphones.\nTo increase loudness of voices, set center mix level to 1.0 in the mixing settings.\n2) Enable Normalize"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TRIM_VIDEO              "Trim Video"
+    IDS_TRIM_SAVE_CLIP          "Save Clip"
+    IDS_TRIM_PLAY_SELECTION     "Play Selection"
+    IDS_TRIM_SET_START          "Set Trim Start at Playhead"
+    IDS_TRIM_SET_END            "Set Trim End at Playhead"
+    IDS_TRIM_CLOSE_MODE         "Close Trim Video"
+    IDS_TRIM_OSD_ENTER          "Trim Video: Enter plays the selection, Esc closes"
+    IDS_TRIM_STATUSBAR          "Trim %s – %s (%s)"
+    IDS_TRIM_GRIP_START         "Start: %s"
+    IDS_TRIM_GRIP_END           "End: %s"
+    IDS_TRIM_ACCESSIBLE_NAME    "Trim selection, start %s, end %s"
+    IDS_TRIM_EXIT_CONFIRM       "A clip is being saved. Stop saving and exit?"
+    IDS_TRIM_CHECKING           "Checking the file..."
+    IDS_TRIM_INFO_CONVERT       "This file cannot be copied as it is, so the clip is converted to H.264 and AAC. This takes longer."
+    IDS_TRIM_CLIP_LENGTH        "Duration: %s"
+    IDS_TRIM_FIRST_AUDIO_ONLY   "Only the first audio track is saved."
+    IDS_TRIM_MP4_FILTER         "MP4 video (*.mp4)|*.mp4||"
+    IDS_TRIM_INVALID_PATH       "Enter a full file name in an existing folder."
+    IDS_TRIM_REPLACE            "%s already exists.\nDo you want to replace it?"
+    IDS_TRIM_SAVING             "Saving... %d%%"
+    IDS_TRIM_SAVED              "Clip saved."
+    IDS_TRIM_CANCELLING         "Cancelling..."
+    IDS_TRIM_SHOW_IN_FOLDER     "Open Folder"
+    IDS_TRIM_CLOSE              "Close"
+    IDS_TRIM_STATUS_OK          "The clip was saved."
+    IDS_TRIM_STATUS_CANCELLED   "Saving was cancelled."
+    IDS_TRIM_STATUS_MF_MISSING  "Windows Media Foundation is not available. On Windows N editions, install the Media Feature Pack."
+    IDS_TRIM_STATUS_SOURCE_UNREADABLE "Windows Media Foundation cannot read this file."
+    IDS_TRIM_STATUS_NO_VIDEO    "The file has no video track."
+    IDS_TRIM_STATUS_FAST_CONTAINER "Quick copy works only with MP4 and MOV files."
+    IDS_TRIM_STATUS_FAST_VIDEO  "Quick copy works only with H.264 video."
+    IDS_TRIM_STATUS_FAST_AUDIO  "Quick copy works only with AAC audio."
+    IDS_TRIM_STATUS_PRECISE_VIDEO "This video cannot be converted (unsupported format, interlaced or HDR)."
+    IDS_TRIM_STATUS_PRECISE_AUDIO "The audio of this file cannot be converted."
+    IDS_TRIM_STATUS_ENCODER_MISSING "The H.264 or AAC encoder of Windows is not available."
+    IDS_TRIM_STATUS_EMPTY_RANGE "The selection contains no video frames."
+    IDS_TRIM_STATUS_DEST_EXISTS "The destination file already exists."
+    IDS_TRIM_STATUS_DEST_IS_SOURCE "A clip cannot replace the file it is cut from."
+    IDS_TRIM_STATUS_ACCESS_DENIED "The destination cannot be written. It may be read-only or in use."
+    IDS_TRIM_STATUS_DISK_FULL   "There is not enough free disk space for the clip."
+    IDS_TRIM_STATUS_WRITE_FAILED "Writing the clip failed."
+    IDS_TRIM_STATUS_VALIDATION_FAILED "The saved clip failed verification and was discarded."
+    IDS_TRIM_STATUS_UNEXPECTED  "An unexpected error occurred."
 END
 
 #endif    // English (United States) resources
