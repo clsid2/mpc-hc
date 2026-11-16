@@ -42,6 +42,7 @@ CPPageSubStyle::CPPageSubStyle(bool isStyleDialog)
     , m_bRoundedOpaqueBox(FALSE)
     , m_screenAlignment(0)
     , m_margin(0, 0, 0, 0)
+    , m_alpha{}
     , m_bLinkAlphaSliders(FALSE)
     , m_iRelativeTo(0)
     , isStyleDialog(isStyleDialog)
@@ -219,7 +220,9 @@ BOOL CPPageSubStyle::OnInitDialog()
     for (size_t i = 0; i < m_color.size(); i++) {
         m_color[i].SetColor(m_stss.colors[i]);
         m_alpha[i] = BYTE_MAX - m_stss.alpha[i];
-        m_alphaSliders[i].SetRange(0, BYTE_MAX);
+        // the first data exchange in __super::OnInitDialog set the positions against the default 0..100 range;
+        // without a redraw comctl32 keeps the thumb where that range put it, so a later TBM_SETPOS of the same value never moves it (#4384)
+        m_alphaSliders[i].SetRange(0, BYTE_MAX, TRUE);
     }
 
     m_bLinkAlphaSliders = FALSE;
