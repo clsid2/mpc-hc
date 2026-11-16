@@ -112,6 +112,9 @@ BOOL UpdateCheckerDlg::OnInitDialog()
             ASSERT(0); // should never happen
     }
 
+    // modeless with an enabled owner, so MFC no longer centers the dialog for us
+    CenterWindow();
+
     return ret;
 }
 
