@@ -2524,10 +2524,6 @@ STDMETHODIMP CBaseAP::SetPixelShader(LPCSTR pSrcData, LPCSTR pTarget)
 
 bool CBaseAP::InputPinIsHLGNow()
 {
-    if (m_nRenderState != Started && m_nRenderState != Paused) {
-        return false;
-    }
-
     CComPtr<IPin> pPin;
     CMediaType    mt;
     if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
@@ -2545,10 +2541,6 @@ bool CBaseAP::InputPinIsHLGNow()
 
 bool CBaseAP::HLGToSDRActive()
 {
-    if (m_bHLGPinCheck) {
-        m_bHLGPinCheck = false;
-        m_bHLGInput = InputPinIsHLGNow();
-    }
     if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
             || m_caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
         return false;
@@ -3082,6 +3074,9 @@ STDMETHODIMP CSyncAP::ProcessMessage(MFVP_MESSAGE_TYPE eMessage, ULONG_PTR ulPar
             break;
 
         case MFVP_MESSAGE_INVALIDATEMEDIATYPE:
+            // Read the input pin here, where the EVR already holds its filter lock. The render
+            // thread must not: it would wait for that lock while the loop below waits for it.
+            m_bHLGInputPin = InputPinIsHLGNow();
             m_bPendingRenegotiate = true;
             while (m_bPendingRenegotiate) {
                 Sleep(1);
@@ -3155,8 +3150,7 @@ HRESULT CSyncAP::CreateOptimalOutputType(IMFMediaType* pMixerProposedType, IMFMe
     }
 
     // HLG input: converted to SDR from the very first frame (see HLGToSDR.h).
-    m_bHLGInput = MixerTypeIsHLG(pMixerInputType);
-    m_bHLGPinCheck = !m_bHLGInput;
+    m_bHLGInput = MixerTypeIsHLG(pMixerInputType) || m_bHLGInputPin;
 
     pOptimalMediaType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
 

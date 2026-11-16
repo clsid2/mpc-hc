@@ -1740,10 +1740,6 @@ HRESULT CDX9RenderingEngine::AlphaBlt(const RECT* pSrc, const RECT* pDst, IDirec
 
 bool CDX9RenderingEngine::HLGToSDRActive()
 {
-    if (m_bHLGPinCheck && !InputPinIsFlushing()) {
-        m_bHLGPinCheck = false;
-        m_bHLGInput = InputPinIsHLGNow();
-    }
     if (!m_bHLGInput || !GetRenderersSettings().m_AdvRendSets.bHLGToSDR
             || m_Caps.PixelShaderVersion < D3DPS_VERSION(3, 0)) {
         return false;

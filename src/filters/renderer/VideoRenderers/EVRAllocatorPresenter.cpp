@@ -627,6 +627,9 @@ STDMETHODIMP CEVRAllocatorPresenter::ProcessMessage(MFVP_MESSAGE_TYPE eMessage, 
                 3) The presenter sets the media type on the mixer's output stream.
                 4) The EVR sets the media type on the substreams.
             */
+            // Read the input pin here, where the EVR already holds its filter lock. The render
+            // thread must not: it would wait for that lock while the loop below waits for it.
+            m_bHLGInputPin = !m_bIsPreview && InputPinIsHLGNow();
             m_bPendingRenegotiate = true;
             while (m_bPendingRenegotiate) {
                 Sleep(1);
@@ -695,10 +698,6 @@ HRESULT CEVRAllocatorPresenter::IsMediaTypeSupported(IMFMediaType* pMixerType)
 
 bool CEVRAllocatorPresenter::InputPinIsHLGNow()
 {
-    if (m_nRenderState != Started && m_nRenderState != Paused) {
-        return false;
-    }
-
     CComPtr<IPin> pPin;
     CMediaType    mt;
     if (SUCCEEDED(m_pOuterEVR->FindPin(L"EVR Input0", &pPin)) && SUCCEEDED(pPin->ConnectionMediaType(&mt))) {
@@ -753,8 +752,7 @@ HRESULT CEVRAllocatorPresenter::CreateOptimalOutputType(IMFMediaType* pMixerProp
 
     // HLG input: the rendering engine converts it to SDR, from the very first frame
     // (the decoder often signals HLG only in a format change after the first frames).
-    m_bHLGInput = !m_bIsPreview && MixerTypeIsHLG(pMixerInputType);
-    m_bHLGPinCheck = !m_bIsPreview && !m_bHLGInput;
+    m_bHLGInput = !m_bIsPreview && (MixerTypeIsHLG(pMixerInputType) || m_bHLGInputPin);
 
     const CRenderersSettings& r = GetRenderersSettings();
 
