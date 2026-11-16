@@ -242,6 +242,7 @@ BEGIN_MESSAGE_MAP(CPlayerInfoBar, CDialogBar)
     ON_MPCTHEMECHANGED()
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
+    ON_WM_WINDOWPOSCHANGED()
     ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
@@ -308,6 +309,16 @@ void CPlayerInfoBar::OnSize(UINT nType, int cx, int cy)
     Relayout();
 
     Invalidate();
+}
+
+void CPlayerInfoBar::OnWindowPosChanged(WINDOWPOS* lpwndpos)
+{
+    CDialogBar::OnWindowPosChanged(lpwndpos);
+
+    // posted, since the bar is shown from inside RecalcLayout, which ignores a nested call
+    if (lpwndpos->flags & SWP_SHOWWINDOW) {
+        m_pMainFrame->PostMessage(WM_INFOBAR_SHOWN, 0, reinterpret_cast<LPARAM>(this));
+    }
 }
 
 void CPlayerInfoBar::OnLButtonDown(UINT nFlags, CPoint point)

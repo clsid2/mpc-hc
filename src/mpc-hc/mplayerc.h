@@ -111,6 +111,7 @@ enum {
     WM_MPC_UPDATE_CHECK_DONE, // posted by the update check thread with a heap UpdateCheckResult the frame takes ownership of
     WM_MPC_UI_REQUEST, // sent (never posted) by the web server's thread with a CMainFrame::UIRequest to run here
     WM_LAV_PROPPAGE_CALLBACK,
+    WM_INFOBAR_SHOWN, // posted by a CPlayerInfoBar when it is shown, with the bar in lParam
     WM_MPCVR_SWITCH_FULLSCREEN = WM_APP + 4096,
 };
 

@@ -196,6 +196,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_WM_DESTROY()
     ON_WM_CLOSE()
     ON_MESSAGE(WM_LAV_PROPPAGE_CALLBACK, OnLAVPropPageCallback)
+    ON_MESSAGE(WM_INFOBAR_SHOWN, OnInfoBarShown)
     ON_WM_MEASUREITEM()
 
     ON_MESSAGE(WM_MPCVR_SWITCH_FULLSCREEN, OnMPCVRSwitchFullscreen)
@@ -2326,6 +2327,180 @@ bool g_bExternalSubtitleTime = false;
 bool g_bExternalSubtitle = false;
 double g_dRate = 1.0;
 
+void CMainFrame::UpdateDVDInfoBar()
+{
+    ULONG ulAvailable, ulCurrent;
+
+    CString Location(_T('-'));
+    CString Audio(_T('-'));
+    CString Video(_T('-'));
+
+    DVD_PLAYBACK_LOCATION2 loc;
+    ULONG ulNumOfVolumes, ulVolume;
+    DVD_DISC_SIDE Side;
+    ULONG ulNumOfTitles;
+    ULONG ulNumOfChapters;
+
+    // Location
+    if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentLocation(&loc))
+            && SUCCEEDED(m_graph.m_pDVDI->GetNumberOfChapters(loc.TitleNum, &ulNumOfChapters))
+            && SUCCEEDED(m_graph.m_pDVDI->GetDVDVolumeInfo(&ulNumOfVolumes, &ulVolume, &Side, &ulNumOfTitles))) {
+        Location.Format(IDS_MAINFRM_9,
+                        ulVolume, ulNumOfVolumes,
+                        loc.TitleNum, ulNumOfTitles,
+                        loc.ChapterNum, ulNumOfChapters);
+        ULONG tsec = (loc.TimeCode.bHours * 3600)
+                     + (loc.TimeCode.bMinutes * 60)
+                     + (loc.TimeCode.bSeconds);
+        /* This might not always work, such as on resume */
+        if (loc.ChapterNum != m_lCurrentChapter) {
+            m_lCurrentChapter = loc.ChapterNum;
+            m_lChapterStartTime = tsec;
+        } else {
+            /* If a resume point was used, and the user chapter jumps,
+            then it might do some funky time jumping.  Try to 'fix' the
+            chapter start time if this happens */
+            if (m_lChapterStartTime > tsec) {
+                m_lChapterStartTime = tsec;
+            }
+        }
+    }
+
+    // Video
+    DVD_VideoAttributes VATR;
+    if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAngle(&ulAvailable, &ulCurrent))
+            && SUCCEEDED(m_graph.m_pDVDI->GetCurrentVideoAttributes(&VATR))) {
+        Video.Format(IDS_MAINFRM_10,
+                     ulCurrent, ulAvailable,
+                     VATR.ulSourceResolutionX, VATR.ulSourceResolutionY, VATR.ulFrameRate,
+                     VATR.ulAspectX, VATR.ulAspectY);
+        m_statusbarVideoSize.Format(_T("%dx%d"), VATR.ulSourceResolutionX, VATR.ulSourceResolutionY);
+        m_statusbarVideoFormat = VATR.Compression == DVD_VideoCompression_MPEG1 ? L"MPG1" : VATR.Compression == DVD_VideoCompression_MPEG2 ? L"MPG2" : L"";
+    }
+
+    // Audio
+    DVD_AudioAttributes AATR;
+    if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAudio(&ulAvailable, &ulCurrent))
+            && SUCCEEDED(m_graph.m_pDVDI->GetAudioAttributes(ulCurrent, &AATR))) {
+        CString lang;
+        if (AATR.Language) {
+            GetLocaleString(AATR.Language, LOCALE_SENGLANGUAGE, lang);
+            currentAudioLang = lang;
+        } else {
+            lang.Format(IDS_AG_UNKNOWN, ulCurrent + 1);
+            currentAudioLang.Empty();
+        }
+
+        switch (AATR.LanguageExtension) {
+            case DVD_AUD_EXT_NotSpecified:
+            default:
+                break;
+            case DVD_AUD_EXT_Captions:
+                lang += _T(" (Captions)");
+                break;
+            case DVD_AUD_EXT_VisuallyImpaired:
+                lang += _T(" (Visually Impaired)");
+                break;
+            case DVD_AUD_EXT_DirectorComments1:
+                lang += _T(" (Director Comments 1)");
+                break;
+            case DVD_AUD_EXT_DirectorComments2:
+                lang += _T(" (Director Comments 2)");
+                break;
+        }
+
+        CString format = m_disc.GetDVDAudioFormatName(AATR);
+        m_statusbarAudioFormat.Format(L"%s %dch", format, AATR.bNumberOfChannels);
+
+        Audio.Format(IDS_MAINFRM_11,
+                     lang.GetString(),
+                     format.GetString(),
+                     AATR.dwFrequency,
+                     AATR.bQuantization,
+                     AATR.bNumberOfChannels,
+                     ResStr(AATR.bNumberOfChannels > 1 ? IDS_MAINFRM_13 : IDS_MAINFRM_12).GetString());
+
+        m_wndStatusBar.SetAudioChannels(AATR.bNumberOfChannels);
+    }
+
+    if (m_wndInfoBar.IsVisible()) {
+        m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_LOCATION), Location);
+        m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_VIDEO), Video);
+        m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_AUDIO), Audio);
+
+        // Subtitles
+        CString Subtitles(_T('-'));
+        BOOL bIsDisabled;
+        DVD_SubpictureAttributes SATR;
+        if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentSubpicture(&ulAvailable, &ulCurrent, &bIsDisabled))
+            && SUCCEEDED(m_graph.m_pDVDI->GetSubpictureAttributes(ulCurrent, &SATR))) {
+            CString lang;
+            GetLocaleString(SATR.Language, LOCALE_SENGLANGUAGE, lang);
+
+            switch (SATR.LanguageExtension) {
+            case DVD_SP_EXT_NotSpecified:
+            default:
+                break;
+            case DVD_SP_EXT_Caption_Normal:
+                lang += _T("");
+                break;
+            case DVD_SP_EXT_Caption_Big:
+                lang += _T(" (Big)");
+                break;
+            case DVD_SP_EXT_Caption_Children:
+                lang += _T(" (Children)");
+                break;
+            case DVD_SP_EXT_CC_Normal:
+                lang += _T(" (CC)");
+                break;
+            case DVD_SP_EXT_CC_Big:
+                lang += _T(" (CC Big)");
+                break;
+            case DVD_SP_EXT_CC_Children:
+                lang += _T(" (CC Children)");
+                break;
+            case DVD_SP_EXT_Forced:
+                lang += _T(" (Forced)");
+                break;
+            case DVD_SP_EXT_DirectorComments_Normal:
+                lang += _T(" (Director Comments)");
+                break;
+            case DVD_SP_EXT_DirectorComments_Big:
+                lang += _T(" (Director Comments, Big)");
+                break;
+            case DVD_SP_EXT_DirectorComments_Children:
+                lang += _T(" (Director Comments, Children)");
+                break;
+            }
+
+            if (bIsDisabled) {
+                lang = _T("-");
+            }
+
+            Subtitles.Format(_T("%s"),
+                lang.GetString());
+        }
+
+        m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_SUBTITLES), Subtitles);
+    }
+}
+
+// TIMER_STATS only refreshes the info bar while it is visible, and does not run
+// while paused, so refresh it as soon as it is shown
+LRESULT CMainFrame::OnInfoBarShown(WPARAM wParam, LPARAM lParam)
+{
+    if (reinterpret_cast<CPlayerInfoBar*>(lParam) != &m_wndInfoBar || !m_wndInfoBar.IsVisible() || GetLoadState() != MLS::LOADED) {
+        return 0;
+    }
+
+    if (GetPlaybackMode() == PM_DVD) {
+        UpdateDVDInfoBar();
+    } else if (GetPlaybackMode() == PM_FILE) {
+        OpenSetupInfoBar(false);
+    }
+    return 0;
+}
+
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
     CDeferredActionScope actionScope(*this);
@@ -2601,160 +2776,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
             }
 
             if (GetPlaybackMode() == PM_DVD) { // we also use this timer to update the info panel for DVD playback
-                ULONG ulAvailable, ulCurrent;
-
-                CString Location(_T('-'));
-                CString Audio(_T('-'));
-                CString Video(_T('-'));
-
-                DVD_PLAYBACK_LOCATION2 loc;
-                ULONG ulNumOfVolumes, ulVolume;
-                DVD_DISC_SIDE Side;
-                ULONG ulNumOfTitles;
-                ULONG ulNumOfChapters;
-
-                // Location
-                if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentLocation(&loc))
-                        && SUCCEEDED(m_graph.m_pDVDI->GetNumberOfChapters(loc.TitleNum, &ulNumOfChapters))
-                        && SUCCEEDED(m_graph.m_pDVDI->GetDVDVolumeInfo(&ulNumOfVolumes, &ulVolume, &Side, &ulNumOfTitles))) {
-                    Location.Format(IDS_MAINFRM_9,
-                                    ulVolume, ulNumOfVolumes,
-                                    loc.TitleNum, ulNumOfTitles,
-                                    loc.ChapterNum, ulNumOfChapters);
-                    ULONG tsec = (loc.TimeCode.bHours * 3600)
-                                 + (loc.TimeCode.bMinutes * 60)
-                                 + (loc.TimeCode.bSeconds);
-                    /* This might not always work, such as on resume */
-                    if (loc.ChapterNum != m_lCurrentChapter) {
-                        m_lCurrentChapter = loc.ChapterNum;
-                        m_lChapterStartTime = tsec;
-                    } else {
-                        /* If a resume point was used, and the user chapter jumps,
-                        then it might do some funky time jumping.  Try to 'fix' the
-                        chapter start time if this happens */
-                        if (m_lChapterStartTime > tsec) {
-                            m_lChapterStartTime = tsec;
-                        }
-                    }
-                }
-
-                // Video
-                DVD_VideoAttributes VATR;
-                if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAngle(&ulAvailable, &ulCurrent))
-                        && SUCCEEDED(m_graph.m_pDVDI->GetCurrentVideoAttributes(&VATR))) {
-                    Video.Format(IDS_MAINFRM_10,
-                                 ulCurrent, ulAvailable,
-                                 VATR.ulSourceResolutionX, VATR.ulSourceResolutionY, VATR.ulFrameRate,
-                                 VATR.ulAspectX, VATR.ulAspectY);
-                    m_statusbarVideoSize.Format(_T("%dx%d"), VATR.ulSourceResolutionX, VATR.ulSourceResolutionY);
-                    m_statusbarVideoFormat = VATR.Compression == DVD_VideoCompression_MPEG1 ? L"MPG1" : VATR.Compression == DVD_VideoCompression_MPEG2 ? L"MPG2" : L"";
-                }
-
-                // Audio
-                DVD_AudioAttributes AATR;
-                if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentAudio(&ulAvailable, &ulCurrent))
-                        && SUCCEEDED(m_graph.m_pDVDI->GetAudioAttributes(ulCurrent, &AATR))) {
-                    CString lang;
-                    if (AATR.Language) {
-                        GetLocaleString(AATR.Language, LOCALE_SENGLANGUAGE, lang);
-                        currentAudioLang = lang;
-                    } else {
-                        lang.Format(IDS_AG_UNKNOWN, ulCurrent + 1);
-                        currentAudioLang.Empty();
-                    }
-
-                    switch (AATR.LanguageExtension) {
-                        case DVD_AUD_EXT_NotSpecified:
-                        default:
-                            break;
-                        case DVD_AUD_EXT_Captions:
-                            lang += _T(" (Captions)");
-                            break;
-                        case DVD_AUD_EXT_VisuallyImpaired:
-                            lang += _T(" (Visually Impaired)");
-                            break;
-                        case DVD_AUD_EXT_DirectorComments1:
-                            lang += _T(" (Director Comments 1)");
-                            break;
-                        case DVD_AUD_EXT_DirectorComments2:
-                            lang += _T(" (Director Comments 2)");
-                            break;
-                    }
-
-                    CString format = m_disc.GetDVDAudioFormatName(AATR);
-                    m_statusbarAudioFormat.Format(L"%s %dch", format, AATR.bNumberOfChannels);
-
-                    Audio.Format(IDS_MAINFRM_11,
-                                 lang.GetString(),
-                                 format.GetString(),
-                                 AATR.dwFrequency,
-                                 AATR.bQuantization,
-                                 AATR.bNumberOfChannels,
-                                 ResStr(AATR.bNumberOfChannels > 1 ? IDS_MAINFRM_13 : IDS_MAINFRM_12).GetString());
-
-                    m_wndStatusBar.SetAudioChannels(AATR.bNumberOfChannels);
-                }
-
-                if (m_wndInfoBar.IsVisible()) {
-                    m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_LOCATION), Location);
-                    m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_VIDEO), Video);
-                    m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_AUDIO), Audio);
-
-                    // Subtitles
-                    CString Subtitles(_T('-'));
-                    BOOL bIsDisabled;
-                    DVD_SubpictureAttributes SATR;
-                    if (SUCCEEDED(m_graph.m_pDVDI->GetCurrentSubpicture(&ulAvailable, &ulCurrent, &bIsDisabled))
-                        && SUCCEEDED(m_graph.m_pDVDI->GetSubpictureAttributes(ulCurrent, &SATR))) {
-                        CString lang;
-                        GetLocaleString(SATR.Language, LOCALE_SENGLANGUAGE, lang);
-
-                        switch (SATR.LanguageExtension) {
-                        case DVD_SP_EXT_NotSpecified:
-                        default:
-                            break;
-                        case DVD_SP_EXT_Caption_Normal:
-                            lang += _T("");
-                            break;
-                        case DVD_SP_EXT_Caption_Big:
-                            lang += _T(" (Big)");
-                            break;
-                        case DVD_SP_EXT_Caption_Children:
-                            lang += _T(" (Children)");
-                            break;
-                        case DVD_SP_EXT_CC_Normal:
-                            lang += _T(" (CC)");
-                            break;
-                        case DVD_SP_EXT_CC_Big:
-                            lang += _T(" (CC Big)");
-                            break;
-                        case DVD_SP_EXT_CC_Children:
-                            lang += _T(" (CC Children)");
-                            break;
-                        case DVD_SP_EXT_Forced:
-                            lang += _T(" (Forced)");
-                            break;
-                        case DVD_SP_EXT_DirectorComments_Normal:
-                            lang += _T(" (Director Comments)");
-                            break;
-                        case DVD_SP_EXT_DirectorComments_Big:
-                            lang += _T(" (Director Comments, Big)");
-                            break;
-                        case DVD_SP_EXT_DirectorComments_Children:
-                            lang += _T(" (Director Comments, Children)");
-                            break;
-                        }
-
-                        if (bIsDisabled) {
-                            lang = _T("-");
-                        }
-
-                        Subtitles.Format(_T("%s"),
-                            lang.GetString());
-                    }
-
-                    m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_SUBTITLES), Subtitles);
-                }
+                UpdateDVDInfoBar();
             } else if (GetPlaybackMode() == PM_DIGITAL_CAPTURE) {
                 if (m_capture.m_pDVBState->bActive) {
                     CComQIPtr<IBDATuner> pTun = m_graph.m_pGB;
