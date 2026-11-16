@@ -5472,3 +5472,192 @@ msgid ""
 "To increase loudness of voices, set center mix level to 1.0 in the mixing settings.\n"
 "2) Enable Normalize"
 msgstr ""
+
+msgctxt "IDS_TRIM_VIDEO"
+msgid "Trim Video"
+msgstr "Taglia video"
+
+msgctxt "IDS_TRIM_SAVE_CLIP"
+msgid "Save Clip"
+msgstr "Salva clip"
+
+msgctxt "IDS_TRIM_PLAY_SELECTION"
+msgid "Play Selection"
+msgstr "Riproduci selezione"
+
+msgctxt "IDS_TRIM_SET_START"
+msgid "Set Trim Start at Playhead"
+msgstr "Imposta inizio taglio sulla posizione attuale"
+
+msgctxt "IDS_TRIM_SET_END"
+msgid "Set Trim End at Playhead"
+msgstr "Imposta fine taglio sulla posizione attuale"
+
+msgctxt "IDS_TRIM_CLOSE_MODE"
+msgid "Close Trim Video"
+msgstr "Chiudi Taglia video"
+
+msgctxt "IDS_TRIM_OSD_ENTER"
+msgid "Trim Video: Enter plays the selection, Esc closes"
+msgstr "Taglia video: Invio riproduce, Esc chiude"
+
+msgctxt "IDS_TRIM_STATUSBAR"
+msgid "Trim %s – %s (%s)"
+msgstr "Taglio %s – %s (%s)"
+
+msgctxt "IDS_TRIM_GRIP_START"
+msgid "Start: %s"
+msgstr "Inizio: %s"
+
+msgctxt "IDS_TRIM_GRIP_END"
+msgid "End: %s"
+msgstr "Fine: %s"
+
+msgctxt "IDS_TRIM_ACCESSIBLE_NAME"
+msgid "Trim selection, start %s, end %s"
+msgstr "Selezione di taglio, inizio %s, fine %s"
+
+msgctxt "IDS_TRIM_EXIT_CONFIRM"
+msgid "A clip is being saved. Stop saving and exit?"
+msgstr "Salvataggio di una clip in corso. Interromperlo e uscire?"
+
+msgctxt "IDS_TRIM_CHECKING"
+msgid "Checking the file..."
+msgstr "Controllo del file..."
+
+msgctxt "IDS_TRIM_INFO_CONVERT"
+msgid ""
+"This file cannot be copied as it is, so the clip is converted to H.264 and "
+"AAC. This takes longer."
+msgstr ""
+"Questo file non si può copiare così com'è, quindi la clip viene convertita "
+"in H.264 e AAC. Richiede più tempo."
+
+msgctxt "IDS_TRIM_CLIP_LENGTH"
+msgid "Duration: %s"
+msgstr "Durata: %s"
+
+msgctxt "IDS_TRIM_FIRST_AUDIO_ONLY"
+msgid "Only the first audio track is saved."
+msgstr "Viene salvata solo la prima traccia audio."
+
+msgctxt "IDS_TRIM_MP4_FILTER"
+msgid "MP4 video (*.mp4)|*.mp4||"
+msgstr "Video MP4 (*.mp4)|*.mp4||"
+
+msgctxt "IDS_TRIM_INVALID_PATH"
+msgid "Enter a full file name in an existing folder."
+msgstr "Inserisci il nome completo di un file in una cartella esistente."
+
+msgctxt "IDS_TRIM_REPLACE"
+msgid ""
+"%s already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%s esiste già.\n"
+"Vuoi sostituirlo?"
+
+msgctxt "IDS_TRIM_SAVING"
+msgid "Saving... %d%%"
+msgstr "Salvataggio... %d%%"
+
+msgctxt "IDS_TRIM_SAVED"
+msgid "Clip saved."
+msgstr "Clip salvata."
+
+msgctxt "IDS_TRIM_CANCELLING"
+msgid "Cancelling..."
+msgstr "Annullamento..."
+
+msgctxt "IDS_TRIM_SHOW_IN_FOLDER"
+msgid "Open Folder"
+msgstr "Apri cartella"
+
+msgctxt "IDS_TRIM_CLOSE"
+msgid "Close"
+msgstr "Chiudi"
+
+msgctxt "IDS_TRIM_STATUS_OK"
+msgid "The clip was saved."
+msgstr "La clip è stata salvata."
+
+msgctxt "IDS_TRIM_STATUS_CANCELLED"
+msgid "Saving was cancelled."
+msgstr "Salvataggio annullato."
+
+msgctxt "IDS_TRIM_STATUS_MF_MISSING"
+msgid ""
+"Windows Media Foundation is not available. On Windows N editions, install "
+"the Media Feature Pack."
+msgstr ""
+"Windows Media Foundation non è disponibile. Nelle edizioni N di Windows "
+"installa il Media Feature Pack."
+
+msgctxt "IDS_TRIM_STATUS_SOURCE_UNREADABLE"
+msgid "Windows Media Foundation cannot read this file."
+msgstr "Windows Media Foundation non riesce a leggere questo file."
+
+msgctxt "IDS_TRIM_STATUS_NO_VIDEO"
+msgid "The file has no video track."
+msgstr "Il file non contiene una traccia video."
+
+msgctxt "IDS_TRIM_STATUS_FAST_CONTAINER"
+msgid "Quick copy works only with MP4 and MOV files."
+msgstr "La copia rapida funziona solo con file MP4 e MOV."
+
+msgctxt "IDS_TRIM_STATUS_FAST_VIDEO"
+msgid "Quick copy works only with H.264 video."
+msgstr "La copia rapida funziona solo con video H.264."
+
+msgctxt "IDS_TRIM_STATUS_FAST_AUDIO"
+msgid "Quick copy works only with AAC audio."
+msgstr "La copia rapida funziona solo con audio AAC."
+
+msgctxt "IDS_TRIM_STATUS_PRECISE_VIDEO"
+msgid ""
+"This video cannot be converted (unsupported format, interlaced or HDR)."
+msgstr ""
+"Questo video non può essere convertito (formato non supportato, "
+"interlacciato o HDR)."
+
+msgctxt "IDS_TRIM_STATUS_PRECISE_AUDIO"
+msgid "The audio of this file cannot be converted."
+msgstr "L'audio di questo file non può essere convertito."
+
+msgctxt "IDS_TRIM_STATUS_ENCODER_MISSING"
+msgid "The H.264 or AAC encoder of Windows is not available."
+msgstr "L'encoder H.264 o AAC di Windows non è disponibile."
+
+msgctxt "IDS_TRIM_STATUS_EMPTY_RANGE"
+msgid "The selection contains no video frames."
+msgstr "La selezione non contiene fotogrammi video."
+
+msgctxt "IDS_TRIM_STATUS_DEST_EXISTS"
+msgid "The destination file already exists."
+msgstr "Il file di destinazione esiste già."
+
+msgctxt "IDS_TRIM_STATUS_DEST_IS_SOURCE"
+msgid "A clip cannot replace the file it is cut from."
+msgstr "Una clip non può sostituire il file da cui è tagliata."
+
+msgctxt "IDS_TRIM_STATUS_ACCESS_DENIED"
+msgid "The destination cannot be written. It may be read-only or in use."
+msgstr ""
+"Impossibile scrivere la destinazione. Potrebbe essere di sola lettura o in "
+"uso."
+
+msgctxt "IDS_TRIM_STATUS_DISK_FULL"
+msgid "There is not enough free disk space for the clip."
+msgstr "Spazio su disco insufficiente per la clip."
+
+msgctxt "IDS_TRIM_STATUS_WRITE_FAILED"
+msgid "Writing the clip failed."
+msgstr "Scrittura della clip non riuscita."
+
+msgctxt "IDS_TRIM_STATUS_VALIDATION_FAILED"
+msgid "The saved clip failed verification and was discarded."
+msgstr "La clip salvata non ha superato la verifica ed è stata scartata."
+
+msgctxt "IDS_TRIM_STATUS_UNEXPECTED"
+msgid "An unexpected error occurred."
+msgstr "Si è verificato un errore imprevisto."

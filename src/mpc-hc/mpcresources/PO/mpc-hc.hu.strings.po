@@ -5539,3 +5539,182 @@ msgstr ""
 "Ezt akkor ajánljuk, ha sztereó hangszóróid vagy fejhallgatód van.\n"
 "A hangok hangerejének növeléséhez állítsd a középső keverési szintet 1,0-ra a keverési beállításokban..\n"
 "2) A Normalizálás funkció engedélyezése"
+
+msgctxt "IDS_TRIM_VIDEO"
+msgid "Trim Video"
+msgstr ""
+
+msgctxt "IDS_TRIM_SAVE_CLIP"
+msgid "Save Clip"
+msgstr ""
+
+msgctxt "IDS_TRIM_PLAY_SELECTION"
+msgid "Play Selection"
+msgstr ""
+
+msgctxt "IDS_TRIM_SET_START"
+msgid "Set Trim Start at Playhead"
+msgstr ""
+
+msgctxt "IDS_TRIM_SET_END"
+msgid "Set Trim End at Playhead"
+msgstr ""
+
+msgctxt "IDS_TRIM_CLOSE_MODE"
+msgid "Close Trim Video"
+msgstr ""
+
+msgctxt "IDS_TRIM_OSD_ENTER"
+msgid "Trim Video: Enter plays the selection, Esc closes"
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUSBAR"
+msgid "Trim %s – %s (%s)"
+msgstr ""
+
+msgctxt "IDS_TRIM_GRIP_START"
+msgid "Start: %s"
+msgstr ""
+
+msgctxt "IDS_TRIM_GRIP_END"
+msgid "End: %s"
+msgstr ""
+
+msgctxt "IDS_TRIM_ACCESSIBLE_NAME"
+msgid "Trim selection, start %s, end %s"
+msgstr ""
+
+msgctxt "IDS_TRIM_EXIT_CONFIRM"
+msgid "A clip is being saved. Stop saving and exit?"
+msgstr ""
+
+msgctxt "IDS_TRIM_CHECKING"
+msgid "Checking the file..."
+msgstr ""
+
+msgctxt "IDS_TRIM_INFO_CONVERT"
+msgid ""
+"This file cannot be copied as it is, so the clip is converted to H.264 and "
+"AAC. This takes longer."
+msgstr ""
+
+msgctxt "IDS_TRIM_CLIP_LENGTH"
+msgid "Duration: %s"
+msgstr ""
+
+msgctxt "IDS_TRIM_FIRST_AUDIO_ONLY"
+msgid "Only the first audio track is saved."
+msgstr ""
+
+msgctxt "IDS_TRIM_MP4_FILTER"
+msgid "MP4 video (*.mp4)|*.mp4||"
+msgstr ""
+
+msgctxt "IDS_TRIM_INVALID_PATH"
+msgid "Enter a full file name in an existing folder."
+msgstr ""
+
+msgctxt "IDS_TRIM_REPLACE"
+msgid ""
+"%s already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+
+msgctxt "IDS_TRIM_SAVING"
+msgid "Saving... %d%%"
+msgstr ""
+
+msgctxt "IDS_TRIM_SAVED"
+msgid "Clip saved."
+msgstr ""
+
+msgctxt "IDS_TRIM_CANCELLING"
+msgid "Cancelling..."
+msgstr ""
+
+msgctxt "IDS_TRIM_SHOW_IN_FOLDER"
+msgid "Open Folder"
+msgstr ""
+
+msgctxt "IDS_TRIM_CLOSE"
+msgid "Close"
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_OK"
+msgid "The clip was saved."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_CANCELLED"
+msgid "Saving was cancelled."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_MF_MISSING"
+msgid ""
+"Windows Media Foundation is not available. On Windows N editions, install "
+"the Media Feature Pack."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_SOURCE_UNREADABLE"
+msgid "Windows Media Foundation cannot read this file."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_NO_VIDEO"
+msgid "The file has no video track."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_FAST_CONTAINER"
+msgid "Quick copy works only with MP4 and MOV files."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_FAST_VIDEO"
+msgid "Quick copy works only with H.264 video."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_FAST_AUDIO"
+msgid "Quick copy works only with AAC audio."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_PRECISE_VIDEO"
+msgid ""
+"This video cannot be converted (unsupported format, interlaced or HDR)."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_PRECISE_AUDIO"
+msgid "The audio of this file cannot be converted."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_ENCODER_MISSING"
+msgid "The H.264 or AAC encoder of Windows is not available."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_EMPTY_RANGE"
+msgid "The selection contains no video frames."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_DEST_EXISTS"
+msgid "The destination file already exists."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_DEST_IS_SOURCE"
+msgid "A clip cannot replace the file it is cut from."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_ACCESS_DENIED"
+msgid "The destination cannot be written. It may be read-only or in use."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_DISK_FULL"
+msgid "There is not enough free disk space for the clip."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_WRITE_FAILED"
+msgid "Writing the clip failed."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_VALIDATION_FAILED"
+msgid "The saved clip failed verification and was discarded."
+msgstr ""
+
+msgctxt "IDS_TRIM_STATUS_UNEXPECTED"
+msgid "An unexpected error occurred."
+msgstr ""

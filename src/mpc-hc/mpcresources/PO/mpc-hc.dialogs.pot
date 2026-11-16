@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-11-02 13:56:05+0000\n"
+"POT-Creation-Date: 2026-11-15 22:31:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -889,6 +889,34 @@ msgid "Saving..."
 msgstr ""
 
 msgctxt "IDD_SAVE_DLG_IDCANCEL"
+msgid "Cancel"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_CAPTION"
+msgid "Save Clip"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "Duration:"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "File &name:"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "&Folder:"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_TRIM_BROWSE"
+msgid "&Browse..."
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDOK"
+msgid "Save Clip"
+msgstr ""
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDCANCEL"
 msgid "Cancel"
 msgstr ""
 

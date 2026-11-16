@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
-"POT-Creation-Date: 2026-08-22 12:16:02+0000\n"
+"POT-Creation-Date: 2026-11-15 15:10:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,6 +59,14 @@ msgstr ""
 
 msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
+msgstr ""
+
+msgctxt "ID_TRIM_SAVE_CLIP"
+msgid "Save C&lip..."
+msgstr ""
+
+msgctxt "ID_FILE_TRIM_VIDEO"
+msgid "Tri&m Video..."
 msgstr ""
 
 msgctxt "POPUP"

@@ -922,6 +922,34 @@ msgctxt "IDD_SAVE_DLG_IDCANCEL"
 msgid "Cancel"
 msgstr "Annulla"
 
+msgctxt "IDD_TRIM_SAVE_DLG_CAPTION"
+msgid "Save Clip"
+msgstr "Salva clip"
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "Duration:"
+msgstr "Durata:"
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "File &name:"
+msgstr "&Nome file:"
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_STATIC"
+msgid "&Folder:"
+msgstr "&Cartella:"
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDC_TRIM_BROWSE"
+msgid "&Browse..."
+msgstr "&Sfoglia..."
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDOK"
+msgid "Save Clip"
+msgstr "Salva clip"
+
+msgctxt "IDD_TRIM_SAVE_DLG_IDCANCEL"
+msgid "Cancel"
+msgstr "Annulla"
+
 msgctxt "IDD_ADDREGFILTER_CAPTION"
 msgid "Select Filter"
 msgstr "Seleziona filtro"

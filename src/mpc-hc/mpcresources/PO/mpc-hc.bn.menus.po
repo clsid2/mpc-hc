@@ -65,6 +65,14 @@ msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
 msgstr "থাম্ব্‌নেইলসমূহ সেইভ করি... (&T)"
 
+msgctxt "ID_TRIM_SAVE_CLIP"
+msgid "Save C&lip..."
+msgstr ""
+
+msgctxt "ID_FILE_TRIM_VIDEO"
+msgid "Tri&m Video..."
+msgstr ""
+
 msgctxt "POPUP"
 msgid "S&ubtitles"
 msgstr "সাবটাইটেল"

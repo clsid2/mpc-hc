@@ -67,6 +67,14 @@ msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
 msgstr "Salva miniature..."
 
+msgctxt "ID_TRIM_SAVE_CLIP"
+msgid "Save C&lip..."
+msgstr "Sal&va clip..."
+
+msgctxt "ID_FILE_TRIM_VIDEO"
+msgid "Tri&m Video..."
+msgstr "&Taglia video..."
+
 msgctxt "POPUP"
 msgid "S&ubtitles"
 msgstr "Sottotitoli"

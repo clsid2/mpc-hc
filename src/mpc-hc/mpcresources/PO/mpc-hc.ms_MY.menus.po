@@ -66,6 +66,14 @@ msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
 msgstr "Simpan &Lakaran Kenit..."
 
+msgctxt "ID_TRIM_SAVE_CLIP"
+msgid "Save C&lip..."
+msgstr ""
+
+msgctxt "ID_FILE_TRIM_VIDEO"
+msgid "Tri&m Video..."
+msgstr ""
+
 msgctxt "POPUP"
 msgid "S&ubtitles"
 msgstr "Sarikata"
