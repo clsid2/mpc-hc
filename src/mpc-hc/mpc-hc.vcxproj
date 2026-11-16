@@ -71,8 +71,8 @@
       <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>crypt32.lib;delayimp.lib;dsound.lib;dxguid.lib;GdiPlus.lib;Psapi.lib;SetupAPI.lib;UxTheme.lib;Vfw32.lib;Winmm.lib;dwmapi.lib;strmiids.lib;Uuid.Lib;Version.lib;Bcrypt.lib;RuntimeObject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>psapi.dll;api-ms-win-shcore-stream-winrt-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-string-l1-1-0.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalDependencies>crypt32.lib;delayimp.lib;dsound.lib;dxguid.lib;GdiPlus.lib;Psapi.lib;SetupAPI.lib;UxTheme.lib;Vfw32.lib;Winmm.lib;dwmapi.lib;strmiids.lib;Uuid.Lib;Version.lib;Bcrypt.lib;RuntimeObject.lib;mfplat.lib;mfreadwrite.lib;mfuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>psapi.dll;api-ms-win-shcore-stream-winrt-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-string-l1-1-0.dll;mfplat.dll;mfreadwrite.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
     </Link>
     <ClCompile>
@@ -320,6 +320,7 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClCompile Include="ApiBridge.cpp" />
     <ClCompile Include="SubtitleController.cpp" />
     <ClCompile Include="ShaderController.cpp" />
+    <ClCompile Include="TrimExport.cpp" />
     <ClCompile Include="CommandLine.cpp" />
     <ClCompile Include="SelectMediaType.cpp" />
     <ClCompile Include="Shaders.cpp" />
@@ -544,6 +545,8 @@ if not exist "$(OutDir)LAVFilters" if exist "$(SolutionDir)bin\mpc-hc_x86\LAVFil
     <ClInclude Include="ApiBridge.h" />
     <ClInclude Include="SubtitleController.h" />
     <ClInclude Include="ShaderController.h" />
+    <ClInclude Include="TrimExport.h" />
+    <ClInclude Include="TrimSelection.h" />
     <ClInclude Include="CommandLine.h" />
     <ClInclude Include="SelectMediaType.h" />
     <ClInclude Include="SMTC2Compat.h" />
