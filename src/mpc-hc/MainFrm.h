@@ -621,6 +621,7 @@ protected:
     void OpenSetupAudio();
     void OpenSetupInfoBar(bool bClear = true);
     bool UpdateChapterInInfoBar(bool bRecalcLayout = true);
+    void UpdateDVDInfoBar();
     void OpenSetupStatsBar();
     void CheckSelectedAudioStream();
     void CheckSelectedVideoStream();
@@ -763,6 +764,7 @@ public:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnDestroy();
     afx_msg LRESULT OnLAVPropPageCallback(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnInfoBarShown(WPARAM wParam, LPARAM lParam);
     bool m_bLAVPropPageOpen = false;
 
     afx_msg LRESULT OnTaskBarRestart(WPARAM, LPARAM);
