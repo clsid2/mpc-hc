@@ -415,6 +415,7 @@
     <ClCompile Include="ApiBridge.cpp" />
     <ClCompile Include="SubtitleController.cpp" />
     <ClCompile Include="ShaderController.cpp" />
+    <ClCompile Include="TrimController.cpp" />
     <ClCompile Include="TrimExport.cpp" />
     <ClCompile Include="TrimExportDlg.cpp" />
     <ClCompile Include="CommandLine.cpp" />
@@ -1014,6 +1015,7 @@
     <ClInclude Include="ApiBridge.h" />
     <ClInclude Include="SubtitleController.h" />
     <ClInclude Include="ShaderController.h" />
+    <ClInclude Include="TrimController.h" />
     <ClInclude Include="TrimExport.h" />
     <ClInclude Include="TrimExportDlg.h" />
     <ClInclude Include="TrimSelection.h" />

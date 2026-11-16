@@ -715,6 +715,7 @@ CMainFrame::CMainFrame()
     , m_subs(*this)
     , m_shaders(*this)
     , m_cmdline(*this)
+    , m_trim(*this)
     , m_iPlaybackMode(PM_NONE)
     , m_lCurrentChapter(0)
     , m_lChapterStartTime(0xFFFFFFFF)
@@ -1310,6 +1311,10 @@ void CMainFrame::OnClose()
     std::optional<CDeferredActionScope> actionScope;
     actionScope.emplace(*this);
 
+    if (!m_trim.ConfirmClose()) {
+        return;
+    }
+
     m_OnClose_called = true;
 
     if (USE_LOGGER(s)) {
@@ -1495,6 +1500,10 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
+    if (m_trim.PreTranslateKey(pMsg)) {
+        return TRUE;
+    }
+
     if (pMsg->message == WM_KEYDOWN) {
         if (pMsg->wParam == VK_ESCAPE) {
             bool fEscapeNotAssigned = !AssignedToCmd(VK_ESCAPE);
@@ -1677,6 +1686,9 @@ BOOL CMainFrame::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO*
         return TRUE;
     }
     if (m_shaders.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo)) {
+        return TRUE;
+    }
+    if (m_trim.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo)) {
         return TRUE;
     }
 
@@ -2355,7 +2367,9 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
                             }
                             m_graph.m_pMS->GetDuration(&rtDur);
 
-                            if ((abRepeat.positionA && rtNow < abRepeat.positionA || abRepeat.positionB && rtNow >= abRepeat.positionB) && GetMediaState() != State_Stopped) {
+                            m_trim.OnPositionPoll(rtNow);
+
+                            if (!m_trim.IsActive() && (abRepeat.positionA && rtNow < abRepeat.positionA || abRepeat.positionB && rtNow >= abRepeat.positionB) && GetMediaState() != State_Stopped) {
                                 PerformABRepeat();
                                 return;
                             }
@@ -3112,6 +3126,9 @@ void CMainFrame::OnABRepeat(UINT nID) {
 }
 
 void CMainFrame::PerformABRepeat() {
+    if (m_trim.IsActive()) {
+        return;
+    }
     if (!m_fShockwaveGraph) {
         ULONGLONG tcnow = GetTickCount64();
         if (tcnow > abRepeat.tcLastRepeat + 500ULL) {
@@ -3156,6 +3173,10 @@ bool CMainFrame::CheckABRepeat(REFERENCE_TIME& aPos, REFERENCE_TIME& bPos) {
 //
 void CMainFrame::GraphEventComplete()
 {
+    if (m_trim.OnGraphComplete()) {
+        return;
+    }
+
     CAppSettings& s = AfxGetAppSettings();
 
     auto* pMRU = &s.MRU;
@@ -4357,6 +4378,7 @@ void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
             }
         }
 
+        m_trim.AppendStatus(msg);
         m_wndStatusBar.SetStatusMessage(msg);
     } else if (loadState == MLS::CLOSING) {
         m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_CLOSING));
@@ -7358,7 +7380,7 @@ void CMainFrame::OnPlaySeekSet()
     REFERENCE_TIME rtStart, rtStop;
     m_wndSeekBar.GetRange(rtStart, rtStop);
 
-    if (abRepeat.positionA > rtStart && abRepeat.positionA < rtStop) {
+    if (!m_trim.IsActive() && abRepeat.positionA > rtStart && abRepeat.positionA < rtStop) {
         rtStart = abRepeat.positionA;
     }
     if (rtPos != rtStart) {
@@ -7370,7 +7392,7 @@ void CMainFrame::AdjustStreamPosPoller(bool restart)
 {
     int current_value = m_iStreamPosPollerInterval;
 
-    if (g_bExternalSubtitleTime || IsSubresyncBarVisible()) {
+    if (g_bExternalSubtitleTime || IsSubresyncBarVisible() || m_trim.IsActive()) {
         m_iStreamPosPollerInterval = 40;
     } else {
         m_iStreamPosPollerInterval = AfxGetAppSettings().nStreamPosPollerInterval;
@@ -13958,8 +13980,9 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
     if (rtPos < 0) {
         rtPos = 0;
     }
+    rtPos = m_trim.ConfineSeek(rtPos);
 
-    if (abRepeat.positionA && rtPos < abRepeat.positionA || abRepeat.positionB && rtPos > abRepeat.positionB) {
+    if (!m_trim.IsActive() && (abRepeat.positionA && rtPos < abRepeat.positionA || abRepeat.positionB && rtPos > abRepeat.positionB)) {
         DisableABRepeat();
     }
 
@@ -14009,7 +14032,7 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
         //SleepEx(5000, False); // artificial slow seek for testing purposes
         if (FAILED(m_graph.m_pMS->SetPositions(&rtPos, AM_SEEKING_AbsolutePositioning, nullptr, AM_SEEKING_NoPositioning))) {
             TRACE(_T("IMediaSeeking SetPositions failure\n"));
-            if (abRepeat.positionA && rtPos == abRepeat.positionA) {
+            if (!m_trim.IsActive() && abRepeat.positionA && rtPos == abRepeat.positionA) {
                 DisableABRepeat();
             }
         }
@@ -14576,6 +14599,8 @@ void CMainFrame::CloseMedia(bool bNextIsQueued/* = false*/, bool bPendingFileDel
 
 void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendingFileDelete/* = false*/)
 {
+    m_trim.OnMediaClosing();
+
     auto& s = AfxGetAppSettings();
 
     bool hibernating = (m_dwLastPause == 1ULL);

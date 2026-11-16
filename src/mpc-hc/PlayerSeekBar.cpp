@@ -159,7 +159,8 @@ void CPlayerSeekBar::MoveThumb(const CPoint& point)
             REFERENCE_TIME rtMaxDiff = s.bAllowInaccurateFastseek ? 200000000LL : std::min(100000000LL, duration / 30);
             rtPos = m_pMainFrame->GetClosestKeyFrame(rtPos, rtMaxDiff, rtMaxDiff);
         }
-        SyncThumbToVideo(rtPos, rtPosDraw);
+        const CTrimController& trim = m_pMainFrame->m_trim;
+        SyncThumbToVideo(trim.ConfineSeek(rtPos), trim.ConfineSeek(rtPosDraw));
     }
 }
 
@@ -217,7 +218,7 @@ REFERENCE_TIME CPlayerSeekBar::PositionFromClientPoint(const CPoint& point) cons
     return rtRet;
 }
 
-void CPlayerSeekBar::SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPosDraw)
+void CPlayerSeekBar::SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPosDraw, bool bUpdateTaskbar)
 {
     m_rtPos = rtPos;
     m_rtPosDraw = rtPosDraw;
@@ -228,7 +229,7 @@ void CPlayerSeekBar::SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPos
             bSetTaskbar = true;
             InvalidateRect(newThumbRect | m_lastThumbRect);
         }
-        if (bSetTaskbar && AfxGetAppSettings().bUseEnhancedTaskBar && m_pMainFrame->m_api.m_pTaskbarList) {
+        if (bUpdateTaskbar && bSetTaskbar && AfxGetAppSettings().bUseEnhancedTaskBar && m_pMainFrame->m_api.m_pTaskbarList) {
             VERIFY(S_OK == m_pMainFrame->m_api.m_pTaskbarList->SetProgressValue(m_pMainFrame->m_hWnd, std::max(m_rtPos, 1ll), m_rtStop));
         }
     }
@@ -315,6 +316,14 @@ CRect CPlayerSeekBar::GetChannelRect() const
         } else {
             r.right -= w;
         }
+    }
+    if (TrimActive()) {
+        // Keep the grips at both ends inside the bar.
+        CRect clientRect;
+        GetClientRect(clientRect);
+        const int grip = TrimGripWidth() + 1;
+        r.left = std::max<LONG>(r.left, clientRect.left + grip);
+        r.right = std::min<LONG>(r.right, clientRect.right - grip);
     }
     return r;
 }
@@ -528,8 +537,306 @@ CRect CPlayerSeekBar::GetInnerThumbRect(bool bEnabled, const CRect& thumbRect) c
     return r;
 }
 
+bool CPlayerSeekBar::TrimActive() const
+{
+    return m_bHasDuration && m_pMainFrame->m_trim.IsActive();
+}
+
+int CPlayerSeekBar::TrimGripWidth() const
+{
+    return std::max(2, m_pMainFrame->m_dpi.ScaleX(3));
+}
+
+int CPlayerSeekBar::TrimEdge(CTrimSelection::Part part) const
+{
+    const CRect channelRect(GetChannelRect());
+    const REFERENCE_TIME time = m_pMainFrame->m_trim.Selection().Boundary(part);
+    return CTrimSelection::TimeToPixel(time - m_rtStart, m_rtStop - m_rtStart, channelRect.left, channelRect.Width());
+}
+
+// A bracket whose upright stands outside the selection and whose feet point into it, so
+// that the two grips read as "[" and "]" and never cover each other's upright.
+CRect CPlayerSeekBar::GetTrimGripRect(CTrimSelection::Part part) const
+{
+    CRect clientRect;
+    GetClientRect(clientRect);
+    const CRect channelRect(GetChannelRect());
+    const int overhang = m_pMainFrame->m_dpi.ScaleY(AppIsThemeLoaded() ? 3 : SEEK_DRAGGER_OVERLAP);
+    const int top = std::max<int>(clientRect.top + 1, channelRect.top - overhang);
+    const int bottom = std::min<int>(clientRect.bottom - 1, channelRect.bottom + overhang);
+    const int x = TrimEdge(part);
+    const int w = TrimGripWidth();
+    const int feet = m_pMainFrame->m_dpi.ScaleX(4);
+    return part == CTrimSelection::Part::Start ? CRect(x - w, top, x + feet, bottom) : CRect(x - feet, top, x + w, bottom);
+}
+
+CTrimSelection::Part CPlayerSeekBar::HitTestTrim(const CPoint& point) const
+{
+    if (!TrimActive() || !GetSeekableRect().PtInRect(point)) {
+        return CTrimSelection::Part::None;
+    }
+    const CRect channelRect(GetChannelRect());
+    // The hit zone is wider than the visible grip.
+    const int radius = m_pMainFrame->m_dpi.ScaleX(6);
+    return CTrimSelection::HitTest(point.x, TrimEdge(CTrimSelection::Part::Start), TrimEdge(CTrimSelection::Part::End), radius,
+                                   channelRect.left, channelRect.right, m_pMainFrame->m_trim.Selection().Focus());
+}
+
+void CPlayerSeekBar::MoveTrimGrip(const CPoint& point)
+{
+    const CRect channelRect(GetChannelRect());
+    const REFERENCE_TIME time = m_rtStart + CTrimSelection::PixelToTime(point.x - m_trimGrabOffset, m_rtStop - m_rtStart, channelRect.left, channelRect.Width());
+    m_pMainFrame->m_trim.MoveBoundary(m_trimDrag, time);
+    OnTrimChanged();
+}
+
+void CPlayerSeekBar::ShowTrimTip(CTrimSelection::Part part)
+{
+    const REFERENCE_TIME time = m_pMainFrame->m_trim.Selection().Boundary(part);
+    m_tooltipText.Format(part == CTrimSelection::Part::Start ? IDS_TRIM_GRIP_START : IDS_TRIM_GRIP_END,
+                         CTrimSelection::FormatTimeSeconds(time).c_str());
+    m_ti.lpszText = (LPTSTR)(LPCTSTR)m_tooltipText;
+    m_tooltip.SetToolInfo(&m_ti);
+    if (m_tooltipState != TOOLTIP_VISIBLE || m_trimTip == CTrimSelection::Part::None) {
+        KillTimer(TIMER_SHOWHIDE_TOOLTIP);
+        m_tooltip.SendMessage(TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_ti);
+        m_tooltipState = TOOLTIP_VISIBLE;
+        TRACKMOUSEEVENT tme = { sizeof(tme), TME_LEAVE, m_hWnd };
+        TrackMouseEvent(&tme);
+    }
+    m_trimTip = part;
+
+    const CSize bubbleSize(m_tooltip.GetBubbleSize(&m_ti));
+    CRect clientRect;
+    GetClientRect(clientRect);
+    CPoint pt(TrimEdge(part) - bubbleSize.cx / 2, GetChannelRect().top - bubbleSize.cy - m_pMainFrame->m_dpi.ScaleY(13) - TrimTipLift());
+    pt.x = std::clamp<LONG>(pt.x, clientRect.left, std::max<LONG>(clientRect.left, clientRect.right - bubbleSize.cx));
+    ClientToScreen(&pt);
+    m_tooltip.SendMessage(TTM_TRACKPOSITION, 0, MAKELPARAM(pt.x, pt.y));
+}
+
+BEGIN_MESSAGE_MAP(CTrimBadge, CWnd)
+    ON_WM_PAINT()
+    ON_WM_NCHITTEST()
+    ON_WM_MOUSEACTIVATE()
+END_MESSAGE_MAP()
+
+void CTrimBadge::Show(CWnd* pOwner, const CString& text, const CRect& below, int gap)
+{
+    if (!m_hWnd) {
+        const CString cls = AfxRegisterWndClass(0, ::LoadCursor(nullptr, IDC_ARROW));
+        if (!CreateEx(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, cls, _T(""), WS_POPUP, CRect(), pOwner, 0)) {
+            return;
+        }
+        CMPCThemeUtil::getFontByType(m_font, pOwner, CMPCThemeUtil::MessageFont);
+    }
+    CSize size;
+    {
+        CClientDC dc(this);
+        CFont* pOld = dc.SelectObject(&m_font);
+        size = dc.GetTextExtent(text);
+        dc.SelectObject(pOld);
+    }
+    size.cx += size.cy;
+    size.cy += size.cy / 2;
+    const CRect rect(CPoint(below.CenterPoint().x - size.cx / 2, below.top - gap - size.cy), size);
+    const bool textChanged = text != m_text;
+    const bool rectChanged = rect != m_rect || !IsWindowVisible();
+    m_text = text;
+    if (rectChanged) {
+        m_rect = rect;
+        SetWindowPos(nullptr, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
+    }
+    if (textChanged || rectChanged) {
+        // Paint at the final size before another mouse move can expose stale text.
+        Invalidate(FALSE);
+        UpdateWindow();
+    }
+}
+
+void CTrimBadge::Hide()
+{
+    if (m_hWnd && IsWindowVisible()) {
+        ShowWindow(SW_HIDE);
+    }
+}
+
+void CTrimBadge::OnPaint()
+{
+    CPaintDC paintDC(this);
+    CRect r;
+    GetClientRect(r);
+    CDC dc;
+    CBitmap bitmap;
+    if (r.IsRectEmpty() || !dc.CreateCompatibleDC(&paintDC) || !bitmap.CreateCompatibleBitmap(&paintDC, r.Width(), r.Height())) {
+        return;
+    }
+    CBitmap* oldBitmap = dc.SelectObject(&bitmap);
+    const bool themed = AppIsThemeLoaded();
+    dc.FillSolidRect(r, themed ? CMPCTheme::MenuBGColor : GetSysColor(COLOR_INFOBK));
+    CBrush border;
+    border.CreateSolidBrush(themed ? CMPCTheme::TooltipBorderColor : GetSysColor(COLOR_WINDOWFRAME));
+    dc.FrameRect(r, &border);
+    CFont* pOld = dc.SelectObject(&m_font);
+    dc.SetBkMode(TRANSPARENT);
+    dc.SetTextColor(themed ? CMPCTheme::TextFGColor : GetSysColor(COLOR_INFOTEXT));
+    dc.DrawText(m_text, r, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+    dc.SelectObject(pOld);
+    paintDC.BitBlt(0, 0, r.Width(), r.Height(), &dc, 0, 0, SRCCOPY);
+    dc.SelectObject(oldBitmap);
+}
+
+LRESULT CTrimBadge::OnNcHitTest(CPoint)
+{
+    return HTTRANSPARENT;
+}
+
+int CTrimBadge::OnMouseActivate(CWnd*, UINT, UINT)
+{
+    return MA_NOACTIVATE;
+}
+
+void CPlayerSeekBar::UpdateTrimBadge()
+{
+    if (!TrimActive() || m_trimDrag == CTrimSelection::Part::None || !IsWindowVisible() || m_pMainFrame->IsIconic()) {
+        KillTimer(TIMER_TRIM_BADGE);
+        m_trimBadge.Hide();
+        return;
+    }
+    CString text;
+    text.Format(IDS_TRIM_CLIP_LENGTH, CTrimSelection::FormatLength(m_pMainFrame->m_trim.Selection().Length()).c_str());
+    CRect rect;
+    GetWindowRect(rect);
+    m_trimBadge.Show(m_pMainFrame, text, rect, m_pMainFrame->m_dpi.ScaleY(6));
+    // Polled so that the badge follows the player when it moves, resizes or hides its controls.
+    SetTimer(TIMER_TRIM_BADGE, 100, nullptr);
+}
+
+// While the length badge is up, the seekbar tooltips sit above it.
+int CPlayerSeekBar::TrimTipLift() const
+{
+    const int height = m_trimBadge.Height();
+    return height ? height + m_pMainFrame->m_dpi.ScaleY(4) : 0;
+}
+
+void CPlayerSeekBar::OnTrimChanged()
+{
+    CString name;
+    if (TrimActive()) {
+        const CTrimSelection& selection = m_pMainFrame->m_trim.Selection();
+        name.Format(IDS_TRIM_ACCESSIBLE_NAME, CTrimSelection::FormatTime(selection.Start()).c_str(),
+                    CTrimSelection::FormatTime(selection.End()).c_str());
+        if (m_trimDrag != CTrimSelection::Part::None) {
+            ShowTrimTip(m_trimDrag);
+        }
+    }
+    UpdateTrimBadge();
+    SetWindowText(name);
+    Invalidate();
+}
+
+bool CPlayerSeekBar::CancelTrimDrag()
+{
+    if (m_trimDrag == CTrimSelection::Part::None) {
+        return false;
+    }
+    m_pMainFrame->m_trim.MoveBoundary(m_trimDrag, m_trimDragOrigin);
+    ReleaseCapture();
+    return true;
+}
+
+void CPlayerSeekBar::DrawTrim(CDC& dc, const CRect& channelRect)
+{
+    using Part = CTrimSelection::Part;
+    const CTrimSelection& selection = m_pMainFrame->m_trim.Selection();
+    const bool modern = AppIsThemeLoaded();
+    const int startX = TrimEdge(Part::Start);
+    const int endX = TrimEdge(Part::End);
+
+    dc.SelectClipRgn(nullptr);
+    if (!modern) {
+        dc.ExcludeClipRect(m_lastThumbRect);
+    }
+    const CRect before(channelRect.left, channelRect.top, startX, channelRect.bottom);
+    const CRect after(endX, channelRect.top, channelRect.right, channelRect.bottom);
+    if (modern) {
+        // Lift the selected span and mute the excluded parts; the playhead is repainted so it
+        // stays fully visible. Dark and light channels need opposite tints to keep the contrast.
+        const COLORREF bg = CMPCTheme::ScrollBGColor;
+        const bool dark = GetRValue(bg) + GetGValue(bg) + GetBValue(bg) < 3 * 128;
+        auto tint = [&](const CRect& r, COLORREF color, BYTE alpha) {
+            CDC mem;
+            CBitmap pixel;
+            if (r.IsRectEmpty() || !mem.CreateCompatibleDC(&dc) || !pixel.CreateCompatibleBitmap(&dc, 1, 1)) {
+                return;
+            }
+            CBitmap* pOld = mem.SelectObject(&pixel);
+            mem.SetPixelV(0, 0, color);
+            const BLENDFUNCTION blend = { AC_SRC_OVER, 0, alpha, 0 };
+            dc.AlphaBlend(r.left, r.top, r.Width(), r.Height(), &mem, 0, 0, 1, 1, blend);
+            mem.SelectObject(pOld);
+        };
+        const CRect selected(startX, channelRect.top, endX, channelRect.bottom);
+        tint(selected, dark ? RGB(255, 255, 255) : CMPCTheme::SeekbarCurrentPositionColor, dark ? 40 : 60);
+        // The playhead never precedes Start, so the part before it would otherwise keep the
+        // "played" fill and look lighter than the part after End. Both are excluded alike.
+        dc.FillSolidRect(before, CMPCTheme::ScrollBGColor);
+        dc.FillSolidRect(after, CMPCTheme::ScrollBGColor);
+        tint(before, dark ? RGB(0, 0, 0) : RGB(128, 128, 128), dark ? 130 : 110);
+        tint(after, dark ? RGB(0, 0, 0) : RGB(128, 128, 128), dark ? 130 : 110);
+        const long playhead = channelRect.left + ChannelPointFromPosition(m_rtPosDraw);
+        CRect playheadRect(playhead - m_pMainFrame->m_dpi.ScaleX(2) + 1, channelRect.top, playhead + m_pMainFrame->m_dpi.ScaleX(2), channelRect.bottom);
+        playheadRect &= channelRect;
+        dc.FillSolidRect(playheadRect, CMPCTheme::SeekbarCurrentPositionColor);
+    } else {
+        // The native trackbar selection look: the selected span is highlighted.
+        dc.FillSolidRect(before, GetSysColor(COLOR_BTNFACE));
+        dc.FillSolidRect(after, GetSysColor(COLOR_BTNFACE));
+        if (endX > startX) {
+            dc.FillSolidRect(startX, channelRect.top, endX - startX, channelRect.Height(), GetSysColor(COLOR_HIGHLIGHT));
+        }
+    }
+    dc.SelectClipRgn(nullptr);
+
+    const COLORREF gripColor = modern ? CMPCTheme::TextFGColor : GetSysColor(COLOR_BTNTEXT);
+    const int w = TrimGripWidth();
+    const int foot = std::max(1, m_pMainFrame->m_dpi.ScaleY(2));
+    {
+        // A thin frame joins the brackets so the selection reads as one box.
+        const CRect first(GetTrimGripRect(Part::Start));
+        const CRect last(GetTrimGripRect(Part::End));
+        const int edge = std::max(1, m_pMainFrame->m_dpi.ScaleY(1));
+        dc.FillSolidRect(first.left, first.top, last.right - first.left, edge, gripColor);
+        dc.FillSolidRect(first.left, first.bottom - edge, last.right - first.left, edge, gripColor);
+    }
+    for (const Part part : { Part::Start, Part::End }) {
+        const CRect grip(GetTrimGripRect(part));
+        const CRect upright = part == Part::Start ? CRect(grip.left, grip.top, grip.left + w, grip.bottom)
+                                                  : CRect(grip.right - w, grip.top, grip.right, grip.bottom);
+        dc.FillSolidRect(upright, gripColor);
+        dc.FillSolidRect(grip.left, grip.top, grip.Width(), foot, gripColor);
+        dc.FillSolidRect(grip.left, grip.bottom - foot, grip.Width(), foot, gripColor);
+        if (selection.Focus() == part && m_trimDrag == Part::None) {
+            CRect focus(grip);
+            focus.InflateRect(2, 1);
+            dc.SetTextColor(gripColor);
+            dc.SetBkColor(modern ? CMPCTheme::ContentBGColor : GetSysColor(COLOR_BTNFACE));
+            dc.DrawFocusRect(focus);
+        }
+    }
+}
+
 void CPlayerSeekBar::UpdateTooltip(const CPoint& point)
 {
+    const CTrimSelection::Part grip = HitTestTrim(point);
+    if (grip != CTrimSelection::Part::None && !DraggingThumb()) {
+        m_pMainFrame->PreviewWindowHide();
+        ShowTrimTip(grip);
+        return;
+    }
+    if (m_trimTip != CTrimSelection::Part::None) {
+        HideToolTip();
+    }
     if (!m_bHasDuration || !GetSeekableRect().PtInRect(point) || DraggingThumb()) {
         HideToolTip();
         m_pMainFrame->PreviewWindowHide();
@@ -614,7 +921,7 @@ void CPlayerSeekBar::UpdateToolTipPosition(CPoint point)
 
         if (AfxGetAppSettings().nHoverPosition == TIME_TOOLTIP_ABOVE_SEEKBAR) {
             point.x -= bubbleSize.cx / 2 - 2;
-            point.y = GetChannelRect().TopLeft().y - (bubbleSize.cy + m_pMainFrame->m_dpi.ScaleY(13));
+            point.y = GetChannelRect().TopLeft().y - (bubbleSize.cy + m_pMainFrame->m_dpi.ScaleY(13)) - TrimTipLift();
         } else {
             point.x += m_pMainFrame->m_dpi.ScaleX(10);
             point.y += m_pMainFrame->m_dpi.ScaleY(20);
@@ -694,6 +1001,7 @@ void CPlayerSeekBar::HideToolTip()
         m_tooltip.SendMessage(TTM_TRACKACTIVATE, FALSE, (LPARAM)&m_ti);
         m_tooltipState = TOOLTIP_HIDDEN;
     }
+    m_trimTip = CTrimSelection::Part::None;
 }
 
 void CPlayerSeekBar::GetRange(REFERENCE_TIME& rtStart, REFERENCE_TIME& rtStop) const
@@ -725,7 +1033,7 @@ void CPlayerSeekBar::SetRange(REFERENCE_TIME rtStart, REFERENCE_TIME rtStop)
             m_timeText.Empty();   // media closed: clear the time text (the section keeps its standard spacing)
             m_timeActualWidth = 0; // drop any actual-string widening so the closed state uses the model width
             HideToolTip();
-            if (DraggingThumb()) {
+            if (DraggingThumb() || m_trimDrag != CTrimSelection::Part::None) {
                 ReleaseCapture();
             }
             Invalidate();
@@ -740,11 +1048,17 @@ REFERENCE_TIME CPlayerSeekBar::GetPos() const
 
 void CPlayerSeekBar::SetPos(REFERENCE_TIME rtPos)
 {
-    if (DraggingThumb()) {
+    // Graph position polls must not overwrite the boundary preview during a drag.
+    if (DraggingThumb() || DraggingTrim()) {
         return;
     }
 
     SyncThumbToVideo(rtPos, rtPos);
+}
+
+void CPlayerSeekBar::SetTrimPreviewPos(REFERENCE_TIME rtPos)
+{
+    SyncThumbToVideo(rtPos, rtPos, false);
 }
 
 bool CPlayerSeekBar::HasDuration() const
@@ -947,6 +1261,10 @@ void CPlayerSeekBar::OnPaint()
         }
     }
 
+    if (TrimActive()) {
+        DrawTrim(dc, channelRect);
+    }
+
     // Modern theme only (ShowTimeOnSeekBar() is false under the classic theme): draw the time in its
     // dedicated section beside the channel (the channel was shrunk to make room in GetChannelRect, so
     // the time is never drawn over it). Aligned toward the outer edge of the bar - right by default,
@@ -986,12 +1304,37 @@ void CPlayerSeekBar::OnContextMenu(CWnd* pWnd, CPoint point)
             return;
         }
     }
+    if (TrimActive()) {
+        if (point.x == -1) {
+            point = GetChannelRect().CenterPoint();
+            ClientToScreen(&point);
+        }
+        HideToolTip();
+        m_pMainFrame->PreviewWindowHide();
+        m_pMainFrame->m_trim.ShowContextMenu(this, point);
+        return;
+    }
     __super::OnContextMenu(pWnd, point);
 }
 
 void CPlayerSeekBar::OnLButtonDown(UINT nFlags, CPoint point)
 {
     if (m_bEnabled && m_bHasDuration && GetSeekableRect().PtInRect(point)) {
+        const CTrimSelection::Part grip = HitTestTrim(point);
+        if (grip != CTrimSelection::Part::None) {
+            SetCapture();
+            m_trimDrag = grip;
+            m_trimDragOrigin = m_pMainFrame->m_trim.Selection().Boundary(grip);
+            m_trimGrabOffset = point.x - TrimEdge(grip);
+            m_pMainFrame->PreviewWindowHide();
+            m_pMainFrame->m_trim.BeginBoundaryDrag(grip);
+            OnTrimChanged();
+            return;
+        }
+        if (TrimActive()) {
+            m_pMainFrame->m_trim.SetFocus(CTrimSelection::Part::Playhead);
+            Invalidate();
+        }
         pauseAfterFirstScroll = AfxGetAppSettings().bPauseWhileDraggingSeekbar && m_pMainFrame->GetMediaState() == State_Running;
         pausedForScrolling = false;
         SetCapture();
@@ -1014,6 +1357,11 @@ void CPlayerSeekBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void CPlayerSeekBar::OnLButtonUp(UINT nFlags, CPoint point)
 {
+    if (m_trimDrag != CTrimSelection::Part::None) {
+        MoveTrimGrip(point);
+        ReleaseCapture();   // OnCaptureChanged commits the boundary
+        return;
+    }
     if (DraggingThumb()) {
         ReleaseCapture();
         // update video position if seekbar moved at least 250 ms or 1/100th of duration
@@ -1081,7 +1429,12 @@ void CPlayerSeekBar::invalidateThumb()
 
 void CPlayerSeekBar::OnMouseMove(UINT nFlags, CPoint point)
 {
-
+    if (m_trimDrag != CTrimSelection::Part::None) {
+        if (nFlags & MK_LBUTTON) {
+            MoveTrimGrip(point);
+        }
+        return;
+    }
     if (DraggingThumb() && (nFlags & MK_LBUTTON)) {
         MoveThumb(point);
         // update video position if seekbar moved at least 500ms or 1/30th of duration
@@ -1115,7 +1468,8 @@ BOOL CPlayerSeekBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     GetCursorPos(&point);
     ScreenToClient(&point);
     if (m_bEnabled && m_bHasDuration && GetSeekableRect().PtInRect(point)) {
-        ::SetCursor(m_cursor);
+        const bool grip = m_trimDrag != CTrimSelection::Part::None || HitTestTrim(point) != CTrimSelection::Part::None;
+        ::SetCursor(grip ? AfxGetApp()->LoadStandardCursor(IDC_SIZEWE) : m_cursor);
     } else {
         ret = __super::OnSetCursor(pWnd, nHitTest, message);
     }
@@ -1147,6 +1501,9 @@ void CPlayerSeekBar::OnTimer(UINT_PTR nIDEvent)
                 KillTimer(TIMER_SHOWHIDE_TOOLTIP);
             }
             break;
+        case TIMER_TRIM_BADGE:
+            UpdateTrimBadge();
+            break;
         default:
             ASSERT(FALSE);
     }
@@ -1170,6 +1527,18 @@ LRESULT CPlayerSeekBar::OnThemeChanged()
 
 void CPlayerSeekBar::OnCaptureChanged(CWnd* pWnd)
 {
+    if (m_trimDrag != CTrimSelection::Part::None) {
+        // Also reached when another window takes the capture: the boundary stays where it was dragged.
+        const CTrimSelection::Part part = m_trimDrag;
+        m_trimDrag = CTrimSelection::Part::None;
+        HideToolTip();
+        m_bIgnoreLastTooltipPoint = true;
+        if (m_pMainFrame->m_trim.IsActive()) {
+            m_pMainFrame->m_trim.EndBoundaryDrag(part);
+        }
+        OnTrimChanged();
+        return;
+    }
     // Capture can also change without a drag in progress (e.g. when the time section's right-click
     // popup menu takes capture), so only run the drag-end cleanup when we were actually dragging.
     if (m_bDraggingThumb) {

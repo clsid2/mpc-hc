@@ -49,6 +49,7 @@
 #include "SubtitleController.h"
 #include "ShaderController.h"
 #include "CommandLine.h"
+#include "TrimController.h"
 #include "TimerWrappers.h"
 #include "OSD.h"
 #include "CMPCThemeMenu.h"
@@ -411,6 +412,11 @@ public:
     CCommandLine m_cmdline;
 private:
     friend class CCommandLine; // for the bars, the open path, the reload state, the media control helpers and the deferred actions
+
+public:
+    CTrimController m_trim;
+private:
+    friend class CTrimController; // for the load state, the bars, m_OSD, the graph, the playlist and the media control and seek helpers
 
     //
 

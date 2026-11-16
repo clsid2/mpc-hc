@@ -25,8 +25,30 @@
 #include "DSMPropertyBag.h"
 #include <memory>
 #include "CMPCThemeToolTipCtrl.h"
+#include "TrimSelection.h"
 
 class CMainFrame;
+
+// The clip length, centered above the seekbar while trimming. An owned popup rather than a
+// tooltip: it stays with the player instead of floating above other applications, never
+// takes the focus and lets clicks through to the video.
+class CTrimBadge : public CWnd
+{
+public:
+    void Show(CWnd* pOwner, const CString& text, const CRect& below, int gap);
+    void Hide();
+    int Height() const { return m_hWnd && IsWindowVisible() ? m_rect.Height() : 0; }
+
+private:
+    CString m_text;
+    CFont m_font;
+    CRect m_rect;
+
+    afx_msg void OnPaint();
+    afx_msg LRESULT OnNcHitTest(CPoint point);
+    afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+    DECLARE_MESSAGE_MAP()
+};
 
 class CPlayerSeekBar : public CDialogBar
 {
@@ -38,7 +60,7 @@ public:
     virtual BOOL Create(CWnd* pParentWnd);
 
 private:
-    enum { TIMER_SHOWHIDE_TOOLTIP = 1 };
+    enum { TIMER_SHOWHIDE_TOOLTIP = 1, TIMER_TRIM_BADGE };
 
     CMainFrame* m_pMainFrame;
     REFERENCE_TIME m_rtStart, m_rtStop, m_rtPos, m_rtPosDraw;
@@ -51,6 +73,10 @@ private:
     CPoint m_hoverPoint;
     HCURSOR m_cursor;
     bool m_bDraggingThumb, m_bHoverThumb;
+    CTrimSelection::Part m_trimDrag = CTrimSelection::Part::None;
+    CTrimSelection::Part m_trimTip = CTrimSelection::Part::None;
+    REFERENCE_TIME m_trimDragOrigin = 0;
+    int m_trimGrabOffset = 0;
     ULONGLONG m_lastDragSeekTickCount;
     bool pauseAfterFirstScroll = false;
     bool pausedForScrolling = false;
@@ -59,6 +85,7 @@ private:
     void EventCallback(MpcEvent ev);
 
     CMPCThemeToolTipCtrl m_tooltip;
+    CTrimBadge m_trimBadge;
     enum { TOOLTIP_HIDDEN, TOOLTIP_TRIGGERED, TOOLTIP_VISIBLE } m_tooltipState;
     CFont mpcThemeFont;
     TOOLINFO m_ti;
@@ -98,7 +125,7 @@ private:
     void CheckScrollDistance(CPoint point, REFERENCE_TIME minimum_duration_change, ULONGLONG minimum_elapsed_tickcount);
     long ChannelPointFromPosition(REFERENCE_TIME rtPos) const;
     REFERENCE_TIME PositionFromClientPoint(const CPoint& point) const;
-    void SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPosDraw);
+    void SyncThumbToVideo(REFERENCE_TIME rtPos, REFERENCE_TIME rtPosDraw, bool bUpdateTaskbar = true);
 
     void CreateThumb(bool bEnabled, CDC& parentDC);
     CRect GetBaseRect() const;          // full usable rect (channel + time section), before reserving the time area
@@ -106,6 +133,17 @@ private:
     CRect GetSeekableRect() const;      // client area that responds to seek/hover (excludes the time section)
     CRect GetThumbRect() const;
     CRect GetInnerThumbRect(bool bEnabled, const CRect& thumbRect) const;
+
+    bool TrimActive() const;
+    int TrimGripWidth() const;
+    int TrimEdge(CTrimSelection::Part part) const;
+    CRect GetTrimGripRect(CTrimSelection::Part part) const;
+    CTrimSelection::Part HitTestTrim(const CPoint& point) const;
+    void MoveTrimGrip(const CPoint& point);
+    void ShowTrimTip(CTrimSelection::Part part);
+    void UpdateTrimBadge();
+    int TrimTipLift() const;
+    void DrawTrim(CDC& dc, const CRect& channelRect);
 
     void UpdateTooltip(const CPoint& point);
     void UpdateToolTipText();
@@ -120,6 +158,7 @@ public:
     void SetRange(REFERENCE_TIME rtStart, REFERENCE_TIME rtStop);
     REFERENCE_TIME GetPos() const;
     void SetPos(REFERENCE_TIME rtPos);
+    void SetTrimPreviewPos(REFERENCE_TIME rtPos);
     bool HasDuration() const;
     REFERENCE_TIME GetDuration();
 
@@ -127,10 +166,14 @@ public:
     void RemoveChapters();
 
     bool DraggingThumb();
+    bool DraggingTrim() const { return m_trimDrag != CTrimSelection::Part::None; }
     void PreviewWindowShow(const CPoint point);
     void UpdateToolTipTextPreview(REFERENCE_TIME rtPos);
 
     void UpdateTime();
+
+    void OnTrimChanged();
+    bool CancelTrimDrag();
 
 private:
     DECLARE_MESSAGE_MAP()
