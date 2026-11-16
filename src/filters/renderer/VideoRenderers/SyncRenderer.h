@@ -154,8 +154,8 @@ namespace GothSync
         CAutoPtr<CPixelShaderCompiler> m_pPSC;
         CAtlList<CExternalPixelShader> m_pPixelShaders;
         CExternalPixelShader m_HLGToSDRShader; // run before m_pPixelShaders while the input is HLG
-        bool m_bHLGInput = false;              // set from the mixer's input type
-        bool m_bHLGPinCheck = false;           // check the input pin before the next frame
+        bool m_bHLGInput = false;              // set from the mixer's input type and the input pin
+        bool m_bHLGInputPin = false;           // the input pin's type says HLG
         bool InputPinIsHLGNow();
         bool HLGToSDRActive();
         CAtlList<CExternalPixelShader> m_pPixelShadersScreenSpace;

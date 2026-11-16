@@ -163,8 +163,6 @@ namespace DSObjects
         MFCLOCK_STATE m_LastClockState;
         LONGLONG GetClockTime(LONGLONG PerformanceCounter);
 
-        bool InputPinIsFlushing() { return m_bEvtFlush; };
-
     private:
 
         enum RENDER_STATE {
@@ -175,7 +173,8 @@ namespace DSObjects
         };
 
         COuterEVR*                       m_pOuterEVR;
-        bool                             InputPinIsHLGNow() override;
+        bool                             InputPinIsHLGNow();
+        bool                             m_bHLGInputPin = false; // the input pin's type says HLG
         bool                             HasCurrentFrame() override { return m_nRenderState != Stopped && m_pCurrentlyDisplayedSample; }
         CComPtr<IMFClock>                m_pClock;
         CComPtr<IDirect3DDeviceManager9> m_pD3DManager;
