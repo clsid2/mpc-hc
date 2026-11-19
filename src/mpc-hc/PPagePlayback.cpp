@@ -205,6 +205,7 @@ BOOL CPPagePlayback::OnApply()
     s.nLoops = m_nLoops;
     s.eAfterPlayback = static_cast<CAppSettings::AfterPlayback>(m_iAfterPlayback);
     s.iZoomLevel = m_iZoomLevel - 1;
+    auto oldVerticalAlignVideo = s.iVerticalAlignVideo;
     s.iVerticalAlignVideo = static_cast<CAppSettings::verticalAlignVideoType>(verticalAlignVideo);
     s.fRememberZoomLevel = !!m_iRememberZoomLevel;
     s.nAutoFitFactorMin = m_nAutoFitFactorMin = std::min(std::max(m_nAutoFitFactorMin, 25), 100);
@@ -219,6 +220,9 @@ BOOL CPPagePlayback::OnApply()
     // There is no main frame when the option dialog is displayed stand-alone
     if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
         pMainFrame->UpdateControlState(CMainFrame::UPDATE_VOLUME_STEP);
+        if (s.iVerticalAlignVideo != oldVerticalAlignVideo) {
+            pMainFrame->MoveVideoWindow();
+        }
     }
 
     return __super::OnApply();
