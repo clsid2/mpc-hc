@@ -174,7 +174,7 @@ msgctxt "IDD_OPEN_DLG_CAPTION"
 msgid "Open"
 msgstr "Otwórz"
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC2"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
@@ -182,7 +182,7 @@ msgstr ""
 "Wpisz adres filmu lub pliku audio (z Internetu lub z komputera), a "
 "odtwarzacz go otworzy."
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC3"
 msgid "Open:"
 msgstr "Otwórz:"
 
@@ -807,6 +807,10 @@ msgstr "Anuluj"
 msgctxt "IDD_FAVORGANIZE_CAPTION"
 msgid "Organize Favorites"
 msgstr "Edytuj ulubione"
+
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON5"
+msgid "Browse..."
+msgstr ""
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON1"
 msgid "Rename"
