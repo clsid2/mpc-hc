@@ -590,7 +590,11 @@ HRESULT CMpeg2DataParser::ParsePMT(CBDAChannel& Channel)
                     SkipDescriptor(gb, nType, nLength);
                     break;
                 case DT_AAC_AUDIO:
-                    pes_stream_type = AUDIO_STREAM_AAC_LATM;
+                    // The AAC descriptor signals the profile, not the transport: stream_type 0x0F is ADTS
+                    // and 0x11 is LATM, so only fall back to LATM for other types such as private PES (0x06)
+                    if (pes_stream_type != AUDIO_STREAM_AAC && pes_stream_type != AUDIO_STREAM_AAC_LATM) {
+                        pes_stream_type = AUDIO_STREAM_AAC_LATM;
+                    }
                     SkipDescriptor(gb, nType, nLength);
                     break;
                 case DT_SUBTITLING:
