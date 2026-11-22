@@ -773,10 +773,6 @@ STDMETHODIMP CMpcAudioRenderer::Run(REFERENCE_TIME rtStart)
 	m_filterState = State_Running;
 	m_rtStartTime = rtStart;
 
-	if (m_bEOS) {
-		NotifyEvent(EC_COMPLETE, S_OK, 0);
-	}
-
 	if (m_hRendererNeedMoreData) {
 		SetEvent(m_hRendererNeedMoreData);
 	}
