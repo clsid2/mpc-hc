@@ -168,6 +168,13 @@ namespace SaneAudioRenderer
 
                 CreateAudioClient(pEnumerator, device);
 
+                if (!device.audioClient && device.id && !device.id->empty())
+                {
+                    // retry with default device
+                    device.id = nullptr;
+                    CreateAudioClient(pEnumerator, device);
+                }
+
                 if (!device.audioClient)
                     return E_FAIL;
 
