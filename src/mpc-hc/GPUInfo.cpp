@@ -279,6 +279,23 @@ bool GPUDetect::GetGPUDetailsDX9(IDirect3D9Ex* pD3D, int id, GPUDetails* gpu)
     return success;
 }
 
+LONGLONG MakeVersion(uint16_t a, uint16_t b, uint16_t c, uint16_t d)
+{
+    return (static_cast<ULONGLONG>(a) << 48) | (static_cast<ULONGLONG>(b) << 32) | (static_cast<ULONGLONG>(c) << 16) | static_cast<ULONGLONG>(d);
+}
+
+bool GPUDetect::AMD_DXVA2_Blacklist()
+{
+    if (gpu_count > 0 && gpu1.vendorid == PCIV_AMD && IsWindowsVersionOrGreaterBuild(8, 1, 0)) {
+        // Radeon HD 2xxx-7xxx, buggy driver 15.7 till 15.11
+        if (gpu1.UMDVersion.QuadPart == MakeVersion(8,17,10,1404) || gpu1.UMDVersion.QuadPart >= MakeVersion(15,200,1046,0) && gpu1.UMDVersion.QuadPart < MakeVersion(15,201,1151,1009)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // GPUs which have (slow) partial acceleration of HEVC
 bool GPUDetect::IntelHEVCBlacklist()
 {

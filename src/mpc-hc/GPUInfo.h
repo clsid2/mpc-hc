@@ -65,8 +65,9 @@ public:
 
     int GetCount() { return gpu_count; }
     int GetHwaCaps() { return hwa_caps_dx11 ? hwa_caps_dx11 : hwa_caps_dx9; }
-    bool SupportHWA() { return hwa_caps_dx11 > 0 ||  hwa_caps_dx9 > 0; }
+    bool SupportHWA() { return (hwa_caps_dx11 > 0 ||  hwa_caps_dx9 > 0) && !AMD_DXVA2_Blacklist(); }
     bool SupportD3D11VA() { return hwa_caps_dx11 > 0 && featurelevel >= D3D_FEATURE_LEVEL_11_1; }
+    bool AMD_DXVA2_Blacklist();
     bool IntelHEVCBlacklist();
     bool UseMPCVR() { return GetHwaCaps() >= GPU_HWA_CAP_H264_4K; }
     CString GetGPUID(GPUDetails& gpu) {

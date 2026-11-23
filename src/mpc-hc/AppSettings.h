@@ -431,7 +431,7 @@ public:
     CWinLircClient();
 };
 
-#define APPSETTINGS_VERSION 9
+#define APPSETTINGS_VERSION 10
 
 struct DVD_POSITION {
     ULONGLONG           llDVDGuid = 0;

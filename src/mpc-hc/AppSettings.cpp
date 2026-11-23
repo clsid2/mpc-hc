@@ -2437,7 +2437,15 @@ void CAppSettings::LoadSettings()
     gpuid2 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUID2", L"");
 
     int hoursSinceEpoch = std::chrono::duration_cast<std::chrono::hours>(std::chrono::system_clock::now().time_since_epoch()).count();
-    if (!LastGPUCheck || LastGPUCheck == 0xDEAD) {
+    bool check_gpu = !LastGPUCheck || LastGPUCheck == 0xDEAD;
+#if 0
+    // check again after 90 days
+    if (!check_gpu && (LastGPUCheck != 1) && (hoursSinceEpoch > LastGPUCheck) && (hoursSinceEpoch - LastGPUCheck > 90 * 24)) {
+        check_gpu = true;
+    }
+#endif
+
+    if (check_gpu) {
         if (!LastGPUCheck && pApp->IsUsingRegistry()) {
             pApp->WriteProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", 0xDEAD);
             // if driver crashes during check, then on next run we know based on this temporary value
@@ -2492,6 +2500,10 @@ void CAppSettings::LoadSettings()
                     pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("hevc"), false);
                 }
             }
+        }
+
+        if (gpuinfo.AMD_DXVA2_Blacklist()) {
+            pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_None);
         }
     }
 
@@ -4176,8 +4188,10 @@ void CAppSettings::MigrateSettings()
                     break;
             }
         [[fallthrough]];
-        default:
-            pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_R_VERSION, 8);
+        case 9:
+            if (pApp->GetProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", 0) > 1) {
+                VERIFY(pApp->WriteProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", 0));
+            }
     }
 }
 
