@@ -2491,6 +2491,10 @@ BOOL CMPlayerCApp::InitInstance()
         m_s->WinLircClient.Connect(m_s->strWinLircAddr);
     }
 
+    if (m_s->bBlacklistedGPUDriverSwitched) {
+        AfxMessageBox(CAppSettings::BlacklistedGPUDriverWarning, MB_ICONWARNING | MB_OK, 0);
+    }
+
     if (UpdateChecker::IsAutoUpdateEnabled()) {
         UpdateChecker::CheckForUpdate(true);
     }

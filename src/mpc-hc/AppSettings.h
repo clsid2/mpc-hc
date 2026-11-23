@@ -431,7 +431,7 @@ public:
     CWinLircClient();
 };
 
-#define APPSETTINGS_VERSION 9
+#define APPSETTINGS_VERSION 10
 
 struct DVD_POSITION {
     ULONGLONG           llDVDGuid = 0;
@@ -1067,6 +1067,11 @@ public:
     bool bHistoryInAppData;
 
     int LastGPUCheck;
+    bool bBlacklistedGPUDriver;
+    bool bBlacklistedGPUDriverSwitched;
+    static constexpr LPCWSTR BlacklistedGPUDriverWarning =
+        L"Your AMD graphics driver (version 15.x) is blacklisted. It crashes video renderers that use Direct3D 9.\n\n"
+        L"MPC-HC sets MPC Video Renderer in Direct3D 11 mode for this driver. Another renderer can be selected in Options > Playback > Output, but it may crash.";
     CString gpuid1;
     CString gpuid2;
 

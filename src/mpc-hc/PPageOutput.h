@@ -73,6 +73,7 @@ public:
     afx_msg void OpenVideoRendererSettings();
     afx_msg void OnUpdateAudioRendererSettings(CCmdUI* pCmdUI);
     afx_msg void OpenAudioRendererSettings();
+    afx_msg void OnDSRendererSelChange();
     afx_msg void OnDSRendererChange();
     afx_msg void OnAudioRendererChange();
     afx_msg void OnSubtitleRendererChange();

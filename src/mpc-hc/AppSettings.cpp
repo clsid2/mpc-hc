@@ -312,6 +312,8 @@ CAppSettings::CAppSettings()
     , bShowVolumePercentage(true)
     , bHistoryInAppData(false)
     , LastGPUCheck(0)
+    , bBlacklistedGPUDriver(false)
+    , bBlacklistedGPUDriverSwitched(false)
     , gpuid1(L"")
     , gpuid2(L"")
 {
@@ -2433,6 +2435,7 @@ void CAppSettings::LoadSettings()
     iMouseLeftUpDelay = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_MOUSE_LEFTUP_DELAY, 0);
 
     LastGPUCheck = pApp->GetProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", 0);
+    bBlacklistedGPUDriver = !!pApp->GetProfileInt(IDS_R_SETTINGS, L"BlacklistedGPUDriver", FALSE);
     gpuid1 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUID1", L"");
     gpuid2 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUID2", L"");
 
@@ -2461,6 +2464,8 @@ void CAppSettings::LoadSettings()
                 if (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), -1) == HWAccel_DXVA2Native) {
                     if (gpuinfo.SupportD3D11VA()) {
                         pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_D3D11);
+                    } else if (bBlacklistedGPUDriver) {
+                        pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_DXVA2CopyBack);
                     } else {
                         WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 0);
                     }
@@ -4198,6 +4203,25 @@ void CAppSettings::UpdateSettings()
             }
             for (int f = 0; f < TRA_LAST; f++) {
                 TraFilters[f] = true;
+            }
+            [[fallthrough]];
+        case 9:
+            {
+                // the 2015 AMD legacy driver crashes with D3D9 renderers, so move those users to MPCVR in D3D11 mode
+                GPUDetect gpuinfo = GPUDetect(false, LastGPUCheck == 0xDEAD);
+                bBlacklistedGPUDriver = gpuinfo.HasLegacyAMDDriver();
+                pApp->WriteProfileInt(IDS_R_SETTINGS, L"BlacklistedGPUDriver", bBlacklistedGPUDriver);
+                if (bBlacklistedGPUDriver && (iDSVideoRendererType == VIDRNDT_DS_EVR_CUSTOM || iDSVideoRendererType == VIDRNDT_DS_SYNC || iDSVideoRendererType == VIDRNDT_DS_MPCVR)
+                    && DSObjects::CMPCVRAllocatorPresenter::HasInternalMPCVRFilter() && HasD3DCompiler47()) {
+                    iDSVideoRendererType = VIDRNDT_DS_MPCVR;
+                    pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DSVIDEORENDERERTYPE, iDSVideoRendererType);
+                    WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
+                    // DXVA2 Native needs a D3D9 renderer
+                    if (pApp->GetProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), -1) == HWAccel_DXVA2Native) {
+                        pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_DXVA2CopyBack);
+                    }
+                    bBlacklistedGPUDriverSwitched = true;
+                }
             }
             [[fallthrough]];
         default:
