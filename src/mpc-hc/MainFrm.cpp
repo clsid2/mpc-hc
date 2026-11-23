@@ -4318,14 +4318,22 @@ void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
                 }
             }
             if (s.bShowFPSInStatusbar) {
+                // Up to 3 decimals without trailing zeros, so 23.976 isn't shown as 23.98
+                // and integer rates stay short: 23.976, 29.97, 59.94, 24, 25
+                CString fps;
+                if (m_graph.m_pCAP) {
+                    fps.Format(_T("%.3lf"), m_graph.m_pCAP->GetFPS());
+                    fps.TrimRight(_T('0'));
+                    fps.TrimRight(_T('.'));
+                }
                 if (m_dSpeedRate != 1.0) {
                     if (m_graph.m_pCAP) {
-                        fpsinfo.Format(_T("%.2lf fps (%.2lfx)"), m_graph.m_pCAP->GetFPS(), m_dSpeedRate);
+                        fpsinfo.Format(_T("%s fps (%.2lfx)"), fps.GetString(), m_dSpeedRate);
                     } else {
                         fpsinfo.Format(_T("%.2lfx"), m_dSpeedRate);
                     }
                 } else if (m_graph.m_pCAP) {
-                    fpsinfo.Format(_T("%.2lf fps"), m_graph.m_pCAP->GetFPS());
+                    fpsinfo.Format(_T("%s fps"), fps.GetString());
                 }
             }
 
