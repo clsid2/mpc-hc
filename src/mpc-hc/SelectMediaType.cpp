@@ -84,18 +84,26 @@ void CSelectMediaType::OnCbnEditchangeCombo1()
     }
 }
 
+// The list entry named by the edit text, which is what the box shows. The list's own selection can
+// disagree with it: closing the dropped list without a pick puts the selection back on the entry
+// picked before it dropped, while the edit keeps the typed text, and no CBN_EDITCHANGE is sent.
+int CSelectMediaType::FindTypedType() const
+{
+    return m_guidstr.IsEmpty() ? CB_ERR : m_guidsctrl.FindStringExact(-1, m_guidstr);
+}
+
 void CSelectMediaType::OnUpdateOK(CCmdUI* pCmdUI)
 {
     UpdateData();
 
-    pCmdUI->Enable(!m_guidstr.IsEmpty() && (m_guidsctrl.GetCurSel() >= 0 || GUIDFromCString(m_guidstr) != GUID_NULL));
+    pCmdUI->Enable(!m_guidstr.IsEmpty() && (FindTypedType() >= 0 || GUIDFromCString(m_guidstr) != GUID_NULL));
 }
 
 void CSelectMediaType::OnOK()
 {
     UpdateData();
 
-    int i = m_guidsctrl.GetCurSel();
+    int i = FindTypedType();
     m_guid = i >= 0 ? m_guids[i] : GUIDFromCString(m_guidstr);
 
     CMPCThemeResizableDialog::OnOK();
