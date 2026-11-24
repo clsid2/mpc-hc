@@ -633,6 +633,10 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
 
     m_frame.CleanGraph();
 
+    // Rebuild the filters menu so it drops its references to the filters removed above,
+    // as on close; otherwise the old renderer stays alive while the new one is created
+    m_frame.SetupFiltersSubMenu();
+
     if (m_graph.m_pAMVSCCap) {
         hr = m_graph.m_pAMVSCCap->SetFormat(&m_frame.m_wndCaptureBar.m_capdlg.m_mtv);
     }

@@ -373,7 +373,7 @@ private:
 public:
     CCaptureController m_capture;
 private:
-    friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows and the graph thread
+    friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows, the graph thread and the filters menu
 
 public:
     CDiscController m_disc;
