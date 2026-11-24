@@ -7224,6 +7224,38 @@ void CMainFrame::OnUpdatePlayPauseStop(CCmdUI* pCmdUI)
     pCmdUI->Enable(fEnable);
 }
 
+// The average time per frame is rounded to 100ns, so frame times computed from it drift away
+// from the real ones (e.g. 333667 for 29.97 fps is 0.6ms late after 10 minutes). This returns
+// the exact frame duration for the usual N and N*1000/1001 fps frame rates.
+static double GetExactTimePerFrame(REFERENCE_TIME rtAvgTimePerFrame)
+{
+    for (const double scale : { 1.0, 1.001 }) {
+        const double fps = std::round(10000000.0 * scale / rtAvgTimePerFrame);
+        if (fps > 0.0) {
+            const double dTimePerFrame = 10000000.0 * scale / fps;
+            if (std::abs(dTimePerFrame - rtAvgTimePerFrame) <= 1.0) {
+                return dTimePerFrame;
+            }
+        }
+    }
+    return (double)rtAvgTimePerFrame;
+}
+
+// Number of the frame shown at rt, i.e. the last frame that starts at or before rt.
+// +1 (100ns): a frame start rounded down to 100ns still counts as that frame.
+static LONGLONG GetFrameAtTime(REFERENCE_TIME rt, double dTimePerFrame)
+{
+    return rt > 0 ? (LONGLONG)floor((rt + 1) / dTimePerFrame) : 0;
+}
+
+// Start time of frame n, rounded down to 100ns so that a seek to it doesn't drop the frame.
+// The small offset keeps a start time that is an exact multiple of 100ns from being rounded
+// down one more because of the floating point error.
+static REFERENCE_TIME GetFrameStartTime(LONGLONG n, double dTimePerFrame)
+{
+    return n > 0 ? (REFERENCE_TIME)floor(n * dTimePerFrame + 0.001) : 0;
+}
+
 void CMainFrame::OnPlayFramestep(UINT nID)
 {
     if (!m_graph.m_pFS && !m_graph.m_pMS || m_fAudioOnly || GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE && GetPlaybackMode() != PM_DVD) {
@@ -7288,7 +7320,21 @@ void CMainFrame::OnPlayFramestep(UINT nID)
         const REFERENCE_TIME rtAvgTimePerFrame = std::llround(GetAvgTimePerFrame() * 10000000LL);
         REFERENCE_TIME rtCurPos = 0;
         
-        if (m_nStepForwardCount) { // Exit of framestep forward, calculate current position
+        if (GetPlaybackMode() == PM_FILE && rtAvgTimePerFrame > 0) {
+            // Count in frames: subtracting the rounded time per frame from the position can
+            // go back two frames, e.g. 333667 is longer than a 29.97 fps frame
+            const double dTimePerFrame = GetExactTimePerFrame(rtAvgTimePerFrame);
+            LONGLONG nFrame;
+            if (m_nStepForwardCount) { // Exit of framestep forward, calculate current frame
+                m_graph.m_pFS->CancelStep();
+                nFrame = GetFrameAtTime(m_rtStepForwardStart, dTimePerFrame) + m_nStepForwardCount;
+                m_nStepForwardCount = 0;
+            } else {
+                m_graph.m_pMS->GetCurrentPosition(&rtCurPos);
+                nFrame = GetFrameAtTime(rtCurPos, dTimePerFrame);
+            }
+            rtCurPos = GetFrameStartTime(nFrame - 1, dTimePerFrame);
+        } else if (m_nStepForwardCount) { // Exit of framestep forward, calculate current position
             m_graph.m_pFS->CancelStep();
             rtCurPos = m_rtStepForwardStart + m_nStepForwardCount * rtAvgTimePerFrame;
             m_nStepForwardCount = 0;
@@ -14016,6 +14062,19 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
                 force_complete = (rtCur == stop);
             }
         }
+
+        // Seek to the start of the frame shown at rtPos. A seek to a time even slightly after the
+        // start of a frame drops that frame and shows the next one, so the shown frame would
+        // depend on how the position was reached. A-B repeat point A is left as is, since a
+        // position before A seeks to A again.
+        if (GetPlaybackMode() == PM_FILE && !m_fAudioOnly && m_graph.m_pBV && !(abRepeat.positionA && rtPos == abRepeat.positionA)) {
+            const REFERENCE_TIME rtAvgTimePerFrame = std::llround(GetAvgTimePerFrame() * 10000000LL);
+            if (rtAvgTimePerFrame > 0) {
+                const double dTimePerFrame = GetExactTimePerFrame(rtAvgTimePerFrame);
+                rtPos = GetFrameStartTime(GetFrameAtTime(rtPos, dTimePerFrame), dTimePerFrame);
+            }
+        }
+
         m_wndStatusBar.SetStatusTimer(rtPos, stop, IsSubresyncBarVisible(), GetTimeFormat());
 
         if (bShowOSD) {
