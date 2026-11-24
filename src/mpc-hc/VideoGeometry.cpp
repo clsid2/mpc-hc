@@ -114,6 +114,9 @@ void CVideoGeometry::OnViewModifySize(UINT nID) {
 
     MINMAXINFO mmi;
     CSize videoSize = m_frame.GetVideoOrArtSize(mmi);
+    if (videoSize.cx <= 0 || videoSize.cy <= 0) {
+        return;
+    }
     int minWidth = (int)mmi.ptMinTrackSize.x;
 
     int mult = (nID == ID_VIEW_ZOOM_ADD ? 1 : ID_VIEW_ZOOM_SUB ? -1 : 0);
