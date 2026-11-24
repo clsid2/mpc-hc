@@ -91,6 +91,7 @@ protected:
     void OnSaveShaderPreset();
     void OnDeleteShaderPreset();
     void OnChangeShaderPresetText();
+    int FindTypedPreset() const;
 
     void OnAddToPreResize();
     void OnAddToPostResize();
