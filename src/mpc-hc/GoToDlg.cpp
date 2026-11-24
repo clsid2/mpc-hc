@@ -180,11 +180,17 @@ void CGoToDlg::OnParseFrameCode()
     WCHAR c2; // extra character to ensure the end of string was reached
 
     int result = swscanf_s(m_framestr, L"%d%c%f%c", &frame, &c1, 1, &fps, &c2, 1);
-    if (result == 1) {
-        m_time = frame < 2 ? 0LL : (REFERENCE_TIME)ceil(10000000.0 * (frame - 1) / m_fps);
-        OnOK();
-    } else if (result == 3 && c1 == L',') {
-        m_time = frame < 2 ? 0LL : (REFERENCE_TIME)ceil(10000000.0 * (frame - 1) / fps);
+    if (result == 1 || (result == 3 && c1 == L',')) {
+        double frameFps = (result == 1) ? m_fps : fps;
+        if (frame < 2) {
+            m_time = 0;
+        } else if (frameFps > 0.0 && std::isfinite(frameFps)) {
+            m_time = (REFERENCE_TIME)ceil(10000000.0 * (frame - 1) / frameFps);
+        } else {
+            // no usable frame rate, the division would give inf
+            AfxMessageBox(IDS_GOTO_ERROR_PARSING_FPS, MB_ICONEXCLAMATION | MB_OK, 0);
+            return;
+        }
         OnOK();
     } else if (result == 0 || c1 != L',') {
         AfxMessageBox(IDS_GOTO_ERROR_PARSING_TEXT, MB_ICONEXCLAMATION | MB_OK, 0);
