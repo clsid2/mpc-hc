@@ -1062,6 +1062,9 @@
     <ClInclude Include="Logger.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="CrashEventLog.h">
+      <Filter>Crash Reporter</Filter>
+    </ClInclude>
     <ClInclude Include="CrashReporter.h">
       <Filter>Crash Reporter</Filter>
     </ClInclude>

@@ -98,6 +98,7 @@
 
 #include <mvrInterfaces.h>
 #include <IMPCVRSubclassReplacement.h>
+#include <FilterInterfaces.h>
 
 #include <Il21dec.h>
 #include <dvdevcod.h>
@@ -1086,6 +1087,7 @@ LRESULT CMainFrame::OnLAVPropPageCallback(WPARAM, LPARAM lParam)
 
 void CMainFrame::OnDestroy()
 {
+    CrashReporter::LogEvent(CrashEvent::Destroy);
     WTSUnRegisterSessionNotification();
     ShowTrayIcon(false);
     m_dropTarget.Revoke();
@@ -1272,6 +1274,7 @@ LRESULT CMainFrame::OnHelpPromptAddr(WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnClose()
 {
+    CrashReporter::LogEvent(CrashEvent::Close);
     CAppSettings& s = AfxGetAppSettings();
 
     if (m_nDeferredActionDepth > 0 || m_pOptionsSheet) {
@@ -6863,6 +6866,7 @@ void CMainFrame::OnViewOptions()
 
 void CMainFrame::OnPlayPlay()
 {
+    CrashReporter::LogEvent(CrashEvent::Play);
     const CAppSettings& s = AfxGetAppSettings();
 
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
@@ -7006,6 +7010,7 @@ void CMainFrame::OnPlayPlay()
 
 void CMainFrame::OnPlayPause()
 {
+    CrashReporter::LogEvent(CrashEvent::Pause);
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedByMinimize = false;
@@ -7064,6 +7069,7 @@ void CMainFrame::OnPlayStop()
 
 void CMainFrame::OnPlayStop(bool is_closing)
 {
+    CrashReporter::LogEvent(CrashEvent::Stop);
     m_timerOneTime.Unsubscribe(TimerOneTimeSubscriber::DELAY_PLAYPAUSE_AFTER_AUTOCHANGE_MODE);
     m_bOpeningInAutochangedMonitorMode = false;
     m_bPausedForAutochangeMonitorMode = false;
@@ -9192,6 +9198,8 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
         return; //swallow request if we are in the delay period
     }
 
+    CrashReporter::LogEvent(CrashEvent::Fullscreen, m_fFullScreen ? 0 : 1);
+
     CMonitors monitors;
     CMonitor defaultMonitor = monitors.GetPrimaryMonitor();
     CMonitor currentMonitor = monitors.GetNearestMonitor(this);
@@ -9434,6 +9442,7 @@ void CMainFrame::ToggleD3DFullscreen(bool fSwitchScreenResWhenHasTo)
         bool bIsFullscreen = false;
         m_graph.m_pD3DFSC->GetD3DFullscreen(&bIsFullscreen);
         s.fLastFullScreen = !bIsFullscreen;
+        CrashReporter::LogEvent(CrashEvent::D3DFullscreen, bIsFullscreen ? 0 : 1);
 
         m_OSD.Stop();
 
@@ -12266,6 +12275,7 @@ bool CMainFrame::OpenMediaPrivate(std::unique_ptr<OpenMediaData> pOMD)
         if (USE_LOGGER(s)) {
             PLAYER_LOG(_T("CMainFrame::OpenMediaPrivate - filter graph has been created"));
         }
+        CrashReporter::LogEvent(CrashEvent::GraphBuilt);
 
         m_graph.m_pGB->FindInterface(IID_PPV_ARGS(&m_graph.m_pCAP), TRUE);
         m_graph.m_pGB->FindInterface(IID_PPV_ARGS(&m_graph.m_pCAP2), TRUE);
@@ -12583,10 +12593,14 @@ void CMainFrame::CloseMediaPrivate()
 
     ULONGLONG tc1 = GetTickCount64();
 
+    // Steps through teardown, where renderer and driver objects are released
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 1);
+
     // Stop the graph before releasing it.
     // Stopping can block indefinitely on a stuck source filter (e.g. an unresponsive network stream)
     // The graph worker thread can be utilized to catch such deadlocks
     MediaControlStop(true);
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 2);
 
     m_CachedFilterState = -1;
 
@@ -12620,6 +12634,7 @@ void CMainFrame::CloseMediaPrivate()
     }
 
     m_bIsMPCVRExclusiveMode = false;
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 3);
 
     // IMPORTANT: IVMRSurfaceAllocatorNotify/IVMRSurfaceAllocatorNotify9 has to be released before the VMR/VMR9, otherwise it will crash in Release()
     m_graph.m_pMVRFG.Release();
@@ -12681,18 +12696,21 @@ void CMainFrame::CloseMediaPrivate()
         pSS.Release();
     }
 
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 4);
     TRACE(_T("Releasing graph builder\n"));
     if (m_graph.m_pGB) {
         m_graph.m_pGB->RemoveFromROT();
         m_graph.m_pGB.Release();
     }
     TRACE(_T("Releasing graph builder complete\n"));
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 5);
 
     ULONGLONG tc2 = GetTickCount64();
 
     if (m_previewGraph.m_pGB) {
         TRACE(_T("Releasing preview graph\n"));
         ReleasePreviewGraph();
+        CrashReporter::LogEvent(CrashEvent::CloseStep, 6);
     }
 
     m_pProv.Release();
@@ -12702,6 +12720,7 @@ void CMainFrame::CloseMediaPrivate()
     m_lastOMD.reset();
 	
 	m_FontInstaller.UninstallFonts();
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 7);
 
     ULONGLONG tc3 = GetTickCount64();
 
@@ -14498,13 +14517,16 @@ bool CMainFrame::ResetDevice()
         PLAYER_LOG(_T("CMainFrame::ResetDevice"));
         FLUSH_LOGGER();
     }
+    CrashReporter::LogEvent(CrashEvent::ResetDevice, 0);
     if (m_previewGraph.m_pCAP2) {
         m_previewGraph.m_pCAP2->ResetDevice();
     }
+    bool ok = true;
     if (m_graph.m_pCAP) {
-        return m_graph.m_pCAP->ResetDevice();
+        ok = m_graph.m_pCAP->ResetDevice();
     }
-    return true;
+    CrashReporter::LogEvent(CrashEvent::ResetDevice, ok ? 1 : -1);
+    return ok;
 }
 
 bool CMainFrame::DisplayChange()
@@ -15176,6 +15198,7 @@ void CMainFrame::SetLoadState(MLS eState)
     }
 
     m_eMediaLoadState = eState;
+    CrashReporter::LogEvent(CrashEvent::LoadState, static_cast<int>(eState));
     m_api.SendApiNotify(CMD_STATE, static_cast<int>(eState));
     if (eState == MLS::LOADED) {
         m_controls.DelayShowNotLoaded(false);
@@ -16268,6 +16291,27 @@ void CMainFrame::UpdateDXVAStatus()
         DXVAInfo = _T("H/W Decoder  : None / Unknown");
     }
     GetRenderersData()->m_strDXVAInfo = DXVAInfo;
+
+    if (CrashReporter::IsEnabled()) {
+        int hwaccel = -1;
+        LPCWSTR decoder = nullptr;
+        if (pBF) {
+            if (CComQIPtr<ILAVVideoSettings> pLAVVideoSettings = pBF) {
+                hwaccel = pLAVVideoSettings->GetHWAccel();
+            }
+            if (CComQIPtr<ILAVVideoStatus> pLAVVideoStatus = pBF) {
+                decoder = pLAVVideoStatus->GetActiveDecoderName();
+            }
+        }
+        int renderType = -1;
+        if (CComQIPtr<IExFilterConfig> pMPCVR = FindFilter(CLSID_MPCVR, m_graph.m_pGB)) {
+            int v = 0;
+            if (SUCCEEDED(pMPCVR->Flt_GetInt("renderType", &v))) {
+                renderType = v;
+            }
+        }
+        CrashReporter::UpdatePlaybackInfo(AfxGetAppSettings().iDSVideoRendererType, renderType, hwaccel, decoder);
+    }
 }
 
 bool CMainFrame::GetDecoderType(CString& type) const
