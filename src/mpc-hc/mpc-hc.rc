@@ -3025,6 +3025,7 @@ BEGIN
     IDS_PPAGEADVANCED_USE_MEDIAINFO_LOAD_FILE_DURATION 
                             "Load file duration when adding items to playlist (uses MediaInfo and results may vary)"
     IDS_TIMER_SHOW_PERCENTAGE "Show percentage"
+    IDS_TIMER_TIMECODE      "Timecode"
     IDS_SUBDL_DLG_FAILED_DL "Subtitle download failed."
     IDS_PPAGEADVANCED_FILEPOS_PLAYLIST 
                             "Remember playback position in local M3U and MPCPL playlist files."

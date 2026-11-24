@@ -85,7 +85,7 @@ public:
 
     void ShowTimer(bool fShow);
 
-    // Builds and tracks the timer-options popup (Remaining time / High precision / Show percentage),
+    // Builds and tracks the timer-options popup (Remaining time / High precision / Show percentage / Timecode),
     // shared by the status-bar time control and the seekbar time section (#3256).
     void ShowTimerOptionsMenu(CWnd* pOwner, CPoint screenPt);
 

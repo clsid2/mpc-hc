@@ -419,7 +419,13 @@ CString CPlayerSeekBar::BuildTimeTemplate() const
         time = _T("00:00");
     }
     // '0' placeholders are reliably full-width, so the measured width never under-reserves.
-    if (highPrec) {
+    if (s.bTimerTimecode && m_pMainFrame->GetTimecodeTimePerFrame() > 0) {
+        // The timecode always shows hours and replaces the high precision milliseconds with frames.
+        if (rtWidest < oneHour) {
+            time = _T("00:") + time;
+        }
+        time += _T(":00");
+    } else if (highPrec) {
         time += _T(".000");
     }
 

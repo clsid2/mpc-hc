@@ -962,6 +962,7 @@ public:
     bool            fRemainingTime;
     bool            bHighPrecisionTimer;
     bool            bTimerShowPercentage;
+    bool            bTimerTimecode;
     bool            fLastFullScreen;
 
     bool            fEnableEDLEditor;

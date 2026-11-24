@@ -367,6 +367,7 @@
 #define IDS_RS_REMAINING_TIME               _T("RemainingTime")
 #define IDS_RS_HIGH_PRECISION_TIMER         _T("HighPrecisionTimer")
 #define IDS_RS_TIMER_SHOW_PERCENTAGE        _T("TimerShowPercentage")
+#define IDS_RS_TIMER_TIMECODE               _T("TimerTimecode")
 
 #define IDS_RS_UPDATER_AUTO_CHECK           _T("UpdaterAutoCheck")
 #define IDS_RS_UPDATER_LAST_CHECK           _T("UpdaterLastCheck")

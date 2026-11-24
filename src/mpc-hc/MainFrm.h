@@ -333,6 +333,7 @@ private:
     bool m_fFrameSteppingActive;
     int m_nStepForwardCount;
     REFERENCE_TIME m_rtStepForwardStart;
+    double m_dTimecodeTimePerFrame; // the frame duration the timer was last updated with
     int m_nVolumeBeforeFrameStepping;
 
     bool m_fEndOfStream;
@@ -577,6 +578,8 @@ public:
     bool HasDedicatedFSVideoWindow() const;
     bool IsD3DFullScreenMode() const;
     bool IsSubresyncBarVisible() const;
+    // Duration of one video frame in 100ns units for the timer's timecode display, 0 when there are no frames to count
+    double GetTimecodeTimePerFrame() const;
 
     CControlBar* m_pLastBar;
 

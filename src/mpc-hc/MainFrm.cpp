@@ -696,6 +696,7 @@ CMainFrame::CMainFrame()
     , m_fFrameSteppingActive(false)
     , m_nStepForwardCount(0)
     , m_rtStepForwardStart(0)
+    , m_dTimecodeTimePerFrame(0.0)
     , m_nVolumeBeforeFrameStepping(0)
     , m_fEndOfStream(false)
     , m_dwLastPause(0ULL)
@@ -4186,6 +4187,16 @@ void CMainFrame::OnUpdatePlayerStatus(CCmdUI* pCmdUI)
             m_api.m_pTaskbarList->SetProgressState(m_hWnd, TBPF_NOPROGRESS);
         }
     } else if (loadState == MLS::LOADED) {
+        if (AfxGetAppSettings().bTimerTimecode) {
+            // The frame duration can change after the timer was last updated (it is only known once
+            // the video is set up, and the timer isn't updated while paused), so update it then
+            const double dTimePerFrame = GetTimecodeTimePerFrame();
+            if (dTimePerFrame != m_dTimecodeTimePerFrame) {
+                m_dTimecodeTimePerFrame = dTimePerFrame;
+                OnTimer(TIMER_STREAMPOSPOLLER);
+            }
+        }
+
         CString msg;
         if (m_capture.m_fCapturing) {
             msg.LoadString(IDS_CONTROLS_CAPTURING);
@@ -16345,6 +16356,34 @@ REFTIME CMainFrame::GetAvgTimePerFrame() const
     }
 
     return refAvgTimePerFrame;
+}
+
+double CMainFrame::GetTimecodeTimePerFrame() const
+{
+    // Audio-only files, capture and anything without a known frame rate fall back to the normal timer
+    if (GetLoadState() != MLS::LOADED || m_fAudioOnly || !m_graph.m_pBV
+            || (GetPlaybackMode() != PM_FILE && GetPlaybackMode() != PM_DVD)) {
+        return 0.0;
+    }
+
+    const REFERENCE_TIME rtAvgTimePerFrame = std::llround(GetAvgTimePerFrame() * 10000000.0);
+    if (rtAvgTimePerFrame <= 0) {
+        return 0.0;
+    }
+
+    // The average time per frame is rounded to 100ns, so frame numbers computed from it drift
+    // away from the real ones (333667 for 29.97 fps is 0.6ms late after 10 minutes).
+    // Use the exact frame duration of the usual N and N*1000/1001 fps frame rates.
+    for (const double scale : { 1.0, 1.001 }) {
+        const double fps = std::round(10000000.0 * scale / rtAvgTimePerFrame);
+        if (fps > 0.0) {
+            const double dTimePerFrame = 10000000.0 * scale / fps;
+            if (std::abs(dTimePerFrame - rtAvgTimePerFrame) <= 1.0) {
+                return dTimePerFrame;
+            }
+        }
+    }
+    return (double)rtAvgTimePerFrame;
 }
 
 void CMainFrame::OnVideoSizeChanged(const bool bWasAudioOnly /*= false*/)
