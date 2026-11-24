@@ -20,10 +20,9 @@
 
 #include "stdafx.h"
 #include "CrashReporter.h"
-#include "CrashEventLog.h"
-#include "GPUInfo.h"
-#include "mplayerc.h"
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+#include "CrashEventLog.h"
+#include "mplayerc.h"
 #include "VersionInfo.h"
 #include "mpc-hc_config.h"
 #include "DoctorDump/CrashRpt.h"
@@ -40,14 +39,12 @@ namespace CrashReporter
             ExceptionInfo* pExceptionInfo,
             LPVOID pUserData);
 }
-#endif
 
 namespace
 {
     SRWLOCK g_eventLock = SRWLOCK_INIT;
     CrashEventLog g_eventLog = { "MPC-HC events" };
     const ULONGLONG g_startTick = GetTickCount64();
-    volatile LONG g_GPUInfoDone = 0;
 
     const wchar_t* EventName(uint16_t code)
     {
@@ -58,6 +55,7 @@ namespace
         return code < _countof(names) ? names[code] : L"?";
     }
 }
+#endif
 
 void CrashReporter::Enable()
 {
@@ -113,15 +111,8 @@ void CrashReporter::Enable()
     };
 
     g_bEnabled = g_crashReporter.InitCrashRpt(&appInfo, &handlerSettings);
-
-    if (g_bEnabled) {
-        RTL_OSVERSIONINFOW os = GetRealOSVersion();
-        CStringW v;
-        v.Format(L"%lu.%lu.%lu", os.dwMajorVersion, os.dwMinorVersion, os.dwBuildNumber);
-        SetInfo(L"OS", v);
-    }
-#endif
     LogEvent(CrashEvent::Start);
+#endif
 }
 
 void CrashReporter::Disable()
@@ -159,27 +150,28 @@ void CrashReporter::SetInfo(LPCWSTR key, LPCWSTR value)
 
 void CrashReporter::LogEvent(CrashEvent e, int arg /*= 0*/)
 {
+#if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
     AcquireSRWLockExclusive(&g_eventLock);
     g_eventLog.Push(uint32_t(GetTickCount64() - g_startTick), uint16_t(e), arg);
-    if (IsEnabled()) {
+    if (g_bEnabled) {
         // updated on every event, so nothing has to run after a crash
         SetInfo(L"Events", g_eventLog.Format(EventName).c_str());
     }
     ReleaseSRWLockExclusive(&g_eventLock);
+#else
+    UNREFERENCED_PARAMETER(e);
+    UNREFERENCED_PARAMETER(arg);
+#endif
 }
 
 void CrashReporter::UpdatePlaybackInfo(int videoRenderer, int mpcvrRenderType, int lavHWAccel, LPCWSTR activeDecoder)
 {
-    if (!IsEnabled()) {
+#if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+    if (!g_bEnabled) {
         return;
     }
-    // called from the graph thread and the main thread
-    if (InterlockedExchange(&g_GPUInfoDone, 1) == 0) {
-        GPUDetect gpu(false);
-        if (gpu.GetCount() > 0) {
-            SetInfo(L"GPU", gpu.GetGPUID1() + L" " + gpu.gpu1.GetDriverVersionString() + L" " + gpu.gpu1.description);
-        }
-    }
+    const CAppSettings& s = AfxGetAppSettings();
+    SetInfo(L"GPU", s.gpuid1 + L" " + s.gpudriver1);
 
     CStringW v;
     v.Format(L"%d", videoRenderer);
@@ -196,6 +188,12 @@ void CrashReporter::UpdatePlaybackInfo(int videoRenderer, int mpcvrRenderType, i
         v.Format(L"HWAccel=%d active=%s", lavHWAccel, activeDecoder ? activeDecoder : L"none");
     }
     SetInfo(L"LAVVideo", v);
+#else
+    UNREFERENCED_PARAMETER(videoRenderer);
+    UNREFERENCED_PARAMETER(mpcvrRenderType);
+    UNREFERENCED_PARAMETER(lavHWAccel);
+    UNREFERENCED_PARAMETER(activeDecoder);
+#endif
 }
 
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER

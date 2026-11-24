@@ -1069,6 +1069,7 @@ public:
     int LastGPUCheck;
     CString gpuid1;
     CString gpuid2;
+    CString gpudriver1;
 
 private:
     struct FilterKey {
