@@ -9652,9 +9652,10 @@ void CMainFrame::MoveVideoWindow(bool fShowStats/* = false*/, bool bSetStoppedVi
         windowRect.bottom += nCompensateForMenubar;
 
         OAFilterState fs = UpdateCachedMediaState();
-        if (fs == State_Running || fs == State_Paused || bSetStoppedVideoRect || m_fShockwaveGraph) {
-            const CSize szVideo = GetVideoSize();
-
+        const bool bPositionVideo = fs == State_Running || fs == State_Paused || bSetStoppedVideoRect || m_fShockwaveGraph;
+        // the renderer can report 0x0 for a loaded video, position it as if stopped rather than divide by it
+        const CSize szVideo = bPositionVideo ? GetVideoSize() : CSize(0, 0);
+        if (szVideo.cx > 0 && szVideo.cy > 0) {
             m_dLastVideoScaleFactor = std::min((double)windowRect.Size().cx / szVideo.cx,
                                                (double)windowRect.Size().cy / szVideo.cy);
             m_lastVideoSize = szVideo;
@@ -10151,6 +10152,9 @@ double CMainFrame::GetZoomAutoFitScale()
     const CAppSettings& s = AfxGetAppSettings();
 
     CSize arxy = GetVideoSize();
+    if (arxy.cx <= 0 || arxy.cy <= 0) {
+        return 1.0;
+    }
 
     // get the work area
     MONITORINFO mi;
