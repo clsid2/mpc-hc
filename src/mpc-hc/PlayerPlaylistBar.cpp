@@ -3144,6 +3144,7 @@ void CPlayerPlaylistBar::OnLvnFinditem(NMHDR* pNMHDR, LRESULT* pResult)
     if (pFindItem) {
         int startidx = pFindItem->iStart;
         CString findstr = pFindItem->lvfi.psz;
+        findstr.MakeLower();
         int len = findstr.GetLength();
         int idx = -1;
         POSITION pos = m_pl.GetHeadPosition();
