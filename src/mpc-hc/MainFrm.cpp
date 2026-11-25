@@ -12634,7 +12634,6 @@ void CMainFrame::CloseMediaPrivate()
     }
 
     m_bIsMPCVRExclusiveMode = false;
-    CrashReporter::LogEvent(CrashEvent::CloseStep, 3);
 
     // IMPORTANT: IVMRSurfaceAllocatorNotify/IVMRSurfaceAllocatorNotify9 has to be released before the VMR/VMR9, otherwise it will crash in Release()
     m_graph.m_pMVRFG.Release();
@@ -12696,21 +12695,19 @@ void CMainFrame::CloseMediaPrivate()
         pSS.Release();
     }
 
-    CrashReporter::LogEvent(CrashEvent::CloseStep, 4);
     TRACE(_T("Releasing graph builder\n"));
     if (m_graph.m_pGB) {
         m_graph.m_pGB->RemoveFromROT();
         m_graph.m_pGB.Release();
     }
     TRACE(_T("Releasing graph builder complete\n"));
-    CrashReporter::LogEvent(CrashEvent::CloseStep, 5);
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 3);
 
     ULONGLONG tc2 = GetTickCount64();
 
     if (m_previewGraph.m_pGB) {
         TRACE(_T("Releasing preview graph\n"));
         ReleasePreviewGraph();
-        CrashReporter::LogEvent(CrashEvent::CloseStep, 6);
     }
 
     m_pProv.Release();
@@ -12720,7 +12717,7 @@ void CMainFrame::CloseMediaPrivate()
     m_lastOMD.reset();
 	
 	m_FontInstaller.UninstallFonts();
-    CrashReporter::LogEvent(CrashEvent::CloseStep, 7);
+    CrashReporter::LogEvent(CrashEvent::CloseStep, 4);
 
     ULONGLONG tc3 = GetTickCount64();
 
