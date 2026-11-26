@@ -8721,13 +8721,6 @@ void CMainFrame::OnHelpDonate()
 
 //////////////////////////////////
 
-static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
-{
-    std::vector<HMONITOR>* ml = (std::vector<HMONITOR>*)dwData;
-    ml->push_back(hMonitor);
-    return TRUE;
-}
-
 void CMainFrame::SetDefaultWindowRect(int iMonitor)
 {
     const CAppSettings& s = AfxGetAppSettings();

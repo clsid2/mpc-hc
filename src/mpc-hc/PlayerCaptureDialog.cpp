@@ -1005,11 +1005,6 @@ void CPlayerCaptureDialog::SetupVideoControls(
     CStringW displayName,
     IAMStreamConfig* pAMSC, IAMCrossbar* pAMXB, IAMTVTuner* pAMTuner)
 {
-    if (!this) {
-        ASSERT(false);
-        return;
-    }
-
     EmptyVideo();
 
     m_vidDisplayName = displayName;
@@ -1192,10 +1187,6 @@ void CPlayerCaptureDialog::SetupAudioControls(
     CStringW displayName,
     IAMStreamConfig* pAMSC, const std::vector<CComPtr<IAMAudioInputMixer>>& pAMAIM)
 {
-    if (!this) {
-        return;
-    }
-
     EmptyAudio();
 
     m_audDisplayName = displayName;

@@ -713,7 +713,7 @@ void CApiBridge::ShowOSDCustomMessageApi(const MPC_OSDDATA* osdData)
 
 HRESULT CApiBridge::CreateThumbnailToolbar()
 {
-    if (!this || !AfxGetAppSettings().bUseEnhancedTaskBar) {
+    if (!AfxGetAppSettings().bUseEnhancedTaskBar) {
         return E_FAIL;
     }
 

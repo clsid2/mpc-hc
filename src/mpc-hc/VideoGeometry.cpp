@@ -119,7 +119,7 @@ void CVideoGeometry::OnViewModifySize(UINT nID) {
     }
     int minWidth = (int)mmi.ptMinTrackSize.x;
 
-    int mult = (nID == ID_VIEW_ZOOM_ADD ? 1 : ID_VIEW_ZOOM_SUB ? -1 : 0);
+    int mult = (nID == ID_VIEW_ZOOM_ADD ? 1 : nID == ID_VIEW_ZOOM_SUB ? -1 : 0);
     double videoRatio = double(videoSize.cy) / double(videoSize.cx);
 
     CRect rect;
