@@ -753,6 +753,7 @@ public:
 
     // Output
     CRenderersSettings m_RenderersSettings;
+    int             nSubPicQueueSize; // as chosen by the user, GetRenderersSettings() derives the effective size
     int             iDSVideoRendererType;
 
     CStringW        strAudioRendererDisplayName;
