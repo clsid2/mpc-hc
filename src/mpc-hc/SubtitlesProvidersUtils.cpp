@@ -635,7 +635,7 @@ HRESULT SubtitlesProvidersUtils::StringDownload(const std::string& url, const st
 
         CAutoPtr<CHttpFile> pHttpFile((CHttpFile*)is.OpenURL(UTF8To16(url.c_str()),
                                                              1,
-                                                             INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_EXISTING_CONNECT | (bAutoRedirect ? INTERNET_FLAG_NO_AUTO_REDIRECT : NULL),
+                                                             INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_EXISTING_CONNECT | (bAutoRedirect ? 0 : INTERNET_FLAG_NO_AUTO_REDIRECT),
                                                              UTF8To16(strHeaders.c_str())));
 
         DWORD total_length = 0, length = 0, index = 0;
