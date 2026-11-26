@@ -57,6 +57,7 @@
     <ClCompile Include="DVBSub.cpp" />
     <ClCompile Include="ColorConvTable.cpp" />
     <ClCompile Include="LibassContext.cpp" />
+    <ClCompile Include="LibassTimeline.cpp" />
     <ClCompile Include="SubRendererSettings.cpp" />
     <ClCompile Include="SubtitleHelpers.cpp" />
     <ClCompile Include="PGSSub.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="CompositionObject.h" />
     <ClInclude Include="DVBSub.h" />
     <ClInclude Include="LibassContext.h" />
+    <ClInclude Include="LibassTimeline.h" />
     <ClInclude Include="STSStyle.h" />
     <ClInclude Include="SubRendererSettings.h" />
     <ClInclude Include="SubtitleHelpers.h" />

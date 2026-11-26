@@ -3811,7 +3811,7 @@ STDMETHODIMP_(REFERENCE_TIME) CRenderedTextSubtitle::GetStart(POSITION pos, doub
 {
 #if USE_LIBASS
     if (m_LibassContext.IsLibassActive()) {
-        return m_LibassContext.GetCurrent(pos);
+        return m_LibassContext.GetStart(pos);
     }
 #endif
     __assume((INT_PTR)pos - 1 >= INT_MIN && (INT_PTR)pos <= INT_MAX);
@@ -3822,7 +3822,7 @@ STDMETHODIMP_(REFERENCE_TIME) CRenderedTextSubtitle::GetStop(POSITION pos, doubl
 {
 #if USE_LIBASS
     if (m_LibassContext.IsLibassActive()) {
-        return m_LibassContext.GetCurrent(pos) + 1;
+        return m_LibassContext.GetStop(pos);
     }
 #endif
     __assume((INT_PTR)pos - 1 >= INT_MIN && (INT_PTR)pos <= INT_MAX);
@@ -3833,7 +3833,7 @@ STDMETHODIMP_(bool) CRenderedTextSubtitle::IsAnimated(POSITION pos)
 {
 #if USE_LIBASS
     if (m_LibassContext.IsLibassActive()) {
-        return false;
+        return m_LibassContext.IsAnimated(pos);
     }
 #endif
     __assume((INT_PTR)pos - 1 >= INT_MIN && (INT_PTR)pos <= INT_MAX);

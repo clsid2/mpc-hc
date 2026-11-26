@@ -789,11 +789,12 @@ STDMETHODIMP_(bool) CSubPicQueueNoThread::LookupSubPic(REFERENCE_TIME rtNow, boo
                     rtStop = rtNow + 1;
                 }
 
-                if (bAnimated) {
+                rtStart = pSubPicProvider->GetStart(pos, fps);
+                if (bAnimated && rtStart <= rtNow) {
+                    // one sub-frame of the animation, from now; a segment that
+                    // has not started yet keeps its own start and is not rendered
                     rtStart = rtNow;
                     rtStop = std::min(rtNow + m_rtTimePerSubFrame, rtStop);
-                } else {
-                    rtStart = pSubPicProvider->GetStart(pos, fps);
                 }
 
                 if (rtStart <= rtNow && rtNow < rtStop) {

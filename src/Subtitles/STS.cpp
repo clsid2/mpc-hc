@@ -3267,7 +3267,7 @@ void CSimpleTextSubtitle::CreateSegments()
 void CSimpleTextSubtitle::FlushEventsLibass()
 {
     if (m_LibassContext.IsLibassActive()) {
-        ass_flush_events(m_LibassContext.m_track.get());
+        m_LibassContext.FlushEvents();
     }
 }
 

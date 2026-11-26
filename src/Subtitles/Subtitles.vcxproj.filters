@@ -77,6 +77,9 @@
     <ClCompile Include="LibassContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LibassTimeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="OpenTypeLangTags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -158,6 +161,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LibassContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LibassTimeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OpenTypeLangTags.h">
