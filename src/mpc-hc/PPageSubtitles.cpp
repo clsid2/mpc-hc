@@ -182,7 +182,7 @@ BOOL CPPageSubtitles::OnInitDialog()
     m_horPosCtrl.SetRange32(-40, 140);
     m_nVerPos = s.nVerPos;
     m_verPosCtrl.SetRange32(140, -40);
-    m_nSPQSize = r.subPicQueueSettings.nSize;
+    m_nSPQSize = s.nSubPicQueueSize;
     m_SPQSizeCtrl.SetRange32(0, 120);
     m_cbSPQMaxRes.AddString(_T("640x480"));
     m_cbSPQMaxRes.AddString(_T("800x600"));
@@ -229,7 +229,7 @@ BOOL CPPageSubtitles::OnApply()
         m_nSubDelayStep = 500;
     }
 
-    r.subPicQueueSettings.nSize = m_nSPQSize;
+    s.nSubPicQueueSize = m_nSPQSize;
     s.nSubDelayStep = m_nSubDelayStep;
     TranslateResUIPosToSetting(m_cbSPQMaxRes.GetCurSel(), r.subPicQueueSettings.nMaxResX, r.subPicQueueSettings.nMaxResY);
     r.subPicQueueSettings.bDisableSubtitleAnimation = !!m_bDisableSubtitleAnimation;

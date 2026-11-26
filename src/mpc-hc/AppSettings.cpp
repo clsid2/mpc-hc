@@ -138,6 +138,7 @@ CAppSettings::CAppSettings()
     , idAudioLang(0)
     , idSubtitlesLang(0)
     , fClosedCaptions(false)
+    , nSubPicQueueSize(0)
     , iDSVideoRendererType(VIDRNDT_DS_VMR7)
     , fD3DFullscreen(false)
     , fLaunchfullscreen(false)
@@ -2615,7 +2616,7 @@ void CAppSettings::UpdateRenderersData(bool fSave)
 
         pApp->WriteProfileInt(IDS_R_SETTINGS, _T("ResetDevice"), r.fResetDevice);
 
-        pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPCSIZE, r.subPicQueueSettings.nSize);
+        pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPCSIZE, nSubPicQueueSize);
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPCMAXRESX, r.subPicQueueSettings.nMaxResX);
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_SPCMAXRESY, r.subPicQueueSettings.nMaxResY);
         pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_DISABLE_SUBTITLE_ANIMATION, r.subPicQueueSettings.bDisableSubtitleAnimation);
@@ -2696,7 +2697,8 @@ void CAppSettings::UpdateRenderersData(bool fSave)
 
         r.fResetDevice = !!pApp->GetProfileInt(IDS_R_SETTINGS, _T("ResetDevice"), FALSE);
 
-        r.subPicQueueSettings.nSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPCSIZE, 0);
+        nSubPicQueueSize = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPCSIZE, 0);
+        r.subPicQueueSettings.nSize = nSubPicQueueSize;
         r.subPicQueueSettings.nMaxResX = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPCMAXRESX, 2560);
         r.subPicQueueSettings.nMaxResY = pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_SPCMAXRESY, 1440);
         if (r.subPicQueueSettings.nMaxResX < 600 || r.subPicQueueSettings.nMaxResY < 480) {
@@ -4227,12 +4229,9 @@ CRenderersData* GetRenderersData() {
 
 CRenderersSettings& GetRenderersSettings() {
     auto& s = AfxGetAppSettings();
-    if (s.m_RenderersSettings.subPicQueueSettings.nSize > 0) {
-        // queue does not work properly with libass
-        if (s.bRenderSSAUsingLibass || s.bRenderSRTUsingLibass) {
-            s.m_RenderersSettings.subPicQueueSettings.nSize = 0;
-        }
-    }
+    // queue does not work properly with libass
+    bool libass = s.bRenderSSAUsingLibass || s.bRenderSRTUsingLibass;
+    s.m_RenderersSettings.subPicQueueSettings.nSize = libass ? 0 : s.nSubPicQueueSize;
     return s.m_RenderersSettings;
 }
 
