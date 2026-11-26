@@ -910,7 +910,6 @@ public:
     afx_msg void OnViewFullscreen();
     afx_msg void OnViewFullscreenSecondary();
     afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateViewSwitchVideoFrame(CCmdUI* pCmdUI);
     afx_msg void OnViewOntop(UINT nID);
     afx_msg void OnUpdateViewOntop(CCmdUI* pCmdUI);
     afx_msg void OnViewOptions();
