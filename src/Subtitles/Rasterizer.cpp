@@ -347,7 +347,14 @@ void Rasterizer::_EvaluateLine(int x0, int y0, int x1, int y1)
 
     y1 = (y1 - 5) >> 3;
 
-    ASSERT(y1 < m_pOutlineData->mHeight);
+    const int h = m_pOutlineData->mHeight;
+
+    // the outline is sized to cover every edge, but a sizing mismatch must
+    // not write outside the scanline buffer or the overlay
+    ASSERT(iy >= 0 && y1 < h);
+    iy = std::clamp(iy, 0, h);
+    y = (iy << 3) + 4;
+    y1 = std::clamp(y1, -1, h - 1);
 
     if (iy <= y1) {
         __int64 invslope = (__int64(x1 - x0) << 16) / dy;
@@ -363,7 +370,7 @@ void Rasterizer::_EvaluateLine(int x0, int y0, int x1, int y1)
         xacc += (invslope * (y - y0)) >> 3;
 
         while (iy <= y1) {
-            int ix = (int)((xacc + 32768) >> 16);
+            int ix = std::clamp((int)((xacc + 32768) >> 16), 0, m_pOutlineData->mWidth);
 
             mpEdgeBuffer[mEdgeNext].next = mpScanBuffer[iy];
             mpEdgeBuffer[mEdgeNext].posandflag = (ix << 1) | flag;
@@ -516,6 +523,9 @@ bool Rasterizer::ScanConvert()
                 continue;
             } else {
                 bezier_idx = 0;
+                if (pt == PT_BSPLINEPATCHTO && i >= 3 && (mPathPoints - (i - 3) >= 4)) {
+                    AnalyzeBezierMinMax(i - 3, true, minx, maxx, miny, maxy);
+                }
             }
 
             if (ix < minx) {
