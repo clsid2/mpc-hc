@@ -347,7 +347,15 @@ void Rasterizer::_EvaluateLine(int x0, int y0, int x1, int y1)
 
     y1 = (y1 - 5) >> 3;
 
-    ASSERT(y1 < m_pOutlineData->mHeight);
+    // a sizing mismatch must not write outside the scanline buffer
+    ASSERT(iy >= 0 && y1 < m_pOutlineData->mHeight);
+    if (iy < 0) {
+        iy = 0;
+        y = 4;
+    }
+    if (y1 > m_pOutlineData->mHeight - 1) {
+        y1 = m_pOutlineData->mHeight - 1;
+    }
 
     if (iy <= y1) {
         __int64 invslope = (__int64(x1 - x0) << 16) / dy;
@@ -516,6 +524,9 @@ bool Rasterizer::ScanConvert()
                 continue;
             } else {
                 bezier_idx = 0;
+                if (pt == PT_BSPLINEPATCHTO && i >= 3 && (mPathPoints - (i - 3) >= 4)) {
+                    AnalyzeBezierMinMax(i - 3, true, minx, maxx, miny, maxy);
+                }
             }
 
             if (ix < minx) {
