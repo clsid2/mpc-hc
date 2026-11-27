@@ -149,17 +149,36 @@ void LibassTimeline::Build(const LibassTimelineEvent* events, size_t count, int 
     m_builtGeneration = generation;
 }
 
-void LibassTimeline::Build(const ass_track* track, uint32_t generation)
+std::vector<LibassTimelineEvent> LibassTimeline::EventsOf(const ass_track* track)
 {
     std::vector<LibassTimelineEvent> events;
     if (track) {
         events.reserve(track->n_events);
         for (int i = 0; i < track->n_events; i++) {
             const ASS_Event& e = track->events[i];
-            events.push_back({ e.Start, e.Duration, e.Text, e.Effect });
+            events.push_back({ e.Start, e.Duration, e.Text, e.Effect, e.ReadOrder });
         }
     }
+    return events;
+}
+
+void LibassTimeline::Build(const ass_track* track, uint32_t generation)
+{
+    std::vector<LibassTimelineEvent> events = EventsOf(track);
     Build(events.data(), events.size(), track ? track->n_events : 0, generation);
+}
+
+std::vector<size_t> LibassTimeline::VisibleAt(const LibassTimelineEvent* events, size_t count, long long ms)
+{
+    std::vector<size_t> visible;
+    for (size_t i = 0; i < count; i++) {
+        if (events[i].start <= ms && ms < events[i].start + events[i].duration) {
+            visible.push_back(i);
+        }
+    }
+    // stable, so events with the same ReadOrder keep the track's order
+    std::stable_sort(visible.begin(), visible.end(), [events](size_t a, size_t b) { return events[a].readOrder < events[b].readOrder; });
+    return visible;
 }
 
 size_t LibassTimeline::FindAt(long long ms) const

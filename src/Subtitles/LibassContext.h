@@ -136,6 +136,12 @@ public:
     REFERENCE_TIME GetStart(POSITION pos);
     REFERENCE_TIME GetStop(POSITION pos);
     bool IsAnimated(POSITION pos);
+    // The events shown at ms, in ReadOrder, for the side features that read
+    // text (auto-copy). Returns the index of the timeline segment holding ms,
+    // or LibassTimeline::npos in a gap, and sets nextStart to the start in ms
+    // of the segment after it, -1 when there is none. The text pointers point
+    // into the track, so use them only while holding the subtitle lock.
+    size_t GetEventsAt(long long ms, std::vector<LibassTimelineEvent>& visible, long long& nextStart);
     STDMETHODIMP Render(REFERENCE_TIME rt, SubPicDesc& spd, RECT& bbox, CSize& size, CRect& vidRect);
     bool RenderFrame(long long now, SubPicDesc& spd, CRect& rcDirty);
     void SetFilterGraphFromFilter(IBaseFilter* f);

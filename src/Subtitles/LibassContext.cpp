@@ -912,6 +912,31 @@ bool LibassContext::IsAnimated(POSITION pos) {
     return i < m_timeline.Count() && m_timeline.At(i).animated;
 }
 
+size_t LibassContext::GetEventsAt(long long ms, std::vector<LibassTimelineEvent>& visible, long long& nextStart) {
+    visible.clear();
+    nextStart = -1;
+    if (!m_assloaded || !m_track) {
+        return LibassTimeline::npos;
+    }
+    EnsureTimeline();
+    size_t i = m_timeline.FindAt(ms);
+    if (i == LibassTimeline::npos) {
+        return i;
+    }
+    if (ms < m_timeline.At(i).start) {
+        nextStart = m_timeline.At(i).start;  // in a gap, i is the next segment
+        return LibassTimeline::npos;
+    }
+    if (i + 1 < m_timeline.Count()) {
+        nextStart = m_timeline.At(i + 1).start;
+    }
+    std::vector<LibassTimelineEvent> events = LibassTimeline::EventsOf(m_track.get());
+    for (size_t e : LibassTimeline::VisibleAt(events.data(), events.size(), ms)) {
+        visible.push_back(events[e]);
+    }
+    return i;
+}
+
 STDMETHODIMP LibassContext::Render(REFERENCE_TIME rt, SubPicDesc& spd, RECT& bbox, CSize& size, CRect& frameRect) {
     if (m_assloaded) {
         if (spd.bpp != 32) {
