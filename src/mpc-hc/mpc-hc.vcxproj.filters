@@ -412,6 +412,7 @@
     <ClCompile Include="DiscController.cpp" />
     <ClCompile Include="FavoritesRecent.cpp" />
     <ClCompile Include="VideoGeometry.cpp" />
+    <ClCompile Include="PanNScan.cpp" />
     <ClCompile Include="ApiBridge.cpp" />
     <ClCompile Include="SubtitleController.cpp" />
     <ClCompile Include="ShaderController.cpp" />
@@ -1009,6 +1010,7 @@
     <ClInclude Include="DiscController.h" />
     <ClInclude Include="FavoritesRecent.h" />
     <ClInclude Include="VideoGeometry.h" />
+    <ClInclude Include="PanNScan.h" />
     <ClInclude Include="ApiBridge.h" />
     <ClInclude Include="SubtitleController.h" />
     <ClInclude Include="ShaderController.h" />
