@@ -519,7 +519,9 @@ REFERENCE_TIME CSubtitleInputPin::DecodeSample(const std::unique_ptr<SubtitleSam
                 LPCSTR data = (LPCSTR)pSample->data.data();
                 int dataSize = (int)pSample->data.size();
                 pRTS->m_LibassContext.SetFilterGraphFromFilter(m_pFilter);
-                pRTS->m_LibassContext.LoadASSSample((char*)data, dataSize, pSample->rtStart, pSample->rtStop);
+                if (pRTS->m_LibassContext.LoadASSSample((char*)data, dataSize, pSample->rtStart, pSample->rtStop)) {
+                    bInvalidate = true;
+                }
             } else
 #endif
             {
@@ -537,7 +539,9 @@ REFERENCE_TIME CSubtitleInputPin::DecodeSample(const std::unique_ptr<SubtitleSam
             CRenderedTextSubtitle* pRTS = (CRenderedTextSubtitle*)(ISubStream*)m_pSubStream;
 #if USE_LIBASS
             if (pRTS->m_LibassContext.IsLibassActive()) {
-                ass_process_chunk(pRTS->m_LibassContext.m_track.get(), (char*)pSample->data.data(), (int)pSample->data.size(), pSample->rtStart / 10000, (pSample->rtStop - pSample->rtStart) / 10000);
+                if (pRTS->m_LibassContext.ProcessChunk((const char*)pSample->data.data(), (int)pSample->data.size(), pSample->rtStart, pSample->rtStop)) {
+                    bInvalidate = true;
+                }
             } else
 #endif
             {

@@ -6,6 +6,7 @@
 #include "SubtitleHelpers.h"
 #include "../SubPic/SubPicProviderImpl.h"
 #include "STSStyle.h"
+#include "LibassTimeline.h"
 
 struct ASS_LibraryDeleter {
     void operator()(ASS_Library* p) { if (p) ass_library_done(p); }
@@ -118,15 +119,23 @@ public:
     bool LoadASSFile(Subtitle::SubType subType);
     bool LoadASSTrack(char* data, int size, Subtitle::SubType subType);
     void Unload();
-    void LoadASSSample(char* data, int dataSize, REFERENCE_TIME tStart, REFERENCE_TIME tStop);
+    // Both return true when the sample added an event to the track, so the
+    // caller can invalidate what the subpic queue rendered ahead of it.
+    bool LoadASSSample(char* data, int dataSize, REFERENCE_TIME tStart, REFERENCE_TIME tStop);
+    bool ProcessChunk(const char* data, int size, REFERENCE_TIME tStart, REFERENCE_TIME tStop);
+    void FlushEvents();
     void LoadTrackData(ASS_Track* track, char* data, int size);
     void StylesChanged();
     void LoadASSFont();
     bool RenderRelativeToWindow();
     CRect GetSPDRect(SubPicDesc& spd);
+    // ISubPicProvider timeline, served from the track's events (LibassTimeline).
+    // A POSITION is a segment index plus one.
     POSITION GetStartPosition(REFERENCE_TIME rt, double fps);
-    REFERENCE_TIME GetCurrent(POSITION pos);
     POSITION GetNext(POSITION pos);
+    REFERENCE_TIME GetStart(POSITION pos);
+    REFERENCE_TIME GetStop(POSITION pos);
+    bool IsAnimated(POSITION pos);
     STDMETHODIMP Render(REFERENCE_TIME rt, SubPicDesc& spd, RECT& bbox, CSize& size, CRect& vidRect);
     bool RenderFrame(long long now, SubPicDesc& spd, CRect& rcDirty);
     void SetFilterGraphFromFilter(IBaseFilter* f);
@@ -142,8 +151,12 @@ protected:
     std::unique_ptr<uint32_t[]> m_pixels;
     CRect lastDirty, lastUncroppedDirty;
     CRect lastSPDRect;
-    REFERENCE_TIME rtCurrent;
-    bool curTimeInitialized;
+    // Rebuilt lazily in GetStartPosition when the track's event count or
+    // m_timelineGeneration has moved. Every caller holds the subtitle lock,
+    // the same one the input pin holds while it adds events.
+    LibassTimeline m_timeline;
+    uint32_t m_timelineGeneration = 0;
+    void EnsureTimeline();
     bool m_bOverrideDefaultStyleActive = false;
     bool m_bOverrideAllStylesActive = false;
     CSTSStyleMap origStyles;
