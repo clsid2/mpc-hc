@@ -46,14 +46,14 @@ CCaptureController::CCaptureController(CMainFrame& frame)
 
 void CCaptureController::OnViewCapture()
 {
-    const bool bHiding = m_frame.m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE);
-    m_frame.m_controls.ToggleControl(CMainFrameControls::Panel::CAPTURE);
+    const bool bHiding = m_frame.Controls().ControlChecked(CMainFrameControls::Panel::CAPTURE);
+    m_frame.Controls().ToggleControl(CMainFrameControls::Panel::CAPTURE);
     AfxGetAppSettings().bHideCaptureSettings = bHiding;
 }
 
 void CCaptureController::OnUpdateViewCapture(CCmdUI* pCmdUI)
 {
-    pCmdUI->SetCheck(m_frame.m_controls.ControlChecked(CMainFrameControls::Panel::CAPTURE));
+    pCmdUI->SetCheck(m_frame.Controls().ControlChecked(CMainFrameControls::Panel::CAPTURE));
     pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && m_frame.GetPlaybackMode() == PM_ANALOG_CAPTURE);
 }
 
@@ -140,7 +140,7 @@ void CCaptureController::OpenCapture(OpenDeviceData* pODD)
 {
     m_frame.lastOpenFile.Empty();
 
-    m_frame.m_wndCaptureBar.InitControls();
+    m_frame.CaptureBar().InitControls();
 
     CStringW vidfrname, audfrname;
     CComPtr<IBaseFilter> pVidCapTmp, pAudCapTmp;
@@ -270,9 +270,9 @@ void CCaptureController::OpenSetupCaptureBar()
             CComQIPtr<IAMVfwCaptureDialogs> pVfwCD = m_graph.m_pVidCap;
 
             if (!m_graph.m_pAMXBar && pVfwCD) {
-                m_frame.m_wndCaptureBar.m_capdlg.SetupVideoControls(m_VidDispName, m_graph.m_pAMVSCCap, pVfwCD);
+                m_frame.CaptureBar().m_capdlg.SetupVideoControls(m_VidDispName, m_graph.m_pAMVSCCap, pVfwCD);
             } else {
-                m_frame.m_wndCaptureBar.m_capdlg.SetupVideoControls(m_VidDispName, m_graph.m_pAMVSCCap, m_graph.m_pAMXBar, m_graph.m_pAMTuner);
+                m_frame.CaptureBar().m_capdlg.SetupVideoControls(m_VidDispName, m_graph.m_pAMVSCCap, m_graph.m_pAMXBar, m_graph.m_pAMTuner);
             }
         }
 
@@ -286,12 +286,12 @@ void CCaptureController::OpenSetupCaptureBar()
             }
             EndEnumPins;
 
-            m_frame.m_wndCaptureBar.m_capdlg.SetupAudioControls(m_AudDispName, m_graph.m_pAMASC, pAMAIM);
+            m_frame.CaptureBar().m_capdlg.SetupAudioControls(m_AudDispName, m_graph.m_pAMASC, pAMAIM);
         }
 
         BuildGraphVideoAudio(
-            m_frame.m_wndCaptureBar.m_capdlg.m_fVidPreview, false,
-            m_frame.m_wndCaptureBar.m_capdlg.m_fAudPreview, false);
+            m_frame.CaptureBar().m_capdlg.m_fVidPreview, false,
+            m_frame.CaptureBar().m_capdlg.m_fAudPreview, false);
     }
 }
 
@@ -638,30 +638,30 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
     m_frame.SetupFiltersSubMenu();
 
     if (m_graph.m_pAMVSCCap) {
-        hr = m_graph.m_pAMVSCCap->SetFormat(&m_frame.m_wndCaptureBar.m_capdlg.m_mtv);
+        hr = m_graph.m_pAMVSCCap->SetFormat(&m_frame.CaptureBar().m_capdlg.m_mtv);
     }
     if (m_graph.m_pAMVSCPrev) {
-        hr = m_graph.m_pAMVSCPrev->SetFormat(&m_frame.m_wndCaptureBar.m_capdlg.m_mtv);
+        hr = m_graph.m_pAMVSCPrev->SetFormat(&m_frame.CaptureBar().m_capdlg.m_mtv);
     }
     if (m_graph.m_pAMASC) {
-        hr = m_graph.m_pAMASC->SetFormat(&m_frame.m_wndCaptureBar.m_capdlg.m_mta);
+        hr = m_graph.m_pAMASC->SetFormat(&m_frame.CaptureBar().m_capdlg.m_mta);
     }
 
-    CComPtr<IBaseFilter> pVidBuffer = m_frame.m_wndCaptureBar.m_capdlg.m_pVidBuffer;
-    CComPtr<IBaseFilter> pAudBuffer = m_frame.m_wndCaptureBar.m_capdlg.m_pAudBuffer;
-    CComPtr<IBaseFilter> pVidEnc = m_frame.m_wndCaptureBar.m_capdlg.m_pVidEnc;
-    CComPtr<IBaseFilter> pAudEnc = m_frame.m_wndCaptureBar.m_capdlg.m_pAudEnc;
-    CComPtr<IBaseFilter> pMux = m_frame.m_wndCaptureBar.m_capdlg.m_pMux;
-    CComPtr<IBaseFilter> pDst = m_frame.m_wndCaptureBar.m_capdlg.m_pDst;
-    CComPtr<IBaseFilter> pAudMux = m_frame.m_wndCaptureBar.m_capdlg.m_pAudMux;
-    CComPtr<IBaseFilter> pAudDst = m_frame.m_wndCaptureBar.m_capdlg.m_pAudDst;
+    CComPtr<IBaseFilter> pVidBuffer = m_frame.CaptureBar().m_capdlg.m_pVidBuffer;
+    CComPtr<IBaseFilter> pAudBuffer = m_frame.CaptureBar().m_capdlg.m_pAudBuffer;
+    CComPtr<IBaseFilter> pVidEnc = m_frame.CaptureBar().m_capdlg.m_pVidEnc;
+    CComPtr<IBaseFilter> pAudEnc = m_frame.CaptureBar().m_capdlg.m_pAudEnc;
+    CComPtr<IBaseFilter> pMux = m_frame.CaptureBar().m_capdlg.m_pMux;
+    CComPtr<IBaseFilter> pDst = m_frame.CaptureBar().m_capdlg.m_pDst;
+    CComPtr<IBaseFilter> pAudMux = m_frame.CaptureBar().m_capdlg.m_pAudMux;
+    CComPtr<IBaseFilter> pAudDst = m_frame.CaptureBar().m_capdlg.m_pAudDst;
 
     bool fFileOutput = (pMux && pDst) || (pAudMux && pAudDst);
     bool fCapture = (fVCapture || fACapture);
 
     if (m_graph.m_pAudCap) {
-        AM_MEDIA_TYPE* pmt = &m_frame.m_wndCaptureBar.m_capdlg.m_mta;
-        int ms = (fACapture && fFileOutput && m_frame.m_wndCaptureBar.m_capdlg.m_fAudOutput) ? AUDIOBUFFERLEN : 60;
+        AM_MEDIA_TYPE* pmt = &m_frame.CaptureBar().m_capdlg.m_mta;
+        int ms = (fACapture && fFileOutput && m_frame.CaptureBar().m_capdlg.m_fAudOutput) ? AUDIOBUFFERLEN : 60;
         if (pMux != pAudMux && fACapture) {
             SetLatency(m_graph.m_pAudCap, -1);
         } else if (pmt->pbFormat) {
@@ -673,7 +673,7 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
     BuildToCapturePreviewPin(m_graph.m_pVidCap, &pVidCapPin, &pVidPrevPin, m_graph.m_pAudCap, &pAudCapPin, &pAudPrevPin);
 
     bool fVidPrev = pVidPrevPin && fVPreview;
-    bool fVidCap = pVidCapPin && fVCapture && fFileOutput && m_frame.m_wndCaptureBar.m_capdlg.m_fVidOutput;
+    bool fVidCap = pVidCapPin && fVCapture && fFileOutput && m_frame.CaptureBar().m_capdlg.m_fVidOutput;
 
     if (fVPreview == 2 && !fVidCap && pVidCapPin) {
         pVidPrevPin = pVidCapPin;
@@ -681,7 +681,7 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
     }
 
     bool fAudPrev = pAudPrevPin && fAPreview;
-    bool fAudCap = pAudCapPin && fACapture && fFileOutput && m_frame.m_wndCaptureBar.m_capdlg.m_fAudOutput;
+    bool fAudCap = pAudCapPin && fACapture && fFileOutput && m_frame.CaptureBar().m_capdlg.m_fAudOutput;
 
     if (fAPreview == 2 && !fAudCap && pAudCapPin) {
         pAudPrevPin = pAudCapPin;
@@ -713,7 +713,7 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
         m_graph.m_pD3DFSC = m_graph.m_pCAP;
 
         const CAppSettings& s = AfxGetAppSettings();
-        m_frame.m_pVideoWnd = &m_frame.m_wndView;
+        m_frame.m_pVideoWnd = &m_frame.View();
 
         if (m_graph.m_pMFVDC) {
             m_graph.m_pMFVDC->SetVideoWindow(m_frame.m_pVideoWnd->m_hWnd);
@@ -724,9 +724,9 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
         if (s.fShowOSD || s.fShowDebugInfo) { // Force OSD on when the debug switch is used
             if (m_graph.m_pMVTO) {
                 m_frame.m_OSD.Start(m_frame.m_pVideoWnd, m_graph.m_pMVTO);
-            } else if (m_frame.m_fFullScreen && !m_frame.m_fAudioOnly && m_graph.m_pCAP3) { // MPCVR
+            } else if (m_frame.m_fFullScreen && !m_frame.IsAudioOnly() && m_graph.m_pCAP3) { // MPCVR
                 m_frame.m_OSD.Start(m_frame.m_pVideoWnd, m_graph.m_pVMB, m_graph.m_pMFVMB, false);
-            } else if (!m_frame.m_fAudioOnly && m_frame.IsD3DFullScreenMode() && (m_graph.m_pVMB || m_graph.m_pMFVMB)) {
+            } else if (!m_frame.IsAudioOnly() && m_frame.IsD3DFullScreenMode() && (m_graph.m_pVMB || m_graph.m_pMFVMB)) {
                 m_frame.m_OSD.Start(m_frame.m_pVideoWnd, m_graph.m_pVMB, m_graph.m_pMFVMB, true);
             } else {
                 m_frame.m_OSD.Start(m_frame.m_pOSDWnd);
@@ -740,7 +740,7 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
 
     if (fVidCap) {
         IBaseFilter* pBF[3] = {pVidBuffer, pVidEnc, pMux};
-        HRESULT hr2 = BuildCapture(pVidCapPin, pBF, MEDIATYPE_Video, &m_frame.m_wndCaptureBar.m_capdlg.m_mtcv);
+        HRESULT hr2 = BuildCapture(pVidCapPin, pBF, MEDIATYPE_Video, &m_frame.CaptureBar().m_capdlg.m_mtcv);
         UNREFERENCED_PARAMETER(hr2);
     }
 
@@ -751,7 +751,7 @@ bool CCaptureController::BuildGraphVideoAudio(int fVPreview, bool fVCapture, int
 
     if (fAudCap) {
         IBaseFilter* pBF[3] = {pAudBuffer, pAudEnc, pAudMux ? pAudMux : pMux};
-        HRESULT hr2 = BuildCapture(pAudCapPin, pBF, MEDIATYPE_Audio, &m_frame.m_wndCaptureBar.m_capdlg.m_mtca);
+        HRESULT hr2 = BuildCapture(pAudCapPin, pBF, MEDIATYPE_Audio, &m_frame.CaptureBar().m_capdlg.m_mtca);
         UNREFERENCED_PARAMETER(hr2);
     }
 
@@ -817,7 +817,7 @@ bool CCaptureController::StartCapture()
         return false;
     }
 
-    if (!m_frame.m_wndCaptureBar.m_capdlg.m_pMux && !m_frame.m_wndCaptureBar.m_capdlg.m_pDst) {
+    if (!m_frame.CaptureBar().m_capdlg.m_pMux && !m_frame.CaptureBar().m_capdlg.m_pDst) {
         return false;
     }
 
@@ -829,8 +829,8 @@ bool CCaptureController::StartCapture()
     //hr = CComQIPtr<IAMGraphStreams>(m_graph.m_pGB)->SyncUsingStreamOffset(TRUE); // TODO:
 
     BuildGraphVideoAudio(
-        m_frame.m_wndCaptureBar.m_capdlg.m_fVidPreview, true,
-        m_frame.m_wndCaptureBar.m_capdlg.m_fAudPreview, true);
+        m_frame.CaptureBar().m_capdlg.m_fVidPreview, true,
+        m_frame.CaptureBar().m_capdlg.m_fAudPreview, true);
 
     hr = m_graph.m_pME->CancelDefaultHandling(EC_REPAINT);
     m_frame.SendMessage(WM_COMMAND, ID_PLAY_PLAY);
@@ -845,22 +845,22 @@ bool CCaptureController::StopCapture()
         return false;
     }
 
-    if (!m_frame.m_wndCaptureBar.m_capdlg.m_pMux && !m_frame.m_wndCaptureBar.m_capdlg.m_pDst) {
+    if (!m_frame.CaptureBar().m_capdlg.m_pMux && !m_frame.CaptureBar().m_capdlg.m_pDst) {
         return false;
     }
 
-    m_frame.m_wndStatusBar.SetStatusMessage(StrRes(IDS_CONTROLS_COMPLETING));
+    m_frame.StatusBar().SetStatusMessage(StrRes(IDS_CONTROLS_COMPLETING));
     m_fCapturing = false;
 
     BuildGraphVideoAudio(
-        m_frame.m_wndCaptureBar.m_capdlg.m_fVidPreview, false,
-        m_frame.m_wndCaptureBar.m_capdlg.m_fAudPreview, false);
+        m_frame.CaptureBar().m_capdlg.m_fVidPreview, false,
+        m_frame.CaptureBar().m_capdlg.m_fAudPreview, false);
 
     m_graph.m_pME->RestoreDefaultHandling(EC_REPAINT);
 
     ::SetPriorityClass(::GetCurrentProcess(), AfxGetAppSettings().dwPriority);
 
-    m_frame.m_rtDurationOverride = -1;
+    m_frame.ClearDurationOverride();
 
     return true;
 }
@@ -868,12 +868,12 @@ bool CCaptureController::StopCapture()
 void CCaptureController::AddCurDevToPlaylist()
 {
     if (m_frame.GetPlaybackMode() == PM_ANALOG_CAPTURE) {
-        m_frame.m_wndPlaylistBar.Append(
+        m_frame.PlaylistBar().Append(
             m_VidDispName,
             m_AudDispName,
-            m_frame.m_wndCaptureBar.m_capdlg.GetVideoInput(),
-            m_frame.m_wndCaptureBar.m_capdlg.GetVideoChannel(),
-            m_frame.m_wndCaptureBar.m_capdlg.GetAudioInput()
+            m_frame.CaptureBar().m_capdlg.GetVideoInput(),
+            m_frame.CaptureBar().m_capdlg.GetVideoChannel(),
+            m_frame.CaptureBar().m_capdlg.GetAudioInput()
         );
     }
 }
@@ -884,13 +884,13 @@ void CCaptureController::StartTunerScan(std::unique_ptr<TunerScanData> pTSD)
     if (m_pDVBState) {
         m_pDVBState->Reset();
     }
-    m_frame.m_wndInfoBar.RemoveAllLines();
-    m_frame.m_wndNavigationBar.m_navdlg.SetChannelInfoAvailable(false);
+    m_frame.InfoBar().RemoveAllLines();
+    m_frame.NavigationBar().m_navdlg.SetChannelInfoAvailable(false);
     m_frame.RecalcLayout();
     m_frame.OpenSetupWindowTitle();
 
-    if (m_frame.m_pGraphThread && m_frame.m_pGraphThread->m_hThread) {
-        m_frame.m_pGraphThread->PostThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.release());
+    if (m_frame.IsGraphThreadRunning()) {
+        m_frame.PostGraphThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.release());
     } else {
         DoTunerScan(pTSD.get());
     }
@@ -1021,8 +1021,8 @@ HRESULT CCaptureController::SetChannel(int nChannel)
         hr = S_FALSE; // All channels have been cleared or it is the first start
     } else if (pTun && pChannel && !m_pDVBState->bSetChannelActive) {
         m_pDVBState->Reset();
-        m_frame.m_wndInfoBar.RemoveAllLines();
-        m_frame.m_wndNavigationBar.m_navdlg.SetChannelInfoAvailable(false);
+        m_frame.InfoBar().RemoveAllLines();
+        m_frame.NavigationBar().m_navdlg.SetChannelInfoAvailable(false);
         m_frame.RecalcLayout();
         m_pDVBState->bSetChannelActive = true;
 
@@ -1053,7 +1053,7 @@ HRESULT CCaptureController::SetChannel(int nChannel)
             m_pDVBState->pChannel = pChannel;
             m_pDVBState->sChannelName = pChannel->GetName();
 
-            m_frame.m_wndInfoBar.SetLine(ResStr(IDS_INFOBAR_CHANNEL), m_pDVBState->sChannelName);
+            m_frame.InfoBar().SetLine(ResStr(IDS_INFOBAR_CHANNEL), m_pDVBState->sChannelName);
             m_frame.RecalcLayout();
 
             if (s.fRememberZoomLevel && !(m_frame.m_fFullScreen || m_frame.IsZoomed() || m_frame.IsIconic())) {
@@ -1063,9 +1063,9 @@ HRESULT CCaptureController::SetChannel(int nChannel)
 
             // Add temporary flag to allow EC_VIDEO_SIZE_CHANGED event to stabilize window size
             // for 5 seconds since playback starts
-            m_frame.m_bAllowWindowZoom = true;
+            m_frame.SetAllowWindowZoom(true);
             m_frame.m_timerOneTime.Subscribe(CMainFrame::TimerOneTimeSubscriber::AUTOFIT_TIMEOUT, [this]
-            { m_frame.m_bAllowWindowZoom = false; }, 5000);
+            { m_frame.SetAllowWindowZoom(false); }, 5000);
 
             UpdateCurrentChannelInfo();
         }
@@ -1128,14 +1128,14 @@ LRESULT CCaptureController::OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lP
             m_frame.m_timerOneTime.Subscribe(CMainFrame::TimerOneTimeSubscriber::DVBINFO_UPDATE,
                                      [this] { UpdateCurrentChannelInfo(false, false); },
                                      1000 * (UINT)tElapse);
-            m_frame.m_wndNavigationBar.m_navdlg.SetChannelInfoAvailable(true);
+            m_frame.NavigationBar().m_navdlg.SetChannelInfoAvailable(true);
         } else {
-            m_frame.m_wndNavigationBar.m_navdlg.SetChannelInfoAvailable(false);
+            m_frame.NavigationBar().m_navdlg.SetChannelInfoAvailable(false);
         }
 
         CString sChannelInfo = m_pDVBState->sChannelName;
-        m_frame.m_wndInfoBar.RemoveAllLines();
-        m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_CHANNEL), sChannelInfo);
+        m_frame.InfoBar().RemoveAllLines();
+        m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_CHANNEL), sChannelInfo);
 
         if (infoData.hr == S_OK) {
             // EIT information parsed correctly
@@ -1143,8 +1143,8 @@ LRESULT CCaptureController::OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lP
                 sChannelInfo.AppendFormat(_T(" | %s (%s - %s)"), NowNext.eventName.GetString(), NowNext.strStartTime.GetString(), NowNext.strEndTime.GetString());
             }
 
-            m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_TITLE), NowNext.eventName);
-            m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_TIME), NowNext.strStartTime + _T(" - ") + NowNext.strEndTime);
+            m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_TITLE), NowNext.eventName);
+            m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_TIME), NowNext.strStartTime + _T(" - ") + NowNext.strEndTime);
 
             if (NowNext.parentalRating >= 0) {
                 CString parentRating;
@@ -1153,11 +1153,11 @@ LRESULT CCaptureController::OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lP
                 } else {
                     parentRating.Format(IDS_PARENTAL_RATING, NowNext.parentalRating);
                 }
-                m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_PARENTAL_RATING), parentRating);
+                m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_PARENTAL_RATING), parentRating);
             }
 
             if (!NowNext.content.IsEmpty()) {
-                m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_CONTENT), NowNext.content);
+                m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_CONTENT), NowNext.content);
             }
 
             CString description = NowNext.eventDesc;
@@ -1167,14 +1167,14 @@ LRESULT CCaptureController::OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lP
                 }
                 description += NowNext.extendedDescriptorsText;
             }
-            m_frame.m_wndInfoBar.SetLine(StrRes(IDS_INFOBAR_DESCRIPTION), description);
+            m_frame.InfoBar().SetLine(StrRes(IDS_INFOBAR_DESCRIPTION), description);
 
             for (const auto& item : NowNext.extendedDescriptorsItems) {
-                m_frame.m_wndInfoBar.SetLine(item.first, item.second);
+                m_frame.InfoBar().SetLine(item.first, item.second);
             }
 
-            if (infoData.bShowInfoBar && !m_frame.m_controls.ControlChecked(CMainFrameControls::Toolbar::INFO)) {
-                m_frame.m_controls.ToggleControl(CMainFrameControls::Toolbar::INFO);
+            if (infoData.bShowInfoBar && !m_frame.Controls().ControlChecked(CMainFrameControls::Toolbar::INFO)) {
+                m_frame.Controls().ToggleControl(CMainFrameControls::Toolbar::INFO);
             }
         }
 

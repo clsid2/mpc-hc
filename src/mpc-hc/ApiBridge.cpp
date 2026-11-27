@@ -150,13 +150,12 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                     m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
                     return;
                 } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fn)) {
-                    m_frame.m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
-                    m_frame.m_wndStatusBar.SetStatusMessage(m_frame.m_closingmsg);
+                    m_frame.ShowClosingMessage(L"Failed to extract stream URL with yt-dlp/youtube-dl");
                     return;
                 }
             }
             fns.push_front(fn);
-            m_frame.m_wndPlaylistBar.Open(fns, false);
+            m_frame.PlaylistBar().Open(fns, false);
             m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
             break;
         case CMD_STOP:
@@ -180,13 +179,12 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                 if (m_frame.m_cmdline.ProcessYoutubeDLURL(fn, true)) {
                     return;
                 } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fn)) {
-                    m_frame.m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
-                    m_frame.m_wndStatusBar.SetStatusMessage(m_frame.m_closingmsg);
+                    m_frame.ShowClosingMessage(L"Failed to extract stream URL with yt-dlp/youtube-dl");
                     return;
                 }
             }
             fns.push_front(fn);
-            m_frame.m_wndPlaylistBar.Append(fns, true);
+            m_frame.PlaylistBar().Append(fns, true);
             break;
         case CMD_STARTPLAYLIST:
             if (m_frame.GetMediaState() == State_Running) {
@@ -195,7 +193,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
             break;
         case CMD_CLEARPLAYLIST:
-            m_frame.m_wndPlaylistBar.Empty();
+            m_frame.PlaylistBar().Empty();
             break;
         case CMD_SETPOSITION:
             if (m_frame.GetLoadState() == MLS::LOADED) {
@@ -203,7 +201,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                 // imianz: quick and dirty trick
                 // Pause->SeekTo->Play (in place of SeekTo only) seems to prevents in most cases
                 // some strange video effects on avi files (ex. locks a while and than running fast).
-                if (!m_frame.m_fAudioOnly && m_frame.GetMediaState() == State_Running) {
+                if (!m_frame.IsAudioOnly() && m_frame.GetMediaState() == State_Running) {
                     m_frame.MediaControlPause(true);
                     m_frame.SeekTo(rtPos);
                     m_frame.MediaControlRun(true);
@@ -211,7 +209,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
                     m_frame.SeekTo(rtPos);
                 }
                 // show current position overridden by play command
-                m_frame.m_OSD.DisplayMessage(OSD_TOPLEFT, m_frame.m_wndStatusBar.GetStatusTimer(), 2000);
+                m_frame.m_OSD.DisplayMessage(OSD_TOPLEFT, m_frame.StatusBar().GetStatusTimer(), 2000);
             }
             break;
         case CMD_SETVOLUME: {
@@ -219,7 +217,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             if (hSender == AfxGetAppSettings().hMasterWnd
                     && ParseAPIInteger(pCDS, 0, 100, volume) && volume != m_frame.GetVolume()) {
                 // SetVolume posts the canonical volume-change notification.
-                m_frame.m_wndToolBar.SetVolume(volume);
+                m_frame.ToolBar().SetVolume(volume);
             }
             break;
         }
@@ -227,7 +225,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             int mute;
             if (hSender == AfxGetAppSettings().hMasterWnd
                     && ParseAPIInteger(pCDS, 0, 1, mute) && (mute != 0) != m_frame.IsMuted()) {
-                m_frame.m_wndToolBar.SetMute(mute != 0);
+                m_frame.ToolBar().SetMute(mute != 0);
                 m_frame.OnPlayVolume(ID_VOLUME_MUTE);
             }
             break;
@@ -240,7 +238,7 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.m_subs.SetSubtitleDelay(_wtoi((LPCWSTR)pCDS->lpData));
             break;
         case CMD_SETINDEXPLAYLIST:
-            //m_frame.m_wndPlaylistBar.SetSelIdx(_wtoi((LPCWSTR)pCDS->lpData));
+            //m_frame.PlaylistBar().SetSelIdx(_wtoi((LPCWSTR)pCDS->lpData));
             break;
         case CMD_SETAUDIOTRACK:
             m_frame.SetAudioTrackIdx(_wtoi((LPCWSTR)pCDS->lpData));
@@ -293,10 +291,10 @@ void CApiBridge::ProcessAPICommand(HWND hSender, COPYDATASTRUCT* pCDS)
             m_frame.OnViewFullscreen();
             break;
         case CMD_INCREASEVOLUME:
-            m_frame.m_wndToolBar.m_volctrl.IncreaseVolume();
+            m_frame.ToolBar().m_volctrl.IncreaseVolume();
             break;
         case CMD_DECREASEVOLUME:
-            m_frame.m_wndToolBar.m_volctrl.DecreaseVolume();
+            m_frame.ToolBar().m_volctrl.DecreaseVolume();
             break;
 		case CMD_SHADER_TOGGLE :
 			m_frame.m_shaders.OnShaderToggle1();
@@ -380,12 +378,12 @@ void CApiBridge::SendNowPlayingToApi(bool sendtrackinfo)
         CString strDur;
 
         if (m_frame.GetPlaybackMode() == PM_FILE) {
-            m_frame.m_wndInfoBar.GetLine(StrRes(IDS_INFOBAR_TITLE), title);
-            m_frame.m_wndInfoBar.GetLine(StrRes(IDS_INFOBAR_AUTHOR), author);
-            m_frame.m_wndInfoBar.GetLine(StrRes(IDS_INFOBAR_DESCRIPTION), description);
+            m_frame.InfoBar().GetLine(StrRes(IDS_INFOBAR_TITLE), title);
+            m_frame.InfoBar().GetLine(StrRes(IDS_INFOBAR_AUTHOR), author);
+            m_frame.InfoBar().GetLine(StrRes(IDS_INFOBAR_DESCRIPTION), description);
 
             CPlaylistItem pli = CPlaylistItem(true);
-            if (m_frame.m_wndPlaylistBar.GetCur(pli, true)) {
+            if (m_frame.PlaylistBar().GetCur(pli, true)) {
                 label = !pli.m_label.IsEmpty() ? pli.m_label : pli.m_fns.front();
                 REFERENCE_TIME rtDur;
                 m_graph.m_pMS->GetDuration(&rtDur);
@@ -505,10 +503,10 @@ void CApiBridge::SendAudioTracksToApi()
 void CApiBridge::SendPlaylistToApi()
 {
     CStringW strPlaylist;
-    POSITION pos = m_frame.m_wndPlaylistBar.m_pl.GetHeadPosition();
+    POSITION pos = m_frame.PlaylistBar().m_pl.GetHeadPosition();
 
     while (pos) {
-        CPlaylistItem& pli = m_frame.m_wndPlaylistBar.m_pl.GetNext(pos);
+        CPlaylistItem& pli = m_frame.PlaylistBar().m_pl.GetNext(pos);
 
         if (pli.m_type == CPlaylistItem::file) {
             for (CString fn : pli.m_fns) {
@@ -523,7 +521,7 @@ void CApiBridge::SendPlaylistToApi()
     if (strPlaylist.IsEmpty()) {
         strPlaylist.Append(L"-1");
     } else {
-        strPlaylist.AppendFormat(L"|%d", m_frame.m_wndPlaylistBar.GetSelIdx());
+        strPlaylist.AppendFormat(L"|%d", m_frame.PlaylistBar().GetSelIdx());
     }
     SendAPICommand(CMD_PLAYLIST, L"%s", static_cast<LPCWSTR>(strPlaylist));
 }
@@ -867,8 +865,8 @@ HRESULT CApiBridge::UpdateThumbarButton(MPC_PLAYSTATE iPlayState)
         if (m_frame.GetLoadState() == MLS::LOADED) {
             HICON hIcon = nullptr;
 
-            buttons[0].dwFlags = (!s.fUseSearchInFolder && m_frame.m_wndPlaylistBar.GetCount() <= 1 && (m_frame.m_pCB && m_frame.m_pCB->ChapGetCount() <= 1)) ? THBF_DISABLED : THBF_ENABLED;
-            buttons[3].dwFlags = (!s.fUseSearchInFolder && m_frame.m_wndPlaylistBar.GetCount() <= 1 && (m_frame.m_pCB && m_frame.m_pCB->ChapGetCount() <= 1)) ? THBF_DISABLED : THBF_ENABLED;
+            buttons[0].dwFlags = (!s.fUseSearchInFolder && m_frame.PlaylistBar().GetCount() <= 1 && (m_frame.GetChapterBag() && m_frame.GetChapterBag()->ChapGetCount() <= 1)) ? THBF_DISABLED : THBF_ENABLED;
+            buttons[3].dwFlags = (!s.fUseSearchInFolder && m_frame.PlaylistBar().GetCount() <= 1 && (m_frame.GetChapterBag() && m_frame.GetChapterBag()->ChapGetCount() <= 1)) ? THBF_DISABLED : THBF_ENABLED;
             buttons[4].dwFlags = THBF_ENABLED;
 
             if (iPlayState == PS_PLAY) {
@@ -877,7 +875,7 @@ HRESULT CApiBridge::UpdateThumbarButton(MPC_PLAYSTATE iPlayState)
                 buttons[2].iBitmap = 2;
 
                 hIcon = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_TB_PLAY), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
-                m_pTaskbarList->SetProgressState(m_frame.m_hWnd, m_frame.m_wndSeekBar.HasDuration() ? TBPF_NORMAL : TBPF_NOPROGRESS);
+                m_pTaskbarList->SetProgressState(m_frame.m_hWnd, m_frame.SeekBar().HasDuration() ? TBPF_NORMAL : TBPF_NOPROGRESS);
             } else if (iPlayState == PS_STOP) {
                 buttons[1].dwFlags = THBF_DISABLED;
                 buttons[2].dwFlags = THBF_ENABLED;
@@ -891,7 +889,7 @@ HRESULT CApiBridge::UpdateThumbarButton(MPC_PLAYSTATE iPlayState)
                 buttons[2].iBitmap = 3;
 
                 hIcon = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_TB_PAUSE), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
-                m_pTaskbarList->SetProgressState(m_frame.m_hWnd, m_frame.m_wndSeekBar.HasDuration() ? TBPF_PAUSED : TBPF_NOPROGRESS);
+                m_pTaskbarList->SetProgressState(m_frame.m_hWnd, m_frame.SeekBar().HasDuration() ? TBPF_PAUSED : TBPF_NOPROGRESS);
             }
 
             if (m_frame.GetPlaybackMode() == PM_DVD && m_frame.m_disc.m_iDVDDomain != DVD_DOMAIN_Title) {
@@ -934,14 +932,14 @@ HRESULT CApiBridge::UpdateThumbarButton(MPC_PLAYSTATE iPlayState)
 
 HRESULT CApiBridge::UpdateThumbnailClip()
 {
-    if (!m_pTaskbarList || !m_frame.m_hWnd || !m_frame.m_wndView.m_hWnd) {
+    if (!m_pTaskbarList || !m_frame.m_hWnd || !m_frame.View().m_hWnd) {
         return E_FAIL;
     }
 
     const CAppSettings& s = AfxGetAppSettings();
 
     CRect r;
-    m_frame.m_wndView.GetClientRect(&r);
+    m_frame.View().GetClientRect(&r);
     if (s.eCaptionMenuMode == MODE_SHOWCAPTIONMENU) {
         r.OffsetRect(0, GetSystemMetrics(SM_CYMENU));
     }
@@ -978,7 +976,7 @@ void CApiBridge::MediaTransportControlSetMedia() {
         }
 
         // Set media details
-        if (m_frame.m_fAudioOnly) {
+        if (m_frame.IsAudioOnly()) {
             ret = m_media_trans_control.smtc_updater->put_Type(ABI::Windows::Media::MediaPlaybackType_Music);
             if (ret != S_OK) {
                 TRACE(_T("MediaTransControls: put_Type error %ld\n"), ret);
@@ -1028,14 +1026,14 @@ void CApiBridge::MediaTransportControlSetMedia() {
                 }
             }
             CString chapter;
-            if (m_frame.m_pCB) {
-                DWORD dwChapCount = m_frame.m_pCB->ChapGetCount();
+            if (m_frame.GetChapterBag()) {
+                DWORD dwChapCount = m_frame.GetChapterBag()->ChapGetCount();
                 if (dwChapCount) {
                     REFERENCE_TIME rtNow;
                     m_graph.m_pMS->GetCurrentPosition(&rtNow);
 
                     CComBSTR bstr;
-                    long currentChap = m_frame.m_pCB->ChapLookup(&rtNow, &bstr);
+                    long currentChap = m_frame.GetChapterBag()->ChapLookup(&rtNow, &bstr);
                     if (bstr.Length()) {
                         chapter.Format(_T("%s (%ld/%lu)"), bstr.m_str, std::max(0l, currentChap + 1l), dwChapCount);
                     } else {
@@ -1063,7 +1061,7 @@ void CApiBridge::MediaTransportControlSetMedia() {
 
         // Thumbnail
 #if MPC_SMTC_VIDEO_THUMBNAIL
-        if (!m_frame.m_fAudioOnly) {
+        if (!m_frame.IsAudioOnly()) {
             // For video, schedule capturing a video frame after playback has started,
             // see MediaTransportControlUpdateThumbnail()
             m_lastSMTCThumbnailTick = 0;
@@ -1077,10 +1075,10 @@ void CApiBridge::MediaTransportControlSetMedia() {
                 m_media_trans_control.loadThumbnail(internalCover.data(), internalCover.size());
             } else {
                 CPlaylistItem pli = CPlaylistItem(true);
-                if (m_frame.m_wndPlaylistBar.GetCur(pli) && !pli.m_cover.IsEmpty()) {
+                if (m_frame.PlaylistBar().GetCur(pli) && !pli.m_cover.IsEmpty()) {
                     m_media_trans_control.loadThumbnail(pli.m_cover);
                 } else {
-                    CString filename = m_frame.m_wndPlaylistBar.GetCurFileName();
+                    CString filename = m_frame.PlaylistBar().GetCurFileName();
                     CString filename_no_ext;
                     CString filedir;
                     if (!PathUtils::IsURL(filename)) {
@@ -1093,7 +1091,7 @@ void CApiBridge::MediaTransportControlSetMedia() {
                             bool is_file_art = false;
                             CString img = CoverArt::FindExternal(filename_no_ext, filedir, author, is_file_art);
                             if (!img.IsEmpty()) {
-                                if (m_frame.m_fAudioOnly || is_file_art) {
+                                if (m_frame.IsAudioOnly() || is_file_art) {
                                     m_media_trans_control.loadThumbnail(img);
                                 }
                             }
@@ -1122,7 +1120,7 @@ void CApiBridge::MediaTransportControlSetMedia() {
         }
 
         // ISystemMediaTransportControls2: playback rate, repeat/shuffle state and timeline
-        m_media_trans_control.SetPlaybackRate(m_frame.m_dSpeedRate);
+        m_media_trans_control.SetPlaybackRate(m_frame.GetPlayingRate());
         m_media_trans_control.SetShuffleEnabled(AfxGetAppSettings().bShufflePlaylistItems);
         MediaTransportControlUpdateAutoRepeat();
         MediaTransportControlUpdateTimeline(true);
@@ -1138,7 +1136,7 @@ void CApiBridge::MediaTransportControlUpdateState(OAFilterState state) {
 
         // Keep rate and timeline in sync with the new state, so that consumers
         // that extrapolate the playback position stay accurate
-        m_media_trans_control.SetPlaybackRate(m_frame.m_dSpeedRate);
+        m_media_trans_control.SetPlaybackRate(m_frame.GetPlayingRate());
         MediaTransportControlUpdateTimeline(true);
 #if MPC_SMTC_VIDEO_THUMBNAIL
         if (state == State_Paused) {
@@ -1163,9 +1161,9 @@ void CApiBridge::MediaTransportControlUpdateTimeline(bool force /*= false*/) {
     m_lastSMTCTimelineUpdate = tick;
 
     __int64 start = 0, stop = 0;
-    m_frame.m_wndSeekBar.GetRange(start, stop);
+    m_frame.SeekBar().GetRange(start, stop);
     if (stop > 0) {
-        m_media_trans_control.UpdateTimelineProperties(0, stop, m_frame.m_wndSeekBar.GetPos());
+        m_media_trans_control.UpdateTimelineProperties(0, stop, m_frame.SeekBar().GetPos());
     }
 
 #if MPC_SMTC_VIDEO_THUMBNAIL
@@ -1188,7 +1186,7 @@ void CApiBridge::MediaTransportControlUpdateAutoRepeat() {
 
 #if MPC_SMTC_VIDEO_THUMBNAIL
 void CApiBridge::MediaTransportControlUpdateThumbnail() {
-    if (m_frame.m_fAudioOnly || m_frame.GetLoadState() != MLS::LOADED || m_frame.IsPlaybackCaptureMode() || !m_media_trans_control.IsActive()) {
+    if (m_frame.IsAudioOnly() || m_frame.GetLoadState() != MLS::LOADED || m_frame.IsPlaybackCaptureMode() || !m_media_trans_control.IsActive()) {
         return;
     }
     // Capture at most once per second, e.g. when seeking repeatedly
@@ -1232,7 +1230,7 @@ LRESULT CApiBridge::OnSmtcAutoRepeat(WPARAM wParam, LPARAM lParam) {
             s.fLoopForever = false;
             break;
     }
-    m_frame.m_nLoops = 0;
+    m_frame.ResetLoopCount();
     MediaTransportControlUpdateAutoRepeat();
     return 0;
 }

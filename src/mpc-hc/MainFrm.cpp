@@ -14092,6 +14092,22 @@ void CMainFrame::DoSeekTo(REFERENCE_TIME rtPos, bool bShowOSD /*= true*/)
     m_api.SendCurrentPositionToApi(true);
 }
 
+void CMainFrame::ResetChapterBag()
+{
+    m_pCB.Release();
+    m_pCB = DEBUG_NEW CDSMChapterBag(nullptr, nullptr);
+}
+
+bool CMainFrame::IsGraphThreadRunning() const
+{
+    return m_pGraphThread && m_pGraphThread->m_hThread;
+}
+
+BOOL CMainFrame::PostGraphThreadMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    return m_pGraphThread->PostThreadMessage(message, wParam, lParam);
+}
+
 void CMainFrame::CleanGraph()
 {
     if (!m_graph.m_pGB) {

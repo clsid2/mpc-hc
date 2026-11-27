@@ -79,7 +79,7 @@ void CVideoGeometry::OnViewZoom(UINT nID)
 
 void CVideoGeometry::OnUpdateViewZoom(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly());
 }
 
 void CVideoGeometry::OnViewZoomAutoFit()
@@ -100,7 +100,7 @@ void CVideoGeometry::OnViewModifySize(UINT nID) {
     }
 
     // For audio-only without custom cover art (logo or nothing), zoom is a no-op.
-    if (m_frame.m_fAudioOnly && !m_frame.m_wndView.IsCustomImgLoaded()) {
+    if (m_frame.IsAudioOnly() && !m_frame.View().IsCustomImgLoaded()) {
         return;
     }
 
@@ -128,8 +128,8 @@ void CVideoGeometry::OnViewModifySize(UINT nID) {
     CRect videoRect;
     videoRect = m_frame.m_pVideoWnd->GetVideoRect();
     if (videoRect.Width() == 0) {
-        if (m_frame.m_fAudioOnly) {
-            m_frame.m_wndView.GetWindowRect(&videoRect); // art display area in screen coords
+        if (m_frame.IsAudioOnly()) {
+            m_frame.View().GetWindowRect(&videoRect); // art display area in screen coords
         } else {
             videoRect = rect;
         }
@@ -244,7 +244,7 @@ void CVideoGeometry::OnUpdateViewDefaultVideoFrame(CCmdUI* pCmdUI)
 {
     const CAppSettings& s = AfxGetAppSettings();
 
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
 
     int dvs = pCmdUI->m_nID - ID_VIEW_VF_HALF;
     if (s.iDefaultVideoSize == dvs && pCmdUI->m_pMenu) {
@@ -302,7 +302,7 @@ void CVideoGeometry::OnUpdateViewCompMonDeskARDiff(CCmdUI* pCmdUI)
     const CAppSettings& s = AfxGetAppSettings();
 
     pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED
-                   && !m_frame.m_fAudioOnly
+                   && !m_frame.IsAudioOnly()
                    && s.iDSVideoRendererType != VIDRNDT_DS_EVR
                    // This doesn't work with madVR due to the fact that it positions video itself.
                    // And it has exactly the same option built in.
@@ -409,7 +409,7 @@ void CVideoGeometry::OnViewPanNScan(UINT nID)
 
 void CVideoGeometry::OnUpdateViewPanNScan(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && AfxGetAppSettings().iDSVideoRendererType != VIDRNDT_DS_EVR);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && AfxGetAppSettings().iDSVideoRendererType != VIDRNDT_DS_EVR);
 }
 
 void CVideoGeometry::ApplyPanNScanPresetString()
@@ -486,7 +486,7 @@ void CVideoGeometry::OnUpdateViewPanNScanPresets(CCmdUI* pCmdUI)
 {
     int nID = pCmdUI->m_nID - ID_PANNSCAN_PRESETS_START;
     const CAppSettings& s = AfxGetAppSettings();
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && nID >= 0 && nID <= s.m_pnspresets.GetCount() && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && nID >= 0 && nID <= s.m_pnspresets.GetCount() && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
 }
 
 int nearest90(int angle) {
@@ -537,14 +537,14 @@ bool CVideoGeometry::PerformFlipRotate()
         m_AngleX = m_AngleY = m_AngleZ = 0;
         return false;
     }
-    if (m_frame.m_previewGraph.m_pCAP2) { //we support rotating preview
+    if (m_frame.PreviewGraph().m_pCAP2) { //we support rotating preview
         m_frame.PreviewWindowHide();
         m_frame.m_wndPreView.SetWindowSize();
         m_frame.SetPreviewVideoPosition();
         //adipose: using defaultvideoangle instead of videoangle, as some oddity with AR shows up when using normal rotate with EVRCP.
         //Since we only need to support 4 angles, this will work, but it *should* work with SetVideoAngle...
 
-        hr = m_frame.m_previewGraph.m_pCAP2->SetDefaultVideoAngle(Vector(Vector::DegToRad(nearest90(m_AngleX)), Vector::DegToRad(nearest90(m_AngleY)), Vector::DegToRad(m_frame.defaultVideoAngle + nearest90(m_AngleZ))));
+        hr = m_frame.PreviewGraph().m_pCAP2->SetDefaultVideoAngle(Vector(Vector::DegToRad(nearest90(m_AngleX)), Vector::DegToRad(nearest90(m_AngleY)), Vector::DegToRad(m_frame.GetDefaultVideoAngle() + nearest90(m_AngleZ))));
     }
 
     return true;
@@ -638,7 +638,7 @@ void CVideoGeometry::OnViewRotate(UINT nID)
 
 void CVideoGeometry::OnUpdateViewRotate(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && (m_graph.m_pCAP || m_graph.m_pCAP3));
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && (m_graph.m_pCAP || m_graph.m_pCAP3));
 }
 
 // FIXME
@@ -683,7 +683,7 @@ void CVideoGeometry::OnUpdateViewAspectRatio(CCmdUI* pCmdUI)
         pCmdUI->m_pMenu->CheckMenuRadioItem(ID_ASPECTRATIO_START, ID_ASPECTRATIO_END, pCmdUI->m_nID, MF_BYCOMMAND);
     }
 
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && s.iDSVideoRendererType != VIDRNDT_DS_EVR);
 }
 
 void CVideoGeometry::OnViewAspectRatioNext()

@@ -85,7 +85,7 @@ void CDiscController::OpenDVDOrBD(CStringW path) {
                 p->path = path;
                 p->path.Replace(_T('/'), _T('\\'));
                 p->path = ForceTrailingSlash(p->path);
-                m_frame.m_wndPlaylistBar.OpenDVD(p->path);
+                m_frame.PlaylistBar().OpenDVD(p->path);
             }
             m_frame.OpenMedia(std::move(p));
         }
@@ -127,7 +127,7 @@ bool CDiscController::OpenBD(CString Path)
             if (!InternalMpegSplitter && !ext.IsEmpty() && ext == _T(".bdmv")) {
                 return false;
             } else {
-                m_frame.m_wndPlaylistBar.Empty();
+                m_frame.PlaylistBar().Empty();
                 std::list<CString> sl;
 
                 if (InternalMpegSplitter) {
@@ -136,7 +136,7 @@ bool CDiscController::OpenBD(CString Path)
                     sl.push_back(CString(Path + _T("\\BDMV\\index.bdmv")));
                 }
 
-                m_frame.m_wndPlaylistBar.Append(sl, false);
+                m_frame.PlaylistBar().Append(sl, false);
                 m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
                 return true;
             }
@@ -196,10 +196,10 @@ void CDiscController::OnDvdAudio(UINT nID)
                 CString strMessage;
                 if (AATR.Language) {
                     GetLocaleString(AATR.Language, LOCALE_SENGLANGUAGE, lang);
-                    m_frame.currentAudioLang = lang;
+                    m_frame.SetCurrentAudioLang(lang);
                 } else {
                     lang.Format(IDS_AG_UNKNOWN, nNextStream + 1);
-                    m_frame.currentAudioLang.Empty();
+                    m_frame.ClearCurrentAudioLang();
                 }
 
                 CString format = GetDVDAudioFormatName(AATR);
@@ -293,7 +293,7 @@ void CDiscController::OnNavigateMenu(UINT nID)
         return;
     }
 
-    m_frame.m_dSpeedRate = 1.0;
+    m_frame.ResetPlayingRateValue();
 
     if (m_frame.GetMediaState() != State_Running) {
         m_frame.SendMessage(WM_COMMAND, ID_PLAY_PLAY);
@@ -321,8 +321,7 @@ void CDiscController::SetupDVDChapters()
     // Release the old chapter bag and create a new one.
     // Due to smart pointers the old chapter bag won't
     // be deleted until all classes release it.
-    m_frame.m_pCB.Release();
-    m_frame.m_pCB = DEBUG_NEW CDSMChapterBag(nullptr, nullptr);
+    m_frame.ResetChapterBag();
 
     WCHAR buff[MAX_PATH];
     ULONG len, ulNumOfChapters;
@@ -349,7 +348,7 @@ void CDiscController::SetupDVDChapters()
                         CStringW str;
                         str.Format(IDS_AG_CHAPTER, i + 1);
 
-                        m_frame.m_pCB->ChapAppend(rt, str);
+                        m_frame.GetChapterBag()->ChapAppend(rt, str);
                     }
                 } else {
                     // Parser failed!
@@ -360,7 +359,7 @@ void CDiscController::SetupDVDChapters()
         }
     }
 
-    m_frame.m_pCB->ChapSort();
+    m_frame.GetChapterBag()->ChapSort();
 
     m_frame.UpdateSeekbarChapterBag();
 }
@@ -383,9 +382,9 @@ void CDiscController::OpenDVD(OpenDVDData* pODD)
         m_frame.ShowMediaTypesDialog();
     }
 
-    if (SUCCEEDED(hr) && m_frame.m_bUseSeekPreview) {
-        if (FAILED(hr = m_frame.m_previewGraph.m_pGB->RenderFile(pODD->path, nullptr))) {
-            m_frame.m_bUseSeekPreview = false;
+    if (SUCCEEDED(hr) && m_frame.IsSeekPreviewEnabled()) {
+        if (FAILED(hr = m_frame.PreviewGraph().m_pGB->RenderFile(pODD->path, nullptr))) {
+            m_frame.SetSeekPreviewEnabled(false);
         }
     }
 
@@ -431,9 +430,9 @@ void CDiscController::OpenDVD(OpenDVDData* pODD)
     ASSERT(m_graph.m_pDVDC);
     ASSERT(m_graph.m_pDVDI);
 
-    if (m_frame.m_bUseSeekPreview) {
-        BeginEnumFilters(m_frame.m_previewGraph.m_pGB, pEF, pBF) {
-            if ((m_frame.m_previewGraph.m_pDVDC = pBF) && (m_frame.m_previewGraph.m_pDVDI = pBF)) {
+    if (m_frame.IsSeekPreviewEnabled()) {
+        BeginEnumFilters(m_frame.PreviewGraph().m_pGB, pEF, pBF) {
+            if ((m_frame.PreviewGraph().m_pDVDC = pBF) && (m_frame.PreviewGraph().m_pDVDI = pBF)) {
                 break;
             }
         }
@@ -475,9 +474,9 @@ void CDiscController::OpenDVD(OpenDVDData* pODD)
     m_graph.m_pDVDC->SetOption(DVD_ResetOnStop, FALSE);
     m_graph.m_pDVDC->SetOption(DVD_HMSF_TimeCodeEvents, TRUE);
 
-    if (m_frame.m_bUseSeekPreview && m_frame.m_previewGraph.m_pDVDC) {
-        m_frame.m_previewGraph.m_pDVDC->SetOption(DVD_ResetOnStop, FALSE);
-        m_frame.m_previewGraph.m_pDVDC->SetOption(DVD_HMSF_TimeCodeEvents, TRUE);
+    if (m_frame.IsSeekPreviewEnabled() && m_frame.PreviewGraph().m_pDVDC) {
+        m_frame.PreviewGraph().m_pDVDC->SetOption(DVD_ResetOnStop, FALSE);
+        m_frame.PreviewGraph().m_pDVDC->SetOption(DVD_HMSF_TimeCodeEvents, TRUE);
     }
 
     if (s.idMenuLang) {
@@ -522,8 +521,8 @@ bool CDiscController::SeekToDVDChapter(int iChapter, bool bRelative /*= false*/)
                          + (Location.TimeCode.bMinutes * 60)
                          + (Location.TimeCode.bSeconds);
             ULONG diff = 0;
-            if (m_frame.m_lChapterStartTime != 0xFFFFFFFF && tsec > m_frame.m_lChapterStartTime) {
-                diff = tsec - m_frame.m_lChapterStartTime;
+            if (m_frame.GetChapterStartTime() != 0xFFFFFFFF && tsec > m_frame.GetChapterStartTime()) {
+                diff = tsec - m_frame.GetChapterStartTime();
             }
             // Go the previous chapter only if more than PREV_CHAP_THRESHOLD seconds
             // have passed since the beginning of the current chapter else restart it
@@ -566,7 +565,7 @@ bool CDiscController::SeekToDVDChapter(int iChapter, bool bRelative /*= false*/)
             CString strTitle;
             strTitle.Format(IDS_AG_TITLE2, Location.TitleNum, ulNumOfTitles);
             __int64 start, stop;
-            m_frame.m_wndSeekBar.GetRange(start, stop);
+            m_frame.SeekBar().GetRange(start, stop);
 
             CString strOSD;
             if (stop > 0) {
