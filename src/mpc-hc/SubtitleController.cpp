@@ -42,6 +42,7 @@
 #include "../Subtitles/RLECodedSubtitle.h"
 #include "../Subtitles/RTS.h"
 #include "../Subtitles/STS.h"
+#include "../Subtitles/LibassText.h"
 #include <SubRenderIntf.h>
 #include <moreuuids.h>
 
@@ -387,6 +388,75 @@ static CStringW StripMarkupTags(CStringW str)
     return str;
 }
 
+// For a track rendered by libass, both the text and the timing come from
+// libass's track rather than the internal renderer's parse. An embedded track
+// never reaches that parse at all, and for a file libass keeps SRT times in
+// centiseconds where the parse keeps milliseconds, so the parse would copy
+// a few ms away from the line libass shows.
+bool CSubtitleController::GetLibassSubtitleText(REFERENCE_TIME rtNow, REFERENCE_TIME rtSub, REFERENCE_TIME rtDelay, CStringW& strText, REFERENCE_TIME& rtNext)
+{
+#if USE_LIBASS
+    CAutoLock cAutoLock(&m_csSubLock);
+
+    auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream);
+    if (!pRTS || !pRTS->m_LibassContext.IsLibassActive()) {
+        return false;
+    }
+
+    // libass shows an event while Start <= now < Start + Duration, with now in ms
+    std::vector<LibassTimelineEvent> events;
+    long long nextStart;
+    size_t iSegment = pRTS->m_LibassContext.GetEventsAt(rtSub / 10000, events, nextStart);
+
+    if (nextStart >= 0) {
+        rtNext = nextStart * 10000 + rtDelay;
+    } else if (m_pCurrentSubInput.pSourceFilter) {
+        rtNext = rtNow; // embedded subtitles: more can still be added while demuxing
+    } else {
+        rtNext = _I64_MAX;
+    }
+
+    if (iSegment == LibassTimeline::npos) {
+        m_nLastCopiedSubSegment = -1;
+        return true;
+    }
+    if ((int)iSegment == m_nLastCopiedSubSegment) {
+        return true;
+    }
+    m_nLastCopiedSubSegment = (int)iSegment;
+
+    // the same guards as the internal renderer's path below
+    int nLines = 0;
+    for (const LibassTimelineEvent& e : events) {
+        if (e.duration * 10000 < MIN_AUTOCOPY_SUBTITLE_DURATION) {
+            continue;
+        }
+        CStringW line = StripMarkupTags(UTF8To16(StripAssOverrideTags(e.text).c_str()));
+        line.Trim();
+        if (line.IsEmpty()) {
+            continue;
+        }
+        if (++nLines > MAX_AUTOCOPY_SUBTITLE_LINES
+                || strText.GetLength() + line.GetLength() > MAX_AUTOCOPY_SUBTITLE_LENGTH) {
+            strText.Empty();
+            break;
+        }
+        if (!strText.IsEmpty()) {
+            strText += L'\n';
+        }
+        strText += line;
+    }
+    return true;
+#else
+    UNREFERENCED_PARAMETER(rtNow);
+    UNREFERENCED_PARAMETER(rtSub);
+    UNREFERENCED_PARAMETER(rtDelay);
+    UNREFERENCED_PARAMETER(strText);
+    UNREFERENCED_PARAMETER(rtNext);
+    return false;
+#endif
+}
+
 // Copies the subtitle shown at rtNow to the clipboard and returns the time the
 // caller should call again: the start of the next subtitle segment, since
 // nothing can change before then.
@@ -407,7 +477,7 @@ REFERENCE_TIME CSubtitleController::CopyCurrentSubtitleToClipboard(REFERENCE_TIM
 
     CStringW strText;
     REFERENCE_TIME rtNext;
-    {
+    if (!GetLibassSubtitleText(rtNow, rtSub, rtDelay, strText, rtNext)) {
         CAutoLock cAutoLock(&m_csSubLock);
 
         auto pRTS = dynamic_cast<CRenderedTextSubtitle*>((ISubStream*)m_pCurrentSubInput.pSubStream);

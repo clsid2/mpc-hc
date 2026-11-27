@@ -135,6 +135,9 @@ public:
 
     void SubtitlesSave(const TCHAR* directory = nullptr, bool silent = false);
     REFERENCE_TIME CopyCurrentSubtitleToClipboard(REFERENCE_TIME rtNow);
+    // the libass half of CopyCurrentSubtitleToClipboard: false when the
+    // current track is not rendered by libass
+    bool GetLibassSubtitleText(REFERENCE_TIME rtNow, REFERENCE_TIME rtSub, REFERENCE_TIME rtDelay, CStringW& strText, REFERENCE_TIME& rtNext);
 
     LRESULT OnLoadSubtitles(WPARAM wParam, LPARAM lParam);
     LRESULT OnGetSubtitles(WPARAM, LPARAM lParam);

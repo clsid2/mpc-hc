@@ -33,6 +33,7 @@ struct LibassTimelineEvent {
     long long duration;  // ms, ASS_Event::Duration
     const char* text;    // ASS_Event::Text, may be null
     const char* effect;  // ASS_Event::Effect, may be null
+    int readOrder = 0;   // ASS_Event::ReadOrder
 };
 
 // The segments of a libass track: the maximal time ranges over which the set
@@ -77,6 +78,13 @@ public:
     // The first segment that is still to be shown at ms: the one containing
     // ms, or the next one after it. npos when there is none.
     size_t FindAt(long long ms) const;
+
+    // The events a track holds, as the timeline reads them.
+    static std::vector<LibassTimelineEvent> EventsOf(const ass_track* track);
+
+    // Indices of the events libass shows at ms (Start <= ms < Start +
+    // Duration), in ReadOrder, which is the order they appear in the file.
+    static std::vector<size_t> VisibleAt(const LibassTimelineEvent* events, size_t count, long long ms);
 
 private:
     std::vector<Segment> m_segments;
