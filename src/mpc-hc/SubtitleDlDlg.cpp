@@ -633,7 +633,7 @@ void CSubtitleDlDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
     const auto& s = AfxGetAppSettings();
 
-    if (bShow == TRUE && !m_bIsRefreshed && !m_pMainFrame->m_fAudioOnly && s.fEnableSubtitles) {
+    if (bShow == TRUE && !m_bIsRefreshed && !m_pMainFrame->IsAudioOnly() && s.fEnableSubtitles) {
         OnRefresh();
         m_bIsRefreshed = true;
     }

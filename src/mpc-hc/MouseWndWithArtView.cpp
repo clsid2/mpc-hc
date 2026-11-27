@@ -116,8 +116,8 @@ BOOL CMouseWndWithArtView::OnEraseBkgnd(CDC* pDC)
 
     CRect r;
 
-    if ((m_pMainFrame->GetLoadState() != MLS::CLOSED || (!m_bFirstMedia && m_pMainFrame->m_controls.DelayShowNotLoaded())) &&
-            !m_pMainFrame->HasDedicatedFSVideoWindow() && !m_pMainFrame->m_fAudioOnly) {
+    if ((m_pMainFrame->GetLoadState() != MLS::CLOSED || (!m_bFirstMedia && m_pMainFrame->Controls().DelayShowNotLoaded())) &&
+            !m_pMainFrame->HasDedicatedFSVideoWindow() && !m_pMainFrame->IsAudioOnly()) {
         pDC->ExcludeClipRect(m_vrect);
     } else {
         CImage img;

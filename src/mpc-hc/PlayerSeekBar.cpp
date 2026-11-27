@@ -142,7 +142,7 @@ CSize CPlayerSeekBar::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
     } else {
         ret.cy = m_pMainFrame->m_dpi.ScaleY(20);
     }
-    if (!m_pMainFrame->m_controls.ControlChecked(CMainFrameControls::Toolbar::CONTROLS)) {
+    if (!m_pMainFrame->Controls().ControlChecked(CMainFrameControls::Toolbar::CONTROLS)) {
         ret.cy += ADD_TO_BOTTOM_WITHOUT_CONTROLBAR;
     }
     return ret;
@@ -288,7 +288,7 @@ CRect CPlayerSeekBar::GetBaseRect() const
     CRect r;
     GetClientRect(&r);
     r.top += 1;
-    if (m_pMainFrame->m_controls.ControlChecked(CMainFrameControls::Toolbar::CONTROLS)) {
+    if (m_pMainFrame->Controls().ControlChecked(CMainFrameControls::Toolbar::CONTROLS)) {
         r.bottom += ADD_TO_BOTTOM_WITHOUT_CONTROLBAR;
     }
 
@@ -367,7 +367,7 @@ bool CPlayerSeekBar::ShowTimeOnSeekBar() const
         case TIME_ON_SEEKBAR_ALWAYS:
             return true;
         case TIME_ON_SEEKBAR_WHEN_STATUSBAR_HIDDEN:
-            return !m_pMainFrame->m_controls.ControlChecked(CMainFrameControls::Toolbar::STATUS);
+            return !m_pMainFrame->Controls().ControlChecked(CMainFrameControls::Toolbar::STATUS);
         default:
             return false;
     }
@@ -479,7 +479,7 @@ void CPlayerSeekBar::UpdateTime()
 
     CString newText;
     if (ShowTimeOnSeekBar()) {
-        newText = m_pMainFrame->m_wndStatusBar.GetStatusTimer();
+        newText = m_pMainFrame->StatusBar().GetStatusTimer();
     }
     const bool textChanged = (newText != m_timeText);
 
@@ -982,7 +982,7 @@ void CPlayerSeekBar::OnContextMenu(CWnd* pWnd, CPoint point)
         CPoint clientPoint = point;
         ScreenToClient(&clientPoint);
         if (GetTimeRect().PtInRect(clientPoint)) {
-            m_pMainFrame->m_wndStatusBar.ShowTimerOptionsMenu(this, point);
+            m_pMainFrame->StatusBar().ShowTimerOptionsMenu(this, point);
             return;
         }
     }
@@ -1092,7 +1092,7 @@ void CPlayerSeekBar::OnMouseMove(UINT nFlags, CPoint point)
         UpdateTooltip(point);
 
         if (m_bHasDuration && m_pMainFrame->CanPreviewUse()) {
-            const OAFilterState fs = m_pMainFrame->m_CachedFilterState;
+            const OAFilterState fs = m_pMainFrame->GetCachedFilterState();
             if (fs != -1 && GetSeekableRect().PtInRect(point)) {
                 UpdateToolTipPosition(point);
                 PreviewWindowShow(point);
@@ -1208,14 +1208,14 @@ void CPlayerSeekBar::PreviewWindowShow(CPoint point) {
 
 void CPlayerSeekBar::OnMButtonDown(UINT nFlags, CPoint point) {
     if (m_pMainFrame->m_wndPreView && ::IsWindow(m_pMainFrame->m_wndPreView)) {
-        if (m_pMainFrame->m_bUseSeekPreview) {
+        if (m_pMainFrame->IsSeekPreviewEnabled()) {
             if (m_pMainFrame->m_wndPreView.IsWindowVisible()) {
                 m_pMainFrame->PreviewWindowHide();
                 OnMouseMove(nFlags, point);
             }
-            m_pMainFrame->m_bUseSeekPreview = false;
+            m_pMainFrame->SetSeekPreviewEnabled(false);
         } else {
-            m_pMainFrame->m_bUseSeekPreview = (m_pMainFrame->m_previewGraph.m_pGB != nullptr);
+            m_pMainFrame->SetSeekPreviewEnabled(m_pMainFrame->PreviewGraph().m_pGB != nullptr);
         }
     }
 }

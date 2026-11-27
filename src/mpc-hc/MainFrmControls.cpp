@@ -295,7 +295,7 @@ CSize CMainFrameControls::GetDockZonesMinSize(unsigned uSaneFallback)
 bool CMainFrameControls::PanelsCoverVideo() const
 {
     const auto& s = AfxGetAppSettings();
-    return m_pMainFrame->IsFullScreenMainFrame() && !m_pMainFrame->m_bIsMPCVRExclusiveMode ||
+    return m_pMainFrame->IsFullScreenMainFrame() && !m_pMainFrame->IsMPCVRExclusiveMode() ||
         (!m_pMainFrame->IsD3DFullScreenMode() && s.bHideWindowedControls && s.bHideFullscreenControls && s.bHideFullscreenDockedPanels &&
                                            s.eHideFullscreenControlsPolicy != CAppSettings::HideFullscreenControlsPolicy::SHOW_NEVER);
 }
@@ -303,7 +303,7 @@ bool CMainFrameControls::PanelsCoverVideo() const
 bool CMainFrameControls::ToolbarsCoverVideo() const
 {
     const auto& s = AfxGetAppSettings();
-    return m_pMainFrame->IsFullScreenMainFrame() && !m_pMainFrame->m_bIsMPCVRExclusiveMode ||
+    return m_pMainFrame->IsFullScreenMainFrame() && !m_pMainFrame->IsMPCVRExclusiveMode() ||
         (!m_pMainFrame->IsD3DFullScreenMode() && s.bHideWindowedControls && s.bHideFullscreenControls &&
                                            s.eHideFullscreenControlsPolicy != CAppSettings::HideFullscreenControlsPolicy::SHOW_NEVER);
 }
@@ -389,10 +389,10 @@ void CMainFrameControls::UpdateToolbarsVisibility()
     bool bRecalcLayout = false;
 
     bool bExclSeekbar = false;
-    if (m_pMainFrame->IsFullScreenMainFrame() && (mls == MLS::LOADED) && m_pMainFrame->m_graph.m_pMVRS) {
+    if (m_pMainFrame->IsFullScreenMainFrame() && (mls == MLS::LOADED) && m_pMainFrame->Graph().m_pMVRS) {
         BOOL bOptExcl = FALSE, bOptExclSeekbar = FALSE;
-        VERIFY(m_pMainFrame->m_graph.m_pMVRS->SettingsGetBoolean(L"enableExclusive", &bOptExcl));
-        VERIFY(m_pMainFrame->m_graph.m_pMVRS->SettingsGetBoolean(L"enableSeekbar", &bOptExclSeekbar));
+        VERIFY(m_pMainFrame->Graph().m_pMVRS->SettingsGetBoolean(L"enableExclusive", &bOptExcl));
+        VERIFY(m_pMainFrame->Graph().m_pMVRS->SettingsGetBoolean(L"enableSeekbar", &bOptExclSeekbar));
         bExclSeekbar = (bOptExcl && bOptExclSeekbar);
     } else if (m_bDelayShowNotLoaded && st.bLastHaveExclusiveSeekbar) {
         bExclSeekbar = true;
@@ -405,7 +405,7 @@ void CMainFrameControls::UpdateToolbarsVisibility()
         // hide completely
         mask.hide(maskAll);
     } else if (bCanAutoHide) {
-        if (m_pMainFrame->m_wndSeekBar.DraggingThumb() || m_pMainFrame->m_bTBDropdownActive) {
+        if (m_pMainFrame->SeekBar().DraggingThumb() || m_pMainFrame->IsToolBarDropdownActive()) {
             // show bottom while dragging the seekbar thumb
             mask.show(DOCK_BOTTOM);
         } else {
@@ -461,8 +461,8 @@ void CMainFrameControls::UpdateToolbarsVisibility()
                     m_pMainFrame->GetClientRect(clientRect);
                     CRect exclSeekbarRect;
                     if (bExclSeekbar) {
-                        if (!m_pMainFrame->m_graph.m_pMVRI
-                                || FAILED(m_pMainFrame->m_graph.m_pMVRI->GetRect("seekbarRect", exclSeekbarRect))) {
+                        if (!m_pMainFrame->Graph().m_pMVRI
+                                || FAILED(m_pMainFrame->Graph().m_pMVRI->GetRect("seekbarRect", exclSeekbarRect))) {
                             exclSeekbarRect = clientRect;
                             exclSeekbarRect.top = 56;
                         }
@@ -524,7 +524,7 @@ void CMainFrameControls::UpdateToolbarsVisibility()
             if (!testCapture() && !testHovering() &&
                     ePolicy == CAppSettings::HideFullscreenControlsPolicy::SHOW_WHEN_CURSOR_MOVED &&
                     bOnWindow && !CMouse::PointEqualsImprecise(screenPoint, st.lastShowPoint) &&
-                    !m_pMainFrame->m_wndView.Dragging() && uTimeout > 0) {
+                    !m_pMainFrame->View().Dragging() && uTimeout > 0) {
                 // show when corresponding hide policy is used, not hovering, non-zero timeout, the cursor moved, and not dragging
                 mask.show(maskAll);
             }
