@@ -21,10 +21,11 @@
 #include "stdafx.h"
 #include "CrashReporter.h"
 #if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+#include "CrashEventLog.h"
+#include "mplayerc.h"
 #include "VersionInfo.h"
 #include "mpc-hc_config.h"
 #include "DoctorDump/CrashRpt.h"
-#include "mplayerc.h"
 
 
 using namespace crash_rpt;
@@ -37,6 +38,22 @@ namespace CrashReporter
     static CrashProcessingCallbackResult CALLBACK CrashProcessingCallback(CrashProcessingCallbackStage stage,
             ExceptionInfo* pExceptionInfo,
             LPVOID pUserData);
+}
+
+namespace
+{
+    SRWLOCK g_eventLock = SRWLOCK_INIT;
+    CrashEventLog g_eventLog = { "MPC-HC events" };
+    const ULONGLONG g_startTick = GetTickCount64();
+
+    const wchar_t* EventName(uint16_t code)
+    {
+        static const wchar_t* const names[] = {
+            L"Start", L"Load", L"Graph", L"Play", L"Pause", L"Stop", L"FS", L"D3DFS",
+            L"Reset", L"CloseStep", L"OnClose", L"OnDestroy",
+        };
+        return code < _countof(names) ? names[code] : L"?";
+    }
 }
 #endif
 
@@ -94,6 +111,7 @@ void CrashReporter::Enable()
     };
 
     g_bEnabled = g_crashReporter.InitCrashRpt(&appInfo, &handlerSettings);
+    LogEvent(CrashEvent::Start);
 #endif
 }
 
@@ -110,6 +128,71 @@ bool CrashReporter::IsEnabled()
     return g_bEnabled;
 #else
     return false;
+#endif
+}
+
+void CrashReporter::SetInfo(LPCWSTR key, LPCWSTR value)
+{
+#if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+    if (!g_bEnabled) {
+        return;
+    }
+    if (value && *value) {
+        g_crashReporter.AddUserInfoToReport(key, value);
+    } else {
+        g_crashReporter.RemoveUserInfoFromReport(key);
+    }
+#else
+    UNREFERENCED_PARAMETER(key);
+    UNREFERENCED_PARAMETER(value);
+#endif
+}
+
+void CrashReporter::LogEvent(CrashEvent e, int arg /*= 0*/)
+{
+#if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+    AcquireSRWLockExclusive(&g_eventLock);
+    g_eventLog.Push(uint32_t(GetTickCount64() - g_startTick), uint16_t(e), arg);
+    if (g_bEnabled) {
+        // updated on every event, so nothing has to run after a crash
+        SetInfo(L"Events", g_eventLog.Format(EventName).c_str());
+    }
+    ReleaseSRWLockExclusive(&g_eventLock);
+#else
+    UNREFERENCED_PARAMETER(e);
+    UNREFERENCED_PARAMETER(arg);
+#endif
+}
+
+void CrashReporter::UpdatePlaybackInfo(int videoRenderer, int mpcvrRenderType, int lavHWAccel, LPCWSTR activeDecoder)
+{
+#if !defined(_DEBUG) && USE_DRDUMP_CRASH_REPORTER
+    if (!g_bEnabled) {
+        return;
+    }
+    const CAppSettings& s = AfxGetAppSettings();
+    SetInfo(L"GPU", s.gpuid1 + L" " + s.gpudriver1);
+
+    CStringW v;
+    v.Format(L"%d", videoRenderer);
+    if (videoRenderer == VIDRNDT_DS_MPCVR) {
+        DWORD useD3D11 = 0;
+        ReadRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", useD3D11);
+        // renderType: 9 or 11, 0 before the input pin connects
+        v.AppendFormat(L" UseD3D11=%lu renderType=%d", useD3D11, mpcvrRenderType);
+    }
+    SetInfo(L"Renderer", v);
+
+    v.Empty();
+    if (lavHWAccel >= 0) {
+        v.Format(L"HWAccel=%d active=%s", lavHWAccel, activeDecoder ? activeDecoder : L"none");
+    }
+    SetInfo(L"LAVVideo", v);
+#else
+    UNREFERENCED_PARAMETER(videoRenderer);
+    UNREFERENCED_PARAMETER(mpcvrRenderType);
+    UNREFERENCED_PARAMETER(lavHWAccel);
+    UNREFERENCED_PARAMETER(activeDecoder);
 #endif
 }
 

@@ -20,9 +20,32 @@
 
 #pragma once
 
+// Player events recorded for crash reports
+enum class CrashEvent : unsigned short {
+    Start,
+    LoadState,      // arg: MLS
+    GraphBuilt,
+    Play,
+    Pause,
+    Stop,
+    Fullscreen,     // arg: 1 entering
+    D3DFullscreen,  // arg: 1 entering
+    ResetDevice,    // arg: 0 begin, 1 ok, -1 failed
+    CloseStep,      // arg: step inside CloseMediaPrivate
+    Close,
+    Destroy,
+};
+
 namespace CrashReporter
 {
     void Enable();
     void Disable();
     bool IsEnabled();
+
+    // Key/value sent with the report. An empty value removes the key.
+    void SetInfo(LPCWSTR key, LPCWSTR value);
+    void LogEvent(CrashEvent e, int arg = 0);
+
+    // mpcvrRenderType and lavHWAccel are -1 when unknown
+    void UpdatePlaybackInfo(int videoRenderer, int mpcvrRenderType, int lavHWAccel, LPCWSTR activeDecoder);
 };

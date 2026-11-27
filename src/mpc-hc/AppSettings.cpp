@@ -315,6 +315,7 @@ CAppSettings::CAppSettings()
     , LastGPUCheck(0)
     , gpuid1(L"")
     , gpuid2(L"")
+    , gpudriver1(L"")
 {
     // Internal source filter
 #if INTERNAL_SOURCEFILTER_AC3
@@ -1471,6 +1472,7 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
     pApp->WriteProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", LastGPUCheck);
     pApp->WriteProfileString(IDS_R_SETTINGS, L"GPUID1", gpuid1);
     pApp->WriteProfileString(IDS_R_SETTINGS, L"GPUID2", gpuid2);
+    pApp->WriteProfileString(IDS_R_SETTINGS, L"GPUDriver1", gpudriver1);
 
     if (fKeepHistory && write_full_history) {
         MRU.SaveMediaHistory();
@@ -2436,6 +2438,7 @@ void CAppSettings::LoadSettings()
     LastGPUCheck = pApp->GetProfileInt(IDS_R_SETTINGS, L"LastGPUCheck", 0);
     gpuid1 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUID1", L"");
     gpuid2 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUID2", L"");
+    gpudriver1 = pApp->GetProfileString(IDS_R_SETTINGS, L"GPUDriver1", L"");
 
     int hoursSinceEpoch = std::chrono::duration_cast<std::chrono::hours>(std::chrono::system_clock::now().time_since_epoch()).count();
     bool check_gpu = !LastGPUCheck || LastGPUCheck == 0xDEAD;
@@ -2457,6 +2460,7 @@ void CAppSettings::LoadSettings()
         CString previous_gpuid1 = gpuid1;
         gpuid1 = gpuinfo.GetCount() >= 1 ? gpuinfo.GetGPUID1() : CString();
         gpuid2 = gpuinfo.GetCount() >= 2 ? gpuinfo.GetGPUID2() : CString();
+        gpudriver1 = gpuinfo.GetCount() >= 1 ? gpuinfo.gpu1.GetDriverVersionString() : CString();
 
         LastGPUCheck = hoursSinceEpoch;
         if (pApp->IsUsingRegistry()) {
