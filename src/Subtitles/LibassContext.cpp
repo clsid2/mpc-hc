@@ -166,8 +166,8 @@ void ParseSrtLine(std::string& srtLine, const STSStyle& style) {
                     } else if (tagname == "font") {
                         int font_size = (int)std::round(style.fontSize);
                         subtitle_output.append("{\\c}");
-                        CT2CA tmpFontName(style.fontName);
-                        subtitle_output.append("{\\fn" + std::string(tmpFontName) + "}");
+                        CStringA tmpFontName = UTF16To8(style.fontName);
+                        subtitle_output.append("{\\fn" + std::string((LPCSTR)tmpFontName) + "}");
                         subtitle_output.append("{\\fs" + std::to_string(font_size) + "}");
                     } else {
                         // Unknown closing tag. If it is closing an unknown tag, ignore it. Otherwise, display it
@@ -251,7 +251,7 @@ void ParseSrtLine(std::string& srtLine, const STSStyle& style) {
 }
 
 void srt_header(char (&outBuffer)[1024], const STSStyle& style, OpenTypeLang::HintStr openTypeLangHint) {
-    CT2CA tmpFontName(style.fontName);
+    CStringA tmpFontName = UTF16To8(style.fontName);
 
     // Generate a standard ass header
     CStringA langTagStr = "";
@@ -281,7 +281,7 @@ void srt_header(char (&outBuffer)[1024], const STSStyle& style, OpenTypeLang::Hi
         style.ScaledBorderAndShadow ? "yes" : "no",
         style.Kerning ? "yes" : "no",
         (LPCSTR)langTagStr,
-        std::string(tmpFontName).c_str(), (int)std::round(style.fontSize), style.colors[0],
+        (LPCSTR)tmpFontName, (int)std::round(style.fontSize), style.colors[0],
         style.colors[1], style.colors[2], style.colors[3],
         style.fontWeight == FW_BOLD ? 1 : 0,
         style.fItalic ? 1 : 0,
@@ -365,11 +365,11 @@ ASS_Track* srt_read_data(ASS_Library* library, ASS_Track* track, std::istream &s
             } else {
                 ParseSrtLine(lineOut, style);
 
-                CT2CA tmpCustomTags(style.customTags);
+                CStringA tmpCustomTags = UTF16To8(style.customTags);
                 _snprintf_s(outBuffer, _TRUNCATE, "Dialogue: 0,%d:%02d:%02d.%02d,%d:%02d:%02d.%02d,Default,,0,0,0,,{\\blur%u}%s%s",
                     start[0], start[1], start[2],
                     (int)floor((double)start[3] / 10.0), end[0], end[1],
-                    end[2], (int)floor((double)end[3] / 10.0), style.fBlur, std::string(tmpCustomTags).c_str(), lineOut.c_str());
+                    end[2], (int)floor((double)end[3] / 10.0), style.fBlur, (LPCSTR)tmpCustomTags, lineOut.c_str());
                 ass_process_data(track, outBuffer, static_cast<int>(strnlen_s(outBuffer, sizeof(outBuffer))));
             }
         }
@@ -775,8 +775,8 @@ bool LibassContext::LoadASSFile(Subtitle::SubType subType) {
 
     if (!m_track) return false;
 
-    CT2CA tmpFontName(defStyle.fontName);
-    ass_set_fonts(m_renderer.get(), NULL, std::string(tmpFontName).c_str(), ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
+    CStringA tmpFontName = UTF16To8(defStyle.fontName);
+    ass_set_fonts(m_renderer.get(), NULL, (LPCSTR)tmpFontName, ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
 
     m_assloaded = true;
 
@@ -797,8 +797,8 @@ bool LibassContext::LoadASSTrack(char* data, int size, Subtitle::SubType subType
     } else { //subType == Subtitle::SSA/ASS
         LoadTrackData(m_track.get(), data, size);
     }
-    CT2CA tmpFontName(defStyle.fontName);
-    ass_set_fonts(m_renderer.get(), NULL, std::string(tmpFontName).c_str(), ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
+    CStringA tmpFontName = UTF16To8(defStyle.fontName);
+    ass_set_fonts(m_renderer.get(), NULL, (LPCSTR)tmpFontName, ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
     //don't set m_assfontloaded here, in case we can load embedded fonts later?
 
     m_assloaded = true;
@@ -853,8 +853,8 @@ void LibassContext::LoadASSFont() {
         }
         m_assfontloaded = true;
         STSStyle defStyle = m_STS->m_SubRendererSettings.defaultStyle;
-        CT2CA tmpFontName(defStyle.fontName);
-        ass_set_fonts(renderer, NULL, std::string(tmpFontName).c_str(), ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
+        CStringA tmpFontName = UTF16To8(defStyle.fontName);
+        ass_set_fonts(renderer, NULL, (LPCSTR)tmpFontName, ASS_FONTPROVIDER_AUTODETECT, NULL, 0);
     }
 }
 
@@ -1272,8 +1272,8 @@ bool LibassContext::LoadASSSample(char *data, int dataSize, REFERENCE_TIME tStar
                 ParseSrtLine(str, defStyle);
 
                 // Add the custom tags
-                CT2CA tmpCustomTags(defStyle.customTags);
-                str.insert(0, std::string(tmpCustomTags));
+                CStringA tmpCustomTags = UTF16To8(defStyle.customTags);
+                str.insert(0, (LPCSTR)tmpCustomTags);
 
                 // Add blur
                 char blur[20]{};
