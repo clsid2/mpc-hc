@@ -14732,15 +14732,6 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
         }
     }
 
-    MSG msg;
-    // purge possible queued graph events
-    while (PeekMessage(&msg, nullptr, WM_GRAPHNOTIFY, WM_GRAPHNOTIFY, PM_REMOVE)) {
-        TRACE(L"Purged queued graph event\n");
-    }
-    if (PeekMessage(&msg, nullptr, WM_RESET_DEVICE, WM_RESET_DEVICE, PM_REMOVE)) {
-        TRACE(L"Purged queued WM_RESET_DEVICE\n");
-    }
-
     // delay showing auto-hidden controls if new media is queued
     if (bNextIsQueued) {
         m_controls.DelayShowNotLoaded(true);
@@ -14748,6 +14739,7 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
         m_controls.DelayShowNotLoaded(false);
     }
 
+    MSG msg;
     std::list<MSG> postponedmsg;
 
     // abort if loading
@@ -14792,14 +14784,13 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
             DWORD dwWait;
             HANDLE handle = m_evOpenPrivateFinished;
             ULONGLONG waitdur = 6000ULL;
+            if (app_closing) {
+                waitdur += 12000ULL;
+            }
             ULONGLONG tckill = GetTickCount64() + waitdur;
             bool killprocess = true;
             bool processmsg = true;
             bool extendedwait = false;
-            if (app_closing) {
-                waitdur += 12000ULL;
-            }
-            int pm = 0;
             bool file_checked = false;
             while (processmsg) {
                 dwWait = MsgWaitForMultipleObjects(1, &handle, FALSE, (DWORD)std::min(waitdur, 1500ULL), QS_POSTMESSAGE | QS_SENDMESSAGE);
@@ -14812,36 +14803,15 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                         break;
                     case WAIT_OBJECT_0 + 1:
                         // we have a message - peek and dispatch it
-                        pm = 0;
-                        while ((pm++ < 3) && PeekMessage(&msg, (HWND)-1, 0, 0, PM_REMOVE)) {
+                        while (PeekMessage(&msg, NULL, WM_RESET_DEVICE, WM_OSD_DRAW, PM_REMOVE)) {
+                            TRACE(_T("WM during graph abort: msg=0x%x wp=%llu lp=%ld\n"), msg.message, msg.wParam, msg.lParam);
                             if (msg.message == WM_QUIT) {
                                 processmsg = false;
-                            } else if (msg.message == 0) {
-                                // ignore
-                            } else if (msg.message == WM_GRAPHNOTIFY || msg.message == WM_RESET_DEVICE) {
-                                // ignore
-                            } else if (msg.message == WM_POSTOPEN || msg.message == WM_OPENFAILED) {
-                                // ignore
                             } else if (msg.message == WM_OSD_HIDE) {
                                 DispatchMessage(&msg);
-                            } else if (msg.message == WM_OSD_DRAW) {
-                                // ignore
-                            } else if (msg.message == WM_CLOSE) {
-                                if (bNextIsQueued) {
-                                    processmsg = false;
-                                } else {
-                                    // postpone
-                                    postponedmsg.push_front(msg);
-                                }
-                            } else if (msg.message == WM_SYSCOMMAND || msg.message == WM_APPCOMMAND || msg.message == WM_DISPLAYCHANGE || msg.message >= WM_APP && msg.message < WM_APP + 100) {
-                                // postpone
-                                postponedmsg.push_front(msg);
-                            } else {
-                                if (msg.message != WM_PAINT && msg.message != WM_KEYUP && msg.message != WM_MOUSEMOVE && msg.message != 0xc03e) {
-                                    TRACE(_T("Dispatch WM during graph abort: msg=0x%x wp=%llu lp=%ld\n"), msg.message, msg.wParam, msg.lParam);
-                                }
-                                TranslateMessage(&msg);
-                                DispatchMessage(&msg);
+                            } else if (msg.message == WM_SAVESETTINGS) {
+                                 // postpone
+                                 postponedmsg.push_back(msg);
                             }
                         }
                         break;
@@ -14984,14 +14954,13 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
         HANDLE handle = m_evClosePrivateFinished;
         DWORD dwWait;
         ULONGLONG waitdur = 6000ULL;
+        if (app_closing) {
+            waitdur += 12000ULL;
+        }
         ULONGLONG tckill = GetTickCount64() + waitdur;
         bool killprocess = true;
         bool processmsg = true;
         bool extendedwait = false;
-        if (app_closing) {
-            waitdur += 12000ULL;
-        }
-        int pm = 0;
         bool file_checked = false;
         while (processmsg) {
             // This needs to at least wake for QS_SENDMESSAGE because otherwise graph won't terminate until this times out.
@@ -15005,34 +14974,15 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
                     killprocess = false;
                     break;
                 case WAIT_OBJECT_0 + 1:
-                    pm = 0;
-                    while ((pm++ < 3) && PeekMessage(&msg, (HWND)-1, 0, 0, PM_REMOVE)) {
+                    while (PeekMessage(&msg, NULL, WM_RESET_DEVICE, WM_OSD_DRAW, PM_REMOVE)) {
+                        TRACE(_T("WM during graph close: msg=0x%x wp=%llu lp=%ld\n"), msg.message, msg.wParam, msg.lParam);
                         if (msg.message == WM_QUIT) {
                             processmsg = false;
-                        } else if (msg.message == 0) {
-                            // ignore
-                        } else if (msg.message == WM_GRAPHNOTIFY || msg.message == WM_RESET_DEVICE) {
-                            // ignore
                         } else if (msg.message == WM_OSD_HIDE) {
                             DispatchMessage(&msg);
-                        } else if (msg.message == WM_OSD_DRAW) {
-                            // ignore
-                        } else if (msg.message == WM_CLOSE) {
-                            if (bNextIsQueued) {
-                                processmsg = false;
-                            } else {
-                                // postpone
-                                postponedmsg.push_front(msg);
-                            }
-                        } else if (msg.message == WM_SYSCOMMAND || msg.message == WM_APPCOMMAND || msg.message == WM_DISPLAYCHANGE || msg.message >= WM_APP && msg.message < WM_APP + 100) {
-                            // postpone
-                            postponedmsg.push_front(msg);
-                        } else {
-                            if (msg.message != WM_PAINT && msg.message != WM_KEYUP && msg.message != WM_MOUSEMOVE && msg.message != 0xc03e) {
-                                TRACE(_T("Dispatch WM during graph close: msg=0x%x wp=%llu lp=%ld\n"), msg.message, msg.wParam, msg.lParam);
-                            }
-                            TranslateMessage(&msg);
-                            DispatchMessage(&msg);
+                        } else if (msg.message == WM_SAVESETTINGS) {
+                             // postpone
+                             postponedmsg.push_back(msg);
                         }
                     }
                     break;
@@ -15124,11 +15074,8 @@ void CMainFrame::CloseMediaInternal(bool bNextIsQueued/* = false*/, bool bPendin
     }
 
     // purge possible queued graph events
-    while (PeekMessage(&msg, nullptr, WM_GRAPHNOTIFY, WM_GRAPHNOTIFY, PM_REMOVE)) {
-        TRACE(L"Purged queued graph event\n");
-    }
-    if (PeekMessage(&msg, nullptr, WM_RESET_DEVICE, WM_RESET_DEVICE, PM_REMOVE)) {
-        TRACE(L"Purged queued WM_RESET_DEVICE\n");
+    while (PeekMessage(&msg, nullptr, WM_RESET_DEVICE, WM_GRAPHNOTIFY, PM_REMOVE)) {
+        TRACE(L"Purged queued wm: msg=0x%x\n", msg.message);
     }
 
     // graph is destroyed, update stuff
