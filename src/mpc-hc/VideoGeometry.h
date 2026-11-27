@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "PanNScan.h"
+
 class CMainFrame;
 struct CPlayerGraph;
 
@@ -68,5 +70,5 @@ public:
     DECLARE_MESSAGE_MAP()
 
 private:
-    void ValidatePanNScanParameters();
+    void SetPanNScanValues(PanNScan::Values values);
 };

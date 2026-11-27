@@ -420,8 +420,9 @@ void CVideoGeometry::ApplyPanNScanPresetString()
         return;
 
     if (s.strPnSPreset.Find(',') != -1) { // try to set raw values
-        if (_stscanf_s(s.strPnSPreset, _T("%lf,%lf,%lf,%lf"), &m_PosX, &m_PosY, &m_ZoomX, &m_ZoomY) == 4) {
-            ValidatePanNScanParameters();
+        PanNScan::Values values;
+        if (PanNScan::ParseValues(s.strPnSPreset, values)) {
+            SetPanNScanValues(values);
             m_frame.MoveVideoWindow();
         }
     } else { // try to set named preset
@@ -458,55 +459,27 @@ void CVideoGeometry::OnViewPanNScanPresets(UINT nID)
         return;
     }
 
-    m_PosX = 0.5;
-    m_PosY = 0.5;
-    m_ZoomX = 1.0;
-    m_ZoomY = 1.0;
-
-    CString str = s.m_pnspresets[nID];
-
-    int i = 0, j = 0;
-    for (CString token = str.Tokenize(_T(","), i); !token.IsEmpty(); token = str.Tokenize(_T(","), i), j++) {
-        float f = 0;
-        if (_stscanf_s(token, _T("%f"), &f) != 1) {
-            continue;
-        }
-
-        switch (j) {
-            case 0:
-                break;
-            case 1:
-                m_PosX = f;
-                break;
-            case 2:
-                m_PosY = f;
-                break;
-            case 3:
-                m_ZoomX = f;
-                break;
-            case 4:
-                m_ZoomY = f;
-                break;
-            default:
-                break;
-        }
-    }
-
-    if (j != 5) {
+    // A malformed preset leaves the view as it is. Assigning while parsing
+    // left the state changed but not applied, so the next MoveVideoWindow,
+    // such as a window resize, jumped the picture.
+    CString label;
+    PanNScan::Values values;
+    if (!PanNScan::ParsePreset(s.m_pnspresets[nID], label, values)) {
         return;
     }
 
-    ValidatePanNScanParameters();
+    SetPanNScanValues(values);
 
     m_frame.MoveVideoWindow(true);
 }
 
-void CVideoGeometry::ValidatePanNScanParameters()
+void CVideoGeometry::SetPanNScanValues(PanNScan::Values values)
 {
-    m_PosX = std::min(std::max(m_PosX, -0.5), 1.5);
-    m_PosY = std::min(std::max(m_PosY, -0.5), 1.5);
-    m_ZoomX = std::min(std::max(m_ZoomX, 0.2), 5.0);
-    m_ZoomY = std::min(std::max(m_ZoomY, 0.2), 5.0);
+    PanNScan::Clamp(values);
+    m_PosX = values.posX;
+    m_PosY = values.posY;
+    m_ZoomX = values.zoomX;
+    m_ZoomY = values.zoomY;
 }
 
 void CVideoGeometry::OnUpdateViewPanNScanPresets(CCmdUI* pCmdUI)

@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "mplayerc.h"
 #include "PnSPresetsDlg.h"
+#include "PanNScan.h"
 
 
 // CPnSPresetsDlg dialog
@@ -91,42 +92,26 @@ BOOL CPnSPresetsDlg::OnInitDialog()
 
 void CPnSPresetsDlg::StringToParams(CString str, CString& label, double& PosX, double& PosY, double& ZoomX, double& ZoomY)
 {
-    int i = 0, j = 0;
-
-    for (CString token = str.Tokenize(_T(","), i); !token.IsEmpty(); token = str.Tokenize(_T(","), i), j++) {
-        if (j == 0) {
-            label = token;
-        } else {
-            float f = 0;
-            if (_stscanf_s(token, _T("%f"), &f) != 1) {
-                continue;
-            }
-
-            switch (j) {
-                case 1:
-                    PosX = f;
-                    break;
-                case 2:
-                    PosY = f;
-                    break;
-                case 3:
-                    ZoomX = f;
-                    break;
-                case 4:
-                    ZoomY = f;
-                    break;
-                default:
-                    break;
-            }
-        }
+    // the same parser as the menu, so the two cannot disagree; a preset the
+    // menu would refuse shows its label with the default values
+    PanNScan::Values values;
+    if (!PanNScan::ParsePreset(str, label, values)) {
+        label = str.SpanExcluding(_T(","));
     }
+    PosX = values.posX;
+    PosY = values.posY;
+    ZoomX = values.zoomX;
+    ZoomY = values.zoomY;
 }
 
 CString CPnSPresetsDlg::ParamsToString(CString label, double PosX, double PosY, double ZoomX, double ZoomY)
 {
-    CString str;
-    str.Format(_T("%s,%.3f,%.3f,%.3f,%.3f"), label.GetString(), PosX, PosY, ZoomX, ZoomY);
-    return str;
+    PanNScan::Values values;
+    values.posX = PosX;
+    values.posY = PosY;
+    values.zoomX = ZoomX;
+    values.zoomY = ZoomY;
+    return PanNScan::FormatPreset(label, values);
 }
 
 BEGIN_MESSAGE_MAP(CPnSPresetsDlg, CMPCThemeResizableDialog)
@@ -245,6 +230,9 @@ void CPnSPresetsDlg::OnBnClickedButton1() // set
     /*if (m_label.Remove(',') > 0)
         UpdateData(FALSE);*/
     m_label.Replace(',', '.');  // Replace any ',' with '.' as ',' is used as tokeniser
+    if (m_label.IsEmpty()) {    // OK lands here without the Set button's check
+        return;
+    }
     m_pnspresets[i] = ParamsToString(m_label, m_PosX, m_PosY, m_ZoomX, m_ZoomY);
     m_list.DeleteString(i);
     m_list.InsertString(i, m_label);
