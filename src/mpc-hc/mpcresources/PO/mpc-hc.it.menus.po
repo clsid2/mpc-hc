@@ -5,13 +5,14 @@
 # MPC HC <adiposegithub@gmail.com>, 2020
 # ThePiratePeter, 2020
 # Gianni Chedda <gianni.chedda0@gmail.com>, 2026
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Gianni Chedda <gianni.chedda0@gmail.com>, 2026\n"
+"PO-Revision-Date: 2026-11-27 17:46+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Italian (https://app.transifex.com/mpchc/teams/106126/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,15 +26,15 @@ msgstr "&File"
 
 msgctxt "ID_FILE_OPENQUICK"
 msgid "&Quick Open File..."
-msgstr "&Apertura Rapida File..."
+msgstr "&Apertura rapida file..."
 
 msgctxt "ID_FILE_OPENMEDIA"
 msgid "&Open File/URL..."
-msgstr "Apri &File/URL..."
+msgstr "Apri &file/URL..."
 
 msgctxt "ID_FILE_OPENDVDBD"
 msgid "Open &DVD/BD..."
-msgstr "Apri &DVD/BD..."
+msgstr "Apri DVD/&BD..."
 
 msgctxt "ID_FILE_OPENDEVICE"
 msgid "Open De&vice..."
@@ -41,19 +42,19 @@ msgstr "Apri &periferica..."
 
 msgctxt "ID_FILE_OPENDIRECTORY"
 msgid "Open Dir&ectory..."
-msgstr "Apri &Cartella..."
+msgstr "Apri &cartella..."
 
 msgctxt "ID_FILE_OPENDISC"
 msgid "O&pen Disc"
-msgstr "A&pri disco"
+msgstr "Apri &disco"
 
 msgctxt "ID_RECENT_FILES"
 msgid "Recent &Files"
-msgstr "File recenti"
+msgstr "File &recenti"
 
 msgctxt "ID_FILE_CLOSE_AND_RESTORE"
 msgid "&Close"
-msgstr "&Chiudi"
+msgstr "C&hiudi"
 
 msgctxt "ID_FILE_SAVE_COPY"
 msgid "&Save a Copy..."
@@ -65,31 +66,31 @@ msgstr "Salva &immagine..."
 
 msgctxt "ID_FILE_SAVE_THUMBNAILS"
 msgid "Save &Thumbnails..."
-msgstr "Salva miniature..."
+msgstr "Salva &miniature..."
 
 msgctxt "POPUP"
 msgid "S&ubtitles"
-msgstr "Sottotitoli"
+msgstr "S&ottotitoli"
 
 msgctxt "ID_FILE_SUBTITLES_LOAD"
 msgid "&Load Subtitles..."
-msgstr "Carica Sottotitoli..."
+msgstr "&Carica sottotitoli..."
 
 msgctxt "ID_FILE_SUBTITLES_SAVE"
 msgid "Save S&ubtitles..."
-msgstr "Salva Sottotitoli..."
+msgstr "&Salva sottotitoli..."
 
 msgctxt "ID_FILE_SUBTITLES_DOWNLOAD"
 msgid "&Download Subtitles..."
-msgstr "Scarica Sottotitoli..."
+msgstr "Sc&arica sottotitoli..."
 
 msgctxt "ID_FILE_PROPERTIES"
 msgid "P&roperties"
-msgstr "P&roprietà"
+msgstr "Proprie&tà"
 
 msgctxt "ID_FILE_OPEN_LOCATION"
 msgid "Open File &Location"
-msgstr "Apri Percorso Fi&le"
+msgstr "Apri percorso fi&le"
 
 msgctxt "ID_FILE_EXIT"
 msgid "E&xit"
@@ -101,7 +102,7 @@ msgstr "&Visualizza"
 
 msgctxt "ID_VIEW_CAPTIONMENU"
 msgid "Caption&&Menu"
-msgstr "Menù e intestazioni"
+msgstr "Men&u CC"
 
 msgctxt "ID_VIEW_SEEKER"
 msgid "See&k Bar"
@@ -141,7 +142,7 @@ msgstr "Navigazione"
 
 msgctxt "POPUP"
 msgid "&Presets..."
-msgstr "Interfaccia..."
+msgstr "&Interfaccia..."
 
 msgctxt "ID_VIEW_PRESETS_MINIMAL"
 msgid "&Minimal"
@@ -157,7 +158,7 @@ msgstr "Normale"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr ""
+msgstr "P&ersonalizzato"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
@@ -229,7 +230,7 @@ msgstr "Schermo intero D3D"
 
 msgctxt "ID_VIEW_FULLSCREENGUISUPPORT"
 msgid "D3D Fullscreen &GUI Support"
-msgstr "Schermo intero D3D con supporto GUI"
+msgstr "Schermo intero D3D con supporto &GUI"
 
 msgctxt "ID_VIEW_HIGHCOLORRESOLUTION"
 msgid "10-bit &RGB Output"
@@ -237,15 +238,15 @@ msgstr "Output 10-bit RGB"
 
 msgctxt "ID_VIEW_FORCEINPUTHIGHCOLORRESOLUTION"
 msgid "Force 10-bit RGB &Input"
-msgstr "Forza input 10-bit RGB"
+msgstr "Forza &input 10-bit RGB"
 
 msgctxt "ID_VIEW_FULLFLOATINGPOINTPROCESSING"
 msgid "&Full Floating Point Processing"
-msgstr "Calcolo completo a virgola mobile"
+msgstr "Elaborazione in virgola mobile a 32 bit"
 
 msgctxt "ID_VIEW_HALFFLOATINGPOINTPROCESSING"
 msgid "&Half Floating Point Processing"
-msgstr "Calcolo parziale a virgola mobile"
+msgstr "Elaborazione in virgola mobile a 16 bit"
 
 msgctxt "ID_VIEW_DISABLEDESKTOPCOMPOSITION"
 msgid "Disable desktop composition (&Aero)"
@@ -253,7 +254,7 @@ msgstr "Disabilita la composizione del desktop (Aero)"
 
 msgctxt "ID_VIEW_ENABLEFRAMETIMECORRECTION"
 msgid "Enable Frame Time &Correction"
-msgstr "Abilita correzione a tempo di frame"
+msgstr "Abilita &correzione del frame time"
 
 msgctxt "POPUP"
 msgid "&Color Management"
@@ -321,11 +322,11 @@ msgstr "Colorimetrico assoluto"
 
 msgctxt "POPUP"
 msgid "&VSync"
-msgstr "VSync"
+msgstr "&VSync"
 
 msgctxt "ID_VIEW_VSYNC"
 msgid "&VSync"
-msgstr "VSync"
+msgstr "&VSync"
 
 msgctxt "ID_VIEW_VSYNCACCURATE"
 msgid "&Accurate VSync"
@@ -337,7 +338,7 @@ msgstr "VSync alternativo"
 
 msgctxt "ID_VIEW_VSYNCOFFSET_DECREASE"
 msgid "&Decrease VSync Offset"
-msgstr "&Decrementa offset VSync"
+msgstr "&Diminuisci offset VSync"
 
 msgctxt "ID_VIEW_VSYNCOFFSET_INCREASE"
 msgid "&Increase VSync Offset"
@@ -353,7 +354,7 @@ msgstr "Svuota GPU prima del VSync"
 
 msgctxt "ID_VIEW_FLUSHGPU_AFTERPRESENT"
 msgid "Flush GPU &after Present"
-msgstr "Svuota GPU dopo Present"
+msgstr "Svuot&a GPU dopo il present"
 
 msgctxt "ID_VIEW_FLUSHGPU_WAIT"
 msgid "&Wait for flushes"
@@ -361,11 +362,11 @@ msgstr "Attendi svuotamenti"
 
 msgctxt "ID_VIEW_RESET_DEFAULT"
 msgid "Reset to &default renderer settings"
-msgstr "Ripristina le impostazioni predefinite del renderer"
+msgstr "Ripristina le impostazioni &predefinite del renderer"
 
 msgctxt "POPUP"
 msgid "Video &Frame"
-msgstr "Finestra &Video"
+msgstr "Finestra &video"
 
 msgctxt "ID_VIEW_VF_HALF"
 msgid "&Half Size"
@@ -401,11 +402,11 @@ msgstr "Ritocca la finestra dall'&esterno"
 
 msgctxt "POPUP"
 msgid "&Aspect Ratio"
-msgstr "R&apporto d'Aspetto"
+msgstr "&Proporzioni"
 
 msgctxt "ID_ASPECTRATIO_DAR"
 msgid "&Default (DAR)"
-msgstr "Predefinito (&DAR)"
+msgstr "Predefinite (&DAR)"
 
 msgctxt "ID_ASPECTRATIO_4_3"
 msgid "&4:3"
@@ -665,7 +666,7 @@ msgstr "&Filtri"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "&Controlli colore..."
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -681,7 +682,7 @@ msgstr "&Traccia Sottotitolo"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Traccia Sottotitoli Secondaria"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
@@ -721,7 +722,7 @@ msgstr "Spegni il &monitor"
 
 msgctxt "ID_AFTERPLAYBACK_EXIT"
 msgid "&Exit"
-msgstr "Chiudi "
+msgstr "&Esci"
 
 msgctxt "ID_AFTERPLAYBACK_STANDBY"
 msgid "&Stand By"
@@ -753,7 +754,7 @@ msgstr "&Precedente"
 
 msgctxt "ID_NAVIGATE_SKIPFORWARD"
 msgid "&Next"
-msgstr "&Successivo"
+msgstr "Successivo"
 
 msgctxt "ID_NAVIGATE_GOTO"
 msgid "&Go To..."
@@ -761,31 +762,31 @@ msgstr "&Vai a..."
 
 msgctxt "ID_NAVIGATE_TITLEMENU"
 msgid "&Title Menu"
-msgstr "Menù &titoli"
+msgstr "Menu &titoli"
 
 msgctxt "ID_NAVIGATE_ROOTMENU"
 msgid "&Root Menu"
-msgstr "Menù &radice"
+msgstr "Menu &radice"
 
 msgctxt "ID_NAVIGATE_SUBPICTUREMENU"
 msgid "&Subtitle Menu"
-msgstr "Menù &sottotitoli"
+msgstr "Menu &sottotitoli"
 
 msgctxt "ID_NAVIGATE_AUDIOMENU"
 msgid "&Audio Menu"
-msgstr "Menù &audio"
+msgstr "Menu &audio"
 
 msgctxt "ID_NAVIGATE_ANGLEMENU"
 msgid "An&gle Menu"
-msgstr "Menù ango&lazione"
+msgstr "Menu ango&lazione"
 
 msgctxt "ID_NAVIGATE_CHAPTERMENU"
 msgid "&Chapter Menu"
-msgstr "Menù &capitoli"
+msgstr "Menu &capitoli"
 
 msgctxt "ID_FAVORITES"
 msgid "F&avorites"
-msgstr "P&referiti"
+msgstr "&Preferiti"
 
 msgctxt "POPUP"
 msgid "&Help"

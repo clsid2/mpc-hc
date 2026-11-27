@@ -4,13 +4,14 @@
 # Translators:
 # CoolCmd, 2023
 # Alexander Stankovich, 2025
+# Transifex sync (Studio), 2026
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2025-04-26 17:38:13+0000\n"
-"PO-Revision-Date: 2020-01-02 07:46+0000\n"
-"Last-Translator: Alexander Stankovich, 2025\n"
+"PO-Revision-Date: 2026-11-27 17:46+0000\n"
+"Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Russian (https://app.transifex.com/mpchc/teams/106126/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -156,7 +157,7 @@ msgstr "&Нормальная"
 
 msgctxt "ID_VIEW_PRESETS_CUSTOM"
 msgid "C&ustom"
-msgstr ""
+msgstr "&Пользовательская"
 
 msgctxt "ID_VIEW_FULLSCREEN"
 msgid "F&ull Screen"
@@ -664,7 +665,7 @@ msgstr "&Фильтры"
 
 msgctxt "ID_COLOR_CONTROLS"
 msgid "&Color controls..."
-msgstr ""
+msgstr "Управление &цветом"
 
 msgctxt "ID_SHADERS"
 msgid "S&haders"
@@ -680,7 +681,7 @@ msgstr "Дорожка &субтитров"
 
 msgctxt "ID_SUBTITLES_SECONDARY"
 msgid "Secondary Subtitle Track"
-msgstr ""
+msgstr "Дополнительная дорожка субтитров"
 
 msgctxt "ID_VIDEO_STREAMS"
 msgid "Vide&o Track"
