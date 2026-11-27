@@ -82,6 +82,9 @@
     <ClInclude Include="SubPicQueueImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SubPicQueueTiming.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="XySubPicQueueImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>

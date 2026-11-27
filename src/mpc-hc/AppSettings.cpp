@@ -4233,9 +4233,7 @@ CRenderersData* GetRenderersData() {
 
 CRenderersSettings& GetRenderersSettings() {
     auto& s = AfxGetAppSettings();
-    // queue does not work properly with libass
-    bool libass = s.bRenderSSAUsingLibass || s.bRenderSRTUsingLibass;
-    s.m_RenderersSettings.subPicQueueSettings.nSize = libass ? 0 : s.nSubPicQueueSize;
+    s.m_RenderersSettings.subPicQueueSettings.nSize = s.nSubPicQueueSize;
     return s.m_RenderersSettings;
 }
 
