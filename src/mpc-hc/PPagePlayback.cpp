@@ -232,7 +232,7 @@ void CPPagePlayback::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
     if (*pScrollBar == m_volumectrl) {
         UpdateData();
-        ((CMainFrame*)GetParentFrame())->m_wndToolBar.Volume = m_nVolume; // nice shortcut...
+        ((CMainFrame*)GetParentFrame())->ToolBar().Volume = m_nVolume; // nice shortcut...
     } else if (*pScrollBar == m_balancectrl) {
         UpdateData();
         ((CMainFrame*)GetParentFrame())->SetBalance(m_nBalance); // see prev note...
@@ -334,7 +334,7 @@ void CPPagePlayback::OnCancel()
     const CAppSettings& s = AfxGetAppSettings();
 
     if (m_nVolume != m_oldVolume) {
-        ((CMainFrame*)GetParentFrame())->m_wndToolBar.Volume = m_oldVolume;    //not very nice solution
+        ((CMainFrame*)GetParentFrame())->ToolBar().Volume = m_oldVolume;    //not very nice solution
     }
     if (m_nBalance != s.nBalance) {
         ((CMainFrame*)GetParentFrame())->SetBalance(s.nBalance);

@@ -182,7 +182,7 @@ void CMouse::StopMouseLeaveTracker()
 
 CPoint CMouse::GetVideoPoint(const CPoint& point) const
 {
-    return m_bD3DFS ? point : CPoint(point - m_pMainFrame->m_wndView.GetVideoRect().TopLeft());
+    return m_bD3DFS ? point : CPoint(point - m_pMainFrame->View().GetVideoRect().TopLeft());
 }
 
 bool CMouse::IsOnFullscreenWindow() const
@@ -190,7 +190,7 @@ bool CMouse::IsOnFullscreenWindow() const
     if (m_pMainFrame->HasDedicatedFSVideoWindow()) {
         return m_pMainFrame->m_pDedicatedFSVideoWnd == this; //we are the fullscreen window
     } else {
-        return &m_pMainFrame->m_wndView == this && m_pMainFrame->IsFullScreenMainFrame(); //we are the view and it is fullscreened
+        return &m_pMainFrame->View() == this && m_pMainFrame->IsFullScreenMainFrame(); //we are the view and it is fullscreened
     }
 }
 
@@ -270,7 +270,7 @@ void CMouse::EventCallback(MpcEvent ev)
 // madVR compatibility layer for exclusive mode seekbar
 bool CMouse::UsingMVR() const
 {
-    return !!m_pMainFrame->m_graph.m_pMVRSR;
+    return !!m_pMainFrame->Graph().m_pMVRSR;
 }
 void CMouse::MVRMove(UINT nFlags, const CPoint& point)
 {
@@ -278,7 +278,7 @@ void CMouse::MVRMove(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_MOUSEMOVE, &wp, &lp, &lr);
+        m_pMainFrame->Graph().m_pMVRSR->ParentWindowProc(GetWnd(), WM_MOUSEMOVE, &wp, &lp, &lr);
     }
 }
 bool CMouse::MVRDown(UINT nFlags, const CPoint& point)
@@ -288,7 +288,7 @@ bool CMouse::MVRDown(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        ret = !!m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONDOWN, &wp, &lp, &lr);
+        ret = !!m_pMainFrame->Graph().m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONDOWN, &wp, &lp, &lr);
     }
     return ret;
 }
@@ -299,7 +299,7 @@ bool CMouse::MVRUp(UINT nFlags, const CPoint& point)
         WPARAM wp = nFlags;
         LPARAM lp = MAKELPARAM(point.x, point.y);
         LRESULT lr = 0;
-        ret = !!m_pMainFrame->m_graph.m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONUP, &wp, &lp, &lr);
+        ret = !!m_pMainFrame->Graph().m_pMVRSR->ParentWindowProc(GetWnd(), WM_LBUTTONUP, &wp, &lp, &lr);
     }
     return ret;
 }
@@ -324,11 +324,11 @@ void CMouse::InternalOnLButtonDown(UINT nFlags, const CPoint& point)
     if (m_pMainFrame->GetLoadState() == MLS::LOADED && m_pMainFrame->GetPlaybackMode() == PM_DVD && (m_pMainFrame->IsD3DFullScreenMode() ^ m_bD3DFS) == 0) {
         ULONG ulButtonTotal = 0;
         ULONG ulButtonCurrent = 0;     
-        if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
+        if (SUCCEEDED(m_pMainFrame->Graph().m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
             ULONG ulButtonMousePos = 0;
             CPoint vp = GetVideoPoint(point);
-            if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
-                if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDC->SelectAndActivateButton(ulButtonMousePos))) {
+            if (SUCCEEDED(m_pMainFrame->Graph().m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
+                if (SUCCEEDED(m_pMainFrame->Graph().m_pDVDC->SelectAndActivateButton(ulButtonMousePos))) {
                     return;
                 }
             }
@@ -483,7 +483,7 @@ void CMouse::InternalOnRButtonUp(UINT nFlags, const CPoint& point)
 {
     if (m_bWaitingRButtonUp) {
         m_bWaitingRButtonUp = false;
-        if (!m_pMainFrame->m_bIsMPCVRExclusiveMode) {
+        if (!m_pMainFrame->IsMPCVRExclusiveMode()) {
             OnButton(wmcmd::RUP, point);
         }
         SetCursor(nFlags, point);
@@ -545,14 +545,14 @@ bool CMouse::SelectCursor(const CPoint& screenPoint, const CPoint& clientPoint, 
     if (m_pMainFrame->GetLoadState() == MLS::LOADED && m_pMainFrame->GetPlaybackMode() == PM_DVD && (m_pMainFrame->IsD3DFullScreenMode() ^ m_bD3DFS) == 0) {
         ULONG ulButtonTotal = 0;
         ULONG ulButtonCurrent = 0;     
-        if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
+        if (SUCCEEDED(m_pMainFrame->Graph().m_pDVDI->GetCurrentButton(&ulButtonTotal, &ulButtonCurrent)) && ulButtonTotal > 0) {
             ULONG ulButtonMousePos = 0;
             CPoint vp = GetVideoPoint(clientPoint);
-            if (SUCCEEDED(m_pMainFrame->m_graph.m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
+            if (SUCCEEDED(m_pMainFrame->Graph().m_pDVDI->GetButtonAtPosition(vp, &ulButtonMousePos))) {
                 StopMouseHider();
                 m_cursor = Cursor::HAND;
                 if (ulButtonMousePos != ulButtonCurrent) {
-                    m_pMainFrame->m_graph.m_pDVDC->SelectButton(ulButtonMousePos);
+                    m_pMainFrame->Graph().m_pDVDC->SelectButton(ulButtonMousePos);
                 }
                 return true;
             }
@@ -563,7 +563,7 @@ bool CMouse::SelectCursor(const CPoint& screenPoint, const CPoint& clientPoint, 
     bool bHidden = (m_cursor == Cursor::NONE);
     bool bHiddenAndMoved = bHidden && !PointEqualsImprecise(screenPoint, m_hideCursorPoint);
     bool bCanHide = !bMouseButtonDown &&
-                    (m_pMainFrame->GetLoadState() == MLS::LOADED || m_pMainFrame->m_controls.DelayShowNotLoaded()) &&
+                    (m_pMainFrame->GetLoadState() == MLS::LOADED || m_pMainFrame->Controls().DelayShowNotLoaded()) &&
                     !m_pMainFrame->IsInteractiveVideo() &&
                     (m_switchingToFullscreen.first || IsOnFullscreenWindow() ||
                      (s.bHideWindowedMousePointer && !(m_pMainFrame->IsD3DFullScreenMode() ^ m_bD3DFS)));
@@ -665,7 +665,7 @@ void CMouse::InternalOnMouseMove(UINT nFlags, const CPoint& point)
 
 void CMouse::InternalOnMouseLeave()
 {
-    if (m_pMainFrame->m_bIsMPCVRExclusiveMode) {
+    if (m_pMainFrame->IsMPCVRExclusiveMode()) {
         // A renderer child window created on our thread (MPCVR in exclusive mode)
         // makes TrackMouseEvent report a leave while the cursor is still on the video.
         // Ignore it; the next mouse move re-arms the tracker.

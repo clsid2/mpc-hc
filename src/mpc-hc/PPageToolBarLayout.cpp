@@ -44,7 +44,7 @@ void CPPageToolBarLayout::DoDataExchange(CDataExchange* pDX)
 }
 
 int CPPageToolBarLayout::DescriptiveIcon(int idCommand) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     auto supportedButtons = tb.GetSupportedSvgButtons();
     int disabledOffset = tb.GetCustomizeButtonImages()->GetImageCount() / 2;
 
@@ -61,7 +61,7 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
     m_list_active.DeleteAllItems();
     m_list_inactive.DeleteAllItems();
 
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
 
     auto supportedButtons = tb.GetSupportedSvgButtons();
@@ -105,7 +105,7 @@ void CPPageToolBarLayout::LoadToolBarButtons() {
 }
 
 void CPPageToolBarLayout::ReloadImageLists() {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
 
     m_list_active.SetImageList(tb.GetCustomizeButtonImages().get(), LVSIL_SMALL);
     m_list_inactive.SetImageList(tb.GetCustomizeButtonImages().get(), LVSIL_SMALL);
@@ -159,7 +159,7 @@ BOOL CPPageToolBarLayout::OnInitDialog()
 
     SetRedraw(FALSE);
 
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
 
     m_list_active.SetExtendedStyle(m_list_active.GetExtendedStyle() /* | LVS_EX_FULLROWSELECT */ /*| LVS_EX_DOUBLEBUFFER */ | LVS_EX_INFOTIP | LVS_ICON | LVS_SHAREIMAGELISTS);
@@ -210,7 +210,7 @@ BEGIN_MESSAGE_MAP(CPPageToolBarLayout, CMPCThemePPageBase)
 END_MESSAGE_MAP()
 
 void CPPageToolBarLayout::OnUpdateLeft(CCmdUI* pCmdUI) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
@@ -225,7 +225,7 @@ void CPPageToolBarLayout::OnUpdateLeft(CCmdUI* pCmdUI) {
 }
 
 bool CPPageToolBarLayout::LeftSelectedButtonLocked() {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
@@ -257,12 +257,12 @@ void CPPageToolBarLayout::OnUpdateDown(CCmdUI* pCmdUI) {
 
 
 bool CPPageToolBarLayout::InsertButton(int beforeID, int buttonID, int existingStyle) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     return tb.InsertButtonSafe(beforeID, buttonID, existingStyle);
 }
 
 bool CPPageToolBarLayout::DeleteButton(int buttonID) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     return tb.DeleteButtonSafe(buttonID);
 }
 
@@ -273,7 +273,7 @@ bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
 
     //avoid inserting between two locked rows, or before first locked or after last locked
 
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
     int tidCommand = (int)m_list_active.GetItemData(destRow);
@@ -297,7 +297,7 @@ bool CPPageToolBarLayout::IsValidInsertPos(int destRow) {
 }
 
 bool CPPageToolBarLayout::MoveButton(CMPCThemePlayerListCtrl& srcList, CMPCThemePlayerListCtrl& dstList) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
@@ -365,7 +365,7 @@ void CPPageToolBarLayout::MoveRight() {
 }
 
 bool CPPageToolBarLayout::OrderButton(ButtonPosition pos) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
@@ -430,7 +430,7 @@ void CPPageToolBarLayout::MoveDown() {
 }
 
 void CPPageToolBarLayout::GetCustomTextColors(INT_PTR nItem, int iSubItem, COLORREF& clrText, COLORREF& clrTextBk, bool& overrideSelectedBG) {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     CToolBarCtrl& tbctrl = tb.GetToolBarCtrl();
     auto supportedButtons = tb.GetSupportedSvgButtons();
 
@@ -468,7 +468,7 @@ void CPPageToolBarLayout::OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult) {
 
 
 void CPPageToolBarLayout::DefaultButtons() {
-    CPlayerToolBar& tb = AfxGetMainFrame()->m_wndToolBar;
+    CPlayerToolBar& tb = AfxGetMainFrame()->ToolBar();
     tb.ToolBarReset();
     LoadToolBarButtons();
     tb.ToolbarChange();

@@ -2417,7 +2417,7 @@ BOOL CMPlayerCApp::InitInstance()
     }
 
     try {
-        pFrame->m_controls.LoadState();
+        pFrame->Controls().LoadState();
     } catch (...) {
         MessageBoxW(nullptr, L"MPC-HC encountered a problem during initialization of its control bars", L"MPC-HC", MB_ICONERROR | MB_OK);
         return FALSE;
@@ -2426,7 +2426,7 @@ BOOL CMPlayerCApp::InitInstance()
     CPoint borderAdjustDirection;
     pFrame->SetDefaultWindowRect((m_s->nCLSwitches & CLSW_MONITOR) ? m_s->iMonitor : 0);
     if (!m_s->slFiles.empty()) {
-        pFrame->m_controls.DelayShowNotLoaded(true);
+        pFrame->Controls().DelayShowNotLoaded(true);
     }
     // Apply the persistent startup view preset, unless a command-line /viewpreset overrides it (applied later).
     if (!(m_s->nCLSwitches & (CLSW_PRESET1 | CLSW_PRESET2 | CLSW_PRESET3 | CLSW_PRESET4))) {
@@ -2472,7 +2472,7 @@ BOOL CMPlayerCApp::InitInstance()
         scroll to the current file in the playlist.  We call after activating
         the frame to fix this issue.
     */
-    pFrame->m_wndPlaylistBar.LoadPlaylist(pFrame->m_favorites.GetRecentFile());
+    pFrame->PlaylistBar().LoadPlaylist(pFrame->m_favorites.GetRecentFile());
 
     pFrame->UpdateWindow();
 

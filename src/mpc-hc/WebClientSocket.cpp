@@ -442,11 +442,11 @@ bool CWebClientSocket::OnCommand(CStringA& hdr, CStringA& body, CStringA& mime)
                 }
             } else if (arg == _T(WEB_CMD_SETVOLUME) && m_request.Lookup("volume", arg)) {
                 int volume = _tcstol(arg, nullptr, 10);
-                m_pMainFrame->m_wndToolBar.Volume = std::min(std::max(volume, 0), 100);
+                m_pMainFrame->ToolBar().Volume = std::min(std::max(volume, 0), 100);
             } else if (arg == _T(CMD_SETPLAYLISTINDEX) && m_request.Lookup("index", arg)) {
                 int index = _tstoi(arg);
-                if (index >= 0 && index < m_pMainFrame->m_wndPlaylistBar.GetCount()) {
-                    m_pMainFrame->m_wndPlaylistBar.SetSelIdx(index);
+                if (index >= 0 && index < m_pMainFrame->PlaylistBar().GetCount()) {
+                    m_pMainFrame->PlaylistBar().SetSelIdx(index);
                     // Post rather than call directly: OpenCurPlaylistItem() tears down and
                     // rebuilds the graph, which is only safe from the top of the message
                     // loop. Every other call site (playlist double-click, context menu,
@@ -571,7 +571,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
             path = (LPCTSTR)p;
         }
     } else {
-        path = m_pMainFrame->m_wndPlaylistBar.GetCurFileName();
+        path = m_pMainFrame->PlaylistBar().GetCurFileName();
 
         if (!PathUtils::IsURL(path) && CFileGetStatus(path, fs) && !(fs.m_attribute & CFile::directory)) {
             CLongPath p(path);
@@ -700,7 +700,7 @@ bool CWebClientSocket::OnBrowser(CStringA& hdr, CStringA& body, CStringA& mime)
 
 bool CWebClientSocket::OnControls(CStringA& hdr, CStringA& body, CStringA& mime)
 {
-    CString path = m_pMainFrame->m_wndPlaylistBar.GetCurFileName();
+    CString path = m_pMainFrame->PlaylistBar().GetCurFileName();
     CString dir;
 
     if (!path.IsEmpty() && !PathUtils::IsURL(path)) {
@@ -755,7 +755,7 @@ bool CWebClientSocket::OnControls(CStringA& hdr, CStringA& body, CStringA& mime)
 
 bool CWebClientSocket::OnVariables(CStringA& hdr, CStringA& body, CStringA& mime)
 {
-    CString path = m_pMainFrame->m_wndPlaylistBar.GetCurFileName();
+    CString path = m_pMainFrame->PlaylistBar().GetCurFileName();
     CString dir;
     CString strName;
 
@@ -821,7 +821,7 @@ bool CWebClientSocket::OnStatus(CStringA& hdr, CStringA& body, CStringA& mime)
     CString title;
     m_pMainFrame->GetWindowText(title);
 
-    CLongPath file(m_pMainFrame->m_wndPlaylistBar.GetCurFileName());
+    CLongPath file(m_pMainFrame->PlaylistBar().GetCurFileName());
 
     CString status;
     OAFilterState fs = m_pMainFrame->GetMediaState();
@@ -1202,14 +1202,14 @@ void CWebClientSocket::GetNavStreamTracksJSON(CMainFrame* pMainFrame, DWORD dwSe
         }
     };
 
-    if (pMainFrame->m_graph.m_pSplitterSS) {
-        addStreamSelectFilter(pMainFrame->m_graph.m_pSplitterSS);
+    if (pMainFrame->Graph().m_pSplitterSS) {
+        addStreamSelectFilter(pMainFrame->Graph().m_pSplitterSS);
     }
-    if (!count && pMainFrame->m_graph.m_pOtherSS[0]) {
-        addStreamSelectFilter(pMainFrame->m_graph.m_pOtherSS[0]);
+    if (!count && pMainFrame->Graph().m_pOtherSS[0]) {
+        addStreamSelectFilter(pMainFrame->Graph().m_pOtherSS[0]);
     }
-    if (!count && pMainFrame->m_graph.m_pOtherSS[1]) {
-        addStreamSelectFilter(pMainFrame->m_graph.m_pOtherSS[1]);
+    if (!count && pMainFrame->Graph().m_pOtherSS[1]) {
+        addStreamSelectFilter(pMainFrame->Graph().m_pOtherSS[1]);
     }
 }
 
@@ -1226,12 +1226,12 @@ CStringA CWebClientSocket::GetAudioTracksJSON(CMainFrame* pMainFrame)
 
         if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
-            if (pMainFrame->m_graph.m_pDVDI
-                    && SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
+            if (pMainFrame->Graph().m_pDVDI
+                    && SUCCEEDED(pMainFrame->Graph().m_pDVDI->GetCurrentAudio(&ulStreamsAvailable, &ulCurrentStream))) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
                     CString name;
-                    if (SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
+                    if (SUCCEEDED(pMainFrame->Graph().m_pDVDI->GetAudioLanguage(i, &lcid)) && lcid) {
                         GetLocaleString(lcid, LOCALE_SENGLANGUAGE, name);
                     } else {
                         name.Format(IDS_AG_UNKNOWN, int(i + 1));
@@ -1245,12 +1245,12 @@ CStringA CWebClientSocket::GetAudioTracksJSON(CMainFrame* pMainFrame)
                     AppendJSONTrack(tracks, ID_AUDIO_SUBITEM_START + i, name);
                 }
             }
-        } else if (pMainFrame->m_graph.m_pAudioSwitcherSS
-                   && SUCCEEDED(pMainFrame->m_graph.m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
+        } else if (pMainFrame->Graph().m_pAudioSwitcherSS
+                   && SUCCEEDED(pMainFrame->Graph().m_pAudioSwitcherSS->Count(&cStreams)) && cStreams > 0) {
             for (long i = 0; i < (long)cStreams; i++) {
                 DWORD dwFlags;
                 CComHeapPtr<WCHAR> pszName;
-                if (FAILED(pMainFrame->m_graph.m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
+                if (FAILED(pMainFrame->Graph().m_pAudioSwitcherSS->Info(i, nullptr, &dwFlags, nullptr, nullptr, &pszName, nullptr, nullptr))) {
                     break;
                 }
 
@@ -1279,7 +1279,7 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
     CStringA tracks, json;
     int active = -1, count = 0;
 
-    if (pMainFrame->GetLoadState() == MLS::LOADED && !pMainFrame->m_fAudioOnly) {
+    if (pMainFrame->GetLoadState() == MLS::LOADED && !pMainFrame->IsAudioOnly()) {
         UINT baseID = ID_SUBTITLES_SUBITEM_START;
 
         // DVD subpicture streams are never handled by the internal subtitle
@@ -1287,12 +1287,12 @@ CStringA CWebClientSocket::GetSubtitleTracksJSON(CMainFrame* pMainFrame)
         if (pMainFrame->GetPlaybackMode() == PM_DVD) {
             ULONG ulStreamsAvailable, ulCurrentStream;
             BOOL bIsDisabled;
-            if (pMainFrame->m_graph.m_pDVDI
-                    && SUCCEEDED(pMainFrame->m_graph.m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
+            if (pMainFrame->Graph().m_pDVDI
+                    && SUCCEEDED(pMainFrame->Graph().m_pDVDI->GetCurrentSubpicture(&ulStreamsAvailable, &ulCurrentStream, &bIsDisabled))
                     && ulStreamsAvailable > 0) {
                 for (ULONG i = 0; i < ulStreamsAvailable; i++) {
                     LCID lcid = 0;
-                    if (FAILED(pMainFrame->m_graph.m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
+                    if (FAILED(pMainFrame->Graph().m_pDVDI->GetSubpictureLanguage(i, &lcid))) {
                         continue;
                     }
 
@@ -1450,7 +1450,7 @@ void CWebClientSocket::BuildStatusJSON(CMainFrame* pMainFrame, CStringA& body)
 
     body = "{";
     body += "\"file\":" + JSONString(pMainFrame->GetFileName());
-    body += ",\"path\":" + JSONString(pMainFrame->m_wndPlaylistBar.GetCurFileName());
+    body += ",\"path\":" + JSONString(pMainFrame->PlaylistBar().GetCurFileName());
     body.AppendFormat(",\"state\":%ld", fs);
     body += ",\"stateString\":" + JSONString(statestring);
     body.AppendFormat(",\"position\":%ld,\"duration\":%ld",
@@ -1477,7 +1477,7 @@ void CWebClientSocket::BuildPlaylistJSON(CMainFrame* pMainFrame, CStringA& body)
     CStringA items;
     int index = 0;
 
-    CPlaylist& pl = pMainFrame->m_wndPlaylistBar.m_pl;
+    CPlaylist& pl = pMainFrame->PlaylistBar().m_pl;
     POSITION pos = pl.GetHeadPosition();
     while (pos) {
         CPlaylistItem& pli = pl.GetNext(pos);
@@ -1492,7 +1492,7 @@ void CWebClientSocket::BuildPlaylistJSON(CMainFrame* pMainFrame, CStringA& body)
     }
 
     body.Format("{\"active\":%d,\"items\":[%s]}",
-                pMainFrame->m_wndPlaylistBar.GetSelIdx(), items.GetString());
+                pMainFrame->PlaylistBar().GetSelIdx(), items.GetString());
 }
 
 bool CWebClientSocket::OnPlaylistJSON(CStringA& hdr, CStringA& body, CStringA& mime)
@@ -1626,7 +1626,7 @@ CString CWebClientSocket::GetSize(CMainFrame* pMainFrame)
     CString sizeString;
     LONGLONG size = 0;
 
-    if (CComQIPtr<IBaseFilter> pBF = pMainFrame->m_graph.m_pFSF) {
+    if (CComQIPtr<IBaseFilter> pBF = pMainFrame->Graph().m_pFSF) {
         BeginEnumPins(pBF, pEP, pPin) {
             if (CComQIPtr<IAsyncReader> pAR = pPin) {
                 LONGLONG total, available;
@@ -1641,7 +1641,7 @@ CString CWebClientSocket::GetSize(CMainFrame* pMainFrame)
 
     if (size == 0) {
         WIN32_FIND_DATA wfd;
-        HANDLE hFind = FindFirstFile(pMainFrame->m_wndPlaylistBar.GetCurFileName(), &wfd);
+        HANDLE hFind = FindFirstFile(pMainFrame->PlaylistBar().GetCurFileName(), &wfd);
         if (hFind != INVALID_HANDLE_VALUE) {
             FindClose(hFind);
             size = (LONGLONG(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;

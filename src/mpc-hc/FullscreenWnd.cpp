@@ -93,7 +93,7 @@ END_MESSAGE_MAP()
 
 BOOL CFullscreenWnd::OnEraseBkgnd(CDC* pDC)
 {
-    if (m_pMainFrame->m_fAudioOnly) {
+    if (m_pMainFrame->IsAudioOnly()) {
         return __super::OnEraseBkgnd(pDC);
     }
     else {

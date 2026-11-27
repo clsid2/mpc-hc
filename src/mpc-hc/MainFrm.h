@@ -217,14 +217,6 @@ private:
     static PlaybackRateMap filePlaybackRates;
     static PlaybackRateMap dvdPlaybackRates;
 
-    friend class CPPageFileInfoSheet;
-    friend class CPPageLogo;
-    friend class CMouse;
-    friend class CPlayerSeekBar; // for accessing m_controls.ControlChecked(), m_pMainFrame->m_CachedFilterState, m_pMainFrame->m_previewGraph
-    friend class CChildView; // for accessing m_controls.DelayShowNotLoaded()
-    friend class CFullscreenWnd; // for accessing m_controls.DelayShowNotLoaded()
-    friend class CMouseWndWithArtView; // for accessing m_controls.DelayShowNotLoaded()
-
     CPlayerGraph m_graph;
     // SmarkSeek
     CPlayerGraph m_previewGraph;
@@ -236,7 +228,6 @@ private:
     LPCTSTR m_HWAccelType;
     void UpdateDXVAStatus();
 
-    void SetVolumeBoost(UINT nAudioBoost);
     // ReplayGain values found in the tags of the currently open file
     struct ReplayGainInfo {
         bool bHasTrackGain = false, bHasAlbumGain = false;
@@ -245,8 +236,7 @@ private:
     } m_replayGain;
     static bool ParseReplayGainValue(LPCWSTR str, float& value);
     void ApplyReplayGain();
-    void SetBalance(int balance);
-	
+
 	// temp fonts loader
 	CFontInstaller m_FontInstaller;
 
@@ -265,10 +255,7 @@ private:
 
     CRect m_lastWindowRect;
 
-    void SetDefaultWindowRect(int iMonitor = 0);
-    void SetDefaultFullscreenState();
     void RestoreDefaultWindowRect();
-    CRect GetInvisibleBorderSize() const;
     CSize GetVideoOrArtSize(MINMAXINFO& mmi);
     CSize GetZoomWindowSize(double dScale, bool ignore_video_size = false);
     bool GetWorkAreaRect(CRect& work);
@@ -353,8 +340,6 @@ private:
 
     bool m_bIsMPCVRExclusiveMode = false;
 
-    void SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar = false,
-                           bool bKeepVisibleOnMediaLoad = false);
     CString m_tempstatus_msg, m_closingmsg;
     bool m_bKeepTempStatusBarVisibleOnMediaLoad = false;
 
@@ -365,9 +350,9 @@ private:
 
     void CleanGraph();
 
-    void ShowOptions(int idPage = 0);
-
+public:
     CSnapshot m_snapshot;
+private:
     friend class CSnapshot; // for the load state, the bars, m_OSD and the frame stepping helpers
 
 public:
@@ -399,8 +384,6 @@ public:
     CSubtitleController m_subs;
 private:
     friend class CSubtitleController; // for the load state, the bars, m_OSD, the dynamic menus, the stream selection helpers, the status message and the modal parent
-    friend class CSubtitleDlDlg; // for the status message, the options sheet and m_fAudioOnly
-    friend struct SubtitlesInfo; // for the graph and the playlist bar
 
 public:
     CShaderController m_shaders;
@@ -414,7 +397,6 @@ private:
 
     //
 
-    friend class CWebClientSocket;
     int m_iPlaybackMode;
     ULONG m_lCurrentChapter;
     ULONG m_lChapterStartTime;
@@ -474,6 +456,7 @@ private:
     // to run build. A send that times out is still delivered later, so the
     // request lives on the heap with a reference from each side, and whichever
     // side lets go last frees it. See CWebClientSocket::BuildOnUIThread.
+public:
     struct UIRequest {
         std::function<void(CMainFrame*, CStringA&)> build;
         CStringA body;
@@ -484,6 +467,7 @@ private:
             }
         }
     };
+private:
 
     // a tracked popup or the menu bar is showing menus that a media change rebuilds
     // (the stream, filter and recent submenus). Windows owns those popup windows
@@ -548,6 +532,60 @@ public:
     CPlayerGraph& Graph() {
         return m_graph;
     }
+    CPlayerGraph& PreviewGraph() {
+        return m_previewGraph;
+    }
+
+    // The bars, the view and the controls, for the windows and pages that drive
+    // them directly (fill, toggle, lay out or reposition), the same way Graph()
+    // hands out the graph.
+    CPlayerPlaylistBar& PlaylistBar() {
+        return m_wndPlaylistBar;
+    }
+    CPlayerToolBar& ToolBar() {
+        return m_wndToolBar;
+    }
+    CPlayerSeekBar& SeekBar() {
+        return m_wndSeekBar;
+    }
+    CPlayerStatusBar& StatusBar() {
+        return m_wndStatusBar;
+    }
+    CChildView& View() {
+        return m_wndView;
+    }
+    CMainFrameControls& Controls() {
+        return m_controls;
+    }
+
+    bool IsAudioOnly() const {
+        return m_fAudioOnly;
+    }
+    bool IsMPCVRExclusiveMode() const {
+        return m_bIsMPCVRExclusiveMode;
+    }
+    bool IsToolBarDropdownActive() const {
+        return m_bTBDropdownActive;
+    }
+    OAFilterState GetCachedFilterState() const {
+        return m_CachedFilterState;
+    }
+    bool IsSeekPreviewEnabled() const {
+        return m_bUseSeekPreview;
+    }
+    void SetSeekPreviewEnabled(bool bEnabled) {
+        m_bUseSeekPreview = bEnabled;
+    }
+
+    void SendStatusMessage(CString msg, int nTimeOut, bool bRevealStatusBar = false,
+                           bool bKeepVisibleOnMediaLoad = false);
+    void ShowOptions(int idPage = 0);
+    void SetVolumeBoost(UINT nAudioBoost);
+    void SetBalance(int balance);
+    bool ForwardMessageToRenderer(HWND hWnd, UINT message, WPARAM& wParam, LPARAM& lParam, LRESULT& ret);
+    void SetDefaultWindowRect(int iMonitor = 0);
+    void SetDefaultFullscreenState();
+    CRect GetInvisibleBorderSize() const;
 
 public:
     CMainFrame();
@@ -638,7 +676,7 @@ protected:
 
     void GraphEventComplete();
 
-    friend class CGraphThread;
+    friend class CGraphThread; // runs OpenMediaPrivate and CloseMediaPrivate for the open path
     CGraphThread* m_pGraphThread;
     bool m_bOpenedThroughThread;
     ATL::CEvent m_evOpenPrivateFinished;
@@ -728,11 +766,7 @@ public:
 #endif
 
 protected:  // control bar embedded members
-    friend class CMainFrameControls;
-    friend class CPPageToolBarLayout;
-    friend class CPPageToolBar;
     CMainFrameControls m_controls;
-    friend class CPlayerBar; // it notifies m_controls of panel re-dock
 
     CChildView m_wndView;
 
@@ -750,10 +784,6 @@ protected:  // control bar embedded members
 
     std::unique_ptr<CColorControlsDlg> m_pColorControls;
     std::unique_ptr<UpdateCheckerDlg> m_pUpdateCheckerDlg;
-
-    friend class CPPagePlayback; // TODO
-    friend class CPPageAudioSwitcher; // TODO
-    friend class CMPlayerCApp; // TODO
 
     // Generated message map functions
 
@@ -1114,7 +1144,6 @@ protected:
     afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
     // GDI+
     virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-    bool ForwardMessageToRenderer(HWND hWnd, UINT message, WPARAM& wParam, LPARAM& lParam, LRESULT& ret);
     void WTSRegisterSessionNotification();
     void WTSUnRegisterSessionNotification();
 

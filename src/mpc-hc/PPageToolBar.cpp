@@ -295,7 +295,7 @@ BOOL CPPageToolBar::OnApply()
     if (nOldToolbarAlignment != s.nToolbarAlignment) {
         if (CMainFrame* pMainFrame = AfxGetMainFrame()) {
             // Force the toolbar to recalculate its control positions
-            pMainFrame->m_wndToolBar.ArrangeControls();
+            pMainFrame->ToolBar().ArrangeControls();
             pMainFrame->RecalcLayout();
         }
     }

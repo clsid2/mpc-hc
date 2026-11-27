@@ -67,7 +67,7 @@ void CPlayerBar::OnWindowPosChanged(WINDOWPOS* lpwndpos)
                 // call MoveVideoWindow() manually because we don't receive WM_SIZE message
                 pFrame->MoveVideoWindow();
                 // let the user see what he did and don't hide the panel for a while
-                pFrame->m_controls.LockHideZone(pFrame->m_controls.GetPanelZone(this));
+                pFrame->Controls().LockHideZone(pFrame->Controls().GetPanelZone(this));
             }
         }
     }
