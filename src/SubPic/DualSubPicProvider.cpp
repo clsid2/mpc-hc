@@ -89,22 +89,6 @@ void CDualSubPicProvider::RebuildSegments(REFERENCE_TIME rt, double fps)
         for (POSITION pos = pProviders[i]->GetStartPosition(rt, fps); pos; pos = pProviders[i]->GetNext(pos)) {
             const REFERENCE_TIME rtStart = pProviders[i]->GetStart(pos, fps);
             const REFERENCE_TIME rtStop = pProviders[i]->GetStop(pos, fps);
-            if (rtStart == rt && rtStop == rt + 1) {
-                // Degenerate one-tick segment at the current time: this provider
-                // (libass) has no enumerable timeline and just renders whatever is
-                // visible at the requested time. The merged timeline degrades to
-                // the same per-frame behavior: hand out a single segment covering
-                // the current frame only, and render both providers into it.
-                MergedSegment segment = { rt, rt + 1, nullptr, nullptr };
-                for (size_t j = 0; j < _countof(pProviders); j++) {
-                    POSITION posNow = pProviders[j]->GetStartPosition(rt, fps);
-                    if (posNow && pProviders[j]->GetStart(posNow, fps) <= rt && rt < pProviders[j]->GetStop(posNow, fps)) {
-                        (j == 0 ? segment.posPrimary : segment.posSecondary) = posNow;
-                    }
-                }
-                m_segments.push_back(segment);
-                return;
-            }
             if (rtStart >= rtStop) {
                 continue;
             }
