@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPC-HC\n"
 "POT-Creation-Date: 2026-06-02 02:11:23+0000\n"
-"PO-Revision-Date: 2026-08-31 14:37+0000\n"
+"PO-Revision-Date: 2026-11-27 17:46+0000\n"
 "Last-Translator: Transifex sync (Studio)\n"
 "Language-Team: Italian (https://app.transifex.com/mpchc/teams/106126/it/)\n"
 "MIME-Version: 1.0\n"
@@ -69,7 +69,7 @@ msgstr "Anteprima"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_STATIC"
 msgid "V/A Buffers:"
-msgstr "Buffers V/A:"
+msgstr "Buffer V/A:"
 
 msgctxt "IDD_CAPTURE_DLG_IDC_CHECK5"
 msgid "Audio to wav"
@@ -81,7 +81,7 @@ msgstr "Registra"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK2"
 msgid "Enable built-in audio switcher filter (requires restart)"
-msgstr "Attiva il filtro audio switcher interno (richiede riavvio)"
+msgstr "Attiva il filtro audio integrato (richiede riavvio)"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK5"
 msgid "Normalize"
@@ -105,19 +105,19 @@ msgstr "Aumenta:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC7"
 msgid "ReplayGain:"
-msgstr ""
+msgstr "ReplayGain:"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_STATIC8"
 msgid "Preamp (dB):"
-msgstr ""
+msgstr "Preamp (dB):"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK7"
 msgid "Prevent clipping"
-msgstr ""
+msgstr "Previeni clipping"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK4"
 msgid "Audio time shift (ms):"
-msgstr "Spostamento audio (ms):"
+msgstr "Sfasamento audio (ms):"
 
 msgctxt "IDD_PPAGEAUDIOSWITCHER_IDC_CHECK1"
 msgid "Enable custom channel mapping"
@@ -306,7 +306,7 @@ msgstr "Salva le impostazioni nel file .ini"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK10"
 msgid "Disable \"Open Disc\" menu"
-msgstr "Disabilita il menù \"Apri disco\""
+msgstr "Disabilita il menu \"Apri disco\""
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK9"
 msgid "Process priority above normal"
@@ -314,7 +314,7 @@ msgstr "Priorità del processo sopra il normale"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK14"
 msgid "Enable cover-art support"
-msgstr "Abilita supporto cover-art"
+msgstr "Abilita supporto copertine"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_STATIC"
 msgid "History"
@@ -330,7 +330,7 @@ msgstr "Ricorda ultima playlist"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_FILE_POS"
 msgid "Remember File position"
-msgstr "Ricorda posizione File"
+msgstr "Ricorda posizione file"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_DVD_POS"
 msgid "Remember DVD position"
@@ -338,15 +338,15 @@ msgstr "Ricorda posizione DVD"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK6"
 msgid "Remember last window position"
-msgstr "Ricorda l'ultima posizione della finestra"
+msgstr "Ricorda ultima posizione della finestra"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK7"
 msgid "Remember last window size"
-msgstr "Ricorda le ultime dimensioni della finestra"
+msgstr "Ricorda ultime dimensioni della finestra"
 
 msgctxt "IDD_PPAGEPLAYER_IDC_CHECK11"
 msgid "Remember last Pan && Scan Zoom"
-msgstr "Ricorda l'ultimo zoom Pan && Scan"
+msgstr "Ricorda ultimo zoom Pan && Scan"
 
 msgctxt "IDD_PPAGEDVD_IDC_STATIC"
 msgid "\"Open DVD/BD\" behavior"
@@ -366,7 +366,7 @@ msgstr "Lingua preferita per i DVD"
 
 msgctxt "IDD_PPAGEDVD_IDC_RADIO3"
 msgid "Menu"
-msgstr "Menù"
+msgstr "Menu"
 
 msgctxt "IDD_PPAGEDVD_IDC_RADIO4"
 msgid "Audio"
@@ -474,7 +474,7 @@ msgstr "max %"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC4"
 msgid "Vertical Alignment:"
-msgstr "Allineamento Verticale:"
+msgstr "Allineamento verticale:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Default track preference"
@@ -490,7 +490,7 @@ msgstr "Audio:"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK4"
 msgid "Allow overriding external splitter choice"
-msgstr "Consenti esclusione dello splitter esterno"
+msgstr "Consenti di ignorare la scelta dello splitter esterno"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Open settings"
@@ -498,7 +498,7 @@ msgstr "Impostazioni all'apertura"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK7"
 msgid "Use worker thread to construct the filter graph"
-msgstr "Usa il worker thread per costruire il filter graph"
+msgstr "Usa il worker thread per costruire il grafo di filtro"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_CHECK6"
 msgid "Report pins which fail to render"
@@ -530,7 +530,7 @@ msgstr "%"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
 msgid "Delay step"
-msgstr "Passi del ritardo"
+msgstr "Ritardo"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
 msgid "ms"
@@ -542,11 +542,11 @@ msgstr "Impostazioni texture (richiedono la riapertura del video)"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC9"
 msgid "Sub pictures to buffer:"
-msgstr "Numero di sub-picture da precaricare:"
+msgstr "Numero di sottotitoli bitmap da precaricare:"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC21"
 msgid "Maximum texture resolution:"
-msgstr "Risoluzione massima delle texture"
+msgstr "Risoluzione massima delle texture:"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_NO_SUB_ANIM"
 msgid "Never animate the subtitles"
@@ -554,15 +554,15 @@ msgstr "Non usare mai le animazioni per i sottotitoli"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC5"
 msgid "Render at"
-msgstr "Rendimento a"
+msgstr "Render al"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC6"
 msgid "% of the animation"
-msgstr "% di animazione"
+msgstr "% dell'animazione"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC7"
 msgid "Animate at"
-msgstr "Animazione a"
+msgstr "Animazione al"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC8"
 msgid "% of the video frame rate"
@@ -571,15 +571,15 @@ msgstr "% del numero di frame video"
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_ALLOW_DROPPING_SUBPIC"
 msgid "Allow dropping some subpictures if the queue is running late"
 msgstr ""
-"Consenti di tralasciare alcune immagini secondarie se la coda è in ritardo"
+"Consenti di scartare alcuni sottotitoli bitmap se la coda è in ritardo"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
 msgid "Renderer Layout"
-msgstr "Layout Renderer"
+msgstr "Renderer di layout"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_CHECK_SUB_AR_COMPENSATION"
 msgid "Apply aspect ratio compensation for anamorphic videos"
-msgstr "Applica compensazione del rapporto d'aspetto per video anamorfici"
+msgstr "Applica compensazione delle proporzioni per video anamorfici"
 
 msgctxt "IDD_PPAGESUBTITLES_IDC_STATIC"
 msgid "Warning"
@@ -624,7 +624,7 @@ msgstr "Imposta come programma &predefinito"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_STATIC"
 msgid "Explorer Context Menu"
-msgstr "Menù contestuale di Windows"
+msgstr "Menu contestuale di Windows"
 
 msgctxt "IDD_PPAGEFORMATS_IDC_CHECK6"
 msgid "Directory"
@@ -732,7 +732,7 @@ msgstr "Elimina"
 
 msgctxt "IDD_PPAGEEXTERNALFILTERS_IDC_BUTTON8"
 msgid "Reset List"
-msgstr "Reimposta elenco"
+msgstr "Reimposta lista"
 
 msgctxt "IDD_FILEPROPDETAILS_IDC_STATIC"
 msgid "Type:"
@@ -840,7 +840,7 @@ msgstr "Applica"
 
 msgctxt "IDD_PNSPRESET_DLG_CAPTION"
 msgid "PnS Frame Adjust Presets"
-msgstr "Preset Regolazione Finestra PnS"
+msgstr "Impostazioni regolazione finestra PnS"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON2"
 msgid "New"
@@ -860,11 +860,11 @@ msgstr "Giù"
 
 msgctxt "IDD_PNSPRESET_DLG_IDC_BUTTON1"
 msgid "&Set"
-msgstr "&Imposta"
+msgstr "Imposta"
 
 msgctxt "IDD_PNSPRESET_DLG_IDCANCEL"
 msgid "&Cancel"
-msgstr "&Annulla"
+msgstr "Annulla"
 
 msgctxt "IDD_PNSPRESET_DLG_IDOK"
 msgid "&Save"
@@ -972,11 +972,11 @@ msgstr "Contorno"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_RADIO2"
 msgid "Opaque box"
-msgstr "Box opaco"
+msgstr "Riquadro opaco"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_CHECK_ROUNDEDBOX"
 msgid "Rounded corners"
-msgstr ""
+msgstr "Angoli arrotondati"
 
 msgctxt "IDD_PPAGESUBSTYLE_IDC_STATIC5"
 msgid "Width"
@@ -1104,11 +1104,11 @@ msgstr "Splitter"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_VIDEO_DEC_CONF"
 msgid "Video decoder"
-msgstr "Decoder Video"
+msgstr "Decoder video"
 
 msgctxt "IDD_PPAGEINTERNALFILTERS_IDC_AUDIO_DEC_CONF"
 msgid "Audio decoder"
-msgstr "Decoder Audio"
+msgstr "Decoder audio"
 
 msgctxt "IDD_PPAGELOGO_IDC_CHECK1"
 msgid "Apply Monitor Color Profile"
@@ -1128,7 +1128,7 @@ msgstr "Sfoglia..."
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Video Renderer"
-msgstr ""
+msgstr "Renderer Video"
 
 msgctxt "IDD_PPAGEOUTPUT_IDC_STATIC"
 msgid "Audio Renderer"
@@ -1232,11 +1232,11 @@ msgstr "giorno(i)"
 
 msgctxt "IDD_PPAGEMISC_IDC_STATIC"
 msgid "Color controls"
-msgstr ""
+msgstr "Controlli colore"
 
 msgctxt "IDD_PPAGEMISC_IDC_COLOR_CONTROLS"
 msgid "Open"
-msgstr ""
+msgstr "Apri"
 
 msgctxt "IDD_PPAGEMISC_IDC_STATIC"
 msgid "Settings management"
@@ -1248,7 +1248,7 @@ msgstr "Reimposta"
 
 msgctxt "IDD_PPAGEMISC_IDC_EXPORT_KEYS"
 msgid "Export keys"
-msgstr "Esporta chiavi"
+msgstr "Esporta combinazioni"
 
 msgctxt "IDD_PPAGEMISC_IDC_EXPORT_SETTINGS"
 msgid "Export"
@@ -1300,7 +1300,7 @@ msgstr "Usa offset"
 
 msgctxt "IDD_TUNER_SCAN_IDC_STATIC"
 msgid "Symbol Rate"
-msgstr " Frequenza di simbolo"
+msgstr "Symbol rate"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_STATIC"
 msgid "Default Device"
@@ -1352,19 +1352,19 @@ msgstr "Approccio cambio canale:"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST11"
 msgid "Rebuild filter graph"
-msgstr "Ricostruisci grafico filtro"
+msgstr "Ricostruisci grafo di filtro"
 
 msgctxt "IDD_PPAGECAPTURE_IDC_PPAGECAPTURE_ST12"
 msgid "Stop filter graph"
-msgstr "Interrompi grafico filtro"
+msgstr "Interrompi grafo di filtro"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Common"
-msgstr ""
+msgstr "Comune"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Resizer:"
-msgstr "Resizer:"
+msgstr "Ridimensionatore:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "Surface:"
@@ -1372,7 +1372,7 @@ msgstr "Superficie:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_EVR_BUFFERS_TXT"
 msgid "EVR Buffers:"
-msgstr "Buffers EVR:"
+msgstr "Buffer EVR:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESETDEVICE"
 msgid "Reinitialize when changing display"
@@ -1380,23 +1380,23 @@ msgstr "Reinizializza al cambio di schermo"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_CACHESHADERS"
 msgid "Cache compiled Shaders"
-msgstr "Shader compilato nella cache"
+msgstr "Shader compilati nella cache"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_FULLSCREEN_MONITOR_CHECK"
 msgid "D3D Fullscreen"
-msgstr "Schermo intero Direct3D (elimina effetto tearing)"
+msgstr "Schermo intero D3D"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_DSVMR9LOADMIXER"
 msgid "VMR-9 Mixer Mode"
-msgstr "VMR-9 mixer mode"
+msgstr "Modalità Mixer VMR-9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_D3D9DEVICE"
 msgid "Select D3D9 Render Device"
-msgstr ""
+msgstr "Seleziona dispositivo di rendering D3D9"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNC_GROUP"
 msgid "Sync Renderer"
-msgstr ""
+msgstr "Sync Renderer"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCVIDEO"
 msgid "Sync video to display"
@@ -1424,11 +1424,11 @@ msgstr "colonne"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_SYNCNEAREST"
 msgid "Present at nearest VSync"
-msgstr "Presente al VSync più vicino"
+msgstr "Presenta al VSync più vicino"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC5"
 msgid "Target sync offset:"
-msgstr "Scarto sincronizzazione:"
+msgstr "Offset di sincronizzazione obiettivo:"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC6"
 msgid "ms"
@@ -1448,15 +1448,17 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC10"
 msgid "Changes take effect after the playback has been closed and restarted."
-msgstr "Le modifiche saranno effettive dopo un riavvio della riproduzione."
+msgstr ""
+"I cambiamenti avranno effetto dopo la chiusura e il riavvio della "
+"riproduzione."
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_STATIC"
 msgid "More renderer settings are available in the Play menu"
-msgstr ""
+msgstr "Più impostazioni del render nel menu Riproduzione"
 
 msgctxt "IDD_PPAGEVIDEORENDERER_IDC_RESET"
 msgid "Reset"
-msgstr ""
+msgstr "Reimposta"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_STATIC"
 msgid "Fullscreen monitor"
@@ -1484,7 +1486,7 @@ msgstr "ms"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK6"
 msgid "Hide docked panels"
-msgstr "Nascondo pannelli aggancaiti"
+msgstr "Nascondi pannelli agganciati"
 
 msgctxt "IDD_PPAGEFULLSCREEN_IDC_CHECK2"
 msgid "Use autochange fullscreen monitor mode"
@@ -1594,7 +1596,7 @@ msgstr "&Scarica ora"
 
 msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_LATER_BUTTON"
 msgid "Remind me &later"
-msgstr "Ricordamelo &più tardi"
+msgstr "Ricordamelo più &tardi"
 
 msgctxt "IDD_UPDATE_DIALOG_IDC_UPDATE_IGNORE_BUTTON"
 msgid "&Ignore this update"
@@ -1618,15 +1620,15 @@ msgstr "Rimuovi"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON1"
 msgid "Add to pre-resize"
-msgstr "Aggiungi al pre-resize"
+msgstr "Aggiungi al pre-ridimensionamento"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON2"
 msgid "Add to post-resize"
-msgstr "Aggiungi al post-resize"
+msgstr "Aggiungi al post-ridimensionamento"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Shader presets"
-msgstr "Serie shader"
+msgstr "Impostazioni shader"
 
 msgctxt "IDD_PPAGESHADERS_IDC_BUTTON3"
 msgid "Load"
@@ -1642,19 +1644,19 @@ msgstr "Elimina"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active pre-resize shaders"
-msgstr "Shader pre-resize attivi"
+msgstr "Shader pre-ridimensionamento attivi"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC"
 msgid "Active post-resize shaders"
-msgstr "Shader post-resize attivi"
+msgstr "Shader post-ridimensionamento attivi"
 
 msgctxt "IDD_PPAGESHADERS_IDC_STATIC5"
 msgid ""
 "MPC-VR does not support pre-resize shaders. It will run them after resize, "
 "before the post-resize shaders."
 msgstr ""
-"MPC-VR non supporta shader pre-ridimensionamento. Li eseguirà dopo il ridimensionamento, prima degli shader post-ridimensionamento.\n"
-" "
+"MPC-VR non supporta shader pre-ridimensionamento. Li eseguirà dopo il "
+"ridimensionamento, prima degli shader post-ridimensionamento."
 
 msgctxt "IDD_DEBUGSHADERS_DLG_CAPTION"
 msgid "Debug Shaders"
@@ -1800,7 +1802,7 @@ msgstr "Chiudi MPC-HC"
 
 msgctxt "IDD_PPAGEDPICALC_IDC_STATIC1"
 msgid "Groupbox"
-msgstr "Groupbox"
+msgstr "Riquadro di gruppo"
 
 msgctxt "IDD_PPAGEDPICALC_IDC_STATIC2"
 msgid "Autoplay"
@@ -1824,35 +1826,35 @@ msgstr "Annulla"
 
 msgctxt "IDD_HISTORY_CAPTION"
 msgid "History"
-msgstr ""
+msgstr "Cronologia"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON1"
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
 msgctxt "IDD_HISTORY_IDC_BUTTON2"
 msgid "Remove selected"
-msgstr ""
+msgstr "Rimuovi selezionati"
 
 msgctxt "IDD_COLORCONTROLS_DLG_CAPTION"
 msgid "Color controls"
-msgstr ""
+msgstr "Controlli colore"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC5"
 msgid "Brightness"
-msgstr ""
+msgstr "Luminosità"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC6"
 msgid "Contrast"
-msgstr ""
+msgstr "Contrasto"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC7"
 msgid "Hue"
-msgstr ""
+msgstr "Tonalità"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_STATIC8"
 msgid "Saturation"
-msgstr ""
+msgstr "Saturazione"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDC_RESET"
 msgid "Reset"
@@ -1860,25 +1862,28 @@ msgstr "Reimposta"
 
 msgctxt "IDD_COLORCONTROLS_DLG_IDCANCEL"
 msgid "Close"
-msgstr ""
+msgstr "Chiudi"
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_CAPTION"
 msgid "MPC-HC"
-msgstr ""
+msgstr "MPC-HC"
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
 msgid ""
 "Opening files is taking some time. Waiting for the first MPC-HC instance to "
 "respond."
 msgstr ""
+"L'apertura dei file sta richiedendo del tempo. Attendere che la prima "
+"istanza di MPC-HC risponda."
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDC_STATIC"
 msgid "Please wait and do not open more files for the next 30 seconds."
 msgstr ""
+"Si prega di attendere e di non aprire altri file nei prossimi 30 secondi."
 
 msgctxt "IDD_REDIRECT_WAIT_DLG_IDCANCEL"
 msgid "Open new window"
-msgstr ""
+msgstr "Apri nuova finestra"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC1"
 msgid "Theme"
@@ -1886,11 +1891,11 @@ msgstr "Tema"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK1"
 msgid "Use Modern Theme"
-msgstr "Usa Tema Moderno"
+msgstr "Usa tema moderno"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC2"
 msgid "Modern Theme Color:"
-msgstr "Colore Tema Moderno"
+msgstr "Colore tema moderno:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC4"
 msgid "Seekbar"
@@ -1906,7 +1911,7 @@ msgstr "Mostra marcatori dei capitoli nella barra di ricerca"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Time on seekbar:"
-msgstr ""
+msgstr "Tempo sulla barra di ricerca:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC8"
 msgid "Seekbar Hover"
@@ -1922,11 +1927,11 @@ msgstr "Mostra tempo"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC11"
 msgid "Hover Position:"
-msgstr "Posizione al passaggio del mouse:"
+msgstr "Posizione:"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC7"
 msgid "Preview width (% of screen)"
-msgstr "Larghezza anteprima (% dello schermo)"
+msgstr "Larghezza anteprima (% schermo)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC10"
 msgid "Status Bar Elements"
@@ -1942,7 +1947,7 @@ msgstr "Informazioni video"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK12"
 msgid "Audio Info"
-msgstr "Info Audio"
+msgstr "Informazioni audio"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK5"
 msgid "FPS"
@@ -2002,7 +2007,7 @@ msgstr "Integrazione di Windows"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK_ENHANCED_TASKBAR"
 msgid "Use enhanced taskbar features"
-msgstr "Usa funzionalità migliorate della barra delle applicazioni"
+msgstr "Usa funzionalità migliorate della barra applicazioni"
 
 msgctxt "IDD_PPAGETHEME_IDC_CHECK11"
 msgid "Control via Windows UI (SMTC)"
@@ -2010,11 +2015,11 @@ msgstr "Controllo via Windows UI (SMTC)"
 
 msgctxt "IDD_PPAGETHEME_IDC_STATIC"
 msgid "Custom Preset (4)"
-msgstr ""
+msgstr "Interfaccia personalizzata (4)"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_MENU"
 msgid "Menu"
-msgstr "Menù"
+msgstr "Menu"
 
 msgctxt "IDD_PPAGETHEME_IDC_CUSTOMPRESET_STATUSBAR"
 msgid "Status"
@@ -2070,11 +2075,11 @@ msgstr "Pulsante personalizzato 1"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Click"
-msgstr "Clic"
+msgstr "Click"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Right click"
-msgstr "Clic con tasto destro"
+msgstr "Click con tasto destro"
 
 msgctxt "IDD_PPAGETOOLBAR_IDC_STATIC"
 msgid "Custom Button 2"
