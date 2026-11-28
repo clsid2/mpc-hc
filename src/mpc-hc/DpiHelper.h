@@ -48,6 +48,10 @@ public:
     // DPI-aware window rect adjustment (adds window decorations like title bar, borders)
     static BOOL AdjustWindowRectExForDpi(LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle, UINT dpi);
 
+    // Stops the dialog manager from moving and sizing a dialog's controls on a DPI change (it still updates their
+    // fonts), for a dialog that lays them out itself (Windows 10 1703+)
+    static BOOL DisableDialogControlRelayout(HWND hDlg);
+
     inline double ScaleFactorX() const { return m_dpix / 96.0; }
     inline double ScaleFactorY() const { return m_dpiy / 96.0; }
 

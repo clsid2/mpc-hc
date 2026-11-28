@@ -345,3 +345,13 @@ BOOL DpiHelper::AdjustWindowRectExForDpi(LPRECT lpRect, DWORD dwStyle, BOOL bMen
     // Fallback for older Windows versions
     return ::AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
 }
+
+BOOL DpiHelper::DisableDialogControlRelayout(HWND hDlg) {
+    static const WinapiFunc<BOOL WINAPI(HWND, DIALOG_DPI_CHANGE_BEHAVIORS, DIALOG_DPI_CHANGE_BEHAVIORS)>
+        fnSetDialogDpiChangeBehavior = { L"user32.dll", "SetDialogDpiChangeBehavior" };
+
+    if (fnSetDialogDpiChangeBehavior) {
+        return fnSetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_CONTROL_RELAYOUT, DDC_DISABLE_CONTROL_RELAYOUT);
+    }
+    return FALSE;
+}
