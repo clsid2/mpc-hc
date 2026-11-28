@@ -77,7 +77,7 @@ BEGIN_MESSAGE_MAP(CPPageOutput, CMPCThemePPageBase)
     ON_BN_CLICKED(IDC_BUTTON1, OpenVideoRendererSettings)
     ON_UPDATE_COMMAND_UI(IDC_BUTTON2, OnUpdateAudioRendererSettings)
     ON_BN_CLICKED(IDC_BUTTON2, OpenAudioRendererSettings)
-    ON_CBN_SELCHANGE(IDC_VIDRND_COMBO, OnDSRendererChange)
+    ON_CBN_SELCHANGE(IDC_VIDRND_COMBO, OnDSRendererSelChange)
     ON_CBN_SELCHANGE(IDC_AUDRND_COMBO, OnAudioRendererChange)
     ON_CBN_SELCHANGE(IDC_COMBO1, OnSubtitleRendererChange)
 END_MESSAGE_MAP()
@@ -356,6 +356,12 @@ BOOL CPPageOutput::OnApply()
                         }
                     }
                 }
+            } else if (s.bBlacklistedGPUDriver) {
+                // D3D9 mode crashes on this driver; DXVA2 Native needs a D3D9 renderer
+                WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
+                if (curhwa == HWAccel_DXVA2Native) {
+                    pApp->WriteProfileInt(IDS_R_INTERNAL_LAVVIDEO_HWACCEL, _T("HWAccel"), HWAccel_DXVA2CopyBack);
+                }
             } else {
                 WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 0);
                 if (curhwa == HWAccel_D3D11) {
@@ -498,6 +504,14 @@ void CPPageOutput::OpenAudioRendererSettings() {
         dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
         dlg.AddPage(&page);
         dlg.DoModal();
+    }
+}
+
+void CPPageOutput::OnDSRendererSelChange()
+{
+    OnDSRendererChange();
+    if (AfxGetAppSettings().bBlacklistedGPUDriver && m_iDSVideoRendererType != VIDRNDT_DS_MPCVR) {
+        AfxMessageBox(CAppSettings::BlacklistedGPUDriverWarning, MB_ICONWARNING | MB_OK, 0);
     }
 }
 

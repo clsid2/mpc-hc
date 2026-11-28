@@ -696,6 +696,9 @@ void CFGFilterLAVVideo::Settings::LoadSettings()
                  if (gpuinfo.SupportD3D11VA()) {
                      WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
                      dwHWAccel = HWAccel_D3D11;
+                 } else if (AfxGetAppSettings().bBlacklistedGPUDriver) {
+                     WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 1);
+                     dwHWAccel = HWAccel_DXVA2CopyBack;
                  } else {
                      WriteRegistryDWORD(HKEY_CURRENT_USER, L"Software\\MPC-BE Filters\\MPC Video Renderer", L"UseD3D11", 0);
                  }

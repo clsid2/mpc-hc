@@ -69,6 +69,11 @@ public:
     bool SupportD3D11VA() { return hwa_caps_dx11 > 0 && featurelevel >= D3D_FEATURE_LEVEL_11_1; }
     bool AMD_DXVA2_Blacklist();
     bool IntelHEVCBlacklist();
+    // AMD driver from 2015 (version 15.x), the last one for TeraScale cards
+    bool HasLegacyAMDDriver() {
+        auto legacy = [](const GPUDetails& gpu) { return gpu.vendorid == PCIV_AMD && HIWORD(gpu.UMDVersion.HighPart) == 15; };
+        return (gpu_count >= 1 && legacy(gpu1)) || (gpu_count >= 2 && legacy(gpu2));
+    }
     bool UseMPCVR() { return GetHwaCaps() >= GPU_HWA_CAP_H264_4K; }
     CString GetGPUID(GPUDetails& gpu) {
         CString res;
