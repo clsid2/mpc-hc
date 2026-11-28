@@ -106,7 +106,7 @@ static bool EnsureDirectory(CString directory)
 }
 
 void CSubtitleController::OnUpdateSubtitlesButton(CCmdUI* pCmdUI) {
-    pCmdUI->Enable(m_frame.IsStateLoaded() && m_frame.m_subtitlesMenu.GetMenuItemCount() > 0);
+    pCmdUI->Enable(m_frame.IsStateLoaded() && m_frame.SubtitlesMenu().GetMenuItemCount() > 0);
 }
 
 void CSubtitleController::OnStreamSub(UINT nID)
@@ -175,7 +175,7 @@ void CSubtitleController::OnFileSubtitlesLoad()
     ofn.lpstrFile = filenames.GetBuffer(nBufferSize);
     ofn.nMaxFile = nBufferSize;
     // Set the current file directory as default folder
-    CString curfile = m_frame.m_wndPlaylistBar.GetCurFileName();
+    CString curfile = m_frame.PlaylistBar().GetCurFileName();
     CLongPath defaultDir; // must outlive DoModal(), ofn.lpstrInitialDir points into it
     if (!PathUtils::IsURL(curfile)) {
         ExtendMaxPathLengthIfNeeded(curfile, true);
@@ -213,7 +213,7 @@ void CSubtitleController::OnFileSubtitlesLoad()
 
 void CSubtitleController::OnUpdateFileSubtitlesLoad(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(!m_frame.m_fAudioOnly && (m_graph.m_pCAP || m_pDVS) && m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsPlaybackCaptureMode());
+    pCmdUI->Enable(!m_frame.IsAudioOnly() && (m_graph.m_pCAP || m_pDVS) && m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsPlaybackCaptureMode());
 }
 
 void CSubtitleController::SubtitlesSave(const TCHAR* directory, bool silent)
@@ -593,7 +593,7 @@ void CSubtitleController::OnUpdateFileSubtitlesUpload(CCmdUI* pCmdUI)
 
 void CSubtitleController::OnFileSubtitlesDownload()
 {
-    if (!m_frame.m_fAudioOnly) {
+    if (!m_frame.IsAudioOnly()) {
         if (m_graph.m_pCAP && AfxGetAppSettings().IsISRAutoLoadEnabled()) {
             m_wndSubtitlesDownloadDialog.ShowWindow(SW_SHOW);
         } else {
@@ -604,18 +604,18 @@ void CSubtitleController::OnFileSubtitlesDownload()
 
 void CSubtitleController::OnUpdateFileSubtitlesDownload(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsPlaybackCaptureMode() && m_graph.m_pCAP && !m_frame.m_fAudioOnly);
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsPlaybackCaptureMode() && m_graph.m_pCAP && !m_frame.IsAudioOnly());
 }
 
 void CSubtitleController::OnViewSubresync()
 {
-    m_frame.m_controls.ToggleControl(CMainFrameControls::Panel::SUBRESYNC);
+    m_frame.Controls().ToggleControl(CMainFrameControls::Panel::SUBRESYNC);
     m_frame.AdjustStreamPosPoller(true);
 }
 
 void CSubtitleController::OnUpdateViewSubresync(CCmdUI* pCmdUI)
 {
-    pCmdUI->SetCheck(m_frame.m_controls.ControlChecked(CMainFrameControls::Panel::SUBRESYNC));
+    pCmdUI->SetCheck(m_frame.Controls().ControlChecked(CMainFrameControls::Panel::SUBRESYNC));
     bool enabled = m_graph.m_pCAP && m_pCurrentSubInput.pSubStream && !m_frame.IsPlaybackCaptureMode();
     if (enabled) {
         CLSID clsid;
@@ -824,7 +824,7 @@ void CSubtitleController::OnPlaySubtitles(UINT nID)
                                     }
                                     pRTS->Deinit();
                                     InvalidateSubtitle();
-                                    m_frame.m_wndSubresyncBar.ReloadSubtitle();
+                                    m_frame.SubresyncBar().ReloadSubtitle();
                                 }
                             }
                             if (otherStyleChanged || defaultStyleChanged) {
@@ -875,7 +875,7 @@ void CSubtitleController::OnPlaySecondarySubtitle(UINT nID)
 
 void CSubtitleController::OnSecondarySubtitleLoad()
 {
-    if (!m_graph.m_pCAP || m_frame.GetLoadState() != MLS::LOADED || m_frame.m_fAudioOnly) {
+    if (!m_graph.m_pCAP || m_frame.GetLoadState() != MLS::LOADED || m_frame.IsAudioOnly()) {
         return;
     }
 
@@ -891,7 +891,7 @@ void CSubtitleController::OnSecondarySubtitleLoad()
 
     OPENFILENAME& ofn = fd.GetOFN();
     // Set the current file directory as default folder
-    CString curfile = m_frame.m_wndPlaylistBar.GetCurFileName();
+    CString curfile = m_frame.PlaylistBar().GetCurFileName();
     CLongPath defaultDir; // must outlive DoModal(), ofn.lpstrInitialDir points into it
     if (!PathUtils::IsURL(curfile)) {
         ExtendMaxPathLengthIfNeeded(curfile, true);
@@ -1083,7 +1083,7 @@ int CSubtitleController::SetupSubtitleStreams()
         }
     }
 
-    if (s.IsISRAutoLoadEnabled() && !m_frame.m_fAudioOnly) {
+    if (s.IsISRAutoLoadEnabled() && !m_frame.IsAudioOnly()) {
         if (s.bAutoDownloadSubtitles && m_pSubStreams.IsEmpty()) {
             m_pSubtitlesProviders->Search(TRUE);
         } else if (m_wndSubtitlesDownloadDialog.IsWindowVisible()) {
@@ -1096,11 +1096,11 @@ int CSubtitleController::SetupSubtitleStreams()
 
 void CSubtitleController::SetupSubtitlesSubMenu()
 {
-    CMPCThemeMenu& subMenu = m_frame.m_subtitlesMenu;
+    CMPCThemeMenu& subMenu = m_frame.SubtitlesMenu();
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
-    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.m_fAudioOnly) {
+    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.IsAudioOnly()) {
         return;
     }
 
@@ -1388,11 +1388,11 @@ SubtitleInput* CSubtitleController::GetSecondarySubtitleInput(int idx)
 
 void CSubtitleController::SetupSecondarySubtitleSubMenu()
 {
-    CMPCThemeMenu& subMenu = m_frame.m_subtitlesSecondaryMenu;
+    CMPCThemeMenu& subMenu = m_frame.SubtitlesSecondaryMenu();
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 
-    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.m_fAudioOnly || !m_graph.m_pCAP) {
+    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.IsAudioOnly() || !m_graph.m_pCAP) {
         return;
     }
 
@@ -1518,7 +1518,7 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
 
     CString videoName;
     if (m_frame.GetPlaybackMode() == PM_FILE) {
-        videoName = m_frame.m_wndPlaylistBar.GetCurFileName();
+        videoName = m_frame.PlaylistBar().GetCurFileName();
     }
 
     CString ext = CLongPath(fn).GetExtension().MakeLower();
@@ -1569,7 +1569,7 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
                 do {
                     CStringW ext = GetFileExt(fd.cFileName);
                     if (ext == ".ttf" || ext == ".otf" || ext == ".ttc") {
-                        m_frame.m_FontInstaller.InstallTempFontFile(path + fd.cFileName);
+                        m_frame.InstallTempFont(path + fd.cFileName);
                     }
                 } while (FindNextFile(hFind, &fd));
                 
@@ -1587,7 +1587,7 @@ bool CSubtitleController::LoadSubtitle(CString fn, SubtitleInput* pSubInput /*= 
         }
 
         if (!bAutoLoad) {
-            m_frame.m_wndPlaylistBar.AddSubtitleToCurrent(fn);
+            m_frame.PlaylistBar().AddSubtitleToCurrent(fn);
             if (s.fKeepHistory) {
                 s.MRU.AddSubToCurrent(fn);
             }
@@ -1694,12 +1694,13 @@ bool CSubtitleController::SetSubtitle(int i, bool bIsOffset /*= false*/, bool bD
     CAppSettings& s = AfxGetAppSettings();
 
     SubtitleInput* pSubInput = nullptr;
-    if (m_frame.m_iReloadSubIdx >= 0) {
-        pSubInput = GetSubtitleInput(m_frame.m_iReloadSubIdx);
+    int iReloadSubIdx = m_frame.GetReloadSubIdx();
+    if (iReloadSubIdx >= 0) {
+        pSubInput = GetSubtitleInput(iReloadSubIdx);
         if (pSubInput) {
-            i = m_frame.m_iReloadSubIdx;
+            i = iReloadSubIdx;
         }
-        m_frame.m_iReloadSubIdx = -1;
+        m_frame.ClearReloadSubIdx();
     }
 
     if (!pSubInput) {
@@ -1717,9 +1718,9 @@ bool CSubtitleController::SetSubtitle(int i, bool bIsOffset /*= false*/, bool bD
                 dwFlags = 0;
             }
             if (lcid && s.fEnableSubtitles) {
-                m_frame.currentSubLang = ISOLang::LCIDToISO6392(lcid);
+                m_frame.SetCurrentSubLang(ISOLang::LCIDToISO6392(lcid));
             } else {
-                m_frame.currentSubLang.Empty();
+                m_frame.ClearCurrentSubLang();
             }
 
             // Enable the track only if it isn't already the only selected track in the group
@@ -1739,9 +1740,9 @@ bool CSubtitleController::SetSubtitle(int i, bool bIsOffset /*= false*/, bool bD
             LCID lcid = 0;
             pSubInput->pSubStream->GetStreamInfo(0, &pName, &lcid);
             if (lcid && s.fEnableSubtitles) {
-                m_frame.currentSubLang = ISOLang::LCIDToISO6392(lcid);
+                m_frame.SetCurrentSubLang(ISOLang::LCIDToISO6392(lcid));
             } else {
-                m_frame.currentSubLang.Empty();
+                m_frame.ClearCurrentSubLang();
             }
         }
 
@@ -1858,9 +1859,11 @@ void CSubtitleController::SetSubtitle(const SubtitleInput& subInput, bool skip_l
                 m_pCurrentSubInput.pSubStream->GetStreamInfo(0, &pName, &lcid);
             }
             if (lcid) {
-                GetLocaleString(lcid, LOCALE_SISO639LANGNAME2, m_frame.currentSubLang);
+                CString subLang;
+                GetLocaleString(lcid, LOCALE_SISO639LANGNAME2, subLang);
+                m_frame.SetCurrentSubLang(subLang);
             } else {
-                m_frame.currentSubLang.Empty();
+                m_frame.ClearCurrentSubLang();
             }
         }
 
@@ -1874,9 +1877,9 @@ void CSubtitleController::SetSubtitle(const SubtitleInput& subInput, bool skip_l
                     use_subresync = true;
             }
             if (use_subresync) {
-                m_frame.m_wndSubresyncBar.SetSubtitle(subInput.pSubStream, m_graph.m_pCAP->GetFPS(), g_bExternalSubtitle);
+                m_frame.SubresyncBar().SetSubtitle(subInput.pSubStream, m_graph.m_pCAP->GetFPS(), g_bExternalSubtitle);
             } else {
-                m_frame.m_wndSubresyncBar.SetSubtitle(nullptr, m_graph.m_pCAP->GetFPS(), g_bExternalSubtitle);
+                m_frame.SubresyncBar().SetSubtitle(nullptr, m_graph.m_pCAP->GetFPS(), g_bExternalSubtitle);
             }
             // an index into the previous track's subresync list means nothing for the new one
             m_nCurSubtitle = -1;
@@ -1948,7 +1951,7 @@ void CSubtitleController::ToggleSubtitleOnOff(bool bDisplayMessage /*= false*/)
             if (m_graph.m_pCAP) {
                 m_graph.m_pCAP->SetSubPicProvider(nullptr);
             }
-            m_frame.currentSubLang = ResStr(IDS_AG_DISABLED);
+            m_frame.SetCurrentSubLang(ResStr(IDS_AG_DISABLED));
 
             if (bDisplayMessage) {
                 m_frame.m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_SUBTITLE_STREAM_OFF));
@@ -1998,7 +2001,7 @@ void CSubtitleController::ReloadSubtitle()
     ResetSubtitlePosAndSize(false);
 
     SetSubtitle(0, true);
-    m_frame.m_wndSubresyncBar.ReloadSubtitle();
+    m_frame.SubresyncBar().ReloadSubtitle();
 }
 
 void CSubtitleController::SetSubtitleTrackIdx(int index)
@@ -2102,10 +2105,10 @@ int CSubtitleController::GetCurrentSubtitleTrackIdx(CString *pstrName)
 afx_msg void CSubtitleController::OnGotoSubtitle(UINT nID)
 {
     if (!m_pSubStreams.IsEmpty() && !m_frame.IsPlaybackCaptureMode()) {
-        m_rtCurSubPos = m_frame.m_wndSeekBar.GetPos();
+        m_rtCurSubPos = m_frame.SeekBar().GetPos();
         m_lSubtitleShift = 0;
-        m_frame.m_wndSubresyncBar.RefreshEmbeddedTextSubtitleData();
-        m_nCurSubtitle = m_frame.m_wndSubresyncBar.FindNearestSub(m_rtCurSubPos, (nID == ID_GOTO_NEXT_SUB));
+        m_frame.SubresyncBar().RefreshEmbeddedTextSubtitleData();
+        m_nCurSubtitle = m_frame.SubresyncBar().FindNearestSub(m_rtCurSubPos, (nID == ID_GOTO_NEXT_SUB));
         if (m_nCurSubtitle >= 0 && m_graph.m_pMS) {
             if (nID == ID_GOTO_PREV_SUB) {
                 m_frame.OnPlayPause();
@@ -2121,7 +2124,7 @@ afx_msg void CSubtitleController::OnSubresyncShiftSub(UINT nID)
         long lShift = (nID == ID_SUBRESYNC_SHIFT_DOWN) ? -100 : 100;
         CString strSubShift;
 
-        if (m_frame.m_wndSubresyncBar.ShiftSubtitle(m_nCurSubtitle, lShift, m_rtCurSubPos)) {
+        if (m_frame.SubresyncBar().ShiftSubtitle(m_nCurSubtitle, lShift, m_rtCurSubPos)) {
             m_lSubtitleShift += lShift;
             if (m_graph.m_pMS) {
                 m_graph.m_pMS->SetPositions(&m_rtCurSubPos, AM_SEEKING_AbsolutePositioning, nullptr, AM_SEEKING_NoPositioning);

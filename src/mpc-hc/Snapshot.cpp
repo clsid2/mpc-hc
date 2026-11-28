@@ -53,7 +53,7 @@ bool CSnapshot::GetDIB(BYTE** ppData, long& size, bool fSilent)
     if (!ppData) {
         return false;
     }
-    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.m_fAudioOnly) {
+    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.IsAudioOnly()) {
         return false;
     }
     OAFilterState fs = m_frame.GetMediaState();
@@ -283,7 +283,7 @@ void CSnapshot::SaveDIB(LPCTSTR fn, BYTE* pData, long size)
 
     path.m_strPath.Replace(_T("\\\\"), _T("\\"));
 
-    m_frame.SendStatusMessage(m_frame.m_wndStatusBar.PreparePathStatusMessage(path), 3000);
+    m_frame.SendStatusMessage(m_frame.StatusBar().PreparePathStatusMessage(path), 3000);
 }
 
 #if MPC_SMTC_VIDEO_THUMBNAIL
@@ -444,7 +444,7 @@ HRESULT CSnapshot::GetCurrentFrame(std::vector<BYTE>& dib, CString& errmsg) {
     errmsg.Empty();
 
     OAFilterState fs = m_frame.GetMediaState();
-    if (m_frame.m_eMediaLoadState != MLS::LOADED || m_frame.m_fAudioOnly || (fs != State_Paused && fs != State_Running)) {
+    if (m_frame.GetLoadState() != MLS::LOADED || m_frame.IsAudioOnly() || (fs != State_Paused && fs != State_Running)) {
         return E_ABORT;
     }
 
@@ -726,7 +726,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         return false;
     }
 
-    m_frame.m_nVolumeBeforeFrameStepping = m_frame.m_wndToolBar.Volume;
+    m_frame.SetVolumeBeforeFrameStepping(m_frame.ToolBar().Volume);
     if (m_frame.Graph().m_pBA) {
         m_frame.Graph().m_pBA->put_Volume(-10000);
     }
@@ -749,7 +749,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         HRESULT hr = m_frame.Graph().m_pFS ? m_frame.Graph().m_pFS->Step(1, nullptr) : E_FAIL;
         if (FAILED(hr)) {
             if (m_frame.Graph().m_pBA) {
-                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+                m_frame.Graph().m_pBA->put_Volume(m_frame.GetVolumeBeforeFrameStepping());
             }
             AfxMessageBox(IDS_FRAME_STEP_ERROR_RENDERER, MB_ICONEXCLAMATION | MB_OK, 0);
             return false;
@@ -820,7 +820,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
         long size = 0;
         if (!GetDIB(&pData, size)) {
             if (m_frame.Graph().m_pBA) {
-                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+                m_frame.Graph().m_pBA->put_Volume(m_frame.GetVolumeBeforeFrameStepping());
             }
             return false;
         }
@@ -833,7 +833,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
             AfxMessageBox(strTemp);
             delete [] pData;
             if (m_frame.Graph().m_pBA) {
-                m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+                m_frame.Graph().m_pBA->put_Volume(m_frame.GetVolumeBeforeFrameStepping());
             }
             return false;
         }
@@ -893,14 +893,14 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
 
         CString title;
         CPlaylistItem pli = CPlaylistItem(true);
-        if (m_frame.m_wndPlaylistBar.GetCur(pli, true) && pli.m_bYoutubeDL && pli.m_label && !pli.m_label.IsEmpty()) {
+        if (m_frame.PlaylistBar().GetCur(pli, true) && pli.m_bYoutubeDL && pli.m_label && !pli.m_label.IsEmpty()) {
             title = pli.m_label;
         } else {
             title = m_frame.GetFileName();
         }
 
         CStringW fs;
-        CString curfile = m_frame.m_wndPlaylistBar.GetCurFileName();
+        CString curfile = m_frame.PlaylistBar().GetCurFileName();
         if (!PathUtils::IsURL(curfile)) {
             ExtendMaxPathLengthIfNeeded(curfile, true);
             WIN32_FIND_DATA wfd;
@@ -936,7 +936,7 @@ bool CSnapshot::SaveThumbnails(LPCTSTR fn)
     SaveDIB(fn, dib.get(), dibsize);
 
     if (m_frame.Graph().m_pBA) {
-        m_frame.Graph().m_pBA->put_Volume(m_frame.m_nVolumeBeforeFrameStepping);
+        m_frame.Graph().m_pBA->put_Volume(m_frame.GetVolumeBeforeFrameStepping());
     }
 
     if (bWasStopped) {
@@ -959,11 +959,11 @@ CString CSnapshot::MakeSnapshotFileName(BOOL thumbnails)
     ASSERT(!thumbnails || m_frame.GetPlaybackMode() == PM_FILE);
 
     auto videoFn = m_frame.GetFileName();
-    auto fullName = m_frame.m_wndPlaylistBar.GetCurFileName(true);
+    auto fullName = m_frame.PlaylistBar().GetCurFileName(true);
     bool needsExtensionRemoval = !s.bSnapShotKeepVideoExtension;
     if (m_frame.IsPlaylistFile(videoFn)) {
         CPlaylistItem pli = CPlaylistItem(true);
-        if (m_frame.m_wndPlaylistBar.GetCur(pli, true)) {
+        if (m_frame.PlaylistBar().GetCur(pli, true)) {
             videoFn = pli.m_label;
             needsExtensionRemoval = false;
         }
@@ -985,7 +985,7 @@ CString CSnapshot::MakeSnapshotFileName(BOOL thumbnails)
 
     bool saveImagePosition, saveImageCurrentTime;
 
-    if (m_frame.m_wndSeekBar.HasDuration()) {
+    if (m_frame.SeekBar().HasDuration()) {
         saveImagePosition = s.bSaveImagePosition;
         saveImageCurrentTime = s.bSaveImageCurrentTime;
     } else {
@@ -1029,7 +1029,7 @@ BOOL CSnapshot::IsRendererCompatibleWithSaveImage()
     BOOL result = TRUE;
     const CAppSettings& s = AfxGetAppSettings();
 
-    if (m_frame.m_fShockwaveGraph) {
+    if (m_frame.IsShockwaveGraph()) {
         AfxMessageBox(IDS_SCREENSHOT_ERROR_SHOCKWAVE, MB_ICONEXCLAMATION | MB_OK, 0);
         result = FALSE;
     } else if (s.iDSVideoRendererType == VIDRNDT_DS_OVERLAYMIXER) {
@@ -1045,8 +1045,8 @@ CString CSnapshot::GetVidPos() const
     CString posstr = _T("");
     if ((m_frame.GetPlaybackMode() == PM_FILE) || (m_frame.GetPlaybackMode() == PM_DVD)) {
         __int64 start, stop, pos;
-        m_frame.m_wndSeekBar.GetRange(start, stop);
-        pos = m_frame.m_wndSeekBar.GetPos();
+        m_frame.SeekBar().GetRange(start, stop);
+        pos = m_frame.SeekBar().GetPos();
 
         DVD_HMSF_TIMECODE tcNow = RT2HMSF(pos);
         DVD_HMSF_TIMECODE tcDur = RT2HMSF(stop);
@@ -1151,7 +1151,7 @@ void CSnapshot::OnFileSaveImageAuto()
 void CSnapshot::OnUpdateFileSaveImage(CCmdUI* pCmdUI)
 {
     OAFilterState fs = m_frame.GetMediaState();
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && (fs == State_Paused || fs == State_Running));
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && (fs == State_Paused || fs == State_Running));
 }
 
 void CSnapshot::OnCmdLineSaveThumbnails()
@@ -1164,12 +1164,12 @@ void CSnapshot::OnCmdLineSaveThumbnails()
     }
 
     CPlaylistItem pli = CPlaylistItem(true);
-    if (!m_frame.m_wndPlaylistBar.GetCur(pli, true)) {
+    if (!m_frame.PlaylistBar().GetCur(pli, true)) {
         AfxGetMyApp()->ReportCmdLineError(_T("no file to take thumbnails of"));
         return;
     }
 
-    CLongPath psrc(m_frame.m_wndPlaylistBar.GetCurFileName(true));
+    CLongPath psrc(m_frame.PlaylistBar().GetCurFileName(true));
     psrc.RemoveFileSpec();
     psrc.Combine(psrc, MakeSnapshotFileName(TRUE));
 
@@ -1258,5 +1258,5 @@ void CSnapshot::OnUpdateFileSaveThumbnails(CCmdUI* pCmdUI)
 {
     OAFilterState fs = m_frame.GetMediaState();
     UNREFERENCED_PARAMETER(fs);
-    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.m_fAudioOnly && (m_frame.GetPlaybackMode() == PM_FILE /*|| m_frame.GetPlaybackMode() == PM_DVD*/));
+    pCmdUI->Enable(m_frame.GetLoadState() == MLS::LOADED && !m_frame.IsAudioOnly() && (m_frame.GetPlaybackMode() == PM_FILE /*|| m_frame.GetPlaybackMode() == PM_DVD*/));
 }

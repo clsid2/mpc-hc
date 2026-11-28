@@ -219,7 +219,7 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
 
     if (m_frame.GetPlaybackMode() == PM_FILE) {
         bool is_BD = false;
-        CString fn = m_frame.m_wndPlaylistBar.GetCurFileNameTitle();
+        CString fn = m_frame.PlaylistBar().GetCurFileNameTitle();
         if (fn.IsEmpty()) {
             if (m_graph.m_pFSF) {
                 CComHeapPtr<OLECHAR> pFN;
@@ -238,14 +238,14 @@ void CFavoritesRecent::AddFavorite(bool fDisplayMessage, bool fShowDialog)
 
         // capture the rest of the entry here as well, the file can change while the modal pump runs
         CPlaylistItem pli = CPlaylistItem(true);
-        bool bHasCur = !is_BD && m_frame.m_wndPlaylistBar.GetCur(pli);
+        bool bHasCur = !is_BD && m_frame.PlaylistBar().GetCur(pli);
         REFERENCE_TIME rtPos = m_frame.GetPos();
-        ABRepeat ab = m_frame.abRepeat;
+        ABRepeat ab = m_frame.GetABRepeat();
 
         // Name
         CString name;
         if (fShowDialog) {
-            BOOL bEnableABMarks = static_cast<bool>(m_frame.abRepeat);
+            BOOL bEnableABMarks = static_cast<bool>(m_frame.GetABRepeat());
             CFavoriteAddDlg dlg(desc, fn, bEnableABMarks);
             if (dlg.DoModal() != IDOK) {
                 return;
@@ -428,26 +428,26 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
     REFERENCE_TIME rtStart = 0;
     FileFavorite ff = ParseFavoriteFile(fav, args, &rtStart);
     // closing the current file clears abRepeat, so keep the favorite's marks for the open
-    ABRepeat favABRepeat = m_frame.abRepeat;
+    ABRepeat favABRepeat = m_frame.GetABRepeat();
 
     auto firstFile = args.front();
-    if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(firstFile)) {
+    if (!m_frame.PlaylistBar().SelectFileInPlaylist(firstFile)) {
         if (m_frame.m_cmdline.CanSendToYoutubeDL(firstFile)) {
             if (!m_frame.CloseMediaBeforeOpen()) {
                 return;
             }
             if (!m_frame.m_cmdline.ProcessYoutubeDLURL(firstFile, false)) {
-                m_frame.m_wndPlaylistBar.Open(args, false);
+                m_frame.PlaylistBar().Open(args, false);
             }
         } else {
-            m_frame.m_wndPlaylistBar.Open(args, false);
+            m_frame.PlaylistBar().Open(args, false);
         }
     }
 
-    m_frame.m_wndPlaylistBar.SetCurLabel(ff.Name);
+    m_frame.PlaylistBar().SetCurLabel(ff.Name);
 
-    if (m_frame.IsStateLoaded() && m_frame.GetPlaybackMode() == PM_FILE && m_frame.m_lastOMD && args.front() == m_frame.m_lastOMD->title) {
-        m_frame.m_wndSeekBar.Invalidate();
+    if (m_frame.IsStateLoaded() && m_frame.GetPlaybackMode() == PM_FILE && m_frame.GetLastOpenMediaData() && args.front() == m_frame.GetLastOpenMediaData()->title) {
+        m_frame.SeekBar().Invalidate();
         m_frame.DoSeekTo(rtStart);
     } else {
         if (!m_frame.CloseMediaBeforeOpen()) {
@@ -463,11 +463,10 @@ FileFavorite CFavoritesRecent::ParseFavoriteFile(const CString& fav, std::list<C
     FileFavorite ff;
     VERIFY(FileFavorite::TryParse(fav, ff, args));
 
-    m_frame.abRepeat.positionA = ff.MarkA;
-    m_frame.abRepeat.positionB = ff.MarkB;
+    m_frame.SetABRepeatMarks(ff.MarkA, ff.MarkB);
 
     // Start at mark A (if set)
-    ff.Start = std::max(ff.Start, m_frame.abRepeat.positionA);
+    ff.Start = std::max(ff.Start, m_frame.GetABRepeat().positionA);
 
     if (prtStart) {
         *prtStart = ff.Start;
@@ -543,8 +542,7 @@ void CFavoritesRecent::OpenRecentFileEntry(RecentFileEntry& r)
             m_frame.OpenCurPlaylistItem();
             return;
         } else if (m_frame.m_cmdline.IsOnYDLWhitelist(fns.front())) {
-            m_frame.m_closingmsg = L"Failed to extract stream URL with yt-dlp/youtube-dl";
-            m_frame.m_wndStatusBar.SetStatusMessage(m_frame.m_closingmsg);
+            m_frame.ShowClosingMessage(L"Failed to extract stream URL with yt-dlp/youtube-dl");
             // don't bother trying to open this website URL directly
             return;
         }
@@ -552,11 +550,11 @@ void CFavoritesRecent::OpenRecentFileEntry(RecentFileEntry& r)
 
     std::list<CString> subs = r.subs;
 
-    if (!m_frame.m_wndPlaylistBar.SelectFileInPlaylist(fns.front())) {
-        m_frame.m_wndPlaylistBar.Open(fns, false, &subs, r.title, _T(""), r.cue);
+    if (!m_frame.PlaylistBar().SelectFileInPlaylist(fns.front())) {
+        m_frame.PlaylistBar().Open(fns, false, &subs, r.title, _T(""), r.cue);
     }
     else {
-        m_frame.m_wndPlaylistBar.ReplaceCurrentItem(fns, &subs, r.title, _T(""), r.cue);
+        m_frame.PlaylistBar().ReplaceCurrentItem(fns, &subs, r.title, _T(""), r.cue);
     }
 
     m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
@@ -625,7 +623,7 @@ void CFavoritesRecent::PlayFavoriteDVD(CString fav)
     if (p) {
         p->path = fn;
         p->pDvdState = pDvdState;
-        m_frame.m_wndPlaylistBar.OpenDVD(p->path);
+        m_frame.PlaylistBar().OpenDVD(p->path);
     }
     m_frame.OpenMedia(std::move(p));
 }
@@ -656,7 +654,7 @@ void CFavoritesRecent::SetupRecentFilesSubMenu()
     }
     recentFilesMenuFromMRUSequence = MRU.listModifySequence;
 
-    CMPCThemeMenu& subMenu = m_frame.m_recentFilesMenu;
+    CMPCThemeMenu& subMenu = m_frame.RecentFilesMenu();
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
    
@@ -717,7 +715,7 @@ void CFavoritesRecent::SetupRecentFilesSubMenu()
 
 void CFavoritesRecent::SetupFavoritesSubMenu()
 {
-    CMPCThemeMenu& subMenu = m_frame.m_favoritesMenu;
+    CMPCThemeMenu& subMenu = m_frame.FavoritesMenu();
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 

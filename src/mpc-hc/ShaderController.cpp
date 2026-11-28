@@ -441,7 +441,7 @@ bool CShaderController::SetupShadersSubMenu()
 {
     const auto& s = AfxGetAppSettings();
 
-    CMPCThemeMenu& subMenu = m_frame.m_shadersMenu;
+    CMPCThemeMenu& subMenu = m_frame.ShadersMenu();
     // Empty the menu
     while (subMenu.RemoveMenu(0, MF_BYPOSITION));
 

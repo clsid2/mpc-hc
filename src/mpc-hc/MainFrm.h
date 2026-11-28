@@ -206,11 +206,13 @@ private:
         SEEK_DIRECTION_BACKWARD,
         SEEK_DIRECTION_FORWARD
     };
+public:
     enum {
         ZOOM_DEFAULT_LEVEL = 0,
         ZOOM_AUTOFIT = -1,
         ZOOM_AUTOFIT_LARGER = -2
     };
+private:
 
 
     typedef std::map<int, float> PlaybackRateMap;
@@ -256,11 +258,7 @@ private:
     CRect m_lastWindowRect;
 
     void RestoreDefaultWindowRect();
-    CSize GetVideoOrArtSize(MINMAXINFO& mmi);
     CSize GetZoomWindowSize(double dScale, bool ignore_video_size = false);
-    bool GetWorkAreaRect(CRect& work);
-    CRect GetZoomWindowRect(const CSize& size, bool ignoreSavedPosition = false);
-    void ZoomVideoWindow(double dScale = ZOOM_DEFAULT_LEVEL, bool ignore_video_size = false);
     double GetZoomAutoFitScale();
 
     bool alwaysOnTopZOrderInitialized = false;
@@ -273,15 +271,9 @@ private:
     void DestroyDynamicMenus();
     void LoadDynamicMenus();
     void SetupOpenCDSubMenu();
-    void SetupFiltersSubMenu();
     void SetupAudioSubMenu();
     void SetupVideoStreamsSubMenu();
     void SetupJumpToSubMenus(CMenu* parentMenu = nullptr, int iInsertPos = -1);
-
-    DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
-    void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
-    void OnStreamSelect(bool forward, DWORD dwSelGroup);
-    static CString GetStreamOSDString(CString name, LCID lcid, DWORD dwSelGroup);
 
     void CreateOSDBar();
     bool OSDBarSetPos();
@@ -348,52 +340,17 @@ private:
 
     REFERENCE_TIME m_rtDurationOverride;
 
-    void CleanGraph();
-
 public:
     CSnapshot m_snapshot;
-private:
-    friend class CSnapshot; // for the load state, the bars, m_OSD and the frame stepping helpers
-
-public:
     CCaptureController m_capture;
-private:
-    friend class CCaptureController; // for the load state, the bars, m_OSD, the video windows, the graph thread and the filters menu
-
-public:
     CDiscController m_disc;
-private:
-    friend class CDiscController; // for the load state, the bars, m_OSD, the chapter bag, the seek preview graph and the modal parent
-
-public:
     CFavoritesRecent m_favorites;
-private:
-    friend class CFavoritesRecent; // for the load state, the bars, m_OSD, A-B repeat, the open path and the dynamic menus
-
-public:
     CVideoGeometry m_geometry;
-private:
-    friend class CVideoGeometry; // for the load state, m_OSD, the video and preview windows, the window sizing helpers and the preview graph
-
-public:
     CApiBridge m_api;
-private:
-    friend class CApiBridge; // for the load state, the bars, m_OSD, the media control and seek helpers
-
-public:
     CSubtitleController m_subs;
-private:
-    friend class CSubtitleController; // for the load state, the bars, m_OSD, the dynamic menus, the stream selection helpers, the status message and the modal parent
-
-public:
     CShaderController m_shaders;
-private:
-    friend class CShaderController; // for the load state, m_OSD, the shaders menu, the status message, the options sheet and the video repaint
-
-public:
     CCommandLine m_cmdline;
 private:
-    friend class CCommandLine; // for the bars, the open path, the reload state, the media control helpers and the deferred actions
 
     //
 
@@ -419,19 +376,23 @@ private:
     // OnClose and the handlers that close before they open are recorded below and
     // run from the top-level pump once the outermost holder has returned, instead
     // of underneath it. See DeferIfNested and OnRunDeferredActions.
+public:
     class CDeferredActionScope {
         CMainFrame& m_frame;
     public:
         explicit CDeferredActionScope(CMainFrame& frame);
         ~CDeferredActionScope();
     };
+private:
     int m_nDeferredActionDepth = 0;
     // requests recorded while a holder is on the stack, run in arrival order by
     // OnRunDeferredActions. A recorded OnClose discards them and exits instead.
     // Only the last Open or Close entry still matters when they run: an open
     // closes first, and a close after an open makes that open pointless. Other
     // entries (appends to the playlist) always run, or their items would be lost
+public:
     enum class DeferredActionType { Close, Open, Other };
+private:
     struct DeferredAction {
         DeferredActionType type;
         std::function<void()> run;
@@ -446,6 +407,7 @@ private:
     // pump messages, and a hotkey, remote or modeless dialog reaching ShowOptions
     // from there stacked a second sheet over the first, which crashed in comctl32
     bool m_bInShowOptions = false;
+public:
     bool DeferIfNested(DeferredActionType type, std::function<void()> action);
 
     // Work the web server's thread needs done here, because it reads lists this
@@ -456,7 +418,6 @@ private:
     // to run build. A send that times out is still delivered later, so the
     // request lives on the heap with a reference from each side, and whichever
     // side lets go last frees it. See CWebClientSocket::BuildOnUIThread.
-public:
     struct UIRequest {
         std::function<void(CMainFrame*, CStringA&)> build;
         CStringA body;
@@ -502,7 +463,6 @@ private:
     bool m_bTBDropdownActive;
 
     REFTIME GetAvgTimePerFrame() const;
-    void OnVideoSizeChanged(const bool bWasAudioOnly = false);
 
     CDropTarget m_dropTarget;
     // client coordinates of the last OnDropAccept call; OnDropFiles gets no point
@@ -587,6 +547,141 @@ public:
     void SetDefaultFullscreenState();
     CRect GetInvisibleBorderSize() const;
 
+    // For the composition controllers (m_snapshot through m_cmdline). The bars and
+    // the dynamic menus are handed out as references because the controllers fill
+    // and drive them; the menu objects themselves stay with the other dynamic menus.
+    CPlayerInfoBar& InfoBar() {
+        return m_wndInfoBar;
+    }
+    CPlayerCaptureBar& CaptureBar() {
+        return m_wndCaptureBar;
+    }
+    CPlayerNavigationBar& NavigationBar() {
+        return m_wndNavigationBar;
+    }
+    CPlayerSubresyncBar& SubresyncBar() {
+        return m_wndSubresyncBar;
+    }
+    CMPCThemeMenu& FavoritesMenu() {
+        return m_favoritesMenu;
+    }
+    CMPCThemeMenu& RecentFilesMenu() {
+        return m_recentFilesMenu;
+    }
+    CMPCThemeMenu& ShadersMenu() {
+        return m_shadersMenu;
+    }
+    CMPCThemeMenu& SubtitlesMenu() {
+        return m_subtitlesMenu;
+    }
+    CMPCThemeMenu& SubtitlesSecondaryMenu() {
+        return m_subtitlesSecondaryMenu;
+    }
+
+    bool IsShockwaveGraph() const {
+        return m_fShockwaveGraph;
+    }
+    int GetDefaultVideoAngle() const {
+        return defaultVideoAngle;
+    }
+    ULONG GetChapterStartTime() const {
+        return m_lChapterStartTime;
+    }
+    const OpenMediaData* GetLastOpenMediaData() const {
+        return m_lastOMD.get();
+    }
+    const ABRepeat& GetABRepeat() const {
+        return abRepeat;
+    }
+    void SetABRepeatMarks(REFERENCE_TIME rtA, REFERENCE_TIME rtB) {
+        abRepeat.positionA = rtA;
+        abRepeat.positionB = rtB;
+    }
+    // the chapter bag of the open file or disc; no reference is added
+    IDSMChapterBag* GetChapterBag() const {
+        return m_pCB;
+    }
+    void ResetChapterBag();
+    int GetVolumeBeforeFrameStepping() const {
+        return m_nVolumeBeforeFrameStepping;
+    }
+    void SetVolumeBeforeFrameStepping(int nVolume) {
+        m_nVolumeBeforeFrameStepping = nVolume;
+    }
+    // the stored rate only; the graph is not touched
+    void ResetPlayingRateValue() {
+        m_dSpeedRate = 1.0;
+    }
+    void ResetLoopCount() {
+        m_nLoops = 0;
+    }
+    void SetAllowWindowZoom(bool bAllow) {
+        m_bAllowWindowZoom = bAllow;
+    }
+    void ClearDurationOverride() {
+        m_rtDurationOverride = -1;
+    }
+    void SetCurrentAudioLang(const CString& lang) {
+        currentAudioLang = lang;
+    }
+    void ClearCurrentAudioLang() {
+        currentAudioLang.Empty();
+    }
+    void SetCurrentSubLang(const CString& lang) {
+        currentSubLang = lang;
+    }
+    void ClearCurrentSubLang() {
+        currentSubLang.Empty();
+    }
+    bool InstallTempFont(LPCTSTR fn) {
+        return m_FontInstaller.InstallTempFontFile(fn);
+    }
+    // sets the closing message and shows it in the status bar
+    void ShowClosingMessage(const CString& msg) {
+        m_closingmsg = msg;
+        m_wndStatusBar.SetStatusMessage(m_closingmsg);
+    }
+    // what a reopen restores: the file, position and A-B marks, with the audio and
+    // subtitle track choices cleared
+    void SetReloadState(const CString& fn, REFERENCE_TIME rtPos, const ABRepeat& ab) {
+        m_reloadFilename = fn;
+        m_rtReloadPos = rtPos;
+        reloadABRepeat = ab;
+        m_iReloadAudioIdx = -1;
+        m_iReloadSubIdx = -1;
+    }
+    int GetReloadSubIdx() const {
+        return m_iReloadSubIdx;
+    }
+    void ClearReloadSubIdx() {
+        m_iReloadSubIdx = -1;
+    }
+    bool IsGraphThreadRunning() const;
+    BOOL PostGraphThreadMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
+    CWnd* GetModalParent();
+    void ShowMediaTypesDialog();
+    void CleanGraph();
+    void OpenSetupVideo();
+    void OpenSetupAudio();
+    void OpenSetupStatsBar();
+    void OpenSetupStatusBar();
+    void OpenSetupWindowTitle(bool reset = false);
+    void SetupFiltersSubMenu();
+    void UpdateSeekbarChapterBag();
+    bool IsPlaylistFile(CStringW fn);
+    CSize GetVideoOrArtSize(MINMAXINFO& mmi);
+    bool GetWorkAreaRect(CRect& work);
+    CRect GetZoomWindowRect(const CSize& size, bool ignoreSavedPosition = false);
+    void ZoomVideoWindow(double dScale = ZOOM_DEFAULT_LEVEL, bool ignore_video_size = false);
+    void OnVideoSizeChanged(const bool bWasAudioOnly = false);
+    DWORD SetupNavStreamSelectSubMenu(CMenu& subMenu, UINT id, DWORD dwSelGroup);
+    void OnNavStreamSelectSubMenu(UINT id, DWORD dwSelGroup);
+    void OnStreamSelect(bool forward, DWORD dwSelGroup);
+    static CString GetStreamOSDString(CString name, LCID lcid, DWORD dwSelGroup);
+    // Handles MF_DEFAULT and escapes '&'
+    static BOOL AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text);
+
 public:
     CMainFrame();
     DECLARE_DYNAMIC(CMainFrame)
@@ -642,29 +737,21 @@ protected:
     bool OpenMediaPrivate(std::unique_ptr<OpenMediaData> pOMD);
     void CloseMediaPrivate();
 
-    CWnd* GetModalParent();
-
     CCritSec lockModalDialog; // guards the two members below, never held across a modal loop
     CDialog* openingModalDlg;
     DWORD openingModalDlgThread;
     INT_PTR DoOpeningModalDialog(CDialog& dlg);
     void CloseOpeningModalDialog();
-    void ShowMediaTypesDialog();
 
     void OpenCreateGraphObject(OpenMediaData* pOMD);
     void OpenFile(OpenFileData* pOFD);
     void OpenCustomizeGraph();
     CSize OpenSetupGetVideoSize();
-    void OpenSetupVideo();
-    void OpenSetupAudio();
     void OpenSetupInfoBar(bool bClear = true);
     bool UpdateChapterInInfoBar(bool bRecalcLayout = true);
     void UpdateDVDInfoBar();
-    void OpenSetupStatsBar();
     void CheckSelectedAudioStream();
     void CheckSelectedVideoStream();
-    void OpenSetupStatusBar();
-    void OpenSetupWindowTitle(bool reset = false);
 
 public:
     static bool GetCurDispMode(const CString& displayName, DisplayMode& dm);
@@ -1150,7 +1237,6 @@ protected:
     CMenu* m_pActiveContextMenu;
     CMenu* m_pActiveSystemMenu;
 
-    void UpdateSeekbarChapterBag();
     void UpdateAudioSwitcher();
 
     void LoadArtToViews(const CString& imagePath);
@@ -1190,15 +1276,10 @@ protected:
     bool IsPlayableFormatExt(CStringW ext);
     bool IsAudioFileExt(CStringW ext);
     bool IsImageFileExt(CStringW ext);
-    bool IsPlaylistFile(CStringW fn);
     bool IsPlaylistFileExt(CStringW ext);
     bool IsAudioOrVideoFileExt(CStringW ext);
     bool CanSkipToExt(CStringW ext, CStringW curExt);
     bool IsAudioFilename(CString filename);
-
-
-    // Handles MF_DEFAULT and escapes '&'
-    static BOOL AppendMenuEx(CMenu& menu, UINT nFlags, UINT nIDNewItem, CString& text);
 
     void OnSizingFixWndToVideo(UINT nSide, LPRECT lpRect, bool bCtrl = false);
     void OnSizingSnapToScreen(UINT nSide, LPRECT lpRect, bool bCtrl = false);

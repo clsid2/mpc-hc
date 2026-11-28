@@ -178,7 +178,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
 
     auto applyRandomizeSwitch = [&]() {
         if (s.nCLSwitches & CLSW_RANDOMIZE) {
-            m_frame.m_wndPlaylistBar.Randomize();
+            m_frame.PlaylistBar().Randomize();
             s.nCLSwitches &= ~CLSW_RANDOMIZE;
         }
     };
@@ -193,7 +193,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
         if (p) {
             p->path = s.slFiles.front();
             p->subs = s.slSubs;
-            m_frame.m_wndPlaylistBar.OpenDVD(p->path);
+            m_frame.PlaylistBar().OpenDVD(p->path);
         }
         // ToDo: open indirectly
         m_frame.OpenMedia(std::move(p));
@@ -218,7 +218,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
             }
         }
 
-        m_frame.m_wndPlaylistBar.Open(sl, true);
+        m_frame.PlaylistBar().Open(sl, true);
         applyRandomizeSwitch();
         s.nCLSwitches &= ~CLSW_CD;
         m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
@@ -264,7 +264,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
             if (p) {
                 p->path = s.slFiles.front();
                 p->subs = s.slSubs;
-                m_frame.m_wndPlaylistBar.OpenDVD(p->path);
+                m_frame.PlaylistBar().OpenDVD(p->path);
             }
             // ToDo: open indirectly
             m_frame.OpenMedia(std::move(p));
@@ -284,18 +284,18 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
 
             if ((s.nCLSwitches & CLSW_ADD) && !m_frame.IsPlaylistEmpty()) {
                 if (!bSameSelection) { // a new selection starts at the current end of the playlist
-                    m_nLastAppendSelectionIndex = (int)m_frame.m_wndPlaylistBar.GetCount();
+                    m_nLastAppendSelectionIndex = (int)m_frame.PlaylistBar().GetCount();
                 }
 
                 if (!fMulti && sl.size() > 1) {
                     // video + dub, appended as one entry like the open path below (#4224)
-                    m_frame.m_wndPlaylistBar.Append(sl, false, &s.slSubs);
+                    m_frame.PlaylistBar().Append(sl, false, &s.slSubs);
                 } else {
                     for (const CString& fn : sl) {
                         if (!CanSendToYoutubeDL(fn) || !ProcessYoutubeDLURL(fn, true)) {
                             std::list<CString> sl2;
                             sl2.push_front(fn);
-                            m_frame.m_wndPlaylistBar.Append(sl2, false, &s.slSubs);
+                            m_frame.PlaylistBar().Append(sl2, false, &s.slSubs);
                         }
                     }
                 }
@@ -303,13 +303,9 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
                 applyRandomizeSwitch();
 
                 if (s.nCLSwitches & (CLSW_OPEN | CLSW_PLAY)) {
-                    m_frame.m_wndPlaylistBar.SetLast();
+                    m_frame.PlaylistBar().SetLast();
                     if ((s.nCLSwitches & CLSW_STARTVALID) && s.rtStart > 0 || s.abRepeat) {
-                        m_frame.m_reloadFilename = m_frame.m_wndPlaylistBar.GetCurFileName();
-                        m_frame.m_rtReloadPos = s.rtStart;
-                        m_frame.reloadABRepeat = s.abRepeat;
-                        m_frame.m_iReloadAudioIdx = -1;
-                        m_frame.m_iReloadSubIdx = -1;
+                        m_frame.SetReloadState(m_frame.PlaylistBar().GetCurFileName(), s.rtStart, s.abRepeat);
                     }
                     m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
                 }
@@ -317,7 +313,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
                 // Done last so that it does not interfere with the item selected above. Sorting only moves
                 // list nodes around, so the playlist position stays on the same item.
                 if (bSameSelection && !bRandomize) {
-                    m_frame.m_wndPlaylistBar.SortByPathFrom(m_nLastAppendSelectionIndex);
+                    m_frame.PlaylistBar().SortByPathFrom(m_nLastAppendSelectionIndex);
                 }
             } else {
                 fSetForegroundWindow = true;
@@ -337,29 +333,25 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
                             std::list<CString> sl2;
                             sl2.push_front(fn);
                             if (first) {
-                                m_frame.m_wndPlaylistBar.Open(sl2, false, &s.slSubs);
+                                m_frame.PlaylistBar().Open(sl2, false, &s.slSubs);
                             } else {
-                                m_frame.m_wndPlaylistBar.Append(sl2, false, &s.slSubs);
+                                m_frame.PlaylistBar().Append(sl2, false, &s.slSubs);
                             }
                         }
                         first = false;
                     }
                 } else {
                     // video + dub
-                    m_frame.m_wndPlaylistBar.Open(sl, false, &s.slSubs);
+                    m_frame.PlaylistBar().Open(sl, false, &s.slSubs);
                 }
 
                 applyRandomizeSwitch();
                 if (sl.size() != 1 || !m_frame.IsPlaylistFile(sl.front())) { //playlists already set first pos (or saved pos)
-                    m_frame.m_wndPlaylistBar.SetFirst();
+                    m_frame.PlaylistBar().SetFirst();
                 }
 
                 if ((s.nCLSwitches & CLSW_STARTVALID) && s.rtStart > 0 || s.abRepeat) {
-                    m_frame.m_reloadFilename = m_frame.m_wndPlaylistBar.GetCurFileName();
-                    m_frame.m_rtReloadPos = s.rtStart;
-                    m_frame.reloadABRepeat = s.abRepeat;
-                    m_frame.m_iReloadAudioIdx = -1;
-                    m_frame.m_iReloadSubIdx = -1;
+                    m_frame.SetReloadState(m_frame.PlaylistBar().GetCurFileName(), s.rtStart, s.abRepeat);
                 }
                 m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
 
@@ -370,11 +362,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
         }
     } else if ((s.nCLSwitches & CLSW_PLAY) && !m_frame.IsPlaylistEmpty()) {
         if ((s.nCLSwitches & CLSW_STARTVALID) && s.rtStart > 0 || s.abRepeat) {
-            m_frame.m_reloadFilename = m_frame.m_wndPlaylistBar.GetCurFileName();
-            m_frame.m_rtReloadPos = s.rtStart;
-            m_frame.reloadABRepeat = s.abRepeat;
-            m_frame.m_iReloadAudioIdx = -1;
-            m_frame.m_iReloadSubIdx = -1;
+            m_frame.SetReloadState(m_frame.PlaylistBar().GetCurFileName(), s.rtStart, s.abRepeat);
         }
         m_frame.PostMessage(WM_MPC_OPENCURPLAYLIST, 0, 0);
     } else {
@@ -398,7 +386,7 @@ void CCommandLine::ProcessCommandLine(std::list<CString>& cmdln, ULONGLONG tArri
         if (m_frame.IsMuted()) {
             m_frame.SendMessage(WM_COMMAND, ID_VOLUME_MUTE);
         }
-        m_frame.m_wndToolBar.SetVolume(s.nCmdVolume);
+        m_frame.ToolBar().SetVolume(s.nCmdVolume);
         s.nCLSwitches &= ~CLSW_VOLUME;
     }
     if (s.nCLSwitches & CLSW_MUTE) {
@@ -511,7 +499,7 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
 
     m_sydlLastProcessURL = url;
 
-    m_frame.m_wndStatusBar.SetStatusMessage(ResStr(IDS_CONTROLS_YOUTUBEDL));
+    m_frame.StatusBar().SetStatusMessage(ResStr(IDS_CONTROLS_YOUTUBEDL));
 
     {
         CMainFrame::CDeferredActionScope actionScope(m_frame);
@@ -524,7 +512,7 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
     }
 
     if (!append && !replace) {
-        m_frame.m_wndPlaylistBar.Empty();
+        m_frame.PlaylistBar().Empty();
     }
 
     CString f_title;
@@ -585,10 +573,10 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
         }
 
         if (replace) {
-            m_frame.m_wndPlaylistBar.ReplaceCurrentItem(filenames, nullptr, title + " (" + short_url + ")", ydl_src, useragent, _T(""), &stream.subtitles);
+            m_frame.PlaylistBar().ReplaceCurrentItem(filenames, nullptr, title + " (" + short_url + ")", ydl_src, useragent, _T(""), &stream.subtitles);
             break;
         } else {
-            m_frame.m_wndPlaylistBar.Append(filenames, false, nullptr, title + " (" + short_url + ")", ydl_src, useragent, _T(""), &stream.subtitles);
+            m_frame.PlaylistBar().Append(filenames, false, nullptr, title + " (" + short_url + ")", ydl_src, useragent, _T(""), &stream.subtitles);
         }
     }
 
@@ -619,8 +607,8 @@ bool CCommandLine::ProcessYoutubeDLURL(CString url, bool append, bool replace)
         mru->Add(r, false);
     }
 
-    if (!append && (!replace || m_frame.m_wndPlaylistBar.GetCount() == 0)) {
-        m_frame.m_wndPlaylistBar.SetFirst();
+    if (!append && (!replace || m_frame.PlaylistBar().GetCount() == 0)) {
+        m_frame.PlaylistBar().SetFirst();
     }
     return true;
 }
