@@ -169,6 +169,7 @@ CSubPicQueue::CSubPicQueue(SubPicQueueSettings settings, ISubPicAllocator* pAllo
     , m_bFpsSet(false)
     , m_bInvalidate(false)
     , m_rtInvalidate(0)
+    , m_nLookups(0)
 {
     if (phr && FAILED(*phr)) {
         return;
@@ -295,6 +296,16 @@ STDMETHODIMP_(bool) CSubPicQueue::LookupSubPic(REFERENCE_TIME rtNow, bool bAdvis
     bool bStopSearch = false;
 
     {
+        std::unique_lock<std::mutex> lock(m_mutexQueue);
+        if (m_nLookups < m_settings.nSize) {
+            m_nLookups++;
+            // Let the thread fill the room it was just given
+            lock.unlock();
+            m_condQueueFull.notify_one();
+        }
+    }
+
+    {
         std::lock_guard<std::mutex> lock(m_mutexSubpic);
 
         // See if we can reuse the latest subpic
@@ -411,7 +422,7 @@ STDMETHODIMP_(bool) CSubPicQueue::LookupSubPic(REFERENCE_TIME rtNow, bool bAdvis
                     std::unique_lock<std::mutex> lock(m_mutexQueue);
 
                     auto queueReady = [this, rtNow]() {
-                        return ((int)m_queue.GetCount() == m_settings.nSize)
+                        return ((int)m_queue.GetCount() == GetQueueSize())
                                || (!m_queue.IsEmpty() && m_queue.GetTail()->GetStop() > rtNow);
                     };
 
@@ -491,7 +502,7 @@ STDMETHODIMP CSubPicQueue::GetStats(int nSubPic, REFERENCE_TIME& rtStart, REFERE
 bool CSubPicQueue::EnqueueSubPic(CComPtr<ISubPic>& pSubPic, bool bBlocking)
 {
     auto canAddToQueue = [this]() {
-        return (int)m_queue.GetCount() < m_settings.nSize;
+        return (int)m_queue.GetCount() < GetQueueSize();
     };
 
     bool bAdded = false;

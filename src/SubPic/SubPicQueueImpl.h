@@ -151,6 +151,14 @@ protected:
     bool m_bInvalidate;
     REFERENCE_TIME m_rtInvalidate;
 
+    int m_nLookups; // LookupSubPic calls, up to the queue size, protected by m_mutexQueue
+
+    // What is rendered ahead before the first frames are shown is mostly thrown away
+    // when the window layout invalidates the queue, so it grows with the lookups
+    int GetQueueSize() const {
+        return std::min(m_settings.nSize, 1 + m_nLookups);
+    }
+
     bool EnqueueSubPic(CComPtr<ISubPic>& pSubPic, bool bBlocking);
     REFERENCE_TIME GetCurrentRenderingTime();
 
