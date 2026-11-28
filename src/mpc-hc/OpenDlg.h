@@ -40,6 +40,7 @@ private:
     CMPCThemeStatic m_labelDub;
     BOOL m_bAppendToPlaylist;
 
+    bool m_bForFavorites;
     bool m_bMultipleFiles;
     std::list<CString> m_fns;
 
@@ -51,6 +52,9 @@ public:
     enum { IDD = IDD_OPEN_DLG };
 
     const std::list<CString>& GetFileNames() const { return m_fns; }
+    // Picks what to add to the favorites instead of what to open
+    void SetForFavorites(bool bForFavorites) { m_bForFavorites = bForFavorites; }
+
     bool HasMultipleFiles() const { return m_bMultipleFiles; }
     bool GetAppendToPlaylist() const { return !!m_bAppendToPlaylist; }
 

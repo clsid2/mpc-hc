@@ -170,7 +170,7 @@ msgctxt "IDD_OPEN_DLG_CAPTION"
 msgid "Open"
 msgstr "เปิด"
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC2"
 msgid ""
 "Type the address of a movie or audio file (on the Internet or your computer)"
 " and the player will open it for you."
@@ -178,7 +178,7 @@ msgstr ""
 "พิมพ์ที่อยู่ไฟล์ภาพยนตร์หรือไฟล์เสียง (บนอินเตอร์เน็ตหรือคอมพิวเตอร์ของคุณ) "
 "แล้วเครื่องเล่นจะเปิดมันให้คุณ"
 
-msgctxt "IDD_OPEN_DLG_IDC_STATIC"
+msgctxt "IDD_OPEN_DLG_IDC_STATIC3"
 msgid "Open:"
 msgstr "เปิด:"
 
@@ -797,6 +797,10 @@ msgstr "ยกเลิก"
 msgctxt "IDD_FAVORGANIZE_CAPTION"
 msgid "Organize Favorites"
 msgstr "จัดระเบียบรายการโปรด"
+
+msgctxt "IDD_FAVORGANIZE_IDC_BUTTON5"
+msgid "Browse..."
+msgstr ""
 
 msgctxt "IDD_FAVORGANIZE_IDC_BUTTON1"
 msgid "Rename"
