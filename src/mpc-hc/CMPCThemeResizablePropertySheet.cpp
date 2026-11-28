@@ -24,39 +24,9 @@ CMPCThemeResizablePropertySheet::~CMPCThemeResizablePropertySheet()
 IMPLEMENT_DYNAMIC(CMPCThemeResizablePropertySheet, CResizableSheet)
 BEGIN_MESSAGE_MAP(CMPCThemeResizablePropertySheet, CResizableSheet)
     ON_WM_CTLCOLOR()
-    ON_WM_NCCREATE()
     ON_WM_DESTROY()
     ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
-
-BOOL CMPCThemeResizablePropertySheet::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    const DWORD style = lpCreateStruct->style;
-    const DWORD exStyle = lpCreateStruct->dwExStyle;
-    const CSize created(lpCreateStruct->cx, lpCreateStruct->cy);
-    if (!__super::OnNcCreate(lpCreateStruct)) {
-        return FALSE;
-    }
-
-    // ResizableLib swaps the modal frame for a sizing border and keeps the client area, but works the new border
-    // out with AdjustWindowRectEx, at the system DPI. Opened on a monitor at another DPI the sheet came out too
-    // small for its own layout (at 200% over a 100% primary, 10x32 px short and the Close button cut off).
-    if (!(style & (WS_CHILD | WS_THICKFRAME))) {
-        UINT dpi = DpiHelper::GetDPIForWindow(m_hWnd);
-        CRect oldFrame(0, 0, 0, 0), newFrame(0, 0, 0, 0);
-        if (dpi && DpiHelper::AdjustWindowRectExForDpi(&oldFrame, style, FALSE, exStyle, dpi)
-            && DpiHelper::AdjustWindowRectExForDpi(&newFrame, GetStyle(), FALSE, GetExStyle(), dpi)) {
-            CSize size = created - oldFrame.Size() + newFrame.Size();
-            if (size != CSize(lpCreateStruct->cx, lpCreateStruct->cy)) {
-                SetWindowPos(nullptr, 0, 0, size.cx, size.cy,
-                             SWP_NOSENDCHANGING | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREPOSITION);
-                lpCreateStruct->cx = size.cx;
-                lpCreateStruct->cy = size.cy;
-            }
-        }
-    }
-    return TRUE;
-}
 
 BOOL CMPCThemeResizablePropertySheet::OnInitDialog()
 {

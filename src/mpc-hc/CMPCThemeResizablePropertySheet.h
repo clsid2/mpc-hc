@@ -19,7 +19,6 @@ public:
     DECLARE_MESSAGE_MAP()
 public:
     afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-    afx_msg BOOL OnNcCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnDestroy();
 
