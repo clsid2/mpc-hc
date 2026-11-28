@@ -1811,7 +1811,7 @@ void CSubtitleController::UpdateSubtitleColorInfo()
 
 void CSubtitleController::SetSubtitle(const SubtitleInput& subInput, bool skip_lcid /* = false */)
 {
-    TRACE(_T("CMainFrame::SetSubtitle\n"));
+    TRACE(_T("CSubtitleController::SetSubtitle\n"));
 
     CAppSettings& s = AfxGetAppSettings();
     ResetSubtitlePosAndSize(false);

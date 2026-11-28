@@ -249,57 +249,6 @@ ShaderC* CShaderController::GetShader(CString path, bool bD3D11)
 	return pShader;
 }
 
-bool CShaderController::SaveShaderFile(ShaderC* shader)
-{
-	CString path;
-	if (AfxGetMyApp()->GetAppSavePath(path)) {
-		path.AppendFormat(L"Shaders\\%s.hlsl", static_cast<LPCWSTR>(shader->label));
-
-		CStdioFile file;
-		if (file.Open(path, CFile::modeWrite  | CFile::shareExclusive | CFile::typeText)) {
-			file.SetLength(0);
-
-			CString str;
-			str.Format(L"// $MinimumShaderProfile: %s\n", static_cast<LPCWSTR>(shader->profile));
-			file.WriteString(static_cast<LPCWSTR>(str));
-
-			file.WriteString(static_cast<LPCWSTR>(shader->srcdata));
-			file.Close();
-
-			// delete out-of-date data from the cache
-			for (auto it = m_ShaderCache.begin(), end = m_ShaderCache.end(); it != end; ++it) {
-				if (it->Match(shader->label, false)) {
-					m_ShaderCache.erase(it);
-					break;
-				}
-			}
-
-			return true;
-		}
-	}
-	return false;
-}
-
-bool CShaderController::DeleteShaderFile(LPCWSTR label)
-{
-	CString path;
-	if (AfxGetMyApp()->GetAppSavePath(path)) {
-		path.AppendFormat(L"Shaders\\%s.hlsl", label);
-
-		if (!::PathFileExistsW(path) || ::DeleteFileW(path)) {
-			// if the file is missing or deleted successfully, then remove it from the cache
-			for (auto it = m_ShaderCache.begin(), end = m_ShaderCache.end(); it != end; ++it) {
-				if (it->Match(label, false)) {
-					m_ShaderCache.erase(it);
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
 void CShaderController::TidyShaderCache()
 {
 	CString appsavepath;

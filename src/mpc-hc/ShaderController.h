@@ -47,8 +47,6 @@ public:
 	bool m_bToggleShaderScreenSpace;
 	std::list<ShaderC> m_ShaderCache;
 	ShaderC* GetShader(CString path, bool bD3D11);
-	bool SaveShaderFile(ShaderC* shader);
-	bool DeleteShaderFile(LPCWSTR label);
 	void TidyShaderCache();
 
     bool SetupShadersSubMenu();
