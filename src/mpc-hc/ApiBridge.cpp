@@ -952,7 +952,7 @@ HRESULT CApiBridge::UpdateThumbnailClip()
 }
 
 void CApiBridge::MediaTransportControlSetMedia() {
-    if (m_media_trans_control.smtc_updater && m_media_trans_control.smtc_controls) {
+    if (m_media_trans_control.smtc_updater && m_media_trans_control.activate()) {
         TRACE(_T("CMainFrame::MediaTransportControlSetMedia()\n"));
         HRESULT ret = S_OK;
         bool have_secondary_title = false;
