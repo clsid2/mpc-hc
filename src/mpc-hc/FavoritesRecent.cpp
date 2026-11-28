@@ -379,17 +379,7 @@ void CFavoritesRecent::OnFavoritesOrganize()
 
 void CFavoritesRecent::OnUpdateFavoritesOrganize(CCmdUI* pCmdUI)
 {
-    const CAppSettings& s = AfxGetAppSettings();
-    std::list<CString> sl;
-    s.GetFav(FAV_FILE, sl);
-    bool enable = !sl.empty();
-
-    if (!enable) {
-        s.GetFav(FAV_DVD, sl);
-        enable = !sl.empty();
-    }
-
-    pCmdUI->Enable(enable);
+    pCmdUI->Enable(TRUE);
 }
 
 void CFavoritesRecent::OnRecentFileClear()
@@ -444,7 +434,9 @@ void CFavoritesRecent::PlayFavoriteFile(const CString& fav)
         }
     }
 
-    m_frame.m_wndPlaylistBar.SetCurLabel(ff.Name);
+    if (!m_frame.IsPlaylistFile(CString(firstFile).MakeLower()) || PathUtils::IsURL(firstFile)) {
+        m_frame.m_wndPlaylistBar.SetCurLabel(ff.Name);
+    }
 
     if (m_frame.IsStateLoaded() && m_frame.GetPlaybackMode() == PM_FILE && m_frame.m_lastOMD && args.front() == m_frame.m_lastOMD->title) {
         m_frame.m_wndSeekBar.Invalidate();
