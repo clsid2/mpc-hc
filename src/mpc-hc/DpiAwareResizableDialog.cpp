@@ -350,6 +350,7 @@ void CDpiAwareResizableDialog::OnDestroy()
     }
 
     SaveWindowDLUSize();
+    m_anchors.clear();
     __super::OnDestroy();
 }
 
@@ -419,7 +420,17 @@ LRESULT CDpiAwareResizableDialog::OnDpiChanged(WPARAM wParam, LPARAM lParam)
     ApplyDialogSizeAndDpi(m_currentDpi, targetDluSize);
     RefreshStaticImages();
 
+    // Anchors added outside SetupAnchors (usually in OnInitDialog) are put back from the record,
+    // after SetupAnchors so neither adds the same control twice
+    std::vector<AnchorInfo> anchors;
+    anchors.swap(m_anchors);
     SetupAnchors();
+    for (const auto& a : anchors) {
+        bool readded = std::any_of(m_anchors.begin(), m_anchors.end(), [&](const AnchorInfo& b) { return b.hWnd == a.hWnd; });
+        if (!readded && ::IsWindow(a.hWnd)) {
+            AddAnchor(a.hWnd, a.topLeft, a.bottomRight);
+        }
+    }
 
     // Update any CMPCThemePlayerListCtrl children
     CWnd* pChild = GetWindow(GW_CHILD);
@@ -755,13 +766,26 @@ void CDpiAwareResizableDialog::RefreshStaticImages()
     }
 }
 
+void CDpiAwareResizableDialog::AddAnchor(HWND hWnd, ANCHOR anchorTopLeft, ANCHOR anchorBottomRight)
+{
+    CResizableDialog::AddAnchor(hWnd, anchorTopLeft, anchorBottomRight);
+    m_anchors.push_back({ hWnd, anchorTopLeft, anchorBottomRight });
+}
+
 const DLGTEMPLATE* CDpiAwareResizableDialog::LoadDialogTemplate() const {
-    UINT templateID = GetDialogTemplateID();
-    if (templateID == 0) {
+    LPCTSTR templateName = nullptr;
+    if (UINT templateID = GetDialogTemplateID()) {
+        templateName = MAKEINTRESOURCE(templateID);
+    } else if (m_hWnd && !(GetStyle() & WS_CHILD)) {
+        // The template the dialog was created from. Child dialogs are skipped: they are sized by the
+        // bar that holds them, not by their template.
+        templateName = m_lpszTemplateName;
+    }
+    if (!templateName) {
         return nullptr;
     }
 
-    HRSRC hrsrc = FindResource(AfxGetResourceHandle(), MAKEINTRESOURCE(templateID), RT_DIALOG);
+    HRSRC hrsrc = FindResource(AfxGetResourceHandle(), templateName, RT_DIALOG);
     if (!hrsrc) {
         return nullptr;
     }

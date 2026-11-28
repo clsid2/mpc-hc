@@ -39,6 +39,19 @@ public:
     void RefreshStaticImages();
 
 protected:
+    // These hide CResizableLayout::AddAnchor so every anchor is recorded. A DPI change removes all
+    // anchors, and those not added again by SetupAnchors are put back from the record.
+    void AddAnchor(HWND hWnd, ANCHOR anchorTopLeft, ANCHOR anchorBottomRight);
+    void AddAnchor(HWND hWnd, ANCHOR anchorTopLeft) {
+        AddAnchor(hWnd, anchorTopLeft, anchorTopLeft);
+    }
+    void AddAnchor(UINT nID, ANCHOR anchorTopLeft, ANCHOR anchorBottomRight) {
+        AddAnchor(::GetDlgItem(m_hWnd, nID), anchorTopLeft, anchorBottomRight);
+    }
+    void AddAnchor(UINT nID, ANCHOR anchorTopLeft) {
+        AddAnchor(nID, anchorTopLeft, anchorTopLeft);
+    }
+
     // DLU <-> Pixel conversion helpers
     static inline CSize DluToPixels(const CSize& dluSize, int avgWidth, int avgHeight) {
         return CSize(MulDiv(dluSize.cx, avgWidth, 4), MulDiv(dluSize.cy, avgHeight, 8));
@@ -83,6 +96,13 @@ protected:
         bool isSystemIcon;  // true for IDI_*, false for app resources
     };
     std::vector<StaticImageInfo> m_staticImages;
+
+    struct AnchorInfo {
+        HWND hWnd;
+        ANCHOR topLeft;
+        ANCHOR bottomRight;
+    };
+    std::vector<AnchorInfo> m_anchors;
 
     // State tracking
     UINT m_currentDpi;
