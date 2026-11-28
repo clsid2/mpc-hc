@@ -50,6 +50,7 @@ public:
         requested_seek_position = 0;
         requested_playback_rate = 0.0;
         m_active = false;
+        m_shutdown = false;
     }
     ~MediaTransControls(void) {
         if (smtc_controls && m_EventRegistrationToken.value) {
@@ -73,7 +74,9 @@ public:
 
     bool Init(CMainFrame* main);
 
-    void close();
+    // close(true) on exit also keeps activate() from turning the controls back on
+    void close(bool shutdown = false);
+    bool activate();
 
     CComPtr<ABI::Windows::Media::ISystemMediaTransportControls> smtc_controls;
     CComPtr<ABI::Windows::Media::ISystemMediaTransportControls2> smtc_controls2;
@@ -97,6 +100,7 @@ public:
     bool m_active = false;
 protected:
     CMainFrame* m_pMainFrame;
+    bool m_shutdown;
     EventRegistrationToken m_EventRegistrationToken;
     EventRegistrationToken m_EventRegistrationTokenPositionChange;
     EventRegistrationToken m_EventRegistrationTokenRateChange;

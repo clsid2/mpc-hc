@@ -173,7 +173,10 @@ bool MediaTransControls::Init(CMainFrame* main) {
     return true;
 }
 
-void MediaTransControls::close() {
+void MediaTransControls::close(bool shutdown) {
+    if (shutdown) {
+        m_shutdown = true;
+    }
     if (IsActive()) {
         TRACE(_T("MediaTransControls::close()"));
         m_active = false;
@@ -181,6 +184,13 @@ void MediaTransControls::close() {
         smtc_controls->put_IsEnabled(false);
         if (smtc_updater) smtc_updater->ClearAll();
     }
+}
+
+bool MediaTransControls::activate() {
+    if (smtc_controls && !m_shutdown) {
+        m_active = true;
+    }
+    return IsActive();
 }
 
 template <typename T>

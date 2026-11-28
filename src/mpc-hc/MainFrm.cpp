@@ -1336,7 +1336,7 @@ void CMainFrame::OnClose()
 
     m_OSD.OnHide();
 
-    m_api.m_media_trans_control.close();
+    m_api.m_media_trans_control.close(true);
 
     if (UpdateCachedMediaState() == State_Running) {
         MediaControlPause(true);
