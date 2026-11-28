@@ -982,6 +982,7 @@ public:
 
     bool            IsD3DFullscreen() const;
     CString         SelectedAudioRenderer() const;
+    void            UseMovedSanearDevice() const;
     bool            IsISRAutoLoadEnabled() const;
     bool            IsInitialized() const;
     static bool     IsVideoRendererAvailable(int iVideoRendererType);
@@ -989,6 +990,7 @@ public:
     CFileAssoc      fileAssoc;
 
     CComPtr<SaneAudioRenderer::ISettings> sanear;
+    CString         strSanearDeviceName; // finds the saved device again if its endpoint ID changes
 
     DWORD           iLAVGPUDevice;
     unsigned        nCmdVolume;

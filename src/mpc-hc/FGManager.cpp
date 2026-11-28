@@ -3074,7 +3074,9 @@ CFGManagerPlayer::CFGManagerPlayer(LPCWSTR pClassName, LPCWSTR pInputFileURL, HW
                     CFGFilter(SaneAudioRenderer::Factory::GetFilterGuid(), name, merit) {}
 
                 HRESULT Create(IBaseFilter** ppBF, CInterfaceList<IUnknown, &IID_IUnknown>&) override {
-                    return SaneAudioRenderer::Factory::CreateFilter(AfxGetAppSettings().sanear, ppBF);
+                    const auto& s = AfxGetAppSettings();
+                    s.UseMovedSanearDevice();
+                    return SaneAudioRenderer::Factory::CreateFilter(s.sanear, ppBF);
                 }
             };
             pFGF = DEBUG_NEW SaneAudioRendererFilter(AUDRNDT_SANEAR, renderer_merit + 0x50);

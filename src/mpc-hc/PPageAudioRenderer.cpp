@@ -23,47 +23,10 @@
 
 #include "mplayerc.h"
 #include "VersionInfo.h"
+#include "AudioDevices.h"
 
-#include <FunctionDiscoveryKeys_devpkey.h>
-#include <Mmdeviceapi.h>
 #include <sanear/src/Settings.h>
 #include "AppSettings.h"
-
-namespace
-{
-    std::vector<std::pair<CString, CString>> GetDevices()
-    {
-        std::vector<std::pair<CString, CString>> ret;
-
-        CComPtr<IMMDeviceEnumerator> enumerator;
-        CComPtr<IMMDeviceCollection> collection;
-        UINT count = 0;
-
-        if (SUCCEEDED(enumerator.CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER)) &&
-                SUCCEEDED(enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED, &collection)) &&
-                SUCCEEDED(collection->GetCount(&count))) {
-
-            for (UINT i = 0; i < count; i++) {
-                CComPtr<IMMDevice> device;
-                CComHeapPtr<WCHAR> id;
-                CComPtr<IPropertyStore> devicePropertyStore;
-                PROPVARIANT friendlyName;
-                PropVariantInit(&friendlyName);
-
-                if (SUCCEEDED(collection->Item(i, &device)) &&
-                        SUCCEEDED(device->GetId(&id)) &&
-                        SUCCEEDED(device->OpenPropertyStore(STGM_READ, &devicePropertyStore)) &&
-                        SUCCEEDED(devicePropertyStore->GetValue(PKEY_Device_FriendlyName, &friendlyName))) {
-
-                    ret.emplace_back(friendlyName.pwszVal, static_cast<LPWSTR>(id));
-                    PropVariantClear(&friendlyName);
-                }
-            }
-        }
-
-        return ret;
-    }
-}
 
 IMPLEMENT_DYNAMIC(CPPageAudioRenderer, CMPCThemePPageBase)
 CPPageAudioRenderer::CPPageAudioRenderer()
@@ -114,13 +77,15 @@ BOOL CPPageAudioRenderer::OnInitDialog()
     m_combo1.SetItemData(0, 0);
     m_combo1.SetCurSel(0);
 
-    for (const auto& device : GetDevices()) {
-        int idx = m_combo1.AddString(device.first);
+    for (const auto& device : AudioDevices::GetRenderEndpoints(DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED)) {
+        int idx = m_combo1.AddString(device.name);
         if (idx >= 0) {
-            m_deviceIds.emplace_back(device.second);
+            m_deviceIds.emplace_back(device.id);
             m_combo1.SetItemData(idx, m_deviceIds.size() - 1);
         }
     }
+
+    s.UseMovedSanearDevice();
 
     CComHeapPtr<WCHAR> pDeviceId;
     if (SUCCEEDED(s.sanear->GetOutputDevice(&pDeviceId, &m_bExclusiveMode, nullptr))) {

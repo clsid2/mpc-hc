@@ -414,6 +414,7 @@
 
 #define IDS_R_SANEAR                        IDS_R_INTERNAL_FILTERS _T("\\Audio Renderer")
 #define IDS_RS_SANEAR_DEVICE_ID             _T("DeviceId")
+#define IDS_RS_SANEAR_DEVICE_NAME           _T("DeviceName")
 #define IDS_RS_SANEAR_DEVICE_EXCLUSIVE      _T("DeviceExclusive")
 #define IDS_RS_SANEAR_DEVICE_BUFFER         _T("DeviceBufferDuration")
 #define IDS_RS_SANEAR_CROSSFEED_ENABLED     _T("CrossfeedEnabled")

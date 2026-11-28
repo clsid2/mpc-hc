@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "AppSettings.h"
+#include "AudioDevices.h"
 #include "CrashReporter.h"
 #include "FGFilter.h"
 #include "FakeFilterMapper2.h"
@@ -993,6 +994,24 @@ void CAppSettings::ClearRecentFiles() {
     }
 }
 
+void CAppSettings::UseMovedSanearDevice() const
+{
+    CComHeapPtr<WCHAR> pDeviceId;
+    BOOL bExclusive;
+    UINT32 uBufferDuration;
+    if (strSanearDeviceName.IsEmpty() ||
+            FAILED(sanear->GetOutputDevice(&pDeviceId, &bExclusive, &uBufferDuration)) ||
+            !pDeviceId || !pDeviceId[0]) {
+        return;
+    }
+
+    const CString movedId = AudioDevices::FindMovedEndpoint(AudioDevices::GetRenderEndpoints(DEVICE_STATE_ACTIVE),
+                                                            CString(pDeviceId), strSanearDeviceName);
+    if (!movedId.IsEmpty()) {
+        sanear->SetOutputDevice(movedId, bExclusive, uBufferDuration);
+    }
+}
+
 void CAppSettings::SaveSettings(bool write_full_history /* = false */)
 {
     CMPlayerCApp* pApp = AfxGetMyApp();
@@ -1412,6 +1431,24 @@ void CAppSettings::SaveSettings(bool write_full_history /* = false */)
         UINT32 uBufferDuration;
         if (SUCCEEDED(sanear->GetOutputDevice(&pDeviceId, &bExclusive, &uBufferDuration))) {
             pApp->WriteProfileString(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_ID, pDeviceId);
+
+            // Keep the name of a device that is missing for now, because it is what finds the device again.
+            CString deviceName;
+            bool deviceFound = !pDeviceId || !pDeviceId[0];
+            if (!deviceFound) {
+                for (const auto& endpoint : AudioDevices::GetRenderEndpoints(DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED)) {
+                    if (endpoint.id == static_cast<LPWSTR>(pDeviceId)) {
+                        deviceName = endpoint.name;
+                        deviceFound = true;
+                        break;
+                    }
+                }
+            }
+            if (deviceFound && deviceName != strSanearDeviceName) {
+                strSanearDeviceName = deviceName;
+            }
+            pApp->WriteProfileString(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_NAME, strSanearDeviceName);
+
             pApp->WriteProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_EXCLUSIVE, bExclusive);
             pApp->WriteProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_BUFFER, uBufferDuration);
         }
@@ -2391,6 +2428,8 @@ void CAppSettings::LoadSettings()
                            pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_EXCLUSIVE, FALSE),
                            pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_BUFFER,
                                                SaneAudioRenderer::ISettings::OUTPUT_DEVICE_BUFFER_DEFAULT_MS));
+
+    strSanearDeviceName = pApp->GetProfileString(IDS_R_SANEAR, IDS_RS_SANEAR_DEVICE_NAME);
 
     sanear->SetCrossfeedEnabled(pApp->GetProfileInt(IDS_R_SANEAR, IDS_RS_SANEAR_CROSSFEED_ENABLED, FALSE));
 

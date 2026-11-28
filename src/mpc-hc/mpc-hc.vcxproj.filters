@@ -94,6 +94,9 @@
     <ClCompile Include="AppSettings.cpp">
       <Filter>Player Config</Filter>
     </ClCompile>
+    <ClCompile Include="AudioDevices.cpp">
+      <Filter>Player Config</Filter>
+    </ClCompile>
     <ClCompile Include="AboutDlg.cpp">
       <Filter>Modal Dialogs</Filter>
     </ClCompile>
@@ -669,6 +672,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppSettings.h">
+      <Filter>Player Config</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioDevices.h">
       <Filter>Player Config</Filter>
     </ClInclude>
     <ClInclude Include="AboutDlg.h">
