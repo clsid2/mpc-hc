@@ -101,7 +101,10 @@ protected:
         return m_pSubPicProviderWithSharedLock;
     }
 
-    HRESULT RenderTo(ISubPic* pSubPic, REFERENCE_TIME rtStart, REFERENCE_TIME rtStop, double fps, BOOL bIsAnimated);
+    // For an animated subpic, rtStart is the time of the frame it is wanted for. Given the segment
+    // it belongs to, it is rendered at that time, or at the segment's edge when that is close.
+    HRESULT RenderTo(ISubPic* pSubPic, REFERENCE_TIME rtStart, REFERENCE_TIME rtStop, double fps, BOOL bIsAnimated,
+                     REFERENCE_TIME rtSegmentStart = ISubPic::INVALID_SUBPIC_TIME, REFERENCE_TIME rtSegmentStop = ISubPic::INVALID_SUBPIC_TIME);
 
 public:
     CSubPicQueueImpl(SubPicQueueSettings settings, ISubPicAllocator* pAllocator, HRESULT* phr);
@@ -143,6 +146,7 @@ protected:
     CAMEvent m_runQueueEvent;
 
     REFERENCE_TIME m_rtNowLast;
+    bool m_bFpsSet;
 
     bool m_bInvalidate;
     REFERENCE_TIME m_rtInvalidate;

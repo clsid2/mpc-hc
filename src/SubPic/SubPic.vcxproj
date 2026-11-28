@@ -78,6 +78,7 @@
     <ClInclude Include="SubPicImpl.h" />
     <ClInclude Include="SubPicProviderImpl.h" />
     <ClInclude Include="SubPicQueueImpl.h" />
+    <ClInclude Include="SubPicQueueTiming.h" />
     <ClInclude Include="XySubPicProvider.h" />
     <ClInclude Include="XySubPicQueueImpl.h" />
   </ItemGroup>

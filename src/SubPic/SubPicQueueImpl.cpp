@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <intsafe.h>
 #include "SubPicQueueImpl.h"
+#include "SubPicQueueTiming.h"
 #include "../DSUtil/DSUtil.h"
 
 #define SUBPIC_TRACE_LEVEL 0
@@ -117,7 +118,8 @@ STDMETHODIMP CSubPicQueueImpl::SetTime(REFERENCE_TIME rtNow)
 
 // private
 
-HRESULT CSubPicQueueImpl::RenderTo(ISubPic* pSubPic, REFERENCE_TIME rtStart, REFERENCE_TIME rtStop, double fps, BOOL bIsAnimated)
+HRESULT CSubPicQueueImpl::RenderTo(ISubPic* pSubPic, REFERENCE_TIME rtStart, REFERENCE_TIME rtStop, double fps, BOOL bIsAnimated,
+                                   REFERENCE_TIME rtSegmentStart /*= ISubPic::INVALID_SUBPIC_TIME*/, REFERENCE_TIME rtSegmentStop /*= ISubPic::INVALID_SUBPIC_TIME*/)
 {
     CheckPointer(pSubPic, E_POINTER);
 
@@ -137,9 +139,10 @@ HRESULT CSubPicQueueImpl::RenderTo(ISubPic* pSubPic, REFERENCE_TIME rtStart, REF
     if (SUCCEEDED(hr)) {
         CRect r(0, 0, 0, 0);
         REFERENCE_TIME rtRender;
-        if (bIsAnimated) {
-            // This is some sort of hack to avoid rendering the wrong frame
-            // when the start time is slightly mispredicted by the queue
+        if (bIsAnimated && rtSegmentStart != ISubPic::INVALID_SUBPIC_TIME) {
+            rtRender = SubPicQueueTiming::SnapToSegmentEdge(rtStart, rtSegmentStart, rtSegmentStop);
+        } else if (bIsAnimated) {
+            // No segment given, so rtStart is not known to be a frame's time
             rtRender = (rtStart + rtStop) / 2;
         } else {
             rtRender = rtStart + std::llround((rtStop - rtStart - 1) * m_settings.nRenderAtWhenAnimationIsDisabled / 100.0);
@@ -163,6 +166,7 @@ CSubPicQueue::CSubPicQueue(SubPicQueueSettings settings, ISubPicAllocator* pAllo
     : CSubPicQueueImpl(settings, pAllocator, phr)
     , m_bExitThread(false)
     , m_rtNowLast(LONGLONG_ERROR)
+    , m_bFpsSet(false)
     , m_bInvalidate(false)
     , m_rtInvalidate(0)
 {
@@ -199,8 +203,17 @@ STDMETHODIMP CSubPicQueue::SetFPS(double fps)
         return hr;
     }
 
+    const REFERENCE_TIME rtTimePerFrameGuessed = m_rtTimePerFrame;
     m_rtTimePerFrame = std::llround(10000000.0 / m_fps);
     m_rtTimePerSubFrame = std::llround(10000000.0 / (m_fps * m_settings.nAnimationRate / 100.0));
+
+    if (!m_bFpsSet) {
+        m_bFpsSet = true;
+        if (m_rtTimePerFrame != rtTimePerFrameGuessed) {
+            // What the thread has rendered ahead so far is spaced for the default frame rate
+            Invalidate();
+        }
+    }
 
     m_runQueueEvent.Set();
 
@@ -568,25 +581,22 @@ DWORD CSubPicQueue::ThreadProc()
                 TRACE(_T("New subtitle sample: Start=%.3f Stop=%.3f\n"), RT2SEC(rtStart), RT2SEC(rtStop));
 #endif
 
+                bool bIsAnimated = pSubPicProvider->IsAnimated(pos) && !bDisableAnim;
                 REFERENCE_TIME rtCurrent = std::max(rtStart, rtStartRendering);
-                if (rtCurrent < m_rtNow) {
-                    rtCurrent = m_rtNow;
-                } else {
-#if 0
-                    // FIXME: what is the purpose of this?
-                    if (rtTimePerFrame <= rtStop - rtStart) {
-                        // Round current time to the next estimated video frame timing
-                        REFERENCE_TIME rtCurrentRounded = (rtCurrent / rtTimePerFrame) * rtTimePerFrame;
-                        if (rtCurrentRounded < rtCurrent) {
-                            rtCurrent = rtCurrentRounded + rtTimePerFrame;
-                        }
+                const REFERENCE_TIME rtFrame = m_rtNow;
+                if (rtCurrent < rtFrame) {
+                    rtCurrent = rtFrame;
+                } else if (bIsAnimated) {
+                    // Predict the frame times from the last one the renderer set, so that
+                    // the subpics line up with the frames wherever the previous one ended
+                    REFERENCE_TIME rtAligned = SubPicQueueTiming::AlignToFrameGrid(rtCurrent, rtFrame, rtTimePerFrame);
+                    if (rtAligned < rtStop) {
+                        rtCurrent = rtAligned;
                     }
-#endif
                 }
 
                 // Check that we aren't late already...
                 if (rtCurrent <= rtStop) {
-                    bool bIsAnimated = pSubPicProvider->IsAnimated(pos) && !bDisableAnim;
                     bool bStopRendering = false;
 
                     while (rtCurrent < rtStop) {
@@ -616,19 +626,25 @@ DWORD CSubPicQueue::ThreadProc()
                         if (bIsAnimated) {
                             // 3/4 is a magic number we use to avoid reusing the wrong frame due to slight
                             // misprediction of the frame end time
-                            hr = RenderTo(pStatic, rtCurrent, std::min(rtCurrent + rtTimePerSubFrame * 3 / 4, rtStopReal), fps, bIsAnimated);
+                            REFERENCE_TIME rtSubStop = std::min(rtCurrent + rtTimePerSubFrame * 3 / 4, rtStopReal);
+                            const REFERENCE_TIME rtNext = std::min(SubPicQueueTiming::AlignToFrameGrid(rtCurrent + rtTimePerSubFrame, rtFrame, rtTimePerFrame), rtStopReal);
+                            if (rtNext == rtStopReal && rtStop != ISubPicProvider::UNKNOWN_TIME) {
+                                // The last subpic of the segment lasts to its end, which leaves no
+                                // remainder to render a subpic for that no frame will ask for
+                                rtSubStop = rtStopReal;
+                            }
+                            hr = RenderTo(pStatic, rtCurrent, rtSubStop, fps, bIsAnimated, rtStart, rtStop);
 #if SUBPIC_TRACE_LEVEL > 2
                             TRACE(_T("rtCurrent=%.3f Start=%.3f SegmentStart=%.3f SegmentStop=%.3f Stop=%.3f\n"), RT2SEC(rtCurrent), RT2SEC(pStatic->GetStart()), RT2SEC(pStatic->GetSegmentStart()), RT2SEC(pStatic->GetSegmentStop()), RT2SEC(pStatic->GetStop()));
 #endif
                             // Set the segment start and stop timings
                             pStatic->SetSegmentStart(rtStart);
-                            // The stop timing can be moved so that the duration from the current start time
-                            // of the subpic to the segment end is always at least one video frame long. This
-                            // avoids missing subtitle frame due to rounding errors in the timings.
-                            // At worst this can cause a segment to be displayed for one more frame than expected
-                            // but it's much less annoying than having the subtitle disappearing for one frame
-                            pStatic->SetSegmentStop(std::max(rtCurrent + rtTimePerFrame, rtStopReal));
-                            rtCurrent = std::min(rtCurrent + rtTimePerSubFrame, rtStopReal);
+                            // The stop timing can be moved so that the subpic stays usable until the next
+                            // frame is due, which is one frame after its start. This avoids missing subtitle
+                            // frame due to rounding errors in the timings. It stops short of the next frame
+                            // itself, or the segment would be displayed for one more frame than expected.
+                            pStatic->SetSegmentStop(std::max(rtCurrent + rtTimePerFrame - SubPicQueueTiming::EDGE_TOLERANCE, rtStopReal));
+                            rtCurrent = rtNext;
                         } else {
                             hr = RenderTo(pStatic, rtStart, rtStopReal, fps, false);
                             // Non-animated subtitles aren't part of a segment
@@ -781,6 +797,7 @@ STDMETHODIMP_(bool) CSubPicQueueNoThread::LookupSubPic(REFERENCE_TIME rtNow, boo
             if (pos) {
                 REFERENCE_TIME rtStart;
                 REFERENCE_TIME rtStop = pSubPicProvider->GetStop(pos, fps);
+                const REFERENCE_TIME rtSegmentStop = rtStop;
                 bool bAnimated = pSubPicProvider->IsAnimated(pos) && !m_settings.bDisableSubtitleAnimation;
 
                 // Special case for subtitles with unknown end time
@@ -790,6 +807,7 @@ STDMETHODIMP_(bool) CSubPicQueueNoThread::LookupSubPic(REFERENCE_TIME rtNow, boo
                 }
 
                 rtStart = pSubPicProvider->GetStart(pos, fps);
+                const REFERENCE_TIME rtSegmentStart = rtStart;
                 if (bAnimated && rtStart <= rtNow) {
                     // one sub-frame of the animation, from now; a segment that
                     // has not started yet keeps its own start and is not rendered
@@ -832,12 +850,12 @@ STDMETHODIMP_(bool) CSubPicQueueNoThread::LookupSubPic(REFERENCE_TIME rtNow, boo
                     if (m_pAllocator->IsDynamicWriteOnly()) {
                         CComPtr<ISubPic> pStatic;
                         if (SUCCEEDED(m_pAllocator->GetStatic(&pStatic))
-                                && SUCCEEDED(RenderTo(pStatic, rtStart, rtStop, fps, bAnimated))
+                                && SUCCEEDED(RenderTo(pStatic, rtStart, rtStop, fps, bAnimated, rtSegmentStart, rtSegmentStop))
                                 && SUCCEEDED(pStatic->CopyTo(pSubPic))) {
                             ppSubPic = pSubPic;
                         }
                     } else {
-                        if (SUCCEEDED(RenderTo(pSubPic, rtStart, rtStop, fps, bAnimated))) {
+                        if (SUCCEEDED(RenderTo(pSubPic, rtStart, rtStop, fps, bAnimated, rtSegmentStart, rtSegmentStop))) {
                             ppSubPic = pSubPic;
                         }
                     }
