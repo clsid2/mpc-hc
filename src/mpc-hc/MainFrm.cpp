@@ -4407,6 +4407,7 @@ LRESULT CMainFrame::OnFilePostOpenmedia(WPARAM wParam, LPARAM lParam)
             FLUSH_LOGGER();
         }
         ASSERT(FALSE);
+        delete (OpenMediaData*)lParam;
         return 1;
     }
 
@@ -12552,8 +12553,12 @@ bool CMainFrame::OpenMediaPrivate(std::unique_ptr<OpenMediaData> pOMD)
         if (!m_bOpenedThroughThread) {
             ASSERT(GetCurrentThreadId() == AfxGetApp()->m_nThreadID);
             OnFilePostOpenmedia(args.first, args.second);
-        } else {
-            PostMessage(WM_POSTOPEN, args.first, args.second);
+        } else if (!PostMessage(WM_POSTOPEN, args.first, args.second)) {
+            if (USE_LOGGER(s)) {
+                PLAYER_LOG(_T("CMainFrame::OpenMediaPrivate - failed to post WM_POSTOPEN (error %lu)"), GetLastError());
+                FLUSH_LOGGER();
+            }
+            delete (OpenMediaData*)args.second;
         }
     } else if (!m_fOpeningAborted) {
         if (USE_LOGGER(s)) {
@@ -12564,8 +12569,12 @@ bool CMainFrame::OpenMediaPrivate(std::unique_ptr<OpenMediaData> pOMD)
         if (!m_bOpenedThroughThread) {
             ASSERT(GetCurrentThreadId() == AfxGetApp()->m_nThreadID);
             OnOpenMediaFailed(args.first, args.second);
-        } else {
-            PostMessage(WM_OPENFAILED, args.first, args.second);
+        } else if (!PostMessage(WM_OPENFAILED, args.first, args.second)) {
+            if (USE_LOGGER(s)) {
+                PLAYER_LOG(_T("CMainFrame::OpenMediaPrivate - failed to post WM_OPENFAILED (error %lu)"), GetLastError());
+                FLUSH_LOGGER();
+            }
+            delete (OpenMediaData*)args.second;
         }
     } else {
         m_bOpenMediaActive = false;

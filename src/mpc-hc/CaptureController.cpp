@@ -889,8 +889,8 @@ void CCaptureController::StartTunerScan(std::unique_ptr<TunerScanData> pTSD)
     m_frame.RecalcLayout();
     m_frame.OpenSetupWindowTitle();
 
-    if (m_frame.IsGraphThreadRunning()) {
-        m_frame.PostGraphThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.release());
+    if (m_frame.IsGraphThreadRunning() && m_frame.PostGraphThreadMessage(CGraphThread::TM_TUNER_SCAN, (WPARAM)0, (LPARAM)pTSD.get())) {
+        pTSD.release();
     } else {
         DoTunerScan(pTSD.get());
     }
